@@ -82,65 +82,39 @@ namespace ModnixPoint {
 
       private static int Main ( string[] args ) {
          try {
-            try {
-               Options.Parse( args );
-            } catch ( OptionException e ) {
-               SayOptionException( e );
-               return RC_BAD_OPTIONS;
-            }
+            if ( ParseOptionsTestAbort( args, out int returnCode ) ) return returnCode;
 
-            if ( OptionsIn.Helping ) {
-               SayHelp( Options );
-               return RC_NORMAL;
-            }
-
-            if ( OptionsIn.Versioning ) {
-               SayVersion();
-               return RC_NORMAL;
-            }
-
-            var managedDirectory = Directory.GetCurrentDirectory();
+            string managedDirectory = null;
             if ( ! string.IsNullOrEmpty( OptionsIn.ManagedDir ) ) {
-               if ( !Directory.Exists( OptionsIn.ManagedDir ) ) {
-                  SayManagedDirMissingError( OptionsIn.ManagedDir );
-                  return RC_BAD_MANAGED_DIRECTORY_PROVIDED;
-               }
-
+               if ( ! Directory.Exists( OptionsIn.ManagedDir ) )
+                  return SayManagedDirMissingError( OptionsIn.ManagedDir );
                managedDirectory = Path.GetFullPath( OptionsIn.ManagedDir );
-            }
+            } else
+               managedDirectory = Directory.GetCurrentDirectory();
 
             var gameDllPath       = Path.Combine( managedDirectory, GAME_DLL_FILE_NAME );
             var gameDllBackupPath = Path.Combine( managedDirectory, GAME_DLL_FILE_NAME + BACKUP_FILE_EXT );
             var modLoaderDllPath  = Path.Combine( managedDirectory, MOD_LOADER_DLL_FILE_NAME );
 
-            if ( ! File.Exists( gameDllPath ) ) {
-               SayGameAssemblyMissingError( OptionsIn.ManagedDir );
-               return RC_BAD_MANAGED_DIRECTORY_PROVIDED;
-            }
+            if ( ! File.Exists( gameDllPath ) )
+               return SayGameAssemblyMissingError( OptionsIn.ManagedDir );
 
-            if ( ! File.Exists( modLoaderDllPath ) ) {
-               SayModLoaderAssemblyMissingError( modLoaderDllPath );
-               return RC_MISSING_MOD_LOADER_ASSEMBLY;
-            }
+            if ( ! File.Exists( modLoaderDllPath ) )
+               return SayModLoaderAssemblyMissingError( modLoaderDllPath );
 
             var injected = IsInjected( gameDllPath, out var isCurrentInjection, out var gameVersion );
 
-            if ( OptionsIn.GameVersion ) {
-               SayGameVersion( gameVersion );
-               return RC_NORMAL;
-            }
+            if ( OptionsIn.GameVersion )
+               return SayGameVersion( gameVersion );
 
             if ( ! string.IsNullOrEmpty( OptionsIn.RequiredGameVersion ) && OptionsIn.RequiredGameVersion != gameVersion ) {
                SayRequiredGameVersion( gameVersion, OptionsIn.RequiredGameVersion );
                SayRequiredGameVersionMismatchMessage( OptionsIn.RequiredGameVersionMismatchMessage );
-               PromptForKey( OptionsIn.RequireKeyPress );
-               return RC_REQUIRED_GAME_VERSION_MISMATCH;
+               return PromptForKey( OptionsIn.RequireKeyPress, RC_REQUIRED_GAME_VERSION_MISMATCH );
             }
 
-            if ( OptionsIn.Detecting ) {
-               SayInjectedStatus( injected );
-               return RC_NORMAL;
-            }
+            if ( OptionsIn.Detecting )
+               return SayInjectedStatus( injected );
 
             SayHeader();
 
@@ -149,28 +123,23 @@ namespace ModnixPoint {
                   Restore( gameDllPath, gameDllBackupPath );
                else
                   SayAlreadyRestored();
-               PromptForKey( OptionsIn.RequireKeyPress );
-               return RC_NORMAL;
+               return PromptForKey( OptionsIn.RequireKeyPress );
             }
 
             if ( OptionsIn.Installing ) {
-               if ( !injected ) {
+               if ( ! injected ) {
                   Backup( gameDllPath, gameDllBackupPath );
                   Inject( gameDllPath, modLoaderDllPath );
                } else {
                   SayAlreadyInjected( isCurrentInjection );
                }
-               PromptForKey( OptionsIn.RequireKeyPress );
-               return RC_NORMAL;
+               return PromptForKey( OptionsIn.RequireKeyPress );
             }
-         } catch ( BackupFileNotFound e ) {
+
+         } catch ( BackupFileError e ) {
             SayException( e );
-            SayHowToRecoverMissingBackup( e.BackupFileName );
-            return RC_MISSING_BACKUP_FILE;
-         } catch ( BackupFileInjected e ) {
-            SayException( e );
-            SayHowToRecoverInjectedBackup( e.BackupFileName );
-            return RC_BACKUP_FILE_INJECTED;
+            return SayHowToRecoverMissingBackup( e.BackupFileName );
+
          } catch ( Exception e ) {
             SayException( e );
          }
@@ -178,7 +147,33 @@ namespace ModnixPoint {
          return RC_UNHANDLED_STATE;
       }
 
-      private static void SayInjectedStatus ( bool injected ) => WriteLine( injected.ToString().ToLower() );
+      private static bool ParseOptionsTestAbort ( string[] args, out int returnCode ) {
+         returnCode = RC_UNHANDLED_STATE;
+
+         try {
+            Options.Parse( args );
+         } catch ( OptionException e ) {
+            returnCode = SayOptionException( e );
+            return true;
+         }
+
+         if ( OptionsIn.Helping ) {
+            returnCode = SayHelp( Options );
+            return true;
+         }
+
+         if ( OptionsIn.Versioning ) {
+            returnCode = SayVersion();
+            return true;
+         }
+
+         return false;
+      }
+
+      private static int SayInjectedStatus ( bool injected ) {
+         WriteLine( injected.ToString().ToLower() );
+         return RC_NORMAL;
+      }
 
       private static void Backup ( string filePath, string backupFilePath ) {
          File.Copy( filePath, backupFilePath, true );
@@ -329,7 +324,14 @@ namespace ModnixPoint {
          return false;
       }
 
-      private static void SayHelp ( OptionSet p ) {
+      private static int SayOptionException ( OptionException e ) {
+         SayHeader();
+         Write( $"{MOD_INJECTOR_EXE_FILE_NAME}: {e.Message}" );
+         WriteLine( $"Try '{MOD_INJECTOR_EXE_FILE_NAME} --help' for more information." );
+         return RC_BAD_OPTIONS;
+      }
+
+      private static int SayHelp ( OptionSet p ) {
          SayHeader();
          WriteLine( $"Usage: {MOD_INJECTOR_EXE_FILE_NAME} [OPTIONS]+" );
          WriteLine( "Inject the Phoenix Point game assembly with an entry point for mod loading." );
@@ -337,9 +339,38 @@ namespace ModnixPoint {
          WriteLine();
          WriteLine( "Options:" );
          p.WriteOptionDescriptions( Out );
+         return RC_NORMAL;
       }
 
-      private static void SayGameVersion ( string version ) => WriteLine( version );
+      private static int SayVersion () {
+         WriteLine( GetProductVersion() );
+         return RC_NORMAL;
+      }
+
+      private static int SayManagedDirMissingError ( string givenManagedDir ) {
+         SayHeader();
+         WriteLine( $"ERROR: We could not find the directory '{givenManagedDir}'. Are you sure it exists?" );
+         return RC_BAD_MANAGED_DIRECTORY_PROVIDED;
+      }
+
+      private static int SayGameAssemblyMissingError ( string givenManagedDir ) {
+         SayHeader();
+         WriteLine( $"ERROR: We could not find the game assembly {GAME_DLL_FILE_NAME} in directory '{givenManagedDir}'.\n" +
+             "Are you sure that is the correct directory?" );
+         return RC_BAD_MANAGED_DIRECTORY_PROVIDED;
+      }
+
+      private static int SayModLoaderAssemblyMissingError ( string expectedModLoaderAssemblyPath ) {
+         SayHeader();
+         WriteLine( $"ERROR: We could not find the loader assembly {MOD_LOADER_DLL_FILE_NAME} at '{expectedModLoaderAssemblyPath}'.\n" +
+             $"Is {MOD_LOADER_DLL_FILE_NAME} in the correct place? It should be in the same directory as this injector executable." );
+         return RC_MISSING_MOD_LOADER_ASSEMBLY;
+      }
+
+      private static int SayGameVersion ( string version ) {
+         WriteLine( version );
+         return RC_NORMAL;
+      }
 
       private static void SayRequiredGameVersion ( string version, string expectedVersion ) {
          WriteLine( $"Expected game v{expectedVersion}" );
@@ -351,35 +382,10 @@ namespace ModnixPoint {
             WriteLine( msg );
       }
 
-      private static void SayVersion () => WriteLine( GetProductVersion() );
-
       private static string GetProductVersion () {
          var assembly = Assembly.GetExecutingAssembly();
          var fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
          return fvi.FileVersion;
-      }
-
-      private static void SayOptionException ( OptionException e ) {
-         SayHeader();
-         Write( $"{MOD_INJECTOR_EXE_FILE_NAME}: {e.Message}" );
-         WriteLine( $"Try '{MOD_INJECTOR_EXE_FILE_NAME} --help' for more information." );
-      }
-
-      private static void SayManagedDirMissingError ( string givenManagedDir ) {
-         SayHeader();
-         WriteLine( $"ERROR: We could not find the directory '{givenManagedDir}'. Are you sure it exists?" );
-      }
-
-      private static void SayGameAssemblyMissingError ( string givenManagedDir ) {
-         SayHeader();
-         WriteLine( $"ERROR: We could not find the game assembly {GAME_DLL_FILE_NAME} in directory '{givenManagedDir}'.\n" +
-             "Are you sure that is the correct directory?" );
-      }
-
-      private static void SayModLoaderAssemblyMissingError ( string expectedModLoaderAssemblyPath ) {
-         SayHeader();
-         WriteLine( $"ERROR: We could not find the loader assembly {MOD_LOADER_DLL_FILE_NAME} at '{expectedModLoaderAssemblyPath}'.\n" +
-             $"Is {MOD_LOADER_DLL_FILE_NAME} in the correct place? It should be in the same directory as this injector executable." );
       }
 
       private static void SayHeader () {
@@ -387,10 +393,11 @@ namespace ModnixPoint {
          WriteLine( "----------------------------" );
       }
 
-      private static void SayHowToRecoverMissingBackup ( string backupFileName ) {
+      private static int SayHowToRecoverMissingBackup ( string backupFileName ) {
          WriteLine( "----------------------------" );
          WriteLine( $"The backup game assembly file must be in the directory with the injector for /restore to work. The backup file should be named \"{backupFileName}\"." );
          WriteLine( "You may need to reinstall or use Steam/GOG's file verification function if you have no other backup." );
+         return RC_MISSING_BACKUP_FILE;
       }
 
       private static void SayHowToRecoverInjectedBackup ( string backupFileName ) {
@@ -407,32 +414,28 @@ namespace ModnixPoint {
 
       private static void SayException ( Exception e ) => WriteLine( $"ERROR: An exception occured: {e}" );
 
-      private static void PromptForKey ( bool requireKeyPress ) {
-         if ( ! requireKeyPress )
-            return;
-         WriteLine( "Press any key to continue." );
-         ReadKey();
+      private static int PromptForKey ( bool requireKeyPress, int returnCode = RC_NORMAL ) {
+         if ( requireKeyPress ) {
+            WriteLine( "Press any key to continue." );
+            ReadKey();
+         }
+         return returnCode;
       }
    }
 
-   public class BackupFileInjected : Exception {
-      public BackupFileInjected ( string backupFileName = "Assembly-CSharp.dll.orig" ) : base( FormulateMessage( backupFileName ) ) {
-         BackupFileName = backupFileName;
-      }
-
-      public string BackupFileName { get; }
-
-      private static string FormulateMessage ( string backupFileName ) => $"The backup file \"{backupFileName}\" was injected.";
+   public class BackupFileError : Exception {
+      public BackupFileError ( string backupFileName, string message ) : base( message ) { BackupFileName = backupFileName; }
+      public readonly string BackupFileName;
    }
 
-   public class BackupFileNotFound : FileNotFoundException {
-      public BackupFileNotFound ( string backupFileName = "Assembly-CSharp.dll.orig" ) : base( FormulateMessage( backupFileName ) ) {
-         BackupFileName = backupFileName;
-      }
+   public class BackupFileInjected : BackupFileError {
+      public BackupFileInjected ( string backupFileName = "Assembly-CSharp.dll.orig" ) :
+         base( backupFileName, $"The backup file \"{backupFileName}\" was injected." ) { }
+   }
 
-      public string BackupFileName { get; }
-
-      private static string FormulateMessage ( string backupFileName ) => $"The backup file \"{backupFileName}\" could not be found.";
+   public class BackupFileNotFound : BackupFileError {
+      public BackupFileNotFound ( string backupFileName = "Assembly-CSharp.dll.orig" ) :
+         base( backupFileName, $"The backup file \"{backupFileName}\" could not be found." ) { }
    }
 
    // Values passed by the user into the program via command line.
