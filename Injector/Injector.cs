@@ -212,12 +212,12 @@ namespace ModnixPoint {
 
       private static bool InjectModHookPoint ( ModuleDefinition game, ModuleDefinition injecting ) {
          // get the methods that we're hooking and injecting
-         var injectedMethod = injecting.GetType(INJECT_TYPE).Methods.Single(x => x.Name == INJECT_METHOD);
-         var hookedMethod = game.GetType(HOOK_TYPE).Methods.First(x => x.Name == HOOK_METHOD);
+         var injectedMethod = injecting.GetType( INJECT_TYPE ).Methods.Single( x => x.Name == INJECT_METHOD );
+         var hookedMethod = game.GetType( HOOK_TYPE ).Methods.First( x => x.Name == HOOK_METHOD );
 
-         // If the return type is an iterator -- need to go searching for its MoveNext method which contains the actual code you'll want to inject
+         // Since the return type is an iterator -- need to go searching for its MoveNext method which contains the actual code you'll want to inject
          if ( hookedMethod.ReturnType.Name.Contains( "IEnumerator" ) ) {
-            var nestedIterator = game.GetType(HOOK_TYPE).NestedTypes.First(x => x.Name.Contains(HOOK_METHOD));
+            var nestedIterator = game.GetType(HOOK_TYPE).NestedTypes.First( x => x.Name.Contains( HOOK_METHOD ) );
             hookedMethod = nestedIterator.Methods.First( x => x.Name.Equals( "MoveNext" ) );
          }
 
@@ -231,7 +231,6 @@ namespace ModnixPoint {
          //
          // We want to inject after the MenuCrt call -- so search for that call in the CIL
 
-         var targetInstruction = -1;
          WriteLine( $"Scanning for {INJECT_CALL} call in {HOOK_METHOD}." );
 
          var body = hookedMethod.Body;
@@ -240,24 +239,19 @@ namespace ModnixPoint {
          for ( var i = code.Count - 1 ; i >= 0 ; i-- ) {
             var instruction = code[i];
             var opcode = instruction.OpCode;
-            if ( opcode.Code.Equals( Code.Call ) && opcode.OperandType.Equals( OperandType.InlineMethod ) ) {
-               var methodReference = instruction.Operand as MethodReference;
-               if ( methodReference != null && methodReference.Name.Contains( INJECT_CALL ) ) {
-                  targetInstruction = i;
-                  break;
-               }
+            if ( ! opcode.Code.Equals( Code.Call ) ) continue;
+            if ( ! opcode.OperandType.Equals( OperandType.InlineMethod ) ) continue;
+            var methodReference = instruction.Operand as MethodReference;
+            if ( methodReference != null && methodReference.Name.Contains( INJECT_CALL ) ) {
+               WriteLine( $"Call found. Inserting mod loader after call." );
+               body.GetILProcessor().InsertAfter( instruction, Instruction.Create( OpCodes.Call, game.ImportReference( injectedMethod ) ) );
+               WriteLine( "Insertion done." );
+               return true;
             }
          }
 
-         if ( targetInstruction < 0 ) {
-            WriteLine( "Call not found." );
-            return false;
-         }
-
-         WriteLine( $"Call found at IL #{targetInstruction}. Inserting mod loader after call." );
-         body.GetILProcessor().InsertAfter( code[ targetInstruction ], Instruction.Create( OpCodes.Call, game.ImportReference( injectedMethod ) ) );
-         WriteLine( "Insertion done." );
-         return true;
+         WriteLine( "Call not found." );
+         return false;
       }
 
       private static bool IsInjected ( string dllPath ) => IsInjected( dllPath, new AppState() );
