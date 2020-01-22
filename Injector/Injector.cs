@@ -67,16 +67,12 @@ namespace ModnixPoint {
             v => OptionsIn.RequiredGameVersionMismatchMessage = v
          },
          {
-            "requiredversion=", "Don't continue with /install, /update, etc. if game version does not match given argument",
+            "requiredversion=", "Don't continue with /install, /restore, etc. if game version does not match given argument",
             v => OptionsIn.RequiredGameVersion = v
          },
          {
             "r|restore", "Restore pristine backup game assembly to folder",
             v => OptionsIn.Restoring = v != null
-         },
-         {
-            "u|update", "Update mod loader injection of game assembly to current game version",
-            v => OptionsIn.Updating = v != null
          },
          {
             "v|version", "Print injector version number",
@@ -153,19 +149,6 @@ namespace ModnixPoint {
                   Restore( gameDllPath, gameDllBackupPath );
                else
                   SayAlreadyRestored();
-               PromptForKey( OptionsIn.RequireKeyPress );
-               return RC_NORMAL;
-            }
-
-            if ( OptionsIn.Updating ) {
-               if ( injected ) {
-                  if ( PromptForUpdateYesNo( OptionsIn.RequireKeyPress ) ) {
-                     Restore( gameDllPath, gameDllBackupPath );
-                     Inject( gameDllPath, modLoaderDllPath );
-                  } else {
-                     SayUpdateCanceled();
-                  }
-               }
                PromptForKey( OptionsIn.RequireKeyPress );
                return RC_NORMAL;
             }
@@ -422,16 +405,7 @@ namespace ModnixPoint {
 
       private static void SayAlreadyRestored () => WriteLine( $"{GAME_DLL_FILE_NAME} already restored." );
 
-      private static void SayUpdateCanceled () => WriteLine( $"{GAME_DLL_FILE_NAME} update cancelled." );
-
       private static void SayException ( Exception e ) => WriteLine( $"ERROR: An exception occured: {e}" );
-
-      private static bool PromptForUpdateYesNo ( bool requireKeyPress ) {
-         if ( ! requireKeyPress )
-            return true;
-         WriteLine( "Would you like to update your assembly now? (y/n)" );
-         return ReadKey().Key == ConsoleKey.Y;
-      }
 
       private static void PromptForKey ( bool requireKeyPress ) {
          if ( ! requireKeyPress )
@@ -472,7 +446,6 @@ namespace ModnixPoint {
       public bool Helping = false;
       public bool Installing = true;
       public bool Restoring = false;
-      public bool Updating = false;
       public bool Versioning = false;
    }
 }
