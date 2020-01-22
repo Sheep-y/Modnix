@@ -262,18 +262,11 @@ namespace ModnixPoint {
          var detectedInject = false;
          using ( var dll = ModuleDefinition.ReadModule( dllPath ) ) {
             foreach ( var type in dll.Types ) {
-               // Standard methods
-               foreach ( var methodDefinition in type.Methods ) {
-                  if ( IsHookInstalled( methodDefinition, out state.isCurrentInjection ) )
-                     detectedInject = true;
-               }
-
-               // Also have to check in places like IEnumerator generated methods (Nested)
-               foreach ( var nestedType in type.NestedTypes )
-                  foreach ( var methodDefinition in nestedType.Methods ) {
-                     if ( IsHookInstalled( methodDefinition, out state.isCurrentInjection ) )
-                        detectedInject = true;
-                  }
+               // Check standard methods, then in places like IEnumerator generated methods (Nested)
+               if ( ! detectedInject )
+                  detectedInject = type.Methods.Any( method => IsHookInstalled( method, out state.isCurrentInjection ) );
+               if ( ! detectedInject )
+                  detectedInject = type.NestedTypes.Any( nested => nested.Methods.Any( method => IsHookInstalled( method, out state.isCurrentInjection ) ) );
 
                if ( type.FullName == GAME_VERSION_TYPE ) {
                   var fieldInfo = type.Fields.First( x => x.IsLiteral && !x.IsInitOnly && x.Name == GAME_VERSION_CONST );
