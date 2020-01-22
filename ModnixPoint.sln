@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.902
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModnixPoint", "PhoenixPointModLoader\ModnixPoint.csproj", "{E72A9BEB-E4D5-46BA-BEC2-732A7F40B181}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModnixPointInjector", "PhoenixPointModLoaderInjector\ModnixPointInjector.csproj", "{3CEBFD62-57BB-47D9-8FEF-7807B56A09D3}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E72A9BEB-E4D5-46BA-BEC2-732A7F40B181}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E72A9BEB-E4D5-46BA-BEC2-732A7F40B181}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E72A9BEB-E4D5-46BA-BEC2-732A7F40B181}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E72A9BEB-E4D5-46BA-BEC2-732A7F40B181}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3CEBFD62-57BB-47D9-8FEF-7807B56A09D3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3CEBFD62-57BB-47D9-8FEF-7807B56A09D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3CEBFD62-57BB-47D9-8FEF-7807B56A09D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3CEBFD62-57BB-47D9-8FEF-7807B56A09D3}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {24E6CDE7-6A76-4FA2-8091-A1D65B62B66C}
+	EndGlobalSection
+EndGlobal
