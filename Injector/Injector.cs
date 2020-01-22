@@ -35,8 +35,8 @@ namespace ModnixPoint {
       private const string GAME_VERSION_TYPE  = "VersionInfo";
       private const string GAME_VERSION_CONST = "CURRENT_VERSION_NUMBER";
 
+      private static readonly AppState State = new AppState();
       private static readonly ReceivedOptions OptionsIn = new ReceivedOptions();
-
       private static readonly OptionSet Options = new OptionSet {
          {
             "d|detect", "Detect if the game assembly is already injected",
@@ -84,31 +84,30 @@ namespace ModnixPoint {
          try {
             if ( ParseOptionsTestAbort( args, out int returnCode ) ) return returnCode;
 
-            string managedDirectory = null;
             if ( ! string.IsNullOrEmpty( OptionsIn.ManagedDir ) ) {
                if ( ! Directory.Exists( OptionsIn.ManagedDir ) )
                   return SayManagedDirMissingError( OptionsIn.ManagedDir );
-               managedDirectory = Path.GetFullPath( OptionsIn.ManagedDir );
+               State.managedDirectory = Path.GetFullPath( OptionsIn.ManagedDir );
             } else
-               managedDirectory = Directory.GetCurrentDirectory();
+               State.managedDirectory = Directory.GetCurrentDirectory();
 
-            var gameDllPath       = Path.Combine( managedDirectory, GAME_DLL_FILE_NAME );
-            var gameDllBackupPath = Path.Combine( managedDirectory, GAME_DLL_FILE_NAME + BACKUP_FILE_EXT );
-            var modLoaderDllPath  = Path.Combine( managedDirectory, MOD_LOADER_DLL_FILE_NAME );
+            State.gameDllPath       = Path.Combine( State.managedDirectory, GAME_DLL_FILE_NAME );
+            State.gameDllBackupPath = Path.Combine( State.managedDirectory, GAME_DLL_FILE_NAME + BACKUP_FILE_EXT );
+            State.modLoaderDllPath  = Path.Combine( State.managedDirectory, MOD_LOADER_DLL_FILE_NAME );
 
-            if ( ! File.Exists( gameDllPath ) )
+            if ( ! File.Exists( State.gameDllPath ) )
                return SayGameAssemblyMissingError( OptionsIn.ManagedDir );
 
-            if ( ! File.Exists( modLoaderDllPath ) )
-               return SayModLoaderAssemblyMissingError( modLoaderDllPath );
+            if ( ! File.Exists( State.modLoaderDllPath ) )
+               return SayModLoaderAssemblyMissingError( State.modLoaderDllPath );
 
-            var injected = IsInjected( gameDllPath, out var isCurrentInjection, out var gameVersion );
+            bool injected = IsInjected( State.gameDllPath, State );
 
             if ( OptionsIn.GameVersion )
-               return SayGameVersion( gameVersion );
+               return SayGameVersion( State.gameVersion );
 
-            if ( ! string.IsNullOrEmpty( OptionsIn.RequiredGameVersion ) && OptionsIn.RequiredGameVersion != gameVersion ) {
-               SayRequiredGameVersion( gameVersion, OptionsIn.RequiredGameVersion );
+            if ( ! string.IsNullOrEmpty( OptionsIn.RequiredGameVersion ) && OptionsIn.RequiredGameVersion != State.gameVersion ) {
+               SayRequiredGameVersion( State.gameVersion, OptionsIn.RequiredGameVersion );
                SayRequiredGameVersionMismatchMessage( OptionsIn.RequiredGameVersionMismatchMessage );
                return PromptForKey( OptionsIn.RequireKeyPress, RC_REQUIRED_GAME_VERSION_MISMATCH );
             }
@@ -120,7 +119,7 @@ namespace ModnixPoint {
 
             if ( OptionsIn.Restoring ) {
                if ( injected )
-                  Restore( gameDllPath, gameDllBackupPath );
+                  Restore( State.gameDllPath, State.gameDllBackupPath );
                else
                   SayAlreadyRestored();
                return PromptForKey( OptionsIn.RequireKeyPress );
@@ -128,10 +127,10 @@ namespace ModnixPoint {
 
             if ( OptionsIn.Installing ) {
                if ( ! injected ) {
-                  Backup( gameDllPath, gameDllBackupPath );
-                  Inject( gameDllPath, modLoaderDllPath );
+                  Backup( State.gameDllPath, State.gameDllBackupPath );
+                  Inject( State.gameDllPath, State.modLoaderDllPath );
                } else {
-                  SayAlreadyInjected( isCurrentInjection );
+                  SayAlreadyInjected( State.isCurrentInjection );
                }
                return PromptForKey( OptionsIn.RequireKeyPress );
             }
@@ -193,14 +192,11 @@ namespace ModnixPoint {
 
       private static void Inject ( string hookFilePath, string injectFilePath ) {
          WriteLine( $"Injecting {Path.GetFileName( hookFilePath )} with {INJECT_TYPE}.{INJECT_METHOD} at {HOOK_TYPE}.{HOOK_METHOD}" );
-
          using ( var game = ModuleDefinition.ReadModule( hookFilePath, new ReaderParameters { ReadWrite = true } ) )
          using ( var injecting = ModuleDefinition.ReadModule( injectFilePath ) ) {
             var success = InjectModHookPoint(game, injecting);
-
             if ( success )
                success &= WriteNewAssembly( hookFilePath, game );
-
             if ( !success )
                WriteLine( "Failed to inject the game assembly." );
          }
@@ -249,7 +245,7 @@ namespace ModnixPoint {
             if ( instruction.OpCode.Code.Equals( Code.Call ) && instruction.OpCode.OperandType.Equals( OperandType.InlineMethod ) ) {
                var methodReference = instruction.Operand as MethodReference;
                if ( methodReference != null && methodReference.Name.Contains( INJECT_CALL ) ) {
-                  WriteLine( $"CALL {methodReference.Name}" );
+                  WriteLine( $"{i} CALL {methodReference.Name}" );
                   targetInstruction = i + 1; // hack - we want to run after that instruction has been fully processed, not in the middle of it.
                   break;
                }
@@ -270,34 +266,34 @@ namespace ModnixPoint {
          return true;
       }
 
-      private static bool IsInjected ( string dllPath ) => IsInjected( dllPath, out _, out _ );
+      private static bool IsInjected ( string dllPath ) => IsInjected( dllPath, new AppState() );
 
-      private static bool IsInjected ( string dllPath, out bool isCurrentInjection, out string gameVersion ) {
-         isCurrentInjection = false;
-         gameVersion = "";
+      private static bool IsInjected ( string dllPath, AppState state ) {
+         state.isCurrentInjection = false;
+         state.gameVersion = "";
          var detectedInject = false;
          using ( var dll = ModuleDefinition.ReadModule( dllPath ) ) {
             foreach ( var type in dll.Types ) {
                // Standard methods
                foreach ( var methodDefinition in type.Methods ) {
-                  if ( IsHookInstalled( methodDefinition, out isCurrentInjection ) )
+                  if ( IsHookInstalled( methodDefinition, out state.isCurrentInjection ) )
                      detectedInject = true;
                }
 
                // Also have to check in places like IEnumerator generated methods (Nested)
                foreach ( var nestedType in type.NestedTypes )
                   foreach ( var methodDefinition in nestedType.Methods ) {
-                     if ( IsHookInstalled( methodDefinition, out isCurrentInjection ) )
+                     if ( IsHookInstalled( methodDefinition, out state.isCurrentInjection ) )
                         detectedInject = true;
                   }
 
                if ( type.FullName == GAME_VERSION_TYPE ) {
-                  var fieldInfo = type.Fields.First(x => x.IsLiteral && !x.IsInitOnly && x.Name == GAME_VERSION_CONST);
-                  if ( null != fieldInfo )
-                     gameVersion = fieldInfo.Constant.ToString();
+                  var fieldInfo = type.Fields.First( x => x.IsLiteral && !x.IsInitOnly && x.Name == GAME_VERSION_CONST );
+                  if ( fieldInfo != null )
+                     state.gameVersion = fieldInfo.Constant.ToString();
                }
 
-               if ( detectedInject && !string.IsNullOrEmpty( gameVersion ) )
+               if ( detectedInject && ! string.IsNullOrEmpty( state.gameVersion ) )
                   return true;
             }
          }
@@ -450,5 +446,15 @@ namespace ModnixPoint {
       public bool Installing = true;
       public bool Restoring = false;
       public bool Versioning = false;
+   }
+
+   internal class AppState {
+      internal string managedDirectory;
+      internal string gameDllPath;
+      internal string gameDllBackupPath;
+      internal string gameVersion;
+      internal string modLoaderDllPath;
+      internal bool isCurrentInjection;
+      internal bool injected;
    }
 }
