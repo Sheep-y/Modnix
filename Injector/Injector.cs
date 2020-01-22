@@ -224,13 +224,9 @@ namespace ModnixPoint {
          // As of Phoenix Point v1.0.54973 the BootCrt() iterator method of PhoenixGame has this at the end
          //
          //  ...
-         //
          //    IEnumerator<NextUpdate> coroutine = this.MenuCrt(null, MenuEnterReason.None);
-         //    Func<IUpdateable, Exception, UpdateableExceptionAction> catchException = null;
-         //    ModLoader.Init();
-         //    yield return timing.Call(coroutine, catchException);
+         //    yield return timing.Call(coroutine, null);
          //    yield break;
-         //
          //  }
          //
          // We want to inject after the MenuCrt call -- so search for that call in the CIL
@@ -238,19 +234,19 @@ namespace ModnixPoint {
          var targetInstruction = -1;
          WriteLine( $"Scanning for {INJECT_CALL} call in {HOOK_METHOD}." );
 
-         WriteLine( $"Total {hookedMethod.Body.Instructions.Count} IL instructions." );
-         for ( var i = hookedMethod.Body.Instructions.Count - 1 ; i >= 0 ; i-- ) {
-            var instruction = hookedMethod.Body.Instructions[i];
-
-            if ( instruction.OpCode.Code.Equals( Code.Call ) && instruction.OpCode.OperandType.Equals( OperandType.InlineMethod ) ) {
+         var body = hookedMethod.Body;
+         var code = body.Instructions;
+         WriteLine( $"Total {code.Count} IL instructions." );
+         for ( var i = code.Count - 1 ; i >= 0 ; i-- ) {
+            var instruction = code[i];
+            var opcode = instruction.OpCode;
+            if ( opcode.Code.Equals( Code.Call ) && opcode.OperandType.Equals( OperandType.InlineMethod ) ) {
                var methodReference = instruction.Operand as MethodReference;
                if ( methodReference != null && methodReference.Name.Contains( INJECT_CALL ) ) {
-                  WriteLine( $"{i} CALL {methodReference.Name}" );
-                  targetInstruction = i + 1; // hack - we want to run after that instruction has been fully processed, not in the middle of it.
+                  targetInstruction = i;
                   break;
                }
             }
-
          }
 
          if ( targetInstruction < 0 ) {
@@ -258,11 +254,9 @@ namespace ModnixPoint {
             return false;
          }
 
-         WriteLine( "Call found. Inserting mod loader after call." );
-         hookedMethod.Body.GetILProcessor().InsertAfter( hookedMethod.Body.Instructions[ targetInstruction ],
-             Instruction.Create( OpCodes.Call, game.ImportReference( injectedMethod ) ) );
+         WriteLine( $"Call found at IL #{targetInstruction}. Inserting mod loader after call." );
+         body.GetILProcessor().InsertAfter( code[ targetInstruction ], Instruction.Create( OpCodes.Call, game.ImportReference( injectedMethod ) ) );
          WriteLine( "Insertion done." );
-
          return true;
       }
 
@@ -303,10 +297,8 @@ namespace ModnixPoint {
 
       private static bool IsHookInstalled ( MethodDefinition methodDefinition, out bool isCurrentInjection ) {
          isCurrentInjection = false;
-
          if ( methodDefinition.Body == null )
             return false;
-
          foreach ( var instruction in methodDefinition.Body.Instructions ) {
             if ( instruction.OpCode.Equals( OpCodes.Call ) &&
                 instruction.Operand.ToString().Equals( $"System.Void {INJECT_TYPE}::{INJECT_METHOD}()" ) ) {
@@ -316,7 +308,6 @@ namespace ModnixPoint {
                return true;
             }
          }
-
          return false;
       }
 
