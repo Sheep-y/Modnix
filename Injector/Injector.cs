@@ -33,6 +33,7 @@ namespace ModnixPoint
         private const string HOOK_METHOD = "BootCrt";
         private const string INJECT_TYPE = "ModnixPoint.ModLoader";
         private const string INJECT_METHOD = "Init";
+        private const string INJECT_CALL = "MenuCrt";
 
         private const string GAME_VERSION_TYPE = "VersionInfo";
         private const string GAME_VERSION_CONST = "CURRENT_VERSION_NUMBER";
@@ -46,12 +47,12 @@ namespace ModnixPoint
         {
             {
                 "d|detect",
-                "Detect if the BTG assembly is already injected",
+                "Detect if the game assembly is already injected",
                 v => OptionsIn.Detecting = v != null
             },
             {
                 "g|gameversion",
-                "Print the BTG version number",
+                "Print game version",
                 v => OptionsIn.GameVersion = v != null
             },
             {
@@ -66,7 +67,7 @@ namespace ModnixPoint
             },
             {
                 "manageddir=",
-                "specify managed dir where BTG's Assembly-CSharp.dll is located",
+                "specify managed dir where game's Assembly-CSharp.dll is located",
                 v => OptionsIn.ManagedDir = v
             },
             {
@@ -81,12 +82,12 @@ namespace ModnixPoint
             },
             {
                 "requiredversion=",
-                "Don't continue with /install, /update, etc. if the BTG game version does not match given argument",
+                "Don't continue with /install, /update, etc. if game version does not match given argument",
                 v => OptionsIn.RequiredGameVersion = v
             },
             {
                 "r|restore",
-                "Restore pristine backup BTG assembly to folder",
+                "Restore pristine backup game assembly to folder",
                 v => OptionsIn.Restoring = v != null
             },
             {
@@ -279,7 +280,8 @@ namespace ModnixPoint
             {
                 var success = InjectModHookPoint(game, injecting);
                 
-                success &= WriteNewAssembly(hookFilePath, game);
+                if ( success )
+                    success &= WriteNewAssembly(hookFilePath, game);
 
                 if (!success)
                     WriteLine("Failed to inject the game assembly.");
@@ -308,49 +310,51 @@ namespace ModnixPoint
                 hookedMethod = nestedIterator.Methods.First(x => x.Name.Equals("MoveNext"));
             }
 
-            // As of Battletech  v1.1 the Start() iterator method of Battletech.Main has this at the end
+            // As of Phoenix Point v1.0.54973 the BootCrt() iterator method of PhoenixGame has this at the end
             //
             //  ...
             //
-            //      Serializer.PrepareSerializer();
-            //      this.activate.enabled = true;
-            //      yield break;
+            //    IEnumerator<NextUpdate> coroutine = this.MenuCrt(null, MenuEnterReason.None);
+            //    Func<IUpdateable, Exception, UpdateableExceptionAction> catchException = null;
+            //    ModLoader.Init();
+            //    yield return timing.Call(coroutine, catchException);
+            //    yield break;
             //
             //  }
             //
 
-            // We want to inject after the PrepareSerializer call -- so search for that call in the CIL
+            // We want to inject after the MenuCrt call -- so search for that call in the CIL
 
-            // REALITYMACHINA NOTE - equivalent in PhoenixPoint.Common.Game.PhoenixGame.BootCrt, at least on launch
-  
             var targetInstruction = -1;
-            WriteLine("This is a debugging line for our count of instructions");
+            WriteLine( $"Scanning for {INJECT_CALL} call in {HOOK_METHOD}." );
 
-            WriteLine(hookedMethod.Body.Instructions.Count);
-            for (var i = 0; i < hookedMethod.Body.Instructions.Count; i++)
+            WriteLine( $"Total {hookedMethod.Body.Instructions.Count} IL instructions." );
+            for ( var i = hookedMethod.Body.Instructions.Count - 1 ; i >= 0 ; i-- )
             {
                 var instruction = hookedMethod.Body.Instructions[i];
                 
                 if (instruction.OpCode.Code.Equals(Code.Call) && instruction.OpCode.OperandType.Equals(OperandType.InlineMethod))
                 {
-                    var methodReference = (MethodReference)instruction.Operand;
-                    WriteLine(methodReference.Name);
-                    if (methodReference.Name.Contains("MenuCrt"))
+                    var methodReference = instruction.Operand as MethodReference;
+                    if ( methodReference != null && methodReference.Name.Contains( INJECT_CALL )) {
+                        WriteLine($"CALL {methodReference.Name}");
                         targetInstruction = i + 1; // hack - we want to run after that instruction has been fully processed, not in the middle of it.
+                        break;
+                    }
                 }
 
             }
-            
-            if (targetInstruction == -1)
+
+            if (targetInstruction < 0)
             {
-                WriteLine("This is a debugging line and our target line was not found.");
+                WriteLine("Call not found.");
                 return false;
             }
+
+            WriteLine("Call found. Inserting mod loader after call.");
             hookedMethod.Body.GetILProcessor().InsertAfter(hookedMethod.Body.Instructions[targetInstruction],
                 Instruction.Create(OpCodes.Call, game.ImportReference(injectedMethod)));
-
-
-            WriteLine("This is another debugging line. If we've gotten here, we should be fine?");
+            WriteLine("Insertion done.");
 
             return true;
         }
@@ -426,7 +430,7 @@ namespace ModnixPoint
         {
             SayHeader();
             WriteLine($"Usage: {MOD_INJECTOR_EXE_FILE_NAME} [OPTIONS]+");
-            WriteLine("Inject the PhoenixPoint game assembly with an entry point for mod enablement.");
+            WriteLine("Inject the Phoenix Point game assembly with an entry point for mod loading.");
             WriteLine("If no options are specified, the program assumes you want to /install.");
             WriteLine();
             WriteLine("Options:");
@@ -440,8 +444,8 @@ namespace ModnixPoint
 
         private static void SayRequiredGameVersion(string version, string expectedVersion)
         {
-            WriteLine($"Expected BTG v{expectedVersion}");
-            WriteLine($"Actual BTG v{version}");
+            WriteLine($"Expected game v{expectedVersion}");
+            WriteLine($"Actual game v{version}");
         }
 
         private static void SayRequiredGameVersionMismatchMessage(string msg)
