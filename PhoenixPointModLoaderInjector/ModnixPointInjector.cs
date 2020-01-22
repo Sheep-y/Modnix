@@ -10,7 +10,7 @@ using static System.Console;
 
 namespace ModnixPointInjector
 {
-    internal static class BTMLInjector
+    internal static class Injector
     {
         // return codes
         private const int RC_NORMAL = 0;
@@ -89,7 +89,7 @@ namespace ModnixPointInjector
             },
             {
                 "u|update",
-                "Update mod loader injection of BTG assembly to current BTML version",
+                "Update mod loader injection of game assembly to current game version",
                 v => OptionsIn.Updating = v != null
             },
             {
@@ -504,7 +504,7 @@ namespace ModnixPointInjector
         private static void SayHowToRecoverInjectedBackup(string backupFileName)
         {
             WriteLine("----------------------------");
-            WriteLine($"The backup game assembly file named \"{backupFileName}\" was already BTML injected. Something has gone wrong.");
+            WriteLine($"The backup game assembly file named \"{backupFileName}\" was already injected. Something has gone wrong.");
             WriteLine("You may need to reinstall or use Steam/GOG's file verification function if you have no other backup.");
         }
 
@@ -562,7 +562,7 @@ namespace ModnixPointInjector
 
         private static string FormulateMessage(string backupFileName)
         {
-            return $"The backup file \"{backupFileName}\" was BTML-injected.";
+            return $"The backup file \"{backupFileName}\" was injected.";
         }
     }
 
