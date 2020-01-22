@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace PhoenixPointModLoader
+namespace ModnixPoint
 {
     internal static class Logger
     {

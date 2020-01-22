@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace ModnixPointInjector
+namespace ModnixPoint
 {
     /***
      * A container for the values passed by the user into the program via command line.

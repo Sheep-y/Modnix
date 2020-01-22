@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct( "Modnix Point Injector" )]
-[assembly: AssemblyCopyright( "Copyright © 2019-2020" )]
+[assembly: AssemblyCopyright( "Public Domain" )]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("3cebfd62-57bb-47d9-8fef-7807b56a09d3")]
+[assembly: Guid( "d5c7140f-6849-4b9c-bd07-c02c35613efe" )]
 
 // Version information for an assembly consists of the following four values:
 //

@@ -6,17 +6,17 @@ using System.Reflection;
 
 using Harmony;
 
-namespace PhoenixPointModLoader
+namespace ModnixPoint
 {
   
-        using static Logger;
-       public static class PPModLoader
+       using static Logger;
+       public static class ModLoader
        {
         private const BindingFlags PUBLIC_STATIC_BINDING_FLAGS = BindingFlags.Public | BindingFlags.Static;
         private static readonly List<string> IGNORE_FILE_NAMES = new List<string>()
         {
             "0Harmony.dll",
-            "PPModLoader.dll"
+            "ModnixPoint.dll"
         };
 
         public static string ModDirectory { get; private set; }
@@ -125,9 +125,9 @@ namespace PhoenixPointModLoader
             ModDirectory = Path.GetFullPath(
                 Path.Combine(manifestDirectory, Path.Combine( @"..\..\Mods"))) ;
 
-            LogPath = Path.Combine(ModDirectory, "PPModLoader.log");
+            LogPath = Path.Combine(ModDirectory, "ModnixPoint.log");
 
-            var PPMLVersion = Assembly.GetExecutingAssembly().GetName().Version;
+            var LoaderVersion = Assembly.GetExecutingAssembly().GetName().Version;
 
             if (!Directory.Exists(ModDirectory))
                 Directory.CreateDirectory(ModDirectory);
@@ -135,11 +135,11 @@ namespace PhoenixPointModLoader
             // create log file, overwriting if it's already there
             using (var logWriter = File.CreateText(LogPath))
             {
-                logWriter.WriteLine($"PPModLoader -- PPML v{PPMLVersion} -- {DateTime.Now}");
+                logWriter.WriteLine($"{typeof(ModLoader).FullName} -- v{LoaderVersion} -- {DateTime.Now}");
             }
 
             // ReSharper disable once UnusedVariable
-            var harmony = HarmonyInstance.Create("io.github.realitymachina.PPModLoader");
+            var harmony = HarmonyInstance.Create( typeof( ModLoader ).Namespace );
 
             // get all dll paths
             var dllPaths = Directory.GetFiles(ModDirectory).Where(x => Path.GetExtension(x).ToLower() == ".dll").ToArray();

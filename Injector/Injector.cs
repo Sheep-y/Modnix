@@ -8,7 +8,7 @@ using Mono.Cecil.Cil;
 using Mono.Options;
 using static System.Console;
 
-namespace ModnixPointInjector
+namespace ModnixPoint
 {
     internal static class Injector
     {
@@ -23,13 +23,15 @@ namespace ModnixPointInjector
         private const int RC_REQUIRED_GAME_VERSION_MISMATCH = 7;
        
 
-        private const string MOD_LOADER_DLL_FILE_NAME = "PPModLoader.dll";
+        private const string MOD_LOADER_NAME = "Modnix Point";
+        private const string MOD_INJECTOR_EXE_FILE_NAME = "ModnixPointInjector.exe";
+        private const string MOD_LOADER_DLL_FILE_NAME = "ModnixPoint.dll";
         private const string GAME_DLL_FILE_NAME = "Assembly-CSharp.dll";
         private const string BACKUP_FILE_EXT = ".orig";
 
         private const string HOOK_TYPE = "PhoenixPoint.Common.Game.PhoenixGame";
         private const string HOOK_METHOD = "BootCrt";
-        private const string INJECT_TYPE = "PhoenixPointModLoader.PPModLoader";
+        private const string INJECT_TYPE = "ModnixPoint.ModLoader";
         private const string INJECT_METHOD = "Init";
 
         private const string GAME_VERSION_TYPE = "VersionInfo";
@@ -94,7 +96,7 @@ namespace ModnixPointInjector
             },
             {
                 "v|version",
-                "Print the PhoenixPointModInjector version number",
+                "Print injector version number",
                 v => OptionsIn.Versioning = v != null
             }
         };
@@ -319,7 +321,7 @@ namespace ModnixPointInjector
 
             // We want to inject after the PrepareSerializer call -- so search for that call in the CIL
 
-            // REALITYMACHINA NOTE - equivaalent in PhoenixPoint.Common.Game.PhoenixGame.BootCrt, at least on launch
+            // REALITYMACHINA NOTE - equivalent in PhoenixPoint.Common.Game.PhoenixGame.BootCrt, at least on launch
   
             var targetInstruction = -1;
             WriteLine("This is a debugging line for our count of instructions");
@@ -423,7 +425,7 @@ namespace ModnixPointInjector
         private static void SayHelp(OptionSet p)
         {
             SayHeader();
-            WriteLine("Usage: PhoenixPointModLoaderInjector.exe [OPTIONS]+");
+            WriteLine($"Usage: {MOD_INJECTOR_EXE_FILE_NAME} [OPTIONS]+");
             WriteLine("Inject the PhoenixPoint game assembly with an entry point for mod enablement.");
             WriteLine("If no options are specified, the program assumes you want to /install.");
             WriteLine();
@@ -463,9 +465,8 @@ namespace ModnixPointInjector
         private static void SayOptionException(OptionException e)
         {
             SayHeader();
-            Write("PhoenixPointModLoaderInjector.exe: ");
-            WriteLine(e.Message);
-            WriteLine("Try `PhoenixPointModLoaderInjector.exe --help' for more information.");
+            Write( $"{MOD_INJECTOR_EXE_FILE_NAME}: {e.Message}" );
+            WriteLine( $"Try '{MOD_INJECTOR_EXE_FILE_NAME} --help' for more information.");
         }
 
         private static void SayManagedDirMissingError(string givenManagedDir)
@@ -477,20 +478,20 @@ namespace ModnixPointInjector
         private static void SayGameAssemblyMissingError(string givenManagedDir)
         {
             SayHeader();
-            WriteLine($"ERROR: We could not find the BTG assembly {GAME_DLL_FILE_NAME} in directory '{givenManagedDir}'.\n" +
+            WriteLine($"ERROR: We could not find the game assembly {GAME_DLL_FILE_NAME} in directory '{givenManagedDir}'.\n" +
                 "Are you sure that is the correct directory?");
         }
 
         private static void SayModLoaderAssemblyMissingError(string expectedModLoaderAssemblyPath)
         {
             SayHeader();
-            WriteLine($"ERROR: We could not find the BTG assembly {MOD_LOADER_DLL_FILE_NAME} at '{expectedModLoaderAssemblyPath}'.\n" +
+            WriteLine($"ERROR: We could not find the loader assembly {MOD_LOADER_DLL_FILE_NAME} at '{expectedModLoaderAssemblyPath}'.\n" +
                 $"Is {MOD_LOADER_DLL_FILE_NAME} in the correct place? It should be in the same directory as this injector executable.");
         }
         
         private static void SayHeader()
         {
-            WriteLine("PhoenixPointModLoader Injector");
+            WriteLine($"{MOD_LOADER_NAME} Injector");
             WriteLine("----------------------------");
         }
 
@@ -512,7 +513,7 @@ namespace ModnixPointInjector
         {
             WriteLine(isCurrentInjection
                 ? $"ERROR: {GAME_DLL_FILE_NAME} already injected at {INJECT_TYPE}.{INJECT_METHOD}."
-                : $"ERROR: {GAME_DLL_FILE_NAME} already injected with an older PhoenixPointModLoader Injector.  Please revert the file and re-run injector!");
+                : $"ERROR: {GAME_DLL_FILE_NAME} already injected with an older injector.  Please revert the file and re-run injector!");
         }
 
         private static void SayAlreadyRestored()
