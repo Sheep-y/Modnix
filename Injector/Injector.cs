@@ -35,7 +35,6 @@ namespace ModnixPoint {
       private const string GAME_VERSION_TYPE  = "VersionInfo";
       private const string GAME_VERSION_CONST = "CURRENT_VERSION_NUMBER";
 
-
       private static readonly ReceivedOptions OptionsIn = new ReceivedOptions();
 
       private static readonly OptionSet Options = new OptionSet {
@@ -460,5 +459,20 @@ namespace ModnixPoint {
       public string BackupFileName { get; }
 
       private static string FormulateMessage ( string backupFileName ) => $"The backup file \"{backupFileName}\" could not be found.";
+   }
+
+   // Values passed by the user into the program via command line.
+   internal class ReceivedOptions {
+      public bool RequireKeyPress = true;
+      public bool Detecting = false;
+      public string RequiredGameVersion = string.Empty;
+      public string RequiredGameVersionMismatchMessage = string.Empty;
+      public string ManagedDir = string.Empty;
+      public bool GameVersion = false;
+      public bool Helping = false;
+      public bool Installing = true;
+      public bool Restoring = false;
+      public bool Updating = false;
+      public bool Versioning = false;
    }
 }
