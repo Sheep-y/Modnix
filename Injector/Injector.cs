@@ -78,37 +78,8 @@ namespace Sheepy.Modnix {
 
       private static int Main ( string[] args ) {
          try {
-            if ( ParseOptionsTestAbort( args, out int returnCode ) ) return returnCode;
-
-            if ( ! string.IsNullOrEmpty( OptionsIn.ManagedDir ) ) {
-               if ( ! Directory.Exists( OptionsIn.ManagedDir ) )
-                  return SayManagedDirMissingError( OptionsIn.ManagedDir );
-               State.managedDirectory = Path.GetFullPath( OptionsIn.ManagedDir );
-            } else
-               State.managedDirectory = Directory.GetCurrentDirectory();
-
-            State.gameDllPath       = Path.Combine( State.managedDirectory, GAME_DLL_FILE_NAME );
-            State.gameDllBackupPath = Path.Combine( State.managedDirectory, GAME_DLL_FILE_NAME + BACKUP_FILE_EXT );
-            State.modLoaderDllPath  = Path.Combine( State.managedDirectory, MOD_LOADER_DLL_FILE_NAME );
-
-            if ( ! File.Exists( State.gameDllPath ) )
-               return SayGameAssemblyMissingError( OptionsIn.ManagedDir );
-
-            if ( ! File.Exists( State.modLoaderDllPath ) )
-               return SayModLoaderAssemblyMissingError( State.modLoaderDllPath );
-
-            State.gameVersion = LoadVersion( State.gameDllPath );
-            if ( OptionsIn.GameVersion )
-               return SayGameVersion( State.gameVersion );
-
-            if ( ! string.IsNullOrEmpty( OptionsIn.RequiredGameVersion ) && OptionsIn.RequiredGameVersion != State.gameVersion ) {
-               SayRequiredGameVersionMismatchMessage( State.gameVersion, OptionsIn.RequiredGameVersion );
-               return PromptForKey( OptionsIn.RequireKeyPress, RC_REQUIRED_GAME_VERSION_MISMATCH );
-            }
-
-            State.gameDllInjected = CheckInjection( State.gameDllPath );
-            if ( OptionsIn.Detecting )
-               return SayInjectedStatus( State.gameDllInjected );
+            ParseOptions( args );
+            LoadGameAssembly();
 
             SayHeader();
 
@@ -141,27 +112,52 @@ namespace Sheepy.Modnix {
          return RC_UNHANDLED_STATE;
       }
 
-      private static bool ParseOptionsTestAbort ( string[] args, out int returnCode ) {
-         returnCode = RC_UNHANDLED_STATE;
+      private static void Exit ( int exitCode ) => Environment.Exit( exitCode );
 
+      private static void ParseOptions ( string[] args ) {
          try {
             Options.Parse( args );
          } catch ( OptionException e ) {
-            returnCode = SayOptionException( e );
-            return true;
+            Exit( SayOptionException( e ) );
          }
 
-         if ( OptionsIn.Helping ) {
-            returnCode = SayHelp( Options );
-            return true;
+         if ( OptionsIn.Helping )
+            Exit( SayHelp( Options ) );
+
+         if ( OptionsIn.Versioning )
+            Exit( SayVersion() );
+      }
+
+      private static void LoadGameAssembly () {
+         if ( ! string.IsNullOrEmpty( OptionsIn.ManagedDir ) ) {
+            if ( ! Directory.Exists( OptionsIn.ManagedDir ) )
+               Exit( SayManagedDirMissingError( OptionsIn.ManagedDir ) );
+            State.managedDirectory = Path.GetFullPath( OptionsIn.ManagedDir );
+         } else
+            State.managedDirectory = Directory.GetCurrentDirectory();
+
+         State.gameDllPath       = Path.Combine( State.managedDirectory, GAME_DLL_FILE_NAME );
+         State.gameDllBackupPath = Path.Combine( State.managedDirectory, GAME_DLL_FILE_NAME + BACKUP_FILE_EXT );
+         State.modLoaderDllPath  = Path.Combine( State.managedDirectory, MOD_LOADER_DLL_FILE_NAME );
+
+         if ( ! File.Exists( State.gameDllPath ) )
+            Exit( SayGameAssemblyMissingError( OptionsIn.ManagedDir ) );
+
+         if ( ! File.Exists( State.modLoaderDllPath ) )
+            Exit( SayModLoaderAssemblyMissingError( State.modLoaderDllPath ) );
+
+         State.gameVersion = LoadVersion( State.gameDllPath );
+         if ( OptionsIn.GameVersion )
+            Exit( SayGameVersion( State.gameVersion ) );
+
+         if ( ! string.IsNullOrEmpty( OptionsIn.RequiredGameVersion ) && OptionsIn.RequiredGameVersion != State.gameVersion ) {
+            SayRequiredGameVersionMismatchMessage( State.gameVersion, OptionsIn.RequiredGameVersion );
+            Exit( PromptForKey( OptionsIn.RequireKeyPress, RC_REQUIRED_GAME_VERSION_MISMATCH ) );
          }
 
-         if ( OptionsIn.Versioning ) {
-            returnCode = SayVersion();
-            return true;
-         }
-
-         return false;
+         State.gameDllInjected = CheckInjection( State.gameDllPath );
+         if ( OptionsIn.Detecting )
+            Exit( SayInjectedStatus( State.gameDllInjected ) );
       }
 
       private static int SayInjectedStatus ( InjectionState injected ) {
