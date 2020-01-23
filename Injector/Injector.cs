@@ -8,7 +8,7 @@ using System.Linq;
 using System.Reflection;
 using static System.Console;
 
-namespace ModnixPoint {
+namespace Modnix {
    internal static class Injector {
       // return codes
       private const int RC_NORMAL = 0;
@@ -32,8 +32,8 @@ namespace ModnixPoint {
       private const string INJECT_METHOD = "Init";
       private const string INJECT_CALL   = "MenuCrt";
 
-      private const string GAME_VERSION_TYPE  = "VersionInfo";
-      private const string GAME_VERSION_CONST = "CURRENT_VERSION_NUMBER";
+      private const string GAME_VERSION_TYPE   = "Base.Build.RuntimeBuildInfo";
+      private const string GAME_VERSION_METHOD = "get_Version";
 
       private static readonly AppState State = new AppState();
       private static readonly ReceivedOptions OptionsIn = new ReceivedOptions();
@@ -61,10 +61,6 @@ namespace ModnixPoint {
          {
             "y|nokeypress", "Anwser prompts affirmatively",
             v => OptionsIn.RequireKeyPress = v == null
-         },
-         {
-            "reqmismatchmsg=", "Print msg if required version check fails",
-            v => OptionsIn.RequiredGameVersionMismatchMessage = v
          },
          {
             "requiredversion=", "Don't continue with /install, /restore, etc. if game version does not match given argument",
@@ -101,24 +97,23 @@ namespace ModnixPoint {
             if ( ! File.Exists( State.modLoaderDllPath ) )
                return SayModLoaderAssemblyMissingError( State.modLoaderDllPath );
 
-            bool injected = IsInjected( State.gameDllPath, State );
+            State.gameDllInjected = IsInjected( State.gameDllPath, State );
 
             if ( OptionsIn.GameVersion )
                return SayGameVersion( State.gameVersion );
 
             if ( ! string.IsNullOrEmpty( OptionsIn.RequiredGameVersion ) && OptionsIn.RequiredGameVersion != State.gameVersion ) {
-               SayRequiredGameVersion( State.gameVersion, OptionsIn.RequiredGameVersion );
-               SayRequiredGameVersionMismatchMessage( OptionsIn.RequiredGameVersionMismatchMessage );
+               SayRequiredGameVersionMismatchMessage( State.gameVersion, OptionsIn.RequiredGameVersion );
                return PromptForKey( OptionsIn.RequireKeyPress, RC_REQUIRED_GAME_VERSION_MISMATCH );
             }
 
             if ( OptionsIn.Detecting )
-               return SayInjectedStatus( injected );
+               return SayInjectedStatus( State.gameDllInjected );
 
             SayHeader();
 
             if ( OptionsIn.Restoring ) {
-               if ( injected )
+               if ( State.gameDllInjected )
                   Restore( State.gameDllPath, State.gameDllBackupPath );
                else
                   SayAlreadyRestored();
@@ -126,7 +121,7 @@ namespace ModnixPoint {
             }
 
             if ( OptionsIn.Installing ) {
-               if ( ! injected ) {
+               if ( ! State.gameDllInjected ) {
                   Backup( State.gameDllPath, State.gameDllBackupPath );
                   Inject( State.gameDllPath, State.modLoaderDllPath );
                } else {
@@ -217,7 +212,7 @@ namespace ModnixPoint {
 
          // Since the return type is an iterator -- need to go searching for its MoveNext method which contains the actual code you'll want to inject
          if ( hookedMethod.ReturnType.Name.Contains( "IEnumerator" ) ) {
-            var nestedIterator = game.GetType(HOOK_TYPE).NestedTypes.First( x => x.Name.Contains( HOOK_METHOD ) );
+            var nestedIterator = game.GetType( HOOK_TYPE ).NestedTypes.First( x => x.Name.Contains( HOOK_METHOD ) );
             hookedMethod = nestedIterator.Methods.First( x => x.Name.Equals( "MoveNext" ) );
          }
 
@@ -257,22 +252,17 @@ namespace ModnixPoint {
       private static bool IsInjected ( string dllPath ) => IsInjected( dllPath, new AppState() );
 
       private static bool IsInjected ( string dllPath, AppState state ) {
-         state.isCurrentInjection = false;
-         state.gameVersion = "";
          var detectedInject = false;
          using ( var dll = ModuleDefinition.ReadModule( dllPath ) ) {
             foreach ( var type in dll.Types ) {
                // Check standard methods, then in places like IEnumerator generated methods (Nested)
                if ( ! detectedInject )
-                  detectedInject = type.Methods.Any( method => IsHookInstalled( method, out state.isCurrentInjection ) );
+                  detectedInject = type.Methods.Any( method => IsHookInstalled( method, state ) );
                if ( ! detectedInject )
-                  detectedInject = type.NestedTypes.Any( nested => nested.Methods.Any( method => IsHookInstalled( method, out state.isCurrentInjection ) ) );
+                  detectedInject = type.NestedTypes.Any( nested => nested.Methods.Any( method => IsHookInstalled( method, state ) ) );
 
-               if ( type.FullName == GAME_VERSION_TYPE ) {
-                  var fieldInfo = type.Fields.First( x => x.IsLiteral && !x.IsInitOnly && x.Name == GAME_VERSION_CONST );
-                  if ( fieldInfo != null )
-                     state.gameVersion = fieldInfo.Constant.ToString();
-               }
+               if ( type.FullName == GAME_VERSION_TYPE )
+                  state.gameVersion = FindGameVersion( type );
 
                if ( detectedInject && ! string.IsNullOrEmpty( state.gameVersion ) )
                   return true;
@@ -282,14 +272,13 @@ namespace ModnixPoint {
          return detectedInject;
       }
 
-      private static bool IsHookInstalled ( MethodDefinition methodDefinition, out bool isCurrentInjection ) {
-         isCurrentInjection = false;
+      private static bool IsHookInstalled ( MethodDefinition methodDefinition, AppState state ) {
          if ( methodDefinition.Body == null )
             return false;
          foreach ( var instruction in methodDefinition.Body.Instructions ) {
             if ( instruction.OpCode.Equals( OpCodes.Call ) &&
-                instruction.Operand.ToString().Equals( $"System.Void {INJECT_TYPE}::{INJECT_METHOD}()" ) ) {
-               isCurrentInjection =
+               instruction.Operand.ToString().Equals( $"System.Void {INJECT_TYPE}::{INJECT_METHOD}()" ) ) {
+               state.isCurrentInjection =
                    methodDefinition.FullName.Contains( HOOK_TYPE ) &&
                    methodDefinition.FullName.Contains( HOOK_METHOD );
                return true;
@@ -298,6 +287,35 @@ namespace ModnixPoint {
          return false;
       }
 
+      private static string FindGameVersion ( TypeDefinition type ) {
+         var method = type.Methods.FirstOrDefault( e => e.Name == "get_Version" );
+         if ( method == null || ! method.HasBody ) return null; //"ERR version not found";
+
+         try {
+            int[] version = new int[2];
+            int ldcCount = 0;
+            foreach ( var code in method.Body.Instructions ) {
+               string op = code.OpCode.ToString();
+               if ( ! op.StartsWith( "ldc.i4" ) ) continue;
+               if ( ldcCount >= 2 ) return null; //"ERR too many vers";
+
+               int ver = 0;
+               if ( code.Operand is int num ) ver = num;
+               else if ( code.Operand is sbyte num2 ) ver = num2;
+               else if ( code.OpCode.Code.Equals( Code.Ldc_I4_M1 ) ) ver = -1;
+               else ver = int.Parse( op.Substring( 7 ) );
+
+               version[ ldcCount ] = ver;
+               ++ldcCount;
+            }
+            if ( ldcCount < 2 ) return null; //"ERR too few vers";
+            return version[0].ToString() + '.' + version[1];
+         } catch ( Exception e ) {
+            return null; // $"ERR {e}";
+         }
+      }
+
+      #region Console output
       private static int SayOptionException ( OptionException e ) {
          SayHeader();
          Write( $"{MOD_INJECTOR_EXE_FILE_NAME}: {e.Message}" );
@@ -346,14 +364,10 @@ namespace ModnixPoint {
          return RC_NORMAL;
       }
 
-      private static void SayRequiredGameVersion ( string version, string expectedVersion ) {
+      private static void SayRequiredGameVersionMismatchMessage ( string version, string expectedVersion ) {
          WriteLine( $"Expected game v{expectedVersion}" );
          WriteLine( $"Actual game v{version}" );
-      }
-
-      private static void SayRequiredGameVersionMismatchMessage ( string msg ) {
-         if ( !string.IsNullOrEmpty( msg ) )
-            WriteLine( msg );
+         WriteLine( "Game version mismatch" );
       }
 
       private static string GetProductVersion () {
@@ -395,6 +409,7 @@ namespace ModnixPoint {
          }
          return returnCode;
       }
+      #endregion
    }
 
    public class BackupFileError : Exception {
@@ -417,7 +432,6 @@ namespace ModnixPoint {
       public bool RequireKeyPress = true;
       public bool Detecting = false;
       public string RequiredGameVersion = string.Empty;
-      public string RequiredGameVersionMismatchMessage = string.Empty;
       public string ManagedDir = string.Empty;
       public bool GameVersion = false;
       public bool Helping = false;
@@ -432,7 +446,7 @@ namespace ModnixPoint {
       internal string gameDllBackupPath;
       internal string gameVersion;
       internal string modLoaderDllPath;
-      internal bool isCurrentInjection;
-      internal bool injected;
+      internal bool gameDllInjected;    // True if game dll is injected to call our dll
+      internal bool isCurrentInjection; // True if game dll is injected AND the injection is in the same method 
    }
 }

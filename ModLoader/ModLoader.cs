@@ -5,7 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 
-namespace ModnixPoint {
+namespace Modnix {
 
    using static Logger;
    public static class ModLoader {
