@@ -31,8 +31,10 @@ namespace Sheepy.Modnix {
       private const string INJECT_TYPE   = "Sheepy.Modnix.ModLoader";
       private const string INJECT_METHOD = "Init";
       private const string INJECT_CALL   = "MenuCrt";
-      private const string PPML_INJ_TYPE   = "PhoenixPointModLoader.PPModLoader";
-      private const string PPML_INJ_METHOD = "Init";
+
+      private const string PPML_INJECTOR_EXE    = "PhoenixPointModLoaderInjector.exe";
+      private const string PPML_INJECTOR_TYPE   = "PhoenixPointModLoader.PPModLoader";
+      private const string PPML_INJECTOR_METHOD = "Init";
 
       private const string GAME_VERSION_TYPE   = "Base.Build.RuntimeBuildInfo";
       private const string GAME_VERSION_METHOD = "get_Version";
@@ -104,6 +106,7 @@ namespace Sheepy.Modnix {
                } else {
                   SayAlreadyInjected();
                }
+               SayPpmlWarning();
                return PromptForKey( OptionsIn.RequireKeyPress );
             }
 
@@ -145,6 +148,7 @@ namespace Sheepy.Modnix {
          State.gameDllPath       = Path.Combine( State.managedDirectory, GAME_DLL_FILE_NAME );
          State.gameDllBackupPath = Path.Combine( State.managedDirectory, GAME_DLL_FILE_NAME + BACKUP_FILE_EXT );
          State.modLoaderDllPath  = Path.Combine( State.managedDirectory, MOD_LOADER_DLL_FILE_NAME );
+         State.ppmlInjectorPath  = Path.Combine( State.managedDirectory, PPML_INJECTOR_EXE );
 
          if ( ! File.Exists( State.gameDllPath ) )
             Exit( SayGameAssemblyMissingError( OptionsIn.ManagedDir ) );
@@ -287,7 +291,7 @@ namespace Sheepy.Modnix {
             if ( op.Equals( $"System.Void {INJECT_TYPE}::{INJECT_METHOD}()" ) )
                // if ( methodDefinition.FullName.Contains( HOOK_TYPE ) && methodDefinition.FullName.Contains( HOOK_METHOD ) )
                return InjectionState.MODNIX;
-            else if ( op.Equals( $"System.Void {PPML_INJ_TYPE}::{PPML_INJ_METHOD}()" ) )
+            else if ( op.Equals( $"System.Void {PPML_INJECTOR_TYPE}::{PPML_INJECTOR_METHOD}()" ) )
                return InjectionState.PPML;
          }
          return InjectionState.NONE;
@@ -361,7 +365,7 @@ namespace Sheepy.Modnix {
       private static int SayModLoaderAssemblyMissingError ( string expectedModLoaderAssemblyPath ) {
          SayHeader();
          WriteLine( $"ERROR: We could not find the loader assembly {MOD_LOADER_DLL_FILE_NAME} at '{expectedModLoaderAssemblyPath}'.\n" +
-             $"Is {MOD_LOADER_DLL_FILE_NAME} in the correct place? It should be in the same directory as this injector executable." );
+             $"Is {MOD_LOADER_DLL_FILE_NAME} in the correct place?  It should be in the same directory as this injector executable." );
          return RC_MISSING_MOD_LOADER_ASSEMBLY;
       }
 
@@ -389,24 +393,29 @@ namespace Sheepy.Modnix {
 
       private static int SayHowToRecoverMissingBackup ( string backupFileName ) {
          WriteLine( "----------------------------" );
-         WriteLine( $"The backup game assembly file must be in the directory with the injector for /restore to work. The backup file should be named \"{backupFileName}\"." );
+         WriteLine( $"The backup game assembly file must be in the directory with the injector for /restore to work.  The backup file should be named \"{backupFileName}\"." );
          WriteLine( "You may need to reinstall or use Steam/GOG's file verification function if you have no other backup." );
          return RC_MISSING_BACKUP_FILE;
       }
 
       private static void SayHowToRecoverInjectedBackup ( string backupFileName ) {
          WriteLine( "----------------------------" );
-         WriteLine( $"The backup game assembly file named \"{backupFileName}\" was already injected. Something has gone wrong." );
+         WriteLine( $"The backup game assembly file named \"{backupFileName}\" was already injected.  Something has gone wrong." );
          WriteLine( "You may need to reinstall or use Steam/GOG's file verification function if you have no other backup." );
       }
 
       private static void SayPpmlMigrate () => WriteLine( $"{GAME_DLL_FILE_NAME} already injected by PPML.  Reverting the file and migrate to Modnix." );
 
-      private static void SayAlreadyInjected () => WriteLine( $"{GAME_DLL_FILE_NAME} already injected at {INJECT_TYPE}.{INJECT_METHOD}." );
+      private static void SayAlreadyInjected () => WriteLine( $"{GAME_DLL_FILE_NAME} already injected with {INJECT_TYPE}.{INJECT_METHOD}." );
 
-      private static void SayAlreadyRestored () => WriteLine( $"{GAME_DLL_FILE_NAME} already restored." );
+      private static void SayAlreadyRestored () => WriteLine( $"{GAME_DLL_FILE_NAME} already clean.  No injection to revert." );
 
       private static void SayException ( Exception e ) => WriteLine( $"ERROR: An exception occured: {e}" );
+
+      private static void SayPpmlWarning () {
+         if ( File.Exists( State.ppmlInjectorPath ) )
+            WriteLine( $"!!! {PPML_INJECTOR_EXE} is found.  Deletion is advised as PPML is incompaible with Modnix. !!!" );
+      }
 
       private static int PromptForKey ( bool requireKeyPress, int returnCode = RC_NORMAL ) {
          if ( requireKeyPress ) {
@@ -452,6 +461,7 @@ namespace Sheepy.Modnix {
       internal string gameDllBackupPath;
       internal string gameVersion;
       internal string modLoaderDllPath;
+      internal string ppmlInjectorPath;
       internal InjectionState gameDllInjected;
    }
 
