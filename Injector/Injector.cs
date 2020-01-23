@@ -31,6 +31,8 @@ namespace Sheepy.Modnix {
       private const string INJECT_TYPE   = "Sheepy.Modnix.ModLoader";
       private const string INJECT_METHOD = "Init";
       private const string INJECT_CALL   = "MenuCrt";
+      private const string PPML_INJ_TYPE   = "PhoenixPointModLoader.PPModLoader";
+      private const string PPML_INJ_METHOD = "Init";
 
       private const string GAME_VERSION_TYPE   = "Base.Build.RuntimeBuildInfo";
       private const string GAME_VERSION_METHOD = "get_Version";
@@ -276,11 +278,13 @@ namespace Sheepy.Modnix {
          if ( methodDefinition.Body == null )
             return InjectionState.NONE;
          foreach ( var instruction in methodDefinition.Body.Instructions ) {
-            if ( instruction.OpCode.Equals( OpCodes.Call ) &&
-               instruction.Operand.ToString().Equals( $"System.Void {INJECT_TYPE}::{INJECT_METHOD}()" ) ) {
-               if ( methodDefinition.FullName.Contains( HOOK_TYPE ) && methodDefinition.FullName.Contains( HOOK_METHOD ) )
-                  return InjectionState.MODNIX;
-            }
+            if ( ! instruction.OpCode.Equals( OpCodes.Call ) ) continue;
+            string op = instruction.Operand.ToString();
+            if ( op.Equals( $"System.Void {INJECT_TYPE}::{INJECT_METHOD}()" ) )
+               // if ( methodDefinition.FullName.Contains( HOOK_TYPE ) && methodDefinition.FullName.Contains( HOOK_METHOD ) )
+               return InjectionState.MODNIX;
+            else if ( op.Equals( $"System.Void {PPML_INJ_TYPE}::{PPML_INJ_METHOD}()" ) )
+               return InjectionState.PPML;
          }
          return InjectionState.NONE;
       }
