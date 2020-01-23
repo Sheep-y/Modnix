@@ -7,8 +7,8 @@
     <ProjectGuid>{E72A9BEB-E4D5-46BA-BEC2-732A7F40B181}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ModnixPoint</RootNamespace>
-    <AssemblyName>ModnixPoint</AssemblyName>
+    <RootNamespace>Sheepy.Modnix</RootNamespace>
+    <AssemblyName>ModnixLoader</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>

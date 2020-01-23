@@ -8,7 +8,7 @@ using System.Linq;
 using System.Reflection;
 using static System.Console;
 
-namespace Modnix {
+namespace Sheepy.Modnix {
    internal static class Injector {
       // return codes
       private const int RC_NORMAL = 0;
@@ -20,15 +20,15 @@ namespace Modnix {
       private const int RC_MISSING_MOD_LOADER_ASSEMBLY = 6;
       private const int RC_REQUIRED_GAME_VERSION_MISMATCH = 7;
 
-      private const string MOD_LOADER_NAME = "Modnix Point";
-      private const string MOD_INJECTOR_EXE_FILE_NAME = "ModnixPointInjector.exe";
-      private const string MOD_LOADER_DLL_FILE_NAME = "ModnixPoint.dll";
+      private const string MOD_LOADER_NAME = "Modnix";
+      private const string MOD_INJECTOR_EXE_FILE_NAME = "ModnixInjector.exe";
+      private const string MOD_LOADER_DLL_FILE_NAME = "ModnixLoader.dll";
       private const string GAME_DLL_FILE_NAME = "Assembly-CSharp.dll";
       private const string BACKUP_FILE_EXT = ".orig";
 
       private const string HOOK_TYPE     = "PhoenixPoint.Common.Game.PhoenixGame";
       private const string HOOK_METHOD   = "BootCrt";
-      private const string INJECT_TYPE   = "ModnixPoint.ModLoader";
+      private const string INJECT_TYPE   = "Sheepy.Modnix.ModLoader";
       private const string INJECT_METHOD = "Init";
       private const string INJECT_CALL   = "MenuCrt";
 
@@ -189,7 +189,7 @@ namespace Modnix {
          WriteLine( $"Injecting {Path.GetFileName( hookFilePath )} with {INJECT_TYPE}.{INJECT_METHOD} at {HOOK_TYPE}.{HOOK_METHOD}" );
          using ( var game = ModuleDefinition.ReadModule( hookFilePath, new ReaderParameters { ReadWrite = true } ) )
          using ( var injecting = ModuleDefinition.ReadModule( injectFilePath ) ) {
-            var success = InjectModHookPoint(game, injecting);
+            var success = InjectModHookPoint( game, injecting );
             if ( success )
                success &= WriteNewAssembly( hookFilePath, game );
             if ( !success )

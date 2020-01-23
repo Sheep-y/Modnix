@@ -6,8 +6,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{3CEBFD62-57BB-47D9-8FEF-7807B56A09D3}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>ModnixPointInjector</RootNamespace>
-    <AssemblyName>ModnixPointInjector</AssemblyName>
+    <RootNamespace>Sheepy.Modnix</RootNamespace>
+    <AssemblyName>ModnixInjector</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>

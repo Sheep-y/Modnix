@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace Modnix
+namespace Sheepy.Modnix
 {
     internal static class Logger
     {

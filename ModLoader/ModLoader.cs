@@ -5,14 +5,14 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 
-namespace Modnix {
+namespace Sheepy.Modnix {
 
    using static Logger;
    public static class ModLoader {
       private const BindingFlags PUBLIC_STATIC_BINDING_FLAGS = BindingFlags.Public | BindingFlags.Static;
       private static readonly List<string> IGNORE_FILE_NAMES = new List<string>() {
          "0Harmony.dll",
-         "ModnixPoint.dll"
+         "ModnixLoader.dll"
       };
 
       public static string ModDirectory { get; private set; }
@@ -100,7 +100,7 @@ namespace Modnix {
 
          // this should be (wherever Phoenix Point is Installed)\PhoenixPoint\PhoenixPointWin64_Data\Managed
          ModDirectory = Path.GetFullPath( Path.Combine( manifestDirectory, Path.Combine( @"..\..\Mods" ) ) );
-         LogPath = Path.Combine( ModDirectory, "ModnixPoint.log" );
+         LogPath = Path.Combine( ModDirectory, "ModnixLoader.log" );
 
          if ( !Directory.Exists( ModDirectory ) )
             Directory.CreateDirectory( ModDirectory );
