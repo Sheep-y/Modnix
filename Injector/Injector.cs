@@ -39,7 +39,7 @@ namespace Sheepy.Modnix {
       private static readonly ReceivedOptions OptionsIn = new ReceivedOptions();
       private static readonly OptionSet Options = new OptionSet {
          {
-            "d|detect", "Detect if the game assembly is already injected",
+            "d|detect", "Detect game assembly's injection state: none, modnix, ppml",
             v => OptionsIn.Detecting = v != null
          },
          {
@@ -55,7 +55,7 @@ namespace Sheepy.Modnix {
             v => OptionsIn.Installing = v != null
          },
          {
-            "manageddir=", "specify managed dir where game's Assembly-CSharp.dll is located",
+            "manageddir=", "Specify managed dir where game's Assembly-CSharp.dll is located",
             v => OptionsIn.ManagedDir = v
          },
          {
@@ -97,8 +97,7 @@ namespace Sheepy.Modnix {
             if ( ! File.Exists( State.modLoaderDllPath ) )
                return SayModLoaderAssemblyMissingError( State.modLoaderDllPath );
 
-            State.gameDllInjected = CheckInjection( State.gameDllPath );
-
+            State.gameVersion = LoadVersion( State.gameDllPath );
             if ( OptionsIn.GameVersion )
                return SayGameVersion( State.gameVersion );
 
@@ -107,6 +106,7 @@ namespace Sheepy.Modnix {
                return PromptForKey( OptionsIn.RequireKeyPress, RC_REQUIRED_GAME_VERSION_MISMATCH );
             }
 
+            State.gameDllInjected = CheckInjection( State.gameDllPath );
             if ( OptionsIn.Detecting )
                return SayInjectedStatus( State.gameDllInjected );
 
@@ -249,19 +249,24 @@ namespace Sheepy.Modnix {
          return false;
       }
 
-      private static InjectionState CheckInjection ( string dllPath ) {
-         InjectionState result = InjectionState.NONE;
+      private static string LoadVersion ( string dllPath ) {
          using ( var dll = ModuleDefinition.ReadModule( dllPath ) ) {
             foreach ( var type in dll.Types ) {
-               if ( result == InjectionState.NONE )
-                  result = CheckInjection( type );
                if ( type.FullName == GAME_VERSION_TYPE )
-                  State.gameVersion = FindGameVersion( type );
-               if ( result != InjectionState.NONE && ! string.IsNullOrEmpty( State.gameVersion ) )
-                  return result;
+                  return FindGameVersion( type );
             }
          }
-         return result;
+         return null;
+      }
+
+      private static InjectionState CheckInjection ( string dllPath ) {
+         using ( var dll = ModuleDefinition.ReadModule( dllPath ) ) {
+            foreach ( var type in dll.Types ) {
+               var result = CheckInjection( type );
+               if ( result != InjectionState.NONE ) return result;
+            }
+         }
+         return InjectionState.NONE;
       }
 
       private static InjectionState CheckInjection ( TypeDefinition typeDefinition ) {
