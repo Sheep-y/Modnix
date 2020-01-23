@@ -97,8 +97,12 @@ namespace Sheepy.Modnix {
                if ( State.gameDllInjected == InjectionState.NONE ) {
                   Backup( State.gameDllPath, State.gameDllBackupPath );
                   Inject( State.gameDllPath, State.modLoaderDllPath );
+               } else if ( State.gameDllInjected == InjectionState.PPML ) {
+                  SayPpmlMigrate();
+                  Restore( State.gameDllPath, State.gameDllBackupPath );
+                  Inject( State.gameDllPath, State.modLoaderDllPath );
                } else {
-                  SayAlreadyInjected( State.gameDllInjected );
+                  SayAlreadyInjected();
                }
                return PromptForKey( OptionsIn.RequireKeyPress );
             }
@@ -379,7 +383,7 @@ namespace Sheepy.Modnix {
       }
 
       private static void SayHeader () {
-         WriteLine( $"{MOD_LOADER_NAME} Injector" );
+         WriteLine( $"{MOD_LOADER_NAME} Injector {GetProductVersion()}" );
          WriteLine( "----------------------------" );
       }
 
@@ -396,11 +400,9 @@ namespace Sheepy.Modnix {
          WriteLine( "You may need to reinstall or use Steam/GOG's file verification function if you have no other backup." );
       }
 
-      private static void SayAlreadyInjected ( InjectionState type ) {
-         WriteLine( type == InjectionState.MODNIX
-              ? $"ERROR: {GAME_DLL_FILE_NAME} already injected at {INJECT_TYPE}.{INJECT_METHOD}."
-              : $"ERROR: {GAME_DLL_FILE_NAME} already injected by PPML.  Please revert the file and re-run injector!" );
-      }
+      private static void SayPpmlMigrate () => WriteLine( $"{GAME_DLL_FILE_NAME} already injected by PPML.  Reverting the file and migrate to Modnix." );
+
+      private static void SayAlreadyInjected () => WriteLine( $"{GAME_DLL_FILE_NAME} already injected at {INJECT_TYPE}.{INJECT_METHOD}." );
 
       private static void SayAlreadyRestored () => WriteLine( $"{GAME_DLL_FILE_NAME} already restored." );
 
