@@ -97,7 +97,7 @@ namespace Sheepy.Modnix {
             if ( ! File.Exists( State.modLoaderDllPath ) )
                return SayModLoaderAssemblyMissingError( State.modLoaderDllPath );
 
-            State.gameDllInjected = IsInjected( State.gameDllPath, State );
+            State.gameDllInjected = CheckInjection( State.gameDllPath );
 
             if ( OptionsIn.GameVersion )
                return SayGameVersion( State.gameVersion );
@@ -113,7 +113,7 @@ namespace Sheepy.Modnix {
             SayHeader();
 
             if ( OptionsIn.Restoring ) {
-               if ( State.gameDllInjected )
+               if ( State.gameDllInjected > InjectionState.NONE )
                   Restore( State.gameDllPath, State.gameDllBackupPath );
                else
                   SayAlreadyRestored();
@@ -121,11 +121,11 @@ namespace Sheepy.Modnix {
             }
 
             if ( OptionsIn.Installing ) {
-               if ( ! State.gameDllInjected ) {
+               if ( State.gameDllInjected == InjectionState.NONE ) {
                   Backup( State.gameDllPath, State.gameDllBackupPath );
                   Inject( State.gameDllPath, State.modLoaderDllPath );
                } else {
-                  SayAlreadyInjected( State.isCurrentInjection );
+                  SayAlreadyInjected( State.gameDllInjected );
                }
                return PromptForKey( OptionsIn.RequireKeyPress );
             }
@@ -164,7 +164,7 @@ namespace Sheepy.Modnix {
          return false;
       }
 
-      private static int SayInjectedStatus ( bool injected ) {
+      private static int SayInjectedStatus ( InjectionState injected ) {
          WriteLine( injected.ToString().ToLower() );
          return RC_NORMAL;
       }
@@ -178,7 +178,7 @@ namespace Sheepy.Modnix {
          if ( ! File.Exists( backupFilePath ) )
             throw new BackupFileNotFound();
 
-         if ( IsInjected( backupFilePath ) )
+         if ( CheckInjection( backupFilePath ) > InjectionState.NONE )
             throw new BackupFileInjected();
 
          File.Copy( backupFilePath, filePath, true );
@@ -249,42 +249,35 @@ namespace Sheepy.Modnix {
          return false;
       }
 
-      private static bool IsInjected ( string dllPath ) => IsInjected( dllPath, new AppState() );
-
-      private static bool IsInjected ( string dllPath, AppState state ) {
-         var detectedInject = false;
+      private static InjectionState CheckInjection ( string dllPath ) {
+         InjectionState result = InjectionState.NONE;
          using ( var dll = ModuleDefinition.ReadModule( dllPath ) ) {
             foreach ( var type in dll.Types ) {
                // Check standard methods, then in places like IEnumerator generated methods (Nested)
-               if ( ! detectedInject )
-                  detectedInject = type.Methods.Any( method => IsHookInstalled( method, state ) );
-               if ( ! detectedInject )
-                  detectedInject = type.NestedTypes.Any( nested => nested.Methods.Any( method => IsHookInstalled( method, state ) ) );
+               if ( result == InjectionState.NONE )
+                  result = type.Methods.Select( CheckInjection ).FirstOrDefault( e => e > InjectionState.NONE );
 
                if ( type.FullName == GAME_VERSION_TYPE )
-                  state.gameVersion = FindGameVersion( type );
+                  State.gameVersion = FindGameVersion( type );
 
-               if ( detectedInject && ! string.IsNullOrEmpty( state.gameVersion ) )
-                  return true;
+               if ( result > InjectionState.NONE && ! string.IsNullOrEmpty( State.gameVersion ) )
+                  return result;
             }
          }
-
-         return detectedInject;
+         return result;
       }
 
-      private static bool IsHookInstalled ( MethodDefinition methodDefinition, AppState state ) {
+      private static InjectionState CheckInjection ( MethodDefinition methodDefinition ) {
          if ( methodDefinition.Body == null )
-            return false;
+            return InjectionState.NONE;
          foreach ( var instruction in methodDefinition.Body.Instructions ) {
             if ( instruction.OpCode.Equals( OpCodes.Call ) &&
                instruction.Operand.ToString().Equals( $"System.Void {INJECT_TYPE}::{INJECT_METHOD}()" ) ) {
-               state.isCurrentInjection =
-                   methodDefinition.FullName.Contains( HOOK_TYPE ) &&
-                   methodDefinition.FullName.Contains( HOOK_METHOD );
-               return true;
+               if ( methodDefinition.FullName.Contains( HOOK_TYPE ) && methodDefinition.FullName.Contains( HOOK_METHOD ) )
+                  return InjectionState.MODNIX;
             }
          }
-         return false;
+         return InjectionState.NONE;
       }
 
       private static string FindGameVersion ( TypeDefinition type ) {
@@ -394,9 +387,11 @@ namespace Sheepy.Modnix {
          WriteLine( "You may need to reinstall or use Steam/GOG's file verification function if you have no other backup." );
       }
 
-      private static void SayAlreadyInjected ( bool isCurrentInjection ) => WriteLine( isCurrentInjection
+      private static void SayAlreadyInjected ( InjectionState type ) {
+         WriteLine( type == InjectionState.MODNIX
               ? $"ERROR: {GAME_DLL_FILE_NAME} already injected at {INJECT_TYPE}.{INJECT_METHOD}."
-              : $"ERROR: {GAME_DLL_FILE_NAME} already injected with an older injector.  Please revert the file and re-run injector!" );
+              : $"ERROR: {GAME_DLL_FILE_NAME} already injected by PPML.  Please revert the file and re-run injector!" );
+      }
 
       private static void SayAlreadyRestored () => WriteLine( $"{GAME_DLL_FILE_NAME} already restored." );
 
@@ -446,7 +441,8 @@ namespace Sheepy.Modnix {
       internal string gameDllBackupPath;
       internal string gameVersion;
       internal string modLoaderDllPath;
-      internal bool gameDllInjected;    // True if game dll is injected to call our dll
-      internal bool isCurrentInjection; // True if game dll is injected AND the injection is in the same method 
+      internal InjectionState gameDllInjected;
    }
+
+   internal enum InjectionState { NONE = 0, MODNIX = 1, PPML = 2 }
 }
