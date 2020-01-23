@@ -253,18 +253,22 @@ namespace Sheepy.Modnix {
          InjectionState result = InjectionState.NONE;
          using ( var dll = ModuleDefinition.ReadModule( dllPath ) ) {
             foreach ( var type in dll.Types ) {
-               // Check standard methods, then in places like IEnumerator generated methods (Nested)
                if ( result == InjectionState.NONE )
-                  result = type.Methods.Select( CheckInjection ).FirstOrDefault( e => e > InjectionState.NONE );
-
+                  result = CheckInjection( type );
                if ( type.FullName == GAME_VERSION_TYPE )
                   State.gameVersion = FindGameVersion( type );
-
-               if ( result > InjectionState.NONE && ! string.IsNullOrEmpty( State.gameVersion ) )
+               if ( result != InjectionState.NONE && ! string.IsNullOrEmpty( State.gameVersion ) )
                   return result;
             }
          }
          return result;
+      }
+
+      private static InjectionState CheckInjection ( TypeDefinition typeDefinition ) {
+         // Check standard methods, then in places like IEnumerator generated methods (Nested)
+         var result = typeDefinition.Methods.Select( CheckInjection ).FirstOrDefault( e => e != InjectionState.NONE );
+         if ( result != InjectionState.NONE ) return result;
+         return typeDefinition.NestedTypes.Select( CheckInjection ).FirstOrDefault( e => e != InjectionState.NONE );
       }
 
       private static InjectionState CheckInjection ( MethodDefinition methodDefinition ) {
