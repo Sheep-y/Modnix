@@ -414,7 +414,7 @@ namespace Sheepy.Modnix {
 
       private static void SayPpmlWarning () {
          if ( File.Exists( State.ppmlInjectorPath ) )
-            WriteLine( $"!!! {PPML_INJECTOR_EXE} is found.  Deletion is advised as PPML is incompaible with Modnix. !!!" );
+            WriteLine( $"!!! {PPML_INJECTOR_EXE} found.  Deletion is advised as PPML is incompaible with Modnix. !!!" );
       }
 
       private static int PromptForKey ( bool requireKeyPress, int returnCode = RC_NORMAL ) {

@@ -17,6 +17,41 @@ namespace Sheepy.Modnix {
 
       public static string ModDirectory { get; private set; }
 
+      public static void Init () {
+         var LoaderVersion = Assembly.GetExecutingAssembly().GetName().Version;
+         var manifestDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
+                ?? throw new InvalidOperationException("Manifest path is invalid.");
+
+         // this should be (wherever Phoenix Point is Installed)\PhoenixPoint\PhoenixPointWin64_Data\Managed
+         ModDirectory = Path.GetFullPath( Path.Combine( manifestDirectory, Path.Combine( @"..\..\Mods" ) ) );
+         LogPath = Path.Combine( ModDirectory, "ModnixLoader.log" );
+
+         if ( !Directory.Exists( ModDirectory ) )
+            Directory.CreateDirectory( ModDirectory );
+
+         // create log file, overwriting if it's already there
+         using ( var logWriter = File.CreateText( LogPath ) ) {
+            logWriter.WriteLine( $"{typeof( ModLoader ).FullName} -- v{LoaderVersion} -- {DateTime.Now}" );
+         }
+
+         // ReSharper disable once UnusedVariable
+         var harmony = HarmonyInstance.Create( typeof( ModLoader ).Namespace );
+
+         // get all dll paths
+         var dllPaths = Directory.GetFiles(ModDirectory).Where(x => Path.GetExtension(x).ToLower() == ".dll").ToArray();
+
+         if ( dllPaths.Length == 0 ) {
+            Log( @"No .DLLs loaded. DLLs must be placed in the root of the folder \PhoenixPoint\Mods\." );
+            return;
+         }
+
+         // load the DLLs
+         foreach ( var dllPath in dllPaths ) {
+            if ( !IGNORE_FILE_NAMES.Contains( Path.GetFileName( dllPath ) ) )
+               LoadDLL( dllPath );
+         }
+      }
+
       public static Assembly LoadDLL ( string path, string methodName = "Init", string typeName = null, object[] parameters = null, BindingFlags bFlags = PUBLIC_STATIC_BINDING_FLAGS ) {
          var fileName = Path.GetFileName(path);
 
@@ -90,41 +125,6 @@ namespace Sheepy.Modnix {
          } catch ( Exception e ) {
             LogException( $"{fileName}: While loading a dll, an exception occured", e );
             return null;
-         }
-      }
-
-      public static void Init () {
-         var LoaderVersion = Assembly.GetExecutingAssembly().GetName().Version;
-         var manifestDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
-                ?? throw new InvalidOperationException("Manifest path is invalid.");
-
-         // this should be (wherever Phoenix Point is Installed)\PhoenixPoint\PhoenixPointWin64_Data\Managed
-         ModDirectory = Path.GetFullPath( Path.Combine( manifestDirectory, Path.Combine( @"..\..\Mods" ) ) );
-         LogPath = Path.Combine( ModDirectory, "ModnixLoader.log" );
-
-         if ( !Directory.Exists( ModDirectory ) )
-            Directory.CreateDirectory( ModDirectory );
-
-         // create log file, overwriting if it's already there
-         using ( var logWriter = File.CreateText( LogPath ) ) {
-            logWriter.WriteLine( $"{typeof( ModLoader ).FullName} -- v{LoaderVersion} -- {DateTime.Now}" );
-         }
-
-         // ReSharper disable once UnusedVariable
-         var harmony = HarmonyInstance.Create( typeof( ModLoader ).Namespace );
-
-         // get all dll paths
-         var dllPaths = Directory.GetFiles(ModDirectory).Where(x => Path.GetExtension(x).ToLower() == ".dll").ToArray();
-
-         if ( dllPaths.Length == 0 ) {
-            Log( @"No .DLLs loaded. DLLs must be placed in the root of the folder \PhoenixPoint\Mods\." );
-            return;
-         }
-
-         // load the DLLs
-         foreach ( var dllPath in dllPaths ) {
-            if ( !IGNORE_FILE_NAMES.Contains( Path.GetFileName( dllPath ) ) )
-               LoadDLL( dllPath );
          }
       }
    }
