@@ -299,7 +299,7 @@ namespace Sheepy.Modnix {
 
       private static string FindGameVersion ( TypeDefinition type ) {
          var method = type.Methods.FirstOrDefault( e => e.Name == "get_Version" );
-         if ( method == null || ! method.HasBody ) return null; //"ERR version not found";
+         if ( method == null || ! method.HasBody ) return "ERR version not found";
 
          try {
             int[] version = new int[2];
@@ -307,7 +307,7 @@ namespace Sheepy.Modnix {
             foreach ( var code in method.Body.Instructions ) {
                string op = code.OpCode.ToString();
                if ( ! op.StartsWith( "ldc.i4" ) ) continue;
-               if ( ldcCount >= 2 ) return null; //"ERR too many vers";
+               if ( ldcCount >= 2 ) return "ERR too many vers";
 
                int ver = 0;
                if ( code.Operand is int num ) ver = num;
@@ -318,10 +318,10 @@ namespace Sheepy.Modnix {
                version[ ldcCount ] = ver;
                ++ldcCount;
             }
-            if ( ldcCount < 2 ) return null; //"ERR too few vers";
+            if ( ldcCount < 2 ) return "ERR too few vers";
             return version[0].ToString() + '.' + version[1];
          } catch ( Exception e ) {
-            return null; // $"ERR {e}";
+            return $"ERR {e}";
          }
       }
 
