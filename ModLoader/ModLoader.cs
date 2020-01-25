@@ -1,4 +1,5 @@
 ﻿using Harmony;
+using Sheepy.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -7,8 +8,9 @@ using System.Reflection;
 
 namespace Sheepy.Modnix {
 
-   using static Logger;
    public static class ModLoader {
+      private static Logger Log;
+
       private const BindingFlags PUBLIC_STATIC_BINDING_FLAGS = BindingFlags.Public | BindingFlags.Static;
       private static readonly List<string> IGNORE_FILE_NAMES = new List<string>() {
          "0Harmony.dll",
@@ -24,24 +26,23 @@ namespace Sheepy.Modnix {
 
          // this should be (wherever Phoenix Point is Installed)\PhoenixPoint\PhoenixPointWin64_Data\Managed
          ModDirectory = Path.GetFullPath( Path.Combine( manifestDirectory, Path.Combine( @"..\..\Mods" ) ) );
-         LogPath = Path.Combine( ModDirectory, "ModnixLoader.log" );
+         Log = new Logger( Path.Combine( ModDirectory, "ModnixLoader.log" ) );
 
          if ( !Directory.Exists( ModDirectory ) )
             Directory.CreateDirectory( ModDirectory );
 
          // create log file, overwriting if it's already there
-         using ( var logWriter = File.CreateText( LogPath ) ) {
-            logWriter.WriteLine( $"{typeof( ModLoader ).FullName} -- v{LoaderVersion} -- {DateTime.Now}" );
-         }
+         Log.Delete();
+         Log.Info( "{0} --v{1} -- {2}", typeof( ModLoader ).FullName, LoaderVersion, DateTime.Now );
 
          // ReSharper disable once UnusedVariable
          var harmony = HarmonyInstance.Create( typeof( ModLoader ).Namespace );
 
          // get all dll paths
-         var dllPaths = Directory.GetFiles(ModDirectory).Where(x => Path.GetExtension(x).ToLower() == ".dll").ToArray();
+         var dllPaths = Directory.GetFiles( ModDirectory ).Where( x => Path.GetExtension(x).ToLower() == ".dll" ).ToArray();
 
          if ( dllPaths.Length == 0 ) {
-            Log( @"No .DLLs loaded. DLLs must be placed in the root of the folder \PhoenixPoint\Mods\." );
+            Log.Error( @"No .DLLs loaded. DLLs must be placed in the root of the folder \PhoenixPoint\Mods\." );
             return;
          }
 
@@ -56,7 +57,7 @@ namespace Sheepy.Modnix {
          var fileName = Path.GetFileName(path);
 
          if ( !File.Exists( path ) ) {
-            LogWithDate( $"Failed to load {fileName} at path {path}, because it doesn't exist at that path." );
+            Log.Error( "Failed to load {0} at path {1}, because it doesn't exist at that path.", fileName, path );
             return null;
          }
 
@@ -77,7 +78,7 @@ namespace Sheepy.Modnix {
                types.Add( assembly.GetType( typeName ) );
 
             if ( types.Count == 0 ) {
-               LogWithDate( $"{fileName} (v{version}): Failed to find specified entry point: {typeName ?? "NotSpecified"}.{methodName}" );
+               Log.Error( "{0} (v{1}): Failed to find specified entry point: {2}.{3}", fileName, version, typeName ?? "Unnamed", methodName );
                return null;
             }
 
@@ -90,7 +91,7 @@ namespace Sheepy.Modnix {
                   continue;
 
                if ( methodParams.Length == 0 ) {
-                  LogWithDate( $"{fileName} (v{version}): Found and called entry point \"{entryMethod}\" in type \"{type.FullName}\"" );
+                  Log.Info( "{0} (v{1}): Found and called entry point \"{2}\" in type \"{3}\"", fileName, version, entryMethod, type.FullName );
                   entryMethod.Invoke( null, null );
                   continue;
                }
@@ -98,32 +99,33 @@ namespace Sheepy.Modnix {
                // match up the passed in params with the method's params, if they match, call the method
                if ( parameters != null && methodParams.Length == parameters.Length
                    && !methodParams.Where( ( info, i ) => parameters[ i ]?.GetType() != info.ParameterType ).Any() ) {
-                  LogWithDate( $"{fileName} (v{version}): Found and called entry point \"{entryMethod}\" in type \"{type.FullName}\"" );
+                  Log.Info( "{0} (v{1}): Found and called entry point \"{2}\" in type \"{3}\"", fileName, version, entryMethod, type.FullName );
                   entryMethod.Invoke( null, parameters );
                   continue;
                }
 
                // failed to call entry method of parameter mismatch
                // diagnosing problems of this type is pretty hard
-               LogWithDate( $"{fileName} (v{version}): Provided params don't match {type.Name}.{entryMethod.Name}" );
-               Log( "\tPassed in Params:" );
+               Log.Error( "{0} (v{1}): Provided params don't match {2}.{3}", fileName, version, type.FullName, entryMethod.Name );
+               Log.Error( "\tPassed in Params:" );
                if ( parameters != null ) {
                   foreach ( var parameter in parameters )
-                     Log( $"\t\t{parameter.GetType()}" );
+                     Log.Error( "\t\t{0}", parameter.GetType() );
                } else {
-                  Log( "\t\t'parameters' is null" );
+                  Log.Error( "\t\t'parameters' is null" );
                }
 
                if ( methodParams.Length != 0 ) {
-                  Log( "\tMethod Params:" );
+                  Log.Error( "\tMethod Params:" );
                   foreach ( var prm in methodParams )
-                     Log( $"\t\t{prm.ParameterType}" );
+                     Log.Error( "\t\t{0}", prm.ParameterType );
                }
             }
 
             return assembly;
          } catch ( Exception e ) {
-            LogException( $"{fileName}: While loading a dll, an exception occured", e );
+            Log.Error( "{0}: While loading a dll, an exception occured:", fileName );
+            Log.Error( e );
             return null;
          }
       }
