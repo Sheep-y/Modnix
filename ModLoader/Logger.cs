@@ -18,12 +18,7 @@ namespace Sheepy.Logging {
 
       // ============ Self Prop ============
 
-      protected Func<SourceLevels,string> _LevelText = ( level ) => { //return level.ToString() + ": ";
-         if ( level <= SourceLevels.Critical ) return "CRIT "; if ( level <= SourceLevels.Error       ) return "ERR  ";
-         if ( level <= SourceLevels.Warning  ) return "WARN "; if ( level <= SourceLevels.Information ) return "INFO ";
-         if ( level <= SourceLevels.Verbose  ) return "FINE "; return "TRAC ";
-      };
-      protected string _TimeFormat = "hh:mm:ss.ffff ", _Prefix = null, _Postfix = null;
+      protected string _TimeFormat = "yyyy-MM-ddThh:mm:ssz ", _Prefix = null, _Postfix = null;
       protected List<Func<LogEntry,bool>> _Filters = null;
       protected Action<Exception> _OnError = ( ex ) => Console.Error.WriteLine( ex );
 
@@ -45,10 +40,6 @@ namespace Sheepy.Logging {
       public string TimeFormat {
          get { lock( exceptions ) { return _TimeFormat; } }
          set { lock( exceptions ) { _TimeFormat = value; } } }
-      // Level format, placed between time and line.
-      public Func<SourceLevels,string> LevelText {
-         get { lock( exceptions ) { return _LevelText; } }
-         set { lock( exceptions ) { _LevelText = value; } } }
       // String to add to the start of every line on write (not on log).
       public string Prefix {
          get { lock( exceptions ) { return _Prefix; } }
@@ -77,13 +68,17 @@ namespace Sheepy.Logging {
 
       public void Log ( SourceLevels level, object message, params object[] args ) {
          if ( ( level & LogLevel ) != level ) return;
-         LogEntry entry = new LogEntry(){ time = DateTime.Now, level = level, message = message, args = args };
+         LogEntry entry = new LogEntry(){ Time = DateTime.Now, Level = level, Message = message, Args = args };
+         lock ( exceptions ) {
+            entry.Prefix  = _Prefix;
+            entry.Postfix = _Postfix;
+         }
          if ( queue != null ) lock ( queue ) {
             if ( worker == null ) throw new InvalidOperationException( "Logger already disposed." );
             queue.Add( entry );
             Monitor.Pulse( queue );
          } else lock ( queue ) {
-            OutputLog( _Filters, entry );
+            ProcessQueue( _Filters, entry );
          }
       }
 
@@ -153,10 +148,10 @@ namespace Sheepy.Logging {
             entries = queue.ToArray();
             queue.Clear();
          }
-         return OutputLog( filters, entries );
+         return ProcessQueue( filters, entries );
       }
 
-      private bool? OutputLog ( IEnumerable<Func<LogEntry,bool>> filters, params LogEntry[] entries ) {
+      private bool? ProcessQueue ( IEnumerable<Func<LogEntry,bool>> filters, params LogEntry[] entries ) {
          if ( entries.Length <= 0 ) return null;
          StringBuilder buf = new StringBuilder();
          lock ( exceptions ) { // Not expecting settings to change frequently. Lock outside format loop for higher throughput.
@@ -164,34 +159,36 @@ namespace Sheepy.Logging {
                if ( filters != null ) foreach ( Func<LogEntry,bool> filter in filters ) try {
                   if ( ! filter( line ) ) continue;
                } catch ( Exception ) { }
-               string txt = line.message?.ToString();
+               string txt = line.Message?.ToString();
                if ( ! string.IsNullOrEmpty( txt ) )
-                  FormatMessage( buf, line, txt );
-               NewLine( buf, line );
+                  EntryToLine( buf, line, txt );
             } catch ( Exception ex ) {
-               buf?.Append( Environment.NewLine ); // Clear error'ed line
                HandleError( ex );
+               buf?.Append( Environment.NewLine ); // Clear error'ed line, if execution didn't abort
             }
          }
          return OutputLog( buf );
       }
 
       // Override to change line/entry format.
-      protected virtual void FormatMessage ( StringBuilder buf, LogEntry line, string txt ) {
+      protected virtual void EntryToLine ( StringBuilder buf, LogEntry entry, string txt ) {
          if ( ! string.IsNullOrEmpty( _TimeFormat ) )
-            buf.Append( line.time.ToString( _TimeFormat ) );
-         if ( _LevelText != null )
-            buf.Append( _LevelText( line.level ) );
-         buf.Append( _Prefix );
-         if ( line.args != null && line.args.Length > 0 && txt != null ) try {
-            txt = string.Format( txt, line.args );
-         } catch ( FormatException ) {}
-         buf.Append( txt ).Append( _Postfix );
-      }
+            buf.Append( entry.Time.ToString( _TimeFormat ) );
 
-      // Called after every entry, even null or empty.
-      protected virtual void NewLine ( StringBuilder buf, LogEntry line ) {
-         buf.Append( Environment.NewLine );
+         SourceLevels level = entry.Level;
+         string levelText;
+         if ( level <= SourceLevels.Error    ) levelText = "EROR ";
+         else if ( level <= SourceLevels.Warning  ) levelText = "WARN ";
+         else if ( level <= SourceLevels.Information ) levelText = "INFO ";
+         else if ( level <= SourceLevels.Verbose  ) levelText = "FINE ";
+         else levelText = "TRAC ";
+         buf.Append( levelText );
+
+         buf.Append( entry.Prefix );
+         if ( entry.Args != null && entry.Args.Length > 0 && txt != null ) try {
+            txt = string.Format( txt, entry.Args );
+         } catch ( FormatException ) {}
+         buf.Append( txt ).Append( entry.Postfix ).Append( Environment.NewLine );
       }
 
       // Override to change log output, e.g. to console, system event log, or development environment.
@@ -210,31 +207,33 @@ namespace Sheepy.Logging {
       }
    }
 
-   public class LogEntry { 
-      public DateTime time;
-      public SourceLevels level;
-      public object message;
-      public object[] args;
+   public class LogEntry {
+      public DateTime Time;
+      public SourceLevels Level;
+      public object Prefix;
+      public object Postfix;
+      public object Message;
+      public object[] Args;
    }
 
    public class LogFilter {
       // If message is not string, and there are multiple params, the message is converted to a list of params
       public static Func< LogEntry, bool > AutoMultiParam () => AutoMultiParamFilter;
-      private static bool AutoMultiParamFilter ( LogEntry line ) {
-         if ( line.message is string ) return true;
-         if ( line.args == null || line.args.Length <= 0 ) return true;
+      private static bool AutoMultiParamFilter ( LogEntry entry ) {
+         if ( entry.Message is string ) return true;
+         if ( entry.Args == null || entry.Args.Length <= 0 ) return true;
 
-         int len = line.args.Length;
+         int len = entry.Args.Length;
          object[] newArg = new object[ len + 1 ];
-         newArg[ 0 ] = line.message;
-         line.args.CopyTo( newArg, 1 );
-         line.args = newArg;
+         newArg[ 0 ] = entry.Message;
+         entry.Args.CopyTo( newArg, 1 );
+         entry.Args = newArg;
 
          StringBuilder message = new StringBuilder( len * 4 );
          for ( int i = 0 ; i < len ; i++ )
             message.Append( '{' ).Append( i ).Append( "} " );
          message.Length -= 1;
-         line.message = message.ToString();
+         entry.Message = message.ToString();
 
          return true;
       }
@@ -242,13 +241,13 @@ namespace Sheepy.Logging {
 
       // Convert null (value) to "null" (string)
       public static Func< LogEntry, bool > Null2Txt () => Null2TxtFilter;
-      private static bool Null2TxtFilter ( LogEntry line ) {
-         if ( line.message == null ) {
-            line.message = "null";
-            line.args = null;
+      private static bool Null2TxtFilter ( LogEntry entry ) {
+         if ( entry.Message == null ) {
+            entry.Message = "null";
+            entry.Args = null;
 
-         } else if ( line.args != null ) {
-            var args = line.args;
+         } else if ( entry.Args != null ) {
+            var args = entry.Args;
             for ( int i = 0, len = args.Length ; i < len ; i++ )
                if ( args[ i ] == null ) args[ i ] = "null";
          }
@@ -259,8 +258,8 @@ namespace Sheepy.Logging {
       // Log each exception once.  Exceptions are the same if their ToString are same.
       public static Func< LogEntry, bool > IgnoreDuplicateExceptions () {
          HashSet< string > ignored = new HashSet<string>();
-         return ( line ) => {
-            if ( ! ( line.message is Exception ex ) ) return true;
+         return ( entry ) => {
+            if ( ! ( entry.Message is Exception ex ) ) return true;
             string txt = ex.ToString();
             lock( ignored ) {
                if ( ignored.Contains( txt ) ) return false;
