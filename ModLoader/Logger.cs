@@ -25,10 +25,7 @@ namespace Sheepy.Logging {
       };
       protected string _TimeFormat = "hh:mm:ss.ffff ", _Prefix = null, _Postfix = null;
       protected List<Func<LogEntry,bool>> _Filters = null;
-      protected bool _IgnoreDuplicateExceptions = true;
       protected Action<Exception> _OnError = ( ex ) => Console.Error.WriteLine( ex );
-
-      public class LogEntry { public DateTime time; public SourceLevels level; public object message; public object[] args; }
 
       // Worker states locked by queue, which is private and readonly.
       private readonly List<LogEntry> queue;
@@ -60,10 +57,6 @@ namespace Sheepy.Logging {
       public string Postfix {
          get { lock( exceptions ) { return _Postfix; } }
          set { lock( exceptions ) { _Postfix = value; } } }
-      // Ignores duplicate exception (the exception must be the logged object, not as a parameter).  Dups are ignored throughout the whole logging session.
-      public bool IgnoreDuplicateExceptions {
-         get { lock( exceptions ) { return _IgnoreDuplicateExceptions; } }
-         set { lock( exceptions ) { _IgnoreDuplicateExceptions = value; if ( ! value ) exceptions.Clear(); } } }
       // Handles "environmental" errors such as unable to write or delete log. Does not handle logical errors like log after dispose.
       public Action<Exception> OnError {
          get { lock( exceptions ) { return _OnError; } }
@@ -111,11 +104,11 @@ namespace Sheepy.Logging {
          return result;
       } }
 
-      public void Trace ( object message = null, params object[] args ) { Log( SourceLevels.ActivityTracing, message, args ); }
-      public void Verbo ( object message = null, params object[] args ) { Log( SourceLevels.Verbose, message, args ); }
-      public void Info  ( object message = null, params object[] args ) { Log( SourceLevels.Information, message, args ); }
-      public void Warn  ( object message = null, params object[] args ) { Log( SourceLevels.Warning, message, args ); }
-      public void Error ( object message = null, params object[] args ) { Log( SourceLevels.Error, message, args ); }
+      public void Trace ( object message = null, params object[] args ) => Log( SourceLevels.ActivityTracing, message, args );
+      public void Verbo ( object message = null, params object[] args ) => Log( SourceLevels.Verbose, message, args );
+      public void Info  ( object message = null, params object[] args ) => Log( SourceLevels.Information, message, args );
+      public void Warn  ( object message = null, params object[] args ) => Log( SourceLevels.Warning, message, args );
+      public void Error ( object message = null, params object[] args ) => Log( SourceLevels.Error, message, args );
 
       // ============ Implementations ============
 
@@ -172,10 +165,8 @@ namespace Sheepy.Logging {
                   if ( ! filter( line ) ) continue;
                } catch ( Exception ) { }
                string txt = line.message?.ToString();
-               if ( ! string.IsNullOrEmpty( txt ) ) {
-                  if ( ! AllowMessagePass( line, txt ) ) continue;
+               if ( ! string.IsNullOrEmpty( txt ) )
                   FormatMessage( buf, line, txt );
-               }
                NewLine( buf, line );
             } catch ( Exception ex ) {
                buf?.Append( Environment.NewLine ); // Clear error'ed line
@@ -183,15 +174,6 @@ namespace Sheepy.Logging {
             }
          }
          return OutputLog( buf );
-      }
-
-      // Override to control which message get logged.
-      protected virtual bool AllowMessagePass ( LogEntry line, string txt ) {
-         if ( ! ( line.message is Exception ex ) || String.IsNullOrEmpty( txt ) ) return true;
-         if ( ! IgnoreDuplicateExceptions ) return true;
-         if ( exceptions.Contains( txt ) ) return false;
-         exceptions.Add( txt );
-         return true;
       }
 
       // Override to change line/entry format.
@@ -225,6 +207,67 @@ namespace Sheepy.Logging {
             writeDelay = 0; // Flush log immediately
             Monitor.Pulse( queue );
          }
+      }
+   }
+
+   public class LogEntry { 
+      public DateTime time;
+      public SourceLevels level;
+      public object message;
+      public object[] args;
+   }
+
+   public class LogFilter {
+      // If message is not string, and there are multiple params, the message is converted to a list of params
+      public static Func< LogEntry, bool > AutoMultiParam () => AutoMultiParamFilter;
+      private static bool AutoMultiParamFilter ( LogEntry line ) {
+         if ( line.message is string ) return true;
+         if ( line.args == null || line.args.Length <= 0 ) return true;
+
+         int len = line.args.Length;
+         object[] newArg = new object[ len + 1 ];
+         newArg[ 0 ] = line.message;
+         line.args.CopyTo( newArg, 1 );
+         line.args = newArg;
+
+         StringBuilder message = new StringBuilder( len * 4 );
+         for ( int i = 0 ; i < len ; i++ )
+            message.Append( '{' ).Append( i ).Append( "} " );
+         message.Length -= 1;
+         line.message = message.ToString();
+
+         return true;
+      }
+
+
+      // Convert null (value) to "null" (string)
+      public static Func< LogEntry, bool > Null2Txt () => Null2TxtFilter;
+      private static bool Null2TxtFilter ( LogEntry line ) {
+         if ( line.message == null ) {
+            line.message = "null";
+            line.args = null;
+
+         } else if ( line.args != null ) {
+            var args = line.args;
+            for ( int i = 0, len = args.Length ; i < len ; i++ )
+               if ( args[ i ] == null ) args[ i ] = "null";
+         }
+         return true;
+      }
+
+
+      // Log each exception once.  Exceptions are the same if their ToString are same.
+      public static Func< LogEntry, bool > IgnoreDuplicateExceptions () {
+         HashSet< string > ignored = new HashSet<string>();
+         return ( line ) => {
+            if ( ! ( line.message is Exception ex ) ) return true;
+            string txt = ex.ToString();
+            lock( ignored ) {
+               if ( ignored.Contains( txt ) ) return false;
+               ignored.Add( txt );
+            }
+            return true;
+         };
       }
    }
 }
