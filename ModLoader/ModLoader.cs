@@ -26,13 +26,14 @@ namespace Sheepy.Modnix {
 
          // this should be (wherever Phoenix Point is Installed)\PhoenixPoint\PhoenixPointWin64_Data\Managed
          ModDirectory = Path.GetFullPath( Path.Combine( manifestDirectory, Path.Combine( @"..\..\Mods" ) ) );
-         Log = new Logger( Path.Combine( ModDirectory, "ModnixLoader.log" ) );
+         Log = new FileLogger( Path.Combine( ModDirectory, "ModnixLoader.log" ) );
+         Log.TimeFormat = "HH:mm:ss.ffff ";
 
          if ( !Directory.Exists( ModDirectory ) )
             Directory.CreateDirectory( ModDirectory );
 
          // create log file, overwriting if it's already there
-         Log.Delete();
+         Log.Clear();
          Log.Info( "{0} --v{1} -- {2}", typeof( ModLoader ).FullName, LoaderVersion, DateTime.Now );
 
          // ReSharper disable once UnusedVariable

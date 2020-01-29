@@ -3,101 +3,86 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
+using System.Linq;
 using System.Threading;
 
 namespace Sheepy.Logging {
-   public class Logger : IDisposable {
-      public Logger ( string file, int writeDelay = 500 ) {
-         if ( string.IsNullOrEmpty( file ) ) throw new NullReferenceException();
-         LogFile = file.Trim();
-         this.writeDelay = Math.Max( 0, writeDelay );
-         queue = new List<LogEntry>();
-         worker = new Thread( WorkerLoop ) { Name = "Logger " + LogFile, Priority = ThreadPriority.BelowNormal };
-         worker.Start();
+   public abstract class Logger {
+      public Logger ( int writeDelay = 100 ) {
+         _WriteDelay = Math.Max( 0, writeDelay );
+         ReaderWriterLockSlim locker = new ReaderWriterLockSlim();
+         _Reader  = new LoggerReadLockHelper ( locker );
+         _Writer  = new LoggerWriteLockHelper( locker );
+         _Filters = new SynchronizedCollection<LogFilter>( locker );
+         _Queue   = new List<LogEntry>();
       }
 
       // ============ Self Prop ============
 
-      protected string _TimeFormat = "yyyy-MM-ddThh:mm:ssz ", _Prefix = null, _Postfix = null;
-      protected List<Func<LogEntry,bool>> _Filters = null;
-      protected Action<Exception> _OnError = ( ex ) => Console.Error.WriteLine( ex );
+      protected SourceLevels _Level = SourceLevels.Information;
+      protected string _TimeFormat = "yyyy-MM-ddTHH:mm:ssz", _Prefix = null, _Postfix = null;
+      protected readonly SynchronizedCollection< LogFilter > _Filters = null; // Exposed to public through Filter
+      protected int _WriteDelay;
+      protected Action< Exception > _OnError = null;
 
-      // Worker states locked by queue, which is private and readonly.
-      private readonly List<LogEntry> queue;
-      // A list of occured exceptions. Double as lock object for public fields.
-      private HashSet<string> exceptions = new HashSet<string>();
-      private Thread worker;
-      private int writeDelay;
+      protected readonly List< LogEntry > _Queue;
+      protected readonly LockHelper _Reader, _Writer; // lock( _Writer ) during queue process, to ensure sequential output
+      protected Timer _Timer;
 
       // ============ Public Prop ============
 
-      public readonly string LogFile;
-
       public static string Stacktrace => new StackTrace( true ).ToString();
 
-      public volatile SourceLevels LogLevel = SourceLevels.Information;
-      // Time format, placed at the beginning of every line.
+      /// Logger level. Only calls on or above the level will pass.
+      public SourceLevels Level {
+         get { using( _Reader.Lock ) { return _Level;  } }
+         set { using( _Writer.Lock ) { _Level = value; } } }
+
+      /// Datetime format string, default to "u" 
       public string TimeFormat {
-         get { lock( exceptions ) { return _TimeFormat; } }
-         set { lock( exceptions ) { _TimeFormat = value; } } }
-      // String to add to the start of every line on write (not on log).
+         get { using( _Reader.Lock ) { return _TimeFormat;  } }
+         set { using( _Writer.Lock ) { _TimeFormat = value; } } }
+
+      /// String to be added to the start of every entry.
       public string Prefix {
-         get { lock( exceptions ) { return _Prefix; } }
-         set { lock( exceptions ) { _Prefix = value; } } }
-      // String to add to the end of every line on write (not on log).
+         get { using( _Reader.Lock ) { return _Prefix;   } }
+         set { using( _Writer.Lock ) { _Postfix = value; } } }
+
+      /// String to be added to the end of every entry.
       public string Postfix {
-         get { lock( exceptions ) { return _Postfix; } }
-         set { lock( exceptions ) { _Postfix = value; } } }
-      // Handles "environmental" errors such as unable to write or delete log. Does not handle logical errors like log after dispose.
+         get { using( _Reader.Lock ) { return _Postfix;  } }
+         set { using( _Writer.Lock ) { _Postfix = value; } } }
+
+      /// Filters for processing log entries.
+      public IList< LogFilter > Filters => _Filters;
+
+      /// Delay in ms to start loggging. Set to 0 to disable threading - all loggin happens immediately
+      public int WriteDelay {
+         get { using( _Reader.Lock ) { return _WriteDelay;  } }
+         set { using( _Writer.Lock ) { _WriteDelay = value; } } }
+
+      /// Handles loggging errors such as filter exception or failure in writing to log.
       public Action<Exception> OnError {
-         get { lock( exceptions ) { return _OnError; } }
-         set { lock( exceptions ) { _OnError = value; } } }
+         get { using( _Reader.Lock ) { return _OnError;  } }
+         set { using( _Writer.Lock ) { _OnError = value; } } }
 
       // ============ API ============
 
-      public virtual bool Exists () { return File.Exists( LogFile ); }
-
-      public virtual void Delete () {
-         ClearQueue();
-         try {
-            File.Delete( LogFile );
-         } catch ( Exception e ) {
-            HandleError( e );
-         }
-      }
-
       public void Log ( SourceLevels level, object message, params object[] args ) {
-         if ( ( level & LogLevel ) != level ) return;
-         LogEntry entry = new LogEntry(){ Time = DateTime.Now, Level = level, Message = message, Args = args };
-         lock ( exceptions ) {
-            entry.Prefix  = _Prefix;
-            entry.Postfix = _Postfix;
-         }
-         if ( queue != null ) lock ( queue ) {
-            if ( worker == null ) throw new InvalidOperationException( "Logger already disposed." );
-            queue.Add( entry );
-            Monitor.Pulse( queue );
-         } else lock ( queue ) {
-            ProcessQueue( _Filters, entry );
-         }
+         var entry = NewEntry( level );
+         if ( entry == null ) return;
+         entry.Message = message;
+         entry.Args = args;
+         _Log( entry );
       }
 
-      // Each filter may modify the line, and may return false to exclude an input line from logging.
-      // First input is unformatted log line, second input is log entry.
-      public bool AddFilter ( Func<LogEntry,bool> filter ) { lock( queue ) {
-         if ( filter == null ) return false;
-         if ( _Filters == null ) _Filters = new List<Func<LogEntry,bool>>();
-         else if ( _Filters.Contains( filter ) ) return false;
-         _Filters.Add( filter );
-         return true;
-      } }
-
-      public bool RemoveFilter ( Func<LogEntry,bool> filter ) { lock( queue ) {
-         if ( filter == null || _Filters == null ) return false;
-         bool result = _Filters.Remove( filter );
-         if ( result && _Filters.Count <= 0 ) _Filters = null;
-         return result;
-      } }
+      public void Log ( LogEntry entry ) {
+         var prepost = NewEntry( entry.Level );
+         if ( prepost == null ) return;
+         if ( ! string.IsNullOrEmpty( prepost.Prefix  ) ) entry.Prefix += prepost.Prefix;
+         if ( ! string.IsNullOrEmpty( prepost.Postfix ) ) entry.Postfix = prepost.Postfix + entry.Postfix;
+         _Log( entry );
+      }
 
       public void Trace ( object message = null, params object[] args ) => Log( SourceLevels.ActivityTracing, message, args );
       public void Verbo ( object message = null, params object[] args ) => Log( SourceLevels.Verbose, message, args );
@@ -105,121 +90,174 @@ namespace Sheepy.Logging {
       public void Warn  ( object message = null, params object[] args ) => Log( SourceLevels.Warning, message, args );
       public void Error ( object message = null, params object[] args ) => Log( SourceLevels.Error, message, args );
 
+      public virtual void Clear () {
+         lock( _Queue ) {
+            _Queue.Clear();
+         }
+      }
+
+      public void Flush () {
+         ProcessQueue();
+      }
+
       // ============ Implementations ============
 
-      private void HandleError ( Exception ex ) {
-         lock ( exceptions ) {
-            if ( _OnError == null ) throw ex;
-            try {
-               _OnError.Invoke( ex );
-            } catch ( Exception e ) {
-               throw e;
+      private LogEntry NewEntry ( SourceLevels level ) {
+         string pre, post;
+         using ( _Reader.Lock ) {
+            if ( ( level & _Level ) != level ) return null;
+            pre = _Prefix;
+            post = _Postfix;
+         }
+         return new LogEntry() { Time = DateTime.Now, Level = level, Prefix = pre, Postfix = post };
+      }
+
+      protected virtual void _Log ( LogEntry entry ) {
+         int delay = WriteDelay;
+         lock ( _Queue ) {
+            _Queue.Add( entry );
+            if ( delay > 0 ) {
+               if ( _Timer == null )
+                  _Timer = new Timer( TimerCallback, null, delay, Timeout.Infinite );
+               return;
             }
          }
+         Flush(); // Flush immedialy
       }
 
-      private void WorkerLoop () {
-         do {
-            int delay = 0;
-            lock ( queue ) {
-               if ( worker == null ) return;
-               try {
-                  if ( queue.Count <= 0 ) Monitor.Wait( queue );
-               } catch ( ThreadInterruptedException ) { }
-               delay = writeDelay;
-            }
-            if ( delay > 0 )
-               Thread.Sleep( writeDelay );
-            Flush();
-         } while ( true );
-      }
+      private void TimerCallback ( object State ) => ProcessQueue();
 
-      private void ClearQueue () {
-         lock( queue ) {
-            queue.Clear();
-         }
-      }
-
-      public bool? Flush () {
-         Func<LogEntry,bool>[] filters;
+      private void ProcessQueue () {
+         string timeFormat;
          LogEntry[] entries;
-         lock ( queue ) {
-            filters = _Filters?.ToArray();
-            entries = queue.ToArray();
-            queue.Clear();
-         }
-         return ProcessQueue( filters, entries );
-      }
-
-      private bool? ProcessQueue ( IEnumerable<Func<LogEntry,bool>> filters, params LogEntry[] entries ) {
-         if ( entries.Length <= 0 ) return null;
-         StringBuilder buf = new StringBuilder();
-         lock ( exceptions ) { // Not expecting settings to change frequently. Lock outside format loop for higher throughput.
-            foreach ( LogEntry line in entries ) try {
-               if ( filters != null ) foreach ( Func<LogEntry,bool> filter in filters ) try {
-                  if ( ! filter( line ) ) continue;
-               } catch ( Exception ) { }
-               string txt = line.Message?.ToString();
-               if ( ! string.IsNullOrEmpty( txt ) )
-                  EntryToLine( buf, line, txt );
-            } catch ( Exception ex ) {
-               HandleError( ex );
-               buf?.Append( Environment.NewLine ); // Clear error'ed line, if execution didn't abort
+         LogFilter[] filters;
+         lock ( _Writer ) { // Used only here to control log sequence. Not the same as _Writer.Lock
+            lock ( _Queue ) {
+               _Timer?.Dispose();
+               _Timer = null;
+               if ( _Queue.Count <= 0 ) return;
+               entries = _Queue.ToArray();
+               _Queue.Clear();
+            }
+            using ( _Reader.Lock ) {
+               timeFormat = _TimeFormat;
+            }
+            lock ( _Filters.SyncRoot ) {
+               filters = _Filters.ToArray();
+            }
+            try {
+               StartProcess();
+               foreach ( LogEntry line in entries ) try {
+                  foreach ( LogFilter filter in filters ) try {
+                     if ( ! filter( line ) ) continue;
+                  } catch ( Exception ex ) { CallOnError( ex, false ); }
+                  string txt = line.Message?.ToString();
+                  if ( ! string.IsNullOrEmpty( txt ) )
+                     ProcessEntry( line, txt, timeFormat );
+               } catch ( Exception ex ) {
+                  CallOnError( ex, false );
+               }
+            } finally {
+               EndProcess();
             }
          }
-         return OutputLog( buf );
       }
 
-      // Override to change line/entry format.
-      protected virtual void EntryToLine ( StringBuilder buf, LogEntry entry, string txt ) {
-         if ( ! string.IsNullOrEmpty( _TimeFormat ) )
-            buf.Append( entry.Time.ToString( _TimeFormat ) );
+      /// Called before queue is processed.
+      protected abstract void StartProcess ();
+
+      /// Process each log entry.
+      protected abstract void ProcessEntry ( LogEntry entry, string txt, string timeFormat );
+
+      /// Called after queue is processed. Will always be called even with exceptions.
+      protected abstract void EndProcess ();
+
+      /// Called on exception. If no error handler, throw the exception.
+      protected virtual void CallOnError ( Exception ex, bool throwIfNull = true ) {
+         var err = OnError;
+         if ( ex == null ) return;
+         if ( err == null || ex.StackTrace.Contains( ".CallOnError(" ) ) {
+            if ( throwIfNull ) throw ex;
+            return;
+         }
+         try {
+            err.Invoke( ex );
+         } catch ( Exception e ) {
+            throw e;
+         }
+      }
+   }
+
+   public class FileLogger : Logger {
+      public FileLogger ( string file, int writeDelay = 500 ) : base ( writeDelay ) {
+         if ( string.IsNullOrEmpty( file ) ) throw new NullReferenceException();
+         LogFile = file.Trim();
+         _TimeFormat += ' ';
+      }
+
+      // ============ Public Prop ============
+
+      public readonly string LogFile;
+
+      // ============ API ============
+
+      public override void Clear () {
+         base.Clear();
+         try {
+            File.Delete( LogFile );
+         } catch ( Exception ex ) {
+            CallOnError( ex );
+         }
+      }
+
+      // ============ Implementations ============
+
+      private StringBuilder buf;
+
+      protected override void StartProcess () => buf = new StringBuilder();
+
+      protected override void ProcessEntry ( LogEntry entry, string txt, string timeFormat ) {
+         if ( ! string.IsNullOrEmpty( timeFormat ) )
+            buf.Append( entry.Time.ToString( timeFormat ) );
 
          SourceLevels level = entry.Level;
          string levelText;
-         if ( level <= SourceLevels.Error    ) levelText = "EROR ";
-         else if ( level <= SourceLevels.Warning  ) levelText = "WARN ";
+         if      ( level <= SourceLevels.Error       ) levelText = "EROR ";
+         else if ( level <= SourceLevels.Warning     ) levelText = "WARN ";
          else if ( level <= SourceLevels.Information ) levelText = "INFO ";
-         else if ( level <= SourceLevels.Verbose  ) levelText = "FINE ";
+         else if ( level <= SourceLevels.Verbose     ) levelText = "FINE ";
          else levelText = "TRAC ";
          buf.Append( levelText );
 
          buf.Append( entry.Prefix );
          if ( entry.Args != null && entry.Args.Length > 0 && txt != null ) try {
             txt = string.Format( txt, entry.Args );
-         } catch ( FormatException ) {}
+         } catch ( FormatException ) { /* Leave unformatable string as is */ }
          buf.Append( txt ).Append( entry.Postfix ).Append( Environment.NewLine );
       }
 
-      // Override to change log output, e.g. to console, system event log, or development environment.
-      protected virtual bool? OutputLog ( StringBuilder buf ) { try {
-         if ( buf.Length <= 0 ) return null;
-         File.AppendAllText( LogFile, buf.ToString() );
-         return true;
-      } catch ( Exception ex ) { HandleError( ex ); return false; } }
-
-      public void Dispose () {
-         if ( queue != null ) lock ( queue ) {
-            worker = null;
-            writeDelay = 0; // Flush log immediately
-            Monitor.Pulse( queue );
-         }
+      protected override void EndProcess () {
+         if ( buf != null && buf.Length > 0 )
+            File.AppendAllText( LogFile, buf.ToString() );
+         buf = null;
       }
    }
 
    public class LogEntry {
       public DateTime Time;
       public SourceLevels Level;
-      public object Prefix;
-      public object Postfix;
+      public string Prefix;
+      public string Postfix;
       public object Message;
       public object[] Args;
    }
 
-   public class LogFilter {
+   public delegate bool LogFilter ( LogEntry entry );
+
+   public class LogFilters {
+
       // If message is not string, and there are multiple params, the message is converted to a list of params
-      public static Func< LogEntry, bool > AutoMultiParam () => AutoMultiParamFilter;
-      private static bool AutoMultiParamFilter ( LogEntry entry ) {
+      public static bool AutoMultiParam ( LogEntry entry ) {
          if ( entry.Message is string ) return true;
          if ( entry.Args == null || entry.Args.Length <= 0 ) return true;
 
@@ -239,24 +277,33 @@ namespace Sheepy.Logging {
       }
 
 
-      // Convert null (value) to "null" (string)
-      public static Func< LogEntry, bool > Null2Txt () => Null2TxtFilter;
-      private static bool Null2TxtFilter ( LogEntry entry ) {
+      // Expand enumerables and convert null (value) to "null" (string)
+      public static bool FormatParams ( LogEntry entry ) {
          if ( entry.Message == null ) {
             entry.Message = "null";
             entry.Args = null;
 
-         } else if ( entry.Args != null ) {
-            var args = entry.Args;
-            for ( int i = 0, len = args.Length ; i < len ; i++ )
-               if ( args[ i ] == null ) args[ i ] = "null";
-         }
+         } else if ( entry.Args != null )
+            entry.Args = entry.Args.Select( RecurFormatParam ).ToArray();
+
          return true;
+      }
+
+      private static object RecurFormatParam ( object param, int level = 0 ) {
+         if ( param == null ) return "null";
+         if ( level > 10 ) return "...";
+         if ( param is System.Collections.IEnumerable collections ) {
+            StringBuilder result = new StringBuilder().Append( collections.GetType().Name ).Append( '[' );
+            foreach ( var e in collections ) result.Append( RecurFormatParam( e, level + 1 ) ).Append( ',' );
+            result.Length -= 1;
+            return result.Append( ']' ).ToString();
+         }
+         return param;
       }
 
 
       // Log each exception once.  Exceptions are the same if their ToString are same.
-      public static Func< LogEntry, bool > IgnoreDuplicateExceptions () {
+      public static LogFilter IgnoreDuplicateExceptions { get {
          HashSet< string > ignored = new HashSet<string>();
          return ( entry ) => {
             if ( ! ( entry.Message is Exception ex ) ) return true;
@@ -267,6 +314,30 @@ namespace Sheepy.Logging {
             }
             return true;
          };
-      }
+      } }
    }
+
+   #region Lock helpers
+   /// Helper class to allow locks to be used with the using keyword
+   public abstract class LockHelper : IDisposable {
+      public abstract IDisposable Lock { get; }
+      public abstract void Dispose ();
+   }
+
+   /// Helper to allow the read lock of a ReaderWriterLockSlim to be used with the using keyword
+   public class LoggerReadLockHelper : LockHelper {
+      public readonly ReaderWriterLockSlim RwLock;
+      public LoggerReadLockHelper ( ReaderWriterLockSlim rwlock ) { RwLock = rwlock; }
+      public override IDisposable Lock { get { RwLock.EnterReadLock(); return this; } }
+      public override void Dispose () => RwLock.ExitReadLock();
+   }
+
+   /// Helper to allow the read lock of a ReaderWriterLockSlim to be used with the using keyword
+   public class LoggerWriteLockHelper : LockHelper {
+      public readonly ReaderWriterLockSlim RwLock;
+      public LoggerWriteLockHelper ( ReaderWriterLockSlim rwlock ) { RwLock = rwlock; }
+      public override IDisposable Lock { get { RwLock.EnterWriteLock(); return this; } }
+      public override void Dispose () => RwLock.ExitWriteLock();
+   }
+   #endregion
 }
