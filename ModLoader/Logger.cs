@@ -214,7 +214,7 @@ namespace Sheepy.Logging {
    /// Log to file.  Log is processed and written in a threadpool thread.
    public class FileLogger : BackgroundLogger {
       public FileLogger ( string file, int writeDelay = 500 ) : base ( writeDelay ) {
-         if ( string.IsNullOrEmpty( file ) ) throw new NullReferenceException();
+         if ( string.IsNullOrEmpty( file ) ) throw new ArgumentNullException( "Log file must not be empty" );
          LogFile = file.Trim();
          _TimeFormat += ' ';
       }
