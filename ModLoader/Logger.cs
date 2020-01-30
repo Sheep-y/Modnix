@@ -60,11 +60,11 @@ namespace Sheepy.Logging {
          _Log( entry );
       }
 
-      public void Trace ( object message = null, params object[] args ) => Log( SourceLevels.ActivityTracing, message, args );
-      public void Verbo ( object message = null, params object[] args ) => Log( SourceLevels.Verbose, message, args );
-      public void Info  ( object message = null, params object[] args ) => Log( SourceLevels.Information, message, args );
-      public void Warn  ( object message = null, params object[] args ) => Log( SourceLevels.Warning, message, args );
-      public void Error ( object message = null, params object[] args ) => Log( SourceLevels.Error, message, args );
+      public void Trace ( object message, params object[] args ) => Log( SourceLevels.ActivityTracing, message, args );
+      public void Verbo ( object message, params object[] args ) => Log( SourceLevels.Verbose, message, args );
+      public void Info  ( object message, params object[] args ) => Log( SourceLevels.Information, message, args );
+      public void Warn  ( object message, params object[] args ) => Log( SourceLevels.Warning, message, args );
+      public void Error ( object message, params object[] args ) => Log( SourceLevels.Error, message, args );
 
       /// Clear the log.
       public abstract void Clear ();
@@ -76,9 +76,8 @@ namespace Sheepy.Logging {
 
       private bool LevelCheck ( SourceLevels level ) {
          using ( _Reader.Lock ) {
-            if ( ( level & _Level ) != level ) return false;
+            return ( level & _Level ) == level;
          }
-         return true;
       }
 
       /// Internal method to queue an entry for processing
@@ -86,17 +85,23 @@ namespace Sheepy.Logging {
 
       /// Called on exception. If no error handler, throw the exception by default.
       protected virtual void CallOnError ( Exception ex, bool throwIfNull = true ) {
-         var err = OnError;
          if ( ex == null ) return;
-         if ( err == null || ex.StackTrace.Contains( ".CallOnError(" ) ) {
-            if ( throwIfNull ) throw ex;
+         var err = OnError;
+         if ( err == null ) {
+            DefaultErrorHandler( ex, throwIfNull );
             return;
          }
          try {
             err.Invoke( ex );
          } catch ( Exception e ) {
-            throw e;
+            DefaultErrorHandler( e, throwIfNull );
+            DefaultErrorHandler( ex, throwIfNull );
          }
+      }
+
+      private void DefaultErrorHandler ( Exception ex, bool throwError ) {
+         if ( throwError ) throw new Exception( "Logging Error", ex );
+         else Console.Error.WriteLine( ex );
       }
    }
 
@@ -106,6 +111,8 @@ namespace Sheepy.Logging {
          _WriteDelay = Math.Max( 0, writeDelay );
          _Queue   = new List<LogEntry>();
       }
+
+      ~BackgroundLogger () => Flush();
 
       // ============ Properties ============
 
@@ -195,7 +202,7 @@ namespace Sheepy.Logging {
    /// Log to file.  Log is processed and written in a threadpool thread.
    public class FileLogger : BackgroundLogger {
       public FileLogger ( string file, int writeDelay = 500 ) : base ( writeDelay ) {
-         if ( string.IsNullOrEmpty( file ) ) throw new ArgumentNullException( "Log file must not be empty" );
+         if ( string.IsNullOrWhiteSpace( file ) ) throw new ArgumentNullException( "Log file must not be empty" );
          LogFile = file.Trim();
          _TimeFormat += ' ';
       }

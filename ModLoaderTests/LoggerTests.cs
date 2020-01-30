@@ -10,7 +10,7 @@ namespace Sheepy.Logging.Tests {
 
    [TestClass()]
    public class LoggerTests {
-      private FileLogger Log = new FileLogger( "logtest.tmp", 100 );
+      private readonly FileLogger Log = new FileLogger( "logtest.tmp", 100 );
 
       [TestMethod()][ExpectedException(typeof(ArgumentNullException))]
       public void NullFileLoggerThrow () => new FileLogger( null );
