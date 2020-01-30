@@ -7,9 +7,10 @@ using System.Linq;
 using System.Threading;
 
 namespace Sheepy.Logging {
+
+   // A thread-safe base logger with basic properties and methods.
    public abstract class Logger {
 
-      // A thread-safe base logger with basic properties and methods.
       public Logger () {
          ReaderWriterLockSlim locker = new ReaderWriterLockSlim();
          _Reader  = new LoggerReadLockHelper ( locker );
@@ -84,24 +85,19 @@ namespace Sheepy.Logging {
       protected abstract void _Log ( LogEntry entry );
 
       /// Called on exception. If no error handler, throw the exception by default.
-      protected virtual void CallOnError ( Exception ex, bool throwIfNull = true ) {
+      protected virtual void CallOnError ( Exception ex ) {
          if ( ex == null ) return;
          var err = OnError;
          if ( err == null ) {
-            DefaultErrorHandler( ex, throwIfNull );
+            Console.Error.WriteLine( ex );
             return;
          }
          try {
             err.Invoke( ex );
          } catch ( Exception e ) {
-            DefaultErrorHandler( e, throwIfNull );
-            DefaultErrorHandler( ex, throwIfNull );
+            Console.Error.WriteLine( e );
+            Console.Error.WriteLine( ex );
          }
-      }
-
-      private void DefaultErrorHandler ( Exception ex, bool throwError ) {
-         if ( throwError ) throw new Exception( "Logging Error", ex );
-         else Console.Error.WriteLine( ex );
       }
    }
 
@@ -176,12 +172,12 @@ namespace Sheepy.Logging {
                foreach ( LogEntry line in entries ) try {
                   foreach ( LogFilter filter in filters ) try {
                      if ( ! filter( line ) ) continue;
-                  } catch ( Exception ex ) { CallOnError( ex, false ); }
+                  } catch ( Exception ex ) { CallOnError( ex ); }
                   string txt = line.Message?.ToString();
                   if ( ! string.IsNullOrEmpty( txt ) )
                      ProcessEntry( line, txt, timeFormat );
                } catch ( Exception ex ) {
-                  CallOnError( ex, false );
+                  CallOnError( ex );
                }
             } finally {
                EndProcess();
@@ -251,6 +247,46 @@ namespace Sheepy.Logging {
          if ( buf != null && buf.Length > 0 )
             File.AppendAllText( LogFile, buf.ToString() );
          buf = null;
+      }
+   }
+
+   /// A Logger that forwards messages to one or more loggers.  The proxy itself does not run in background.  TimeFormat is ignored.
+   public class LoggerProxy : Logger {
+      private bool _AllowClear;
+      private readonly SynchronizedCollection< Logger > _Masters = new SynchronizedCollection< Logger >();
+
+      public LoggerProxy ( bool AllowClear ) { _AllowClear = AllowClear; }
+
+      public IList< Logger > Masters => _Masters;
+
+      public override void Clear () {
+         if ( ! _AllowClear ) throw new InvalidOperationException();
+         lock ( _Masters.SyncRoot ) {
+            foreach ( Logger master in _Masters ) try {
+               master.Clear();
+            } catch ( Exception ex ) { CallOnError( ex ); }
+         }
+      }
+
+      public override void Flush () {
+         lock ( _Masters.SyncRoot ) {
+            foreach ( Logger master in _Masters ) try {
+               master.Flush();
+            } catch ( Exception ex ) { CallOnError( ex ); }
+         }
+      }
+
+      protected override void _Log ( LogEntry entry ) {
+         lock ( _Filters.SyncRoot ) {
+            foreach ( LogFilter filter in _Filters ) try {
+               if ( ! filter( entry ) ) return;
+            } catch ( Exception ex ) { CallOnError( ex ); }
+         }
+         lock ( _Masters.SyncRoot ) {
+            foreach ( Logger master in _Masters ) try {
+               master.Log( entry );
+            } catch ( Exception ex ) { CallOnError( ex ); }
+         }
       }
    }
 
