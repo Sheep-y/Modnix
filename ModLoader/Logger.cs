@@ -53,6 +53,7 @@ namespace Sheepy.Logging {
 
       public virtual void Log ( SourceLevels level, object message, params object[] args ) {
          if ( ! LevelCheck( level ) ) return;
+         if ( args != null && args.Length <= 0 ) args = null;
          _Log( new LogEntry(){ Time = DateTime.Now, Level = level, Message = message, Args = args } );
       }
 
@@ -171,11 +172,12 @@ namespace Sheepy.Logging {
                StartProcess();
                foreach ( LogEntry line in entries ) try {
                   foreach ( LogFilter filter in filters ) try {
-                     if ( ! filter( line ) ) continue;
+                     if ( ! filter( line ) ) goto NextEntry;
                   } catch ( Exception ex ) { CallOnError( ex ); }
                   string txt = line.Message?.ToString();
                   if ( ! string.IsNullOrEmpty( txt ) )
                      ProcessEntry( line, txt, timeFormat );
+                  NextEntry: ;
                } catch ( Exception ex ) {
                   CallOnError( ex );
                }
@@ -186,13 +188,13 @@ namespace Sheepy.Logging {
       }
 
       /// Called before queue is processed.
-      protected abstract void StartProcess ();
+      protected virtual void StartProcess () { }
 
       /// Process each log entry.
       protected abstract void ProcessEntry ( LogEntry entry, string txt, string timeFormat );
 
       /// Called after queue is processed. Will always be called even with exceptions.
-      protected abstract void EndProcess ();
+      protected virtual void EndProcess () { }
    }
 
    /// Log to file.  Log is processed and written in a threadpool thread.
@@ -220,9 +222,7 @@ namespace Sheepy.Logging {
 
       // ============ Implementations ============
 
-      private StringBuilder buf;
-
-      protected override void StartProcess () => buf = new StringBuilder();
+      private readonly StringBuilder buf = new StringBuilder();
 
       protected override void ProcessEntry ( LogEntry entry, string txt, string timeFormat ) {
          if ( ! string.IsNullOrEmpty( timeFormat ) )
@@ -244,9 +244,9 @@ namespace Sheepy.Logging {
       }
 
       protected override void EndProcess () {
-         if ( buf != null && buf.Length > 0 )
-            File.AppendAllText( LogFile, buf.ToString() );
-         buf = null;
+         if ( buf.Length <= 0 ) return;
+         File.AppendAllText( LogFile, buf.ToString() );
+         buf.Clear();
       }
    }
 
@@ -303,10 +303,10 @@ namespace Sheepy.Logging {
 
       // If message is not string, and there are multiple params, the message is converted to a list of params
       public static bool AutoMultiParam ( LogEntry entry ) {
-         if ( entry.Message is string ) return true;
+         if ( entry.Message is string txt && txt.Contains( '{' ) && txt.Contains( '}' ) ) return true;
          if ( entry.Args == null || entry.Args.Length <= 0 ) return true;
 
-         int len = entry.Args.Length;
+         int len = entry.Args.Length + 1;
          object[] newArg = new object[ len + 1 ];
          newArg[ 0 ] = entry.Message;
          entry.Args.CopyTo( newArg, 1 );
@@ -324,28 +324,39 @@ namespace Sheepy.Logging {
 
       // Expand enumerables and convert null (value) to "null" (string)
       public static bool FormatParams ( LogEntry entry ) {
-         if ( entry.Message == null ) {
-            entry.Message = "null";
-            entry.Args = null;
-
-         } else if ( entry.Args != null )
+         entry.Message = RecurFormatParam( entry.Message );
+         if ( entry.Args != null )
             entry.Args = entry.Args.Select( RecurFormatParam ).ToArray();
-
          return true;
       }
 
       private static object RecurFormatParam ( object param, int level = 0 ) {
          if ( param == null ) return "null";
          if ( level > 10 ) return "...";
-         if ( param is System.Collections.IEnumerable collections ) {
-            StringBuilder result = new StringBuilder().Append( collections.GetType().Name ).Append( '[' );
-            foreach ( var e in collections ) result.Append( RecurFormatParam( e, level + 1 ) ).Append( ',' );
+         if ( param is System.Collections.ICollection collections ) {
+            StringBuilder result = new StringBuilder().Append( collections.GetType().Name ).Append( "{ " );
+            foreach ( var e in collections ) result.Append( RecurFormatParam( e, level + 1 ) ).Append( ", " );
             result.Length -= 1;
-            return result.Append( ']' ).ToString();
+            return result.Append( " }" ).ToString();
          }
          return param;
       }
 
+
+      // Expand Func< string > to their results.
+      public static bool ResolveLazy ( LogEntry entry ) {
+         ResolveLazyFunc( ref entry.Message );
+         var args = entry.Args;
+         if ( args != null )
+            for ( int i = args.Length - 1 ; i >= 0 ; i -- )
+               ResolveLazyFunc( ref args[ i ] );
+         return true;
+      }
+
+      private static void ResolveLazyFunc ( ref object param ) {
+         if ( param is Func< string > lazy )
+            param = lazy();
+      }
 
       // Log each exception once.  Exceptions are the same if their ToString are same.
       public static LogFilter IgnoreDuplicateExceptions { get {
