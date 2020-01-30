@@ -8,13 +8,13 @@ using System.Threading;
 
 namespace Sheepy.Logging {
    public abstract class Logger {
-      public Logger ( int writeDelay = 100 ) {
-         _WriteDelay = Math.Max( 0, writeDelay );
+
+      // A thread-safe base logger with basic properties and methods.
+      public Logger () {
          ReaderWriterLockSlim locker = new ReaderWriterLockSlim();
          _Reader  = new LoggerReadLockHelper ( locker );
          _Writer  = new LoggerWriteLockHelper( locker );
          _Filters = new SynchronizedCollection<LogFilter>( locker );
-         _Queue   = new List<LogEntry>();
       }
 
       // ============ Self Prop ============
@@ -22,12 +22,9 @@ namespace Sheepy.Logging {
       protected SourceLevels _Level = SourceLevels.Information;
       protected string _TimeFormat = "yyyy-MM-ddTHH:mm:ssz", _Prefix = null, _Postfix = null;
       protected readonly SynchronizedCollection< LogFilter > _Filters = null; // Exposed to public through Filter
-      protected int _WriteDelay;
       protected Action< Exception > _OnError = null;
 
-      protected readonly List< LogEntry > _Queue;
       protected readonly LockHelper _Reader, _Writer; // lock( _Writer ) during queue process, to ensure sequential output
-      protected Timer _Timer;
 
       // ============ Public Prop ============
 
@@ -56,11 +53,6 @@ namespace Sheepy.Logging {
       /// Filters for processing log entries.
       public IList< LogFilter > Filters => _Filters;
 
-      /// Delay in ms to start loggging. Set to 0 to disable threading - all loggin happens immediately
-      public int WriteDelay {
-         get { using( _Reader.Lock ) { return _WriteDelay;  } }
-         set { using( _Writer.Lock ) { _WriteDelay = value; } } }
-
       /// Handles loggging errors such as filter exception or failure in writing to log.
       public Action<Exception> OnError {
          get { using( _Reader.Lock ) { return _OnError;  } }
@@ -68,7 +60,7 @@ namespace Sheepy.Logging {
 
       // ============ API ============
 
-      public void Log ( SourceLevels level, object message, params object[] args ) {
+      public virtual void Log ( SourceLevels level, object message, params object[] args ) {
          var entry = NewEntry( level );
          if ( entry == null ) return;
          entry.Message = message;
@@ -76,7 +68,7 @@ namespace Sheepy.Logging {
          _Log( entry );
       }
 
-      public void Log ( LogEntry entry ) {
+      public virtual void Log ( LogEntry entry ) {
          var prepost = NewEntry( entry.Level );
          if ( prepost == null ) return;
          if ( ! string.IsNullOrEmpty( prepost.Prefix  ) ) entry.Prefix += prepost.Prefix;
@@ -90,15 +82,11 @@ namespace Sheepy.Logging {
       public void Warn  ( object message = null, params object[] args ) => Log( SourceLevels.Warning, message, args );
       public void Error ( object message = null, params object[] args ) => Log( SourceLevels.Error, message, args );
 
-      public virtual void Clear () {
-         lock( _Queue ) {
-            _Queue.Clear();
-         }
-      }
+      /// Clear the log.
+      public abstract void Clear ();
 
-      public void Flush () {
-         ProcessQueue();
-      }
+      /// Immediately process all queued messages. The call blocks until they finish processing on this thread.
+      public abstract void Flush ();
 
       // ============ Implementations ============
 
@@ -112,7 +100,56 @@ namespace Sheepy.Logging {
          return new LogEntry() { Time = DateTime.Now, Level = level, Prefix = pre, Postfix = post };
       }
 
-      protected virtual void _Log ( LogEntry entry ) {
+      /// Internal method to queue an entry for processing
+      protected abstract void _Log ( LogEntry entry );
+
+      /// Called on exception. If no error handler, throw the exception by default.
+      protected virtual void CallOnError ( Exception ex, bool throwIfNull = true ) {
+         var err = OnError;
+         if ( ex == null ) return;
+         if ( err == null || ex.StackTrace.Contains( ".CallOnError(" ) ) {
+            if ( throwIfNull ) throw ex;
+            return;
+         }
+         try {
+            err.Invoke( ex );
+         } catch ( Exception e ) {
+            throw e;
+         }
+      }
+   }
+
+   /// A base logger that queue and process log entries in the background.
+   public abstract class BackgroundLogger : Logger {
+      public BackgroundLogger ( int writeDelay = 100 ) {
+         _WriteDelay = Math.Max( 0, writeDelay );
+         _Queue   = new List<LogEntry>();
+      }
+
+      // ============ Properties ============
+
+      protected int _WriteDelay;
+      protected readonly List< LogEntry > _Queue;
+      protected Timer _Timer;
+
+      /// Delay in ms to start loggging. Set to 0 to disable threading - all loggin happens immediately
+      public int WriteDelay {
+         get { using( _Reader.Lock ) { return _WriteDelay;  } }
+         set { using( _Writer.Lock ) { _WriteDelay = value; } } }
+
+      // ============ API ============
+
+      public override void Clear () {
+         lock( _Queue ) {
+            _Queue.Clear();
+         }
+      }
+
+      public override void Flush () => ProcessQueue();
+
+      // ============ Implementations ============
+
+      protected override void _Log ( LogEntry entry ) {
          int delay = WriteDelay;
          lock ( _Queue ) {
             _Queue.Add( entry );
@@ -122,12 +159,13 @@ namespace Sheepy.Logging {
                return;
             }
          }
-         Flush(); // Flush immedialy
+         Flush(); // No wait time = Flush immedialy
       }
 
       private void TimerCallback ( object State ) => ProcessQueue();
 
-      private void ProcessQueue () {
+      /// Process entry queue. Entries and states are copied and processed out of common locks.
+      protected virtual void ProcessQueue () {
          string timeFormat;
          LogEntry[] entries;
          LogFilter[] filters;
@@ -171,31 +209,17 @@ namespace Sheepy.Logging {
 
       /// Called after queue is processed. Will always be called even with exceptions.
       protected abstract void EndProcess ();
-
-      /// Called on exception. If no error handler, throw the exception.
-      protected virtual void CallOnError ( Exception ex, bool throwIfNull = true ) {
-         var err = OnError;
-         if ( ex == null ) return;
-         if ( err == null || ex.StackTrace.Contains( ".CallOnError(" ) ) {
-            if ( throwIfNull ) throw ex;
-            return;
-         }
-         try {
-            err.Invoke( ex );
-         } catch ( Exception e ) {
-            throw e;
-         }
-      }
    }
 
-   public class FileLogger : Logger {
+   /// Log to file.  Log is processed and written in a threadpool thread.
+   public class FileLogger : BackgroundLogger {
       public FileLogger ( string file, int writeDelay = 500 ) : base ( writeDelay ) {
          if ( string.IsNullOrEmpty( file ) ) throw new NullReferenceException();
          LogFile = file.Trim();
          _TimeFormat += ' ';
       }
 
-      // ============ Public Prop ============
+      // ============ Properties ============
 
       public readonly string LogFile;
 
