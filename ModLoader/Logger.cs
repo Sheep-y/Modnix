@@ -40,16 +40,6 @@ namespace Sheepy.Logging {
          get { using( _Reader.Lock ) { return _TimeFormat;  } }
          set { using( _Writer.Lock ) { _TimeFormat = value; } } }
 
-      /// String to be added to the start of every entry.
-      public string Prefix {
-         get { using( _Reader.Lock ) { return _Prefix;   } }
-         set { using( _Writer.Lock ) { _Postfix = value; } } }
-
-      /// String to be added to the end of every entry.
-      public string Postfix {
-         get { using( _Reader.Lock ) { return _Postfix;  } }
-         set { using( _Writer.Lock ) { _Postfix = value; } } }
-
       /// Filters for processing log entries.
       public IList< LogFilter > Filters => _Filters;
 
@@ -61,18 +51,12 @@ namespace Sheepy.Logging {
       // ============ API ============
 
       public virtual void Log ( SourceLevels level, object message, params object[] args ) {
-         var entry = NewEntry( level );
-         if ( entry == null ) return;
-         entry.Message = message;
-         entry.Args = args;
-         _Log( entry );
+         if ( ! LevelCheck( level ) ) return;
+         _Log( new LogEntry(){ Time = DateTime.Now, Level = level, Message = message, Args = args } );
       }
 
       public virtual void Log ( LogEntry entry ) {
-         var prepost = NewEntry( entry.Level );
-         if ( prepost == null ) return;
-         if ( ! string.IsNullOrEmpty( prepost.Prefix  ) ) entry.Prefix += prepost.Prefix;
-         if ( ! string.IsNullOrEmpty( prepost.Postfix ) ) entry.Postfix = prepost.Postfix + entry.Postfix;
+         if ( ! LevelCheck( entry.Level ) ) return;
          _Log( entry );
       }
 
@@ -90,14 +74,11 @@ namespace Sheepy.Logging {
 
       // ============ Implementations ============
 
-      private LogEntry NewEntry ( SourceLevels level ) {
-         string pre, post;
+      private bool LevelCheck ( SourceLevels level ) {
          using ( _Reader.Lock ) {
-            if ( ( level & _Level ) != level ) return null;
-            pre = _Prefix;
-            post = _Postfix;
+            if ( ( level & _Level ) != level ) return false;
          }
-         return new LogEntry() { Time = DateTime.Now, Level = level, Prefix = pre, Postfix = post };
+         return true;
       }
 
       /// Internal method to queue an entry for processing
@@ -253,11 +234,10 @@ namespace Sheepy.Logging {
          else levelText = "TRAC ";
          buf.Append( levelText );
 
-         buf.Append( entry.Prefix );
          if ( entry.Args != null && entry.Args.Length > 0 && txt != null ) try {
             txt = string.Format( txt, entry.Args );
          } catch ( FormatException ) { /* Leave unformatable string as is */ }
-         buf.Append( txt ).Append( entry.Postfix ).Append( Environment.NewLine );
+         buf.Append( txt ).Append( Environment.NewLine );
       }
 
       protected override void EndProcess () {
@@ -270,8 +250,6 @@ namespace Sheepy.Logging {
    public class LogEntry {
       public DateTime Time;
       public SourceLevels Level;
-      public string Prefix;
-      public string Postfix;
       public object Message;
       public object[] Args;
    }
@@ -339,6 +317,22 @@ namespace Sheepy.Logging {
             return true;
          };
       } }
+
+      public static LogFilter AddPrefix ( string prefix ) {
+         return ( entry ) => {
+            if ( entry.Message is Exception ) return true;
+            entry.Message = prefix + entry.Message?.ToString();
+            return true;
+         };
+      }
+
+      public static LogFilter AddPostfix ( string postfix ) {
+         return ( entry ) => {
+            if ( entry.Message is Exception ) return true;
+            entry.Message = entry.Message?.ToString() + postfix;
+            return true;
+         };
+      }
    }
 
    #region Lock helpers
