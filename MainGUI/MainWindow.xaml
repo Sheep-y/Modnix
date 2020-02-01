@@ -1,11 +1,11 @@
-﻿<Window x:Class="Sheepy.Modenix.MainGUI.MainWindow"
+﻿<Window x:Class="Sheepy.Modnix.MainGUI.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MainGUI"
         mc:Ignorable="d"
-        Title="Modnix" Height="600" Width="700">
+        Title="Modnix" Height="550" Width="700">
    <TabControl>
       <TabItem Header="Mods">
          <Grid>
@@ -110,7 +110,7 @@
                   <Button x:Name="ButtonModDisable" Content="Disable" Padding="5" />
                   <Button x:Name="ButtonModDelete" Content="Delete" Grid.Column="2" Padding="5" />
                </Grid>
-               <DataGrid x:Name="dataGrid" Margin="-2,10,0,10"/>
+               <DataGrid x:Name="dataGrid" Margin="-2,10,0,10" VerticalScrollBarVisibility="Visible"/>
             </DockPanel>
          </Grid>
       </TabItem>
@@ -136,6 +136,9 @@
                </Paragraph>
             </FlowDocument>
          </RichTextBox>
+      </TabItem>
+      <TabItem Header="Log">
+         <TextBox x:Name="textLog" TextWrapping="Wrap" Text="" Margin="10" VerticalScrollBarVisibility="Visible"/>
       </TabItem>
    </TabControl>
 </Window>
