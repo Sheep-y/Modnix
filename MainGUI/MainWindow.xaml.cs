@@ -13,16 +13,17 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace MainGUI {
+namespace Sheepy.Modenix.MainGUI {
 
    public partial class MainWindow : Window {
+
       public MainWindow () {
          InitializeComponent();
       }
 
       private void OpenUrl ( string type, RoutedEventArgs e = null ) {
          if ( e != null )
-            if ( e.Source is UIElement src && ! src.IsFocused )
+            if ( e.Source is UIElement src )
                src.Focus();
          string url;
          switch ( type ) {
