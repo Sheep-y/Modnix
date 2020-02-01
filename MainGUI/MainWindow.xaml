@@ -16,7 +16,7 @@
             </Grid.ColumnDefinitions>
             <DockPanel Margin="10">
                <StackPanel DockPanel.Dock="Top" VerticalAlignment="Top">
-                  <RichTextBox x:Name="richTextBox1" Height="50" IsReadOnly="True">
+                  <RichTextBox x:Name="richAppInfo" Height="50" IsReadOnly="True">
                      <FlowDocument>
                         <Paragraph>
                            <Run Text="Modder&#10;Ver 1.0&#10;Status: Requires Setup"/>
@@ -39,7 +39,7 @@
                         <AccessText>_Nexus Mods</AccessText>
                      </Button>
                   </Grid>
-                  <RichTextBox x:Name="richTextBox2" Height="50" Margin="0,10,0,0" IsReadOnly="True">
+                  <RichTextBox x:Name="richGameInfo" Height="50" Margin="0,10,0,0" IsReadOnly="True">
                      <FlowDocument>
                         <Paragraph>
                            <Run Text="Phoenix Point&#10;Ver 1.0"/>
@@ -59,27 +59,27 @@
                         <ColumnDefinition Width="10"/>
                         <ColumnDefinition/>
                      </Grid.ColumnDefinitions>
-                     <Button x:Name="ButtonWebsite" Margin="0" VerticalAlignment="Top"  Padding="10,5">
+                     <Button x:Name="ButtonWebsite" Margin="0" VerticalAlignment="Top"  Padding="10,5" Click="ButtonWebsite_Click">
                         <AccessText>_Website</AccessText>
                      </Button>
-                     <Button x:Name="ButtonManual" Grid.Column="2" Margin="0" VerticalAlignment="Top"  Padding="10,5">
+                     <Button x:Name="ButtonManual" Grid.Column="2" Margin="0" VerticalAlignment="Top"  Padding="10,5" Click="ButtonManual_Click">
                         <AccessText>_Manual</AccessText>
                      </Button>
-                     <Button x:Name="ButtonCanny" Grid.Column="4" Margin="0" VerticalAlignment="Top"  Padding="10,5">
+                     <Button x:Name="ButtonCanny" Grid.Column="4" Margin="0" VerticalAlignment="Top"  Padding="10,5" Click="ButtonCanny_Click">
                         <AccessText>_Canny</AccessText>
                      </Button>
-                     <Button x:Name="ButtonForum" Margin="0" VerticalAlignment="Top" Grid.Row="2"  Padding="10,5">
+                     <Button x:Name="ButtonForum" Margin="0" VerticalAlignment="Top" Grid.Row="2"  Padding="10,5" Click="ButtonForum_Click">
                         <AccessText>_Forum</AccessText>
                      </Button>
-                     <Button x:Name="ButtonReddit" Grid.Column="2" Margin="0" VerticalAlignment="Top" Grid.Row="2"  Padding="10,5">
+                     <Button x:Name="ButtonReddit" Grid.Column="2" Margin="0" VerticalAlignment="Top" Grid.Row="2"  Padding="10,5" Click="ButtonReddit_Click">
                         <AccessText>_Reddit</AccessText>
                      </Button>
-                     <Button x:Name="ButtonDiscord" Grid.Column="4" Margin="0" VerticalAlignment="Top" Grid.Row="2"  Padding="10,5">
+                     <Button x:Name="ButtonDiscord" Grid.Column="4" Margin="0" VerticalAlignment="Top" Grid.Row="2"  Padding="10,5" Click="ButtonDiscord_Click">
                         <AccessText>_Discord</AccessText>
                      </Button>
                   </Grid>
                </StackPanel>
-               <RichTextBox x:Name="richTextBox" VerticalAlignment="Top" IsReadOnly="True" Margin="0,10,0,0" VerticalScrollBarVisibility="Auto">
+               <RichTextBox x:Name="richModInfo" VerticalAlignment="Top" IsReadOnly="True" Margin="0,10,0,0" VerticalScrollBarVisibility="Auto">
                   <FlowDocument>
                      <Paragraph>
                         <Run Text="Select a Mod&#xA;Ver 1.2.3.4&#x9;Built 2020-12-12 12:34 Z&#x9;Size 12KB&#xA;Type PPML"/>
