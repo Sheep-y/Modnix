@@ -52,13 +52,13 @@ namespace Sheepy.Logging {
       // ============ API ============
 
       public virtual void Log ( SourceLevels level, object message, params object[] args ) {
-         if ( ! LevelCheck( level ) ) return;
+         if ( ( level & Level ) != level ) return;
          if ( args != null && args.Length <= 0 ) args = null;
          _Log( new LogEntry(){ Time = DateTime.Now, Level = level, Message = message, Args = args } );
       }
 
       public virtual void Log ( LogEntry entry ) {
-         if ( ! LevelCheck( entry.Level ) ) return;
+         if ( ( entry.Level & Level ) != entry.Level ) return;
          _Log( entry );
       }
 
@@ -75,12 +75,6 @@ namespace Sheepy.Logging {
       public abstract void Flush ();
 
       // ============ Implementations ============
-
-      private bool LevelCheck ( SourceLevels level ) {
-         using ( _Reader.Lock ) {
-            return ( level & _Level ) == level;
-         }
-      }
 
       /// Internal method to queue an entry for processing
       protected abstract void _Log ( LogEntry entry );
@@ -154,7 +148,7 @@ namespace Sheepy.Logging {
          string timeFormat;
          LogEntry[] entries;
          LogFilter[] filters;
-         lock ( _Writer ) { // Used only here to control log sequence. Not the same as _Writer.Lock
+         lock ( _Writer ) {
             lock ( _Queue ) {
                _Timer?.Dispose();
                _Timer = null;
@@ -162,9 +156,7 @@ namespace Sheepy.Logging {
                entries = _Queue.ToArray();
                _Queue.Clear();
             }
-            using ( _Reader.Lock ) {
-               timeFormat = _TimeFormat;
-            }
+            timeFormat = TimeFormat;
             lock ( _Filters.SyncRoot ) {
                filters = _Filters.ToArray();
             }
@@ -212,11 +204,13 @@ namespace Sheepy.Logging {
       // ============ API ============
 
       public override void Clear () {
-         base.Clear();
-         try {
-            File.Delete( LogFile );
-         } catch ( Exception ex ) {
-            CallOnError( ex );
+         lock ( _Writer ) {
+            base.Clear();
+            try {
+               File.Delete( LogFile );
+            } catch ( Exception ex ) {
+               CallOnError( ex );
+            }
          }
       }
 
@@ -255,7 +249,13 @@ namespace Sheepy.Logging {
       private bool _AllowClear;
       private readonly SynchronizedCollection< Logger > _Masters = new SynchronizedCollection< Logger >();
 
-      public LoggerProxy ( bool AllowClear ) { _AllowClear = AllowClear; }
+      public LoggerProxy ( bool AllowClear = true, params Logger[] Masters ) {
+         _AllowClear = AllowClear;
+         if ( Masters != null && Masters.Length > 0 )
+            foreach ( var master in Masters )
+               _Masters.Add( master );
+      }
+      public LoggerProxy ( params Logger[] Masters ) : this( true, Masters ) { }
 
       public IList< Logger > Masters => _Masters;
 
@@ -290,6 +290,7 @@ namespace Sheepy.Logging {
       }
    }
 
+   /// Represents a log entry, to be queued for processing or forwarded to another logger.
    public class LogEntry {
       public DateTime Time;
       public SourceLevels Level;
@@ -297,11 +298,12 @@ namespace Sheepy.Logging {
       public object[] Args;
    }
 
+   /// Process a log entry, converting it and optionally reject it by returning false.  Returning true to keep it.
    public delegate bool LogFilter ( LogEntry entry );
 
    public class LogFilters {
 
-      // If message is not string, and there are multiple params, the message is converted to a list of params
+      /// If message is not string, and there are multiple params, the message is converted to a list of params
       public static bool AutoMultiParam ( LogEntry entry ) {
          if ( entry.Message is string txt && txt.Contains( '{' ) && txt.Contains( '}' ) ) return true;
          if ( entry.Args == null || entry.Args.Length <= 0 ) return true;
@@ -322,7 +324,7 @@ namespace Sheepy.Logging {
       }
 
 
-      // Expand enumerables and convert null (value) to "null" (string)
+      /// Expand enumerables and convert null (value) to "null" (string)
       public static bool FormatParams ( LogEntry entry ) {
          entry.Message = RecurFormatParam( entry.Message );
          if ( entry.Args != null )
@@ -343,7 +345,7 @@ namespace Sheepy.Logging {
       }
 
 
-      // Expand Func< string > to their results.
+      /// Expand Func< string > to their results.
       public static bool ResolveLazy ( LogEntry entry ) {
          ResolveLazyFunc( ref entry.Message );
          var args = entry.Args;
@@ -358,7 +360,7 @@ namespace Sheepy.Logging {
             param = lazy();
       }
 
-      // Log each exception once.  Exceptions are the same if their ToString are same.
+      /// Log each exception once.  Exceptions are the same if their ToString are same.
       public static LogFilter IgnoreDuplicateExceptions { get {
          HashSet< string > ignored = new HashSet<string>();
          return ( entry ) => {

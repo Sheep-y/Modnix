@@ -27,7 +27,7 @@ namespace Sheepy.Logging.Tests {
       [TestMethod()][ExpectedException(typeof(ArgumentNullException))]
       public void EmptyFileLoggerThrow () => new FileLogger( "" );
 
-      [TestMethod()] public void FileLoggerBackgroundMode () {
+      [TestMethod()] public void FileLogger () {
          Log.WriteDelay = 100;
 
          // Check that log is not written immediately
@@ -54,6 +54,29 @@ namespace Sheepy.Logging.Tests {
          Log.Info( "Background Cleared" );
          Log.Clear();
          Assert.IsFalse( File.Exists( Log.LogFile ), "Clear delete log" );
+      }
+
+      [TestMethod()] public void LoggerProxy () {
+         Log.WriteDelay = 1000;
+         var Log2 = new FileLogger( "logtest2.tmp", 1000 );
+         LoggerProxy proxy = new LoggerProxy( true, Log );
+         proxy.Masters.Add( Log2 );
+
+         proxy.Info( "Proxy" );
+         proxy.Flush();
+         Assert.IsTrue( LogContent.Contains( "Proxy" ), "Proxy is forwarding to 1st log" );
+         Assert.IsTrue( File.ReadAllText( Log2.LogFile ).Contains( "Proxy" ), "Proxy is forwarding to 2nd log" );
+
+         proxy.Clear();
+         Assert.IsFalse( File.Exists( Log .LogFile ), "Proxy is clearing 1st Log" );
+         Assert.IsFalse( File.Exists( Log2.LogFile ), "Proxy is clearing 2nd Log" );
+
+         try {
+            new LoggerProxy( false ).Clear();
+            Assert.IsTrue( false, "Proxy failed to disallow clear" );
+         } catch ( InvalidOperationException ) {
+            Assert.IsTrue( true, "Proxy may disallow clear" );
+         }
       }
 
       [TestMethod()] public void MultiParamFilter () {
@@ -120,6 +143,19 @@ namespace Sheepy.Logging.Tests {
 
          Log.Error( subject );
          Assert.IsTrue( LogSize == len, "Duplicate is still suppressed" );
+      }
+
+      [TestMethod()] public void PrefixPostfixFilter () {
+         Log.WriteDelay = 0;
+         Log.Filters.Add( LogFilters.AddPrefix( "A" ) );
+         Log.Filters.Add( LogFilters.AddPostfix( "Z" ) );
+
+         Exception subject = new Exception();
+         Log.Info( null );
+         Assert.IsTrue( LogContent.Contains( "AZ" ), "Added to null" );
+
+         Log.Info( "BC XY" );
+         Assert.IsTrue( LogContent.Contains( "ABC XYZ" ), "Added to message" );
       }
    }
 

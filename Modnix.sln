@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Injector", "Injector\Inject
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModLoaderTests", "ModLoaderTests\ModLoaderTests.csproj", "{9905D08E-AD37-418D-BC6D-BC81A41A311C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MainGUI", "MainGUI\MainGUI.csproj", "{65F0A307-B0B6-4F79-BF3C-1D10AEEDD4EB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{9905D08E-AD37-418D-BC6D-BC81A41A311C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9905D08E-AD37-418D-BC6D-BC81A41A311C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9905D08E-AD37-418D-BC6D-BC81A41A311C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{65F0A307-B0B6-4F79-BF3C-1D10AEEDD4EB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{65F0A307-B0B6-4F79-BF3C-1D10AEEDD4EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{65F0A307-B0B6-4F79-BF3C-1D10AEEDD4EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{65F0A307-B0B6-4F79-BF3C-1D10AEEDD4EB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
