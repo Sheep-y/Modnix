@@ -31,22 +31,24 @@ namespace Sheepy.Modnix.MainGUI {
 
       public AppControl ( MainWindow _GUI ) => GUI = _GUI;
 
-      public void CheckAppStateAsync () {
-         Task.Run( (Action) CheckAppState );
+      public void CheckStatusAsync () {
+         Task.Run( (Action) CheckStatus );
       }
 
       /// 1. If injector is in correct place = call injector to detect status
       /// 2. If injector is not in place, but dummy exists
       ///   Check Phoenix Point. Found = can setup. Not found = Error.
       /// 3. If dummy not exists = Error, re-download
-      private void CheckAppState () {
+      private void CheckStatus () {
          lock ( SynRoot ) {
             if ( Checking ) return;
             Checking = true;
          }
-         Log( "Checking states" );
+         Log( "Checking status" );
          try {
-            GUI.SetAppVer( Assembly.GetExecutingAssembly().GetName().Version.ToString() );
+            Log( "Assembly: " + Assembly.GetExecutingAssembly().GetName().CodeBase );
+            Log( "Working Dir: " + Directory.GetCurrentDirectory() );
+            GUI.SetAppVer( CheckAppVer() );
             bool found = FoundGame( out string gamePath );
             if ( found )
                GUI.SetGamePath( gamePath );
@@ -64,7 +66,6 @@ namespace Sheepy.Modnix.MainGUI {
                      GUI.SetAppState( "no_game" );
                }
             }
-            CheckGameVer();
 
          } finally {
             lock ( SynRoot ) {
@@ -102,14 +103,22 @@ namespace Sheepy.Modnix.MainGUI {
          }
       }
 
-      public string CheckGameVer () {
-         try {
-            Log( "Detecting game version." );
-            return RunAndWait( DLL_PATH, InjectorPath, "/g" ).Trim();
-         } catch ( Exception ex ) {
-            return Log( ex, "error" );
-         }
-      }
+      public string CheckAppVer () { try {
+         string ver = Assembly.GetExecutingAssembly().GetName().Version.ToString();
+         Log( "Version: " + ver );
+         return ver;
+      } catch ( Exception ex ) {
+         return Log( ex, "error" );
+      } }
+
+      public string CheckGameVer () { try {
+         Log( "Detecting game version." );
+         string ver = RunAndWait( DLL_PATH, InjectorPath, "/g" ).Trim();
+         Log( "Game Version: " + ver );
+         return ver;
+      } catch ( Exception ex ) {
+         return Log( ex, "error" );
+      } }
 
       /// Check that all install package files are in place
       public bool PackagesInPlace () { try {
@@ -126,8 +135,8 @@ namespace Sheepy.Modnix.MainGUI {
             string exe = Path.Combine( path, GAME_EXE ), dll = Path.Combine( path, DLL_PATH, GAME_DLL );
             if ( File.Exists( exe ) && new FileInfo( exe ).Length > MIN_FILE_SIZE &&
                  File.Exists( dll ) && new FileInfo( dll ).Length > MIN_FILE_SIZE ) {
-               gamePath = path;
-               return Log( $"Found game at {path}:\r{exe}\r{dll}", true );
+               gamePath = Path.GetFullPath( path );
+               return Log( $"Found game at " + gamePath, true );
             }
             Log( $"Game not found at {path}" );
          }
@@ -144,6 +153,8 @@ namespace Sheepy.Modnix.MainGUI {
          p.StartInfo.FileName = exe;
          p.StartInfo.Arguments = param;
          p.StartInfo.WorkingDirectory = path;
+         p.StartInfo.CreateNoWindow = true;
+         p.StartInfo.WindowStyle = ProcessWindowStyle.Minimized;
          p.Start();
 
          string output = p.StandardOutput.ReadToEnd();

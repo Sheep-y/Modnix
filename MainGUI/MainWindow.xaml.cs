@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -26,12 +28,13 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       private void RefreshGUI () {
+         Log( "Time is " + DateTime.Now.ToString("u") );
          Log( "Resetting GUI" );
          RefreshAppInfo();
          RefreshGameInfo();
          RefreshModInfo();
          Log( "Initiating Controller" );
-         new AppControl( this ).CheckAppStateAsync();
+         new AppControl( this ).CheckStatusAsync();
       }
 
       #region App Info
@@ -100,7 +103,27 @@ namespace Sheepy.Modnix.MainGUI {
       private void ButtonReddit_Click  ( object sender, RoutedEventArgs e ) => OpenUrl( "reddit", e );
       private void ButtonWebsite_Click ( object sender, RoutedEventArgs e ) => OpenUrl( "www", e );
 
+      private void ButtonLogSave_Click ( object sender, RoutedEventArgs e ) {
+         var dialog = new Microsoft.Win32.SaveFileDialog {
+            FileName = "ModnixGuiLog " + DateTime.Now.ToString( "u" ).Replace( ':', '-' ),
+            DefaultExt = ".txt",
+            Filter = "Log Files (.txt .log)|*.txt;*.log|All Files|*.*"
+         };
+         if ( dialog.ShowDialog().GetValueOrDefault() ) try {
+            File.WriteAllText( dialog.FileName, textLog.Text );
+            Process.Start("explorer.exe", "/select, \"" + dialog.FileName +"\"" );
+         } catch ( Exception ex ) {
+            Log( ex.ToString() );
+         }
+      }
+
+      private void ButtonLogClear_Click ( object sender, RoutedEventArgs e ) {
+         textLog.Clear();
+         ButtonLogSave.IsEnabled = false;
+      }
+
       private void OpenUrl ( string type, RoutedEventArgs e = null ) {
+         Log( "OpenUrl " + type );
          if ( e != null )
             if ( e.Source is UIElement src )
                src.Focus();
@@ -114,7 +137,8 @@ namespace Sheepy.Modnix.MainGUI {
             case "www"    : url = "https://phoenixpoint.info/"; break;
             default       : return;
          }
-         System.Diagnostics.Process.Start( url );
+         Log( "Opening " + url );
+         Process.Start( url );
       }
 
       #region Helpers
@@ -123,6 +147,7 @@ namespace Sheepy.Modnix.MainGUI {
          Dispatch( () => {
             textLog.AppendText( time + message );
             textLog.AppendText( "\n" );
+            ButtonLogSave.IsEnabled = true;
          } );
       }
 

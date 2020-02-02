@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         Title="Modnix" Height="550" Width="700">
    <TabControl>
-      <TabItem Header="Mods">
+      <TabItem x:Name="TabMods" Header="Mods">
          <Grid>
             <Grid.ColumnDefinitions>
                <ColumnDefinition/>
@@ -128,7 +128,7 @@
             <Button x:Name="ButtonLangZh" Content="中文" Grid.Column="4" Margin="0"/>
          </Grid>
       </TabItem>
-      <TabItem Header="Credits">
+      <TabItem x:Name="TabCredits" Header="Credits">
          <RichTextBox x:Name="richTextBox3" Margin="10">
             <FlowDocument>
                <Paragraph>
@@ -137,8 +137,15 @@
             </FlowDocument>
          </RichTextBox>
       </TabItem>
-      <TabItem Header="Log">
-         <TextBox x:Name="textLog" TextWrapping="Wrap" Text="" Margin="10" VerticalScrollBarVisibility="Visible"/>
+      <TabItem x:Name="TabLog" Header="Log">
+         <DockPanel Margin="10" >
+            <DockPanel DockPanel.Dock="Top" Margin="0,0,0,10">
+               <Button x:Name="ButtonLogClear" Content="Clear" Padding="5" Click="ButtonLogClear_Click"></Button>
+               <Button x:Name="ButtonLogSave" Content="Save As..." Padding="5" DockPanel.Dock="Right" Click="ButtonLogSave_Click" IsEnabled="False"></Button>
+               <Label x:Name="LabelLogTitle" Content="Dialogistic Log" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </DockPanel>
+            <TextBox x:Name="textLog" Text="" VerticalScrollBarVisibility="Visible" DockPanel.Dock="Bottom" HorizontalScrollBarVisibility="Visible"/>
+         </DockPanel>
       </TabItem>
    </TabControl>
 </Window>
