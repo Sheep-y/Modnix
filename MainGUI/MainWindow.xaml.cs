@@ -49,6 +49,8 @@ namespace Sheepy.Modnix.MainGUI {
          Log( "Injection status: " + value );
          AppState = value;
          RefreshAppInfo();
+         ButtonModDir.IsEnabled = AppState == "modnix";
+         ButtonAddMod.IsEnabled = AppState == "modnix";
       } ); }
 
       private void RefreshAppInfo () {

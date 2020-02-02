@@ -32,7 +32,7 @@
                         <ColumnDefinition/>
                      </Grid.ColumnDefinitions>
                      <Button x:Name="ButtonSetup" Content="Setup" Margin="0" VerticalAlignment="Top"  Padding="10,5"/>
-                     <Button x:Name="ButtonModDir" Grid.Column="2" Margin="0" VerticalAlignment="Top"  Padding="10,5">
+                     <Button x:Name="ButtonModDir" Grid.Column="2" Margin="0" VerticalAlignment="Top"  Padding="10,5" IsEnabled="False">
                         <AccessText>Mod _Directory</AccessText>
                      </Button>
                      <Button x:Name="ButtonNexus" Grid.Column="4" Margin="0" VerticalAlignment="Top"  Padding="10,5">
@@ -97,7 +97,7 @@
             <DockPanel Grid.Column="2" Margin="10">
                <DockPanel DockPanel.Dock="Top">
                   <Label x:Name="label" Content="Total Mods: 12&#10;Enabled: 10 &#09;Disabled: 2" Grid.Column="2" Margin="0" VerticalAlignment="Top"/>
-                  <Button x:Name="ButtonAddMod" HorizontalAlignment="Right" DockPanel.Dock="Right" Padding="10,5">
+                  <Button x:Name="ButtonAddMod" HorizontalAlignment="Right" DockPanel.Dock="Right" Padding="10,5" IsEnabled="False">
                      <AccessText>_Add Mod</AccessText>
                   </Button>
                </DockPanel>
@@ -107,8 +107,8 @@
                      <ColumnDefinition Width="10"/>
                      <ColumnDefinition/>
                   </Grid.ColumnDefinitions>
-                  <Button x:Name="ButtonModDisable" Content="Disable" Padding="5" />
-                  <Button x:Name="ButtonModDelete" Content="Delete" Grid.Column="2" Padding="5" />
+                  <Button x:Name="ButtonModDisable" Content="Disable" Padding="5" IsEnabled="False" />
+                  <Button x:Name="ButtonModDelete" Content="Delete" Grid.Column="2" Padding="5" IsEnabled="False" />
                </Grid>
                <DataGrid x:Name="dataGrid" Margin="-2,10,0,10" VerticalScrollBarVisibility="Visible"/>
             </DockPanel>
@@ -129,7 +129,7 @@
          </Grid>
       </TabItem>
       <TabItem x:Name="TabCredits" Header="Credits">
-         <RichTextBox x:Name="richTextBox3" Margin="10">
+         <RichTextBox x:Name="richCredits" Margin="10" IsReadOnly="True" IsReadOnlyCaretVisible="True" HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Auto">
             <FlowDocument>
                <Paragraph>
                   <Run Text="Injector and Loader based on PPML by RealityMachina."/>
@@ -144,7 +144,7 @@
                <Button x:Name="ButtonLogSave" Content="Save As..." Padding="5" DockPanel.Dock="Right" Click="ButtonLogSave_Click" IsEnabled="False"></Button>
                <Label x:Name="LabelLogTitle" Content="Dialogistic Log" HorizontalAlignment="Center" VerticalAlignment="Center"/>
             </DockPanel>
-            <TextBox x:Name="textLog" Text="" VerticalScrollBarVisibility="Visible" DockPanel.Dock="Bottom" HorizontalScrollBarVisibility="Visible"/>
+            <TextBox x:Name="textLog" Text="" VerticalScrollBarVisibility="Visible" DockPanel.Dock="Bottom" HorizontalScrollBarVisibility="Visible" IsReadOnly="True" IsReadOnlyCaretVisible="True"/>
          </DockPanel>
       </TabItem>
    </TabControl>

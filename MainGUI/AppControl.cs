@@ -92,11 +92,12 @@ namespace Sheepy.Modnix.MainGUI {
             if ( ! InjectorInPlace() ) return false;
             Log( "Detecting injection status." );
             string state = RunAndWait( DLL_PATH, InjectorPath, "/d" ).Trim();
+            Log( $"Detection result: {state}" );
             if ( state == "ppml" || state == "modnix" ) {
                injectState = state;
                return true;
             }
-            return Log( $"Unknown result: {state}", false );
+            return false;
          } catch ( Exception ex ) {
             injectState = "error";
             return Log( ex, false );
