@@ -5,6 +5,7 @@ using System.IO;
 using System.Text;
 using System.Linq;
 using System.Threading;
+using System.Collections;
 
 namespace Sheepy.Logging {
 
@@ -15,17 +16,18 @@ namespace Sheepy.Logging {
          ReaderWriterLockSlim locker = new ReaderWriterLockSlim();
          _Reader  = new LoggerReadLockHelper ( locker );
          _Writer  = new LoggerWriteLockHelper( locker );
-         _Filters = new SynchronizedCollection<LogFilter>( locker );
+         _Filters = new RwlsList<LogFilter>( _Reader, _Writer );
       }
 
       // ============ Self Prop ============
 
       protected SourceLevels _Level = SourceLevels.Information;
       protected string _TimeFormat = "yyyy-MM-ddTHH:mm:ssz", _Prefix = null, _Postfix = null;
-      protected readonly SynchronizedCollection< LogFilter > _Filters = null; // Exposed to public through Filter
+      protected readonly RwlsList< LogFilter > _Filters;
       protected Action< Exception > _OnError = null;
 
-      protected readonly LockHelper _Reader, _Writer; // lock( _Writer ) during queue process, to ensure sequential output
+      protected readonly LoggerReadLockHelper  _Reader;
+      protected readonly LoggerWriteLockHelper _Writer; // lock( _Writer ) during queue process, to ensure sequential output
 
       // ============ Public Prop ============
 
@@ -157,9 +159,7 @@ namespace Sheepy.Logging {
                _Queue.Clear();
             }
             timeFormat = TimeFormat;
-            lock ( _Filters.SyncRoot ) {
-               filters = _Filters.ToArray();
-            }
+            filters = _Filters.ToArray();
             try {
                StartProcess();
                foreach ( LogEntry line in entries ) try {
@@ -233,7 +233,7 @@ namespace Sheepy.Logging {
 
          if ( entry.Args != null && entry.Args.Length > 0 && txt != null ) try {
             txt = string.Format( txt, entry.Args );
-         } catch ( FormatException ) { /* Leave unformatable string as is */ }
+         } catch ( FormatException ) {}
          buf.Append( txt ).Append( Environment.NewLine );
       }
 
@@ -247,10 +247,11 @@ namespace Sheepy.Logging {
    /// A Logger that forwards messages to one or more loggers.  The proxy itself does not run in background.  TimeFormat is ignored.
    public class LoggerProxy : Logger {
       private bool _AllowClear;
-      private readonly SynchronizedCollection< Logger > _Masters = new SynchronizedCollection< Logger >();
+      private readonly RwlsList< Logger > _Masters;
 
       public LoggerProxy ( bool AllowClear = true, params Logger[] Masters ) {
          _AllowClear = AllowClear;
+         _Masters = new RwlsList< Logger >( _Reader, _Writer );
          if ( Masters != null && Masters.Length > 0 )
             foreach ( var master in Masters )
                _Masters.Add( master );
@@ -261,32 +262,24 @@ namespace Sheepy.Logging {
 
       public override void Clear () {
          if ( ! _AllowClear ) throw new InvalidOperationException();
-         lock ( _Masters.SyncRoot ) {
-            foreach ( Logger master in _Masters ) try {
-               master.Clear();
-            } catch ( Exception ex ) { CallOnError( ex ); }
-         }
+         foreach ( Logger master in _Masters.ToArray() ) try {
+            master.Clear();
+         } catch ( Exception ex ) { CallOnError( ex ); }
       }
 
       public override void Flush () {
-         lock ( _Masters.SyncRoot ) {
-            foreach ( Logger master in _Masters ) try {
-               master.Flush();
-            } catch ( Exception ex ) { CallOnError( ex ); }
-         }
+         foreach ( Logger master in _Masters.ToArray() ) try {
+            master.Flush();
+         } catch ( Exception ex ) { CallOnError( ex ); }
       }
 
       protected override void _Log ( LogEntry entry ) {
-         lock ( _Filters.SyncRoot ) {
-            foreach ( LogFilter filter in _Filters ) try {
-               if ( ! filter( entry ) ) return;
-            } catch ( Exception ex ) { CallOnError( ex ); }
-         }
-         lock ( _Masters.SyncRoot ) {
-            foreach ( Logger master in _Masters ) try {
-               master.Log( entry );
-            } catch ( Exception ex ) { CallOnError( ex ); }
-         }
+         foreach ( LogFilter filter in _Filters.ToArray() ) try {
+            if ( ! filter( entry ) ) return;
+         } catch ( Exception ex ) { CallOnError( ex ); }
+         foreach ( Logger master in _Masters.ToArray() ) try {
+            master.Log( entry );
+         } catch ( Exception ex ) { CallOnError( ex ); }
       }
    }
 
@@ -412,6 +405,35 @@ namespace Sheepy.Logging {
       public LoggerWriteLockHelper ( ReaderWriterLockSlim rwlock ) { RwLock = rwlock; }
       public override IDisposable Lock { get { RwLock.EnterWriteLock(); return this; } }
       public override void Dispose () => RwLock.ExitWriteLock();
+   }
+
+   public class RwlsList<T> : IList<T> {
+      private readonly List<T> _List = new List<T>();
+      private readonly LockHelper _Reader, _Writer;
+
+      public RwlsList ( LoggerReadLockHelper Reader, LoggerWriteLockHelper Writer ) {
+         if ( Reader == null || Writer == null ) throw new ArgumentNullException();
+         _Reader = Reader;
+         _Writer = Writer;
+      }
+
+      public T this[ int index ] { 
+         get { using ( _Reader.Lock ) { return _List[ index ]; } }
+         set { using ( _Writer.Lock ) { _List[ index ] = value; } } }
+      public int Count { get { using ( _Reader.Lock ) { return _List.Count; } } }
+      public bool IsReadOnly => false;
+
+      public void Add ( T item ) { using ( _Writer.Lock ) { _List.Add( item ); } }
+      public void Clear () { using ( _Writer.Lock ) { _List.Clear(); } }
+      public bool Contains ( T item ) { using ( _Reader.Lock ) { return _List.Contains( item ); } }
+      public void CopyTo ( T[] array, int arrayIndex = 0 ) { using ( _Reader.Lock ) { _List.CopyTo( array, arrayIndex ); } }
+      public int IndexOf ( T item ) { using ( _Reader.Lock ) { return _List.IndexOf( item ); } }
+      public void Insert ( int index, T item ) { using ( _Writer.Lock ) { _List.Insert( index, item ); } }
+      public bool Remove ( T item ) { using ( _Writer.Lock ) { return _List.Remove( item ); } }
+      public void RemoveAt ( int index )  { using ( _Writer.Lock ) { _List.RemoveAt( index ); } }
+      public T[] ToArray ()  { using ( _Reader.Lock ) { return _List.ToArray(); } }
+      public IEnumerator<T> GetEnumerator () { return _List.GetEnumerator(); }
+      IEnumerator IEnumerable.GetEnumerator () => GetEnumerator();
    }
    #endregion
 }
