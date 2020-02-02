@@ -18,7 +18,7 @@ namespace Sheepy.Modnix.MainGUI {
 
    public partial class MainWindow : Window {
 
-      private string AppVer, AppState, GameVer, GameState;
+      private string AppVer, AppState, GamePath, GameVer;
 
       public MainWindow () {
          InitializeComponent();
@@ -27,23 +27,17 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void RefreshGUI () {
          Log( "Resetting GUI" );
-         RefreshAppVer();
+         RefreshAppInfo();
+         RefreshGameInfo();
+         RefreshModInfo();
          Log( "Initiating Controller" );
          new AppControl( this ).CheckAppStateAsync();
       }
 
-      public void Log ( string message ) {
-         string time = DateTime.Now.ToString( "hh:mm:ss.ffff " );
-         Dispatch( () => {
-            textLog.AppendText( time + message );
-            textLog.AppendText( "\n" );
-         } );
-      }
-
+      #region App Info
       public void SetAppVer ( string value ) { Dispatch( () => {
-         Log( "Modnix version: " + value );
          AppVer = value;
-         RefreshAppVer();
+         RefreshAppInfo();
       } ); }
 
       /// Set and update app state.
@@ -51,10 +45,10 @@ namespace Sheepy.Modnix.MainGUI {
       public void SetAppState ( string value ) { Dispatch( () => {
          Log( "Injection status: " + value );
          AppState = value;
-         RefreshAppVer();
+         RefreshAppInfo();
       } ); }
 
-      private void RefreshAppVer () {
+      private void RefreshAppInfo () {
          string txt = $"Modnix\rVer {AppVer}\rStatus: ";
          if ( AppState == null )
             txt += "Checking";
@@ -68,6 +62,35 @@ namespace Sheepy.Modnix.MainGUI {
                default: txt += "Need Setup"; break;
             }
          richAppInfo.TextRange().Text = txt;
+      }
+      #endregion
+
+      #region Game Info
+      public void SetGamePath ( string value ) { Dispatch( () => {
+         GamePath = value;
+         RefreshGameInfo();
+      } ); }
+      
+      public void SetGameVer ( string value ) { Dispatch( () => {
+         GameVer = value;
+         RefreshGameInfo();
+      } ); }
+
+      private void RefreshGameInfo () {
+         string txt = "Phoenix Point";
+         if ( GamePath != null ) {
+            txt += "\r" + System.IO.Path.GetFullPath( GamePath );
+            if ( GameVer  != null )
+               txt += "\rVer: " + GameVer;
+         } else
+            txt += "Game not found";
+         richGameInfo.TextRange().Text = txt;
+      }
+      #endregion
+
+      private void RefreshModInfo () {
+         string txt = AppState == "modenix" ? "Select a mod to see info" : "";
+         richModInfo.TextRange().Text = txt;
       }
 
       private void ButtonCanny_Click   ( object sender, RoutedEventArgs e ) => OpenUrl( "canny", e );
@@ -94,12 +117,22 @@ namespace Sheepy.Modnix.MainGUI {
          System.Diagnostics.Process.Start( url );
       }
 
+      #region Helpers
+      public void Log ( string message ) {
+         string time = DateTime.Now.ToString( "hh:mm:ss.ffff " );
+         Dispatch( () => {
+            textLog.AppendText( time + message );
+            textLog.AppendText( "\n" );
+         } );
+      }
+
       private void Dispatch ( Action task ) {
          if ( Dispatcher.CheckAccess() )
             task();
          else
             Dispatcher.Invoke( task );
       }
+      #endregion
    }
 
    public static class WpfHelper {

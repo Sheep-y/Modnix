@@ -47,18 +47,24 @@ namespace Sheepy.Modnix.MainGUI {
          Log( "Checking states" );
          try {
             GUI.SetAppVer( Assembly.GetExecutingAssembly().GetName().Version.ToString() );
+            bool found = FoundGame( out string gamePath );
+            if ( found )
+               GUI.SetGamePath( gamePath );
+
             if ( CheckInjected( out string injectState ) ) {
                GUI.SetAppState( injectState );
+               GUI.SetGameVer( CheckGameVer() );
             } else {
-               if ( PackagesInPlace() && FoundGame() ) {
+               if ( PackagesInPlace() && found ) {
                   GUI.SetAppState( "setup" );
                } else {
-                  if ( FoundGame() )
+                  if ( found )
                      GUI.SetAppState( "missing" );
                   else
                      GUI.SetAppState( "no_game" );
                }
             }
+            CheckGameVer();
 
          } finally {
             lock ( SynRoot ) {
@@ -96,6 +102,15 @@ namespace Sheepy.Modnix.MainGUI {
          }
       }
 
+      public string CheckGameVer () {
+         try {
+            Log( "Detecting game version." );
+            return RunAndWait( DLL_PATH, InjectorPath, "/g" ).Trim();
+         } catch ( Exception ex ) {
+            return Log( ex, "error" );
+         }
+      }
+
       /// Check that all install package files are in place
       public bool PackagesInPlace () { try {
          foreach ( string file in PACKAGES ) {
@@ -106,17 +121,20 @@ namespace Sheepy.Modnix.MainGUI {
       } catch ( IOException ex ) { return Log( ex, false ); } }
 
       /// Try to detect game path
-      public bool FoundGame () { try {
+      public bool FoundGame ( out string gamePath ) { gamePath = null; try {
          foreach ( string path in GAME_PATHS ) {
             string exe = Path.Combine( path, GAME_EXE ), dll = Path.Combine( path, DLL_PATH, GAME_DLL );
             if ( File.Exists( exe ) && new FileInfo( exe ).Length > MIN_FILE_SIZE &&
-                 File.Exists( dll ) && new FileInfo( dll ).Length > MIN_FILE_SIZE )
+                 File.Exists( dll ) && new FileInfo( dll ).Length > MIN_FILE_SIZE ) {
+               gamePath = path;
                return Log( $"Found game at {path}:\r{exe}\r{dll}", true );
+            }
             Log( $"Game not found at {path}" );
          }
          return false;
       } catch ( IOException ex ) { return Log( ex, false ); } }
 
+      #region Helpers
       private string RunAndWait ( string path, string exe, string param = null ) {
          Log( $"Running at {path} : {exe} {param}" );
          
@@ -139,5 +157,6 @@ namespace Sheepy.Modnix.MainGUI {
          Log( message.ToString() );
          return result;
       }
+      #endregion
    }
 }
