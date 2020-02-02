@@ -55,4 +55,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>cd $(SolutionDir)
+mkdir release
+copy /y $(ProjectDir)$(OutDir)$(TargetFileName) release\
+copy /y $(ProjectDir)$(OutDir)0Harmony.dll release\</PostBuildEvent>
+  </PropertyGroup>
 </Project>

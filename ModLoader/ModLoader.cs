@@ -14,7 +14,8 @@ namespace Sheepy.Modnix {
       private const BindingFlags PUBLIC_STATIC_BINDING_FLAGS = BindingFlags.Public | BindingFlags.Static;
       private static readonly List<string> IGNORE_FILE_NAMES = new List<string>() {
          "0Harmony.dll",
-         "ModnixLoader.dll"
+         "PPModLoader.dll",
+         "ModnixLoader.dll",
       };
 
       public static string ModDirectory { get; private set; }
@@ -26,15 +27,14 @@ namespace Sheepy.Modnix {
 
          // this should be (wherever Phoenix Point is Installed)\PhoenixPoint\PhoenixPointWin64_Data\Managed
          ModDirectory = Path.GetFullPath( Path.Combine( manifestDirectory, Path.Combine( @"..\..\Mods" ) ) );
-         Log = new FileLogger( Path.Combine( ModDirectory, "ModnixLoader.log" ) );
-         Log.TimeFormat = "HH:mm:ss.ffff ";
+         Log = new FileLogger( Path.Combine( ModDirectory, "ModnixLoader.log" ) ){ TimeFormat = "HH:mm:ss.ffff " };
 
          if ( !Directory.Exists( ModDirectory ) )
             Directory.CreateDirectory( ModDirectory );
 
          // create log file, overwriting if it's already there
          Log.Clear();
-         Log.Info( "{0} --v{1} -- {2}", typeof( ModLoader ).FullName, LoaderVersion, DateTime.Now );
+         Log.Info( "{0} --v{1} -- {2}", typeof( ModLoader ).FullName, LoaderVersion, DateTime.Now.ToString( "u" ) );
 
          // ReSharper disable once UnusedVariable
          var harmony = HarmonyInstance.Create( typeof( ModLoader ).Namespace );
