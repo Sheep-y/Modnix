@@ -10,9 +10,19 @@ using System.Threading.Tasks;
 namespace Sheepy.Modnix.MainGUI {
    public class AppControl {
 
-      private static string DLL_PATH = "PhoenixPointWin64_Data/Managed";
-      private static string INJECTOR = "ModnixInjector.exe";
-      private static string LOADER   = "ModnixLoader.dll";
+      private readonly static string DLL_PATH = @"PhoenixPointWin64_Data\Managed";
+      private readonly static string INJECTOR =  "ModnixInjector.exe";
+      private readonly static string LOADER   =  "ModnixLoader.dll";
+      private readonly static string GAME_EXE =  "PhoenixPointWin64.exe";
+      private readonly static string GAME_DLL =  "Assembly-CSharp.dll";
+
+      // Game and install files are considered corrupted and thus non exists if smaller than this size
+      private readonly static long MIN_FILE_SIZE = 1024 * 10;
+
+      private readonly static string[] GAME_PATHS =
+         new string[]{ ".", @"C:\Program Files\Epic Games\PhoenixPoint" };
+      private readonly static string[] PACKAGES  =
+         new string[]{ "ModnixInjector.ex_", "ModnixLoader.dll", "0Harmony.dll", "Mono.Cecil.dll" };
 
       private readonly MainWindow GUI;
       private readonly object SynRoot = new object();
@@ -37,11 +47,17 @@ namespace Sheepy.Modnix.MainGUI {
          Log( "Checking states" );
          try {
             GUI.SetAppVer( Assembly.GetExecutingAssembly().GetName().Version.ToString() );
-            GUI.SetAppState( CheckInjected( out bool hasInjector ) );
-            if ( hasInjector ) {
-
+            if ( CheckInjected( out string injectState ) ) {
+               GUI.SetAppState( injectState );
             } else {
-
+               if ( PackagesInPlace() && FoundGame() ) {
+                  GUI.SetAppState( "setup" );
+               } else {
+                  if ( FoundGame() )
+                     GUI.SetAppState( "missing" );
+                  else
+                     GUI.SetAppState( "no_game" );
+               }
             }
 
          } finally {
@@ -54,29 +70,52 @@ namespace Sheepy.Modnix.MainGUI {
       public readonly string InjectorPath = Path.Combine( DLL_PATH, INJECTOR );
       public readonly string LoaderPath   = Path.Combine( DLL_PATH, LOADER   );
 
+      /// Check that mod injector and mod loader is in place
       public bool InjectorInPlace () { try {
-         if ( ! File.Exists( InjectorPath ) ) return Log( $"Injector not found: {InjectorPath}", false );
-         if ( ! File.Exists( LoaderPath ) ) return Log( $"Loader not found: {LoaderPath}", false );
+         if ( ! File.Exists( InjectorPath ) ) return Log( $"Missing injector: {InjectorPath}", false );
+         if ( ! File.Exists( LoaderPath ) ) return Log( $"Missing loader: {LoaderPath}", false );
          return Log( $"Injector and loader found in {DLL_PATH}", true );
-      } catch ( IOException ex ) {
-         return Log( ex, false );
-      } }
+      } catch ( IOException ex ) { return Log( ex, false ); } }
 
-      public string CheckInjected ( out bool hasInjector ) {
-         hasInjector = false;
+      /// Return true if injectors are in place and injected.
+      /// injectState may be null, "ppml", "modnix", or "error".
+      public bool CheckInjected ( out string injectState ) {
+         injectState = null;
          try {
-            if ( ! InjectorInPlace() ) return "missing";
+            if ( ! InjectorInPlace() ) return false;
             Log( "Detecting injection status." );
             string state = RunAndWait( DLL_PATH, InjectorPath, "/d" ).Trim();
             if ( state == "ppml" || state == "modnix" ) {
-               hasInjector = true;
-               return state;
+               injectState = state;
+               return true;
             }
-            return Log( $"Unknown result: {state}", "none" );
+            return Log( $"Unknown result: {state}", false );
          } catch ( Exception ex ) {
-            return Log( ex, "error" );
+            injectState = "error";
+            return Log( ex, false );
          }
       }
+
+      /// Check that all install package files are in place
+      public bool PackagesInPlace () { try {
+         foreach ( string file in PACKAGES ) {
+            if ( File.Exists( file ) && new FileInfo( file ).Length > MIN_FILE_SIZE ) continue;
+            return Log( $"Missing install file: " + file, false );
+         }
+         return Log( $"All {PACKAGES.Length} install files found", true );
+      } catch ( IOException ex ) { return Log( ex, false ); } }
+
+      /// Try to detect game path
+      public bool FoundGame () { try {
+         foreach ( string path in GAME_PATHS ) {
+            string exe = Path.Combine( path, GAME_EXE ), dll = Path.Combine( path, DLL_PATH, GAME_DLL );
+            if ( File.Exists( exe ) && new FileInfo( exe ).Length > MIN_FILE_SIZE &&
+                 File.Exists( dll ) && new FileInfo( dll ).Length > MIN_FILE_SIZE )
+               return Log( $"Found game at {path}:\r{exe}\r{dll}", true );
+            Log( $"Game not found at {path}" );
+         }
+         return false;
+      } catch ( IOException ex ) { return Log( ex, false ); } }
 
       private string RunAndWait ( string path, string exe, string param = null ) {
          Log( $"Running at {path} : {exe} {param}" );

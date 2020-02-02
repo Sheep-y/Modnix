@@ -26,14 +26,19 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       private void RefreshGUI () {
+         Log( "Resetting GUI" );
+         RefreshAppVer();
          Log( "Initiating Controller" );
          new AppControl( this ).CheckAppStateAsync();
       }
 
-      public void Log ( string message ) { Dispatch( () => {
-         textLog.AppendText( message );
-         textLog.AppendText( "\n" );
-      } ); }
+      public void Log ( string message ) {
+         string time = DateTime.Now.ToString( "hh:mm:ss.ffff " );
+         Dispatch( () => {
+            textLog.AppendText( time + message );
+            textLog.AppendText( "\n" );
+         } );
+      }
 
       public void SetAppVer ( string value ) { Dispatch( () => {
          Log( "Modnix version: " + value );
@@ -41,6 +46,8 @@ namespace Sheepy.Modnix.MainGUI {
          RefreshAppVer();
       } ); }
 
+      /// Set and update app state.
+      /// Value param May be "ppml", "modnix", "setup", "no_game", or "missing".
       public void SetAppState ( string value ) { Dispatch( () => {
          Log( "Injection status: " + value );
          AppState = value;
@@ -48,13 +55,16 @@ namespace Sheepy.Modnix.MainGUI {
       } ); }
 
       private void RefreshAppVer () {
-         string txt = "Modnix\rVer " + AppVer + "\rStatus: ";
+         string txt = $"Modnix\rVer {AppVer}\rStatus: ";
          if ( AppState == null )
             txt += "Checking";
          else
             switch ( AppState ) {
-               case "ppml" : txt += "PPML found, need update"; break;
+               case "ppml"   : txt += "PPML found, need update"; break;
                case "modnix" : txt += "Injected"; break;
+               case "setup"  : txt += "Requires Setup"; break;
+               case "no_game": txt += "Requires Manual Setup"; break;
+               case "missing": txt += "Setup files missing, please re-download"; break;
                default: txt += "Need Setup"; break;
             }
          richAppInfo.TextRange().Text = txt;
@@ -84,7 +94,12 @@ namespace Sheepy.Modnix.MainGUI {
          System.Diagnostics.Process.Start( url );
       }
 
-      private void Dispatch ( Action task ) => Dispatcher.Invoke( task );
+      private void Dispatch ( Action task ) {
+         if ( Dispatcher.CheckAccess() )
+            task();
+         else
+            Dispatcher.Invoke( task );
+      }
    }
 
    public static class WpfHelper {
