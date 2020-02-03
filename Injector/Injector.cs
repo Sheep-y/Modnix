@@ -8,8 +8,6 @@ using System.Linq;
 using System.Reflection;
 using static System.Console;
 
-// TODO: PPML inject check and restore is broken after changing injection point.
-// Need to refactor the whole thing.
 namespace Sheepy.Modnix {
    internal static class Injector {
       // return codes
@@ -22,28 +20,28 @@ namespace Sheepy.Modnix {
       private const int RC_MISSING_MOD_LOADER_ASSEMBLY = 6;
       private const int RC_REQUIRED_GAME_VERSION_MISMATCH = 7;
 
-      private const string MOD_LOADER_NAME = "Modnix";
-      private const string MOD_INJECTOR_EXE_FILE_NAME = "ModnixInjector.exe";
-      private const string MOD_LOADER_DLL_FILE_NAME = "ModnixLoader.dll";
-      private const string INJECTED_DLL_FILE_NAME = "Cinemachine.dll";
-      private const string GAME_DLL_FILE_NAME = "Assembly-CSharp.dll";
-      private const string BACKUP_FILE_EXT = ".orig";
+      internal const string MOD_LOADER_NAME = "Modnix";
+      internal const string MOD_INJECTOR_EXE_FILE_NAME = "ModnixInjector.exe";
+      internal const string MOD_LOADER_DLL_FILE_NAME = "ModnixLoader.dll";
+      internal const string INJECT_TO_DLL_FILE_NAME = "Cinemachine.dll";
+      internal const string GAME_DLL_FILE_NAME = "Assembly-CSharp.dll";
+      internal const string BACKUP_FILE_EXT = ".orig";
 
       // PPML Late injection goes here
-      //private const string HOOK_TYPE     = "PhoenixPoint.Common.Game.PhoenixGame";
-      //private const string HOOK_METHOD   = "BootCrt";
-      private const string HOOK_TYPE     = "Cinemachine.CinemachineBrain";
-      private const string HOOK_METHOD   = "OnEnable";
-      private const string INJECT_TYPE   = "Sheepy.Modnix.ModLoader";
-      private const string INJECT_METHOD = "Init";
-      //private const string INJECT_CALL   = "MenuCrt";
+      //internal const string HOOK_TYPE     = "PhoenixPoint.Common.Game.PhoenixGame";
+      //internal const string HOOK_METHOD   = "BootCrt";
+      internal const string HOOK_TYPE     = "Cinemachine.CinemachineBrain";
+      internal const string HOOK_METHOD   = "OnEnable";
+      internal const string INJECT_TYPE   = "Sheepy.Modnix.ModLoader";
+      internal const string INJECT_METHOD = "Init";
+      //internal const string INJECT_CALL   = "MenuCrt";
 
-      private const string PPML_INJECTOR_EXE    = "PhoenixPointModLoaderInjector.exe";
-      private const string PPML_INJECTOR_TYPE   = "PhoenixPointModLoader.PPModLoader";
-      private const string PPML_INJECTOR_METHOD = "Init";
+      internal const string PPML_INJECTOR_EXE    = "PhoenixPointModLoaderInjector.exe";
+      internal const string PPML_INJECTOR_TYPE   = "PhoenixPointModLoader.PPModLoader";
+      internal const string PPML_INJECTOR_METHOD = "Init";
 
-      private const string GAME_VERSION_TYPE   = "Base.Build.RuntimeBuildInfo";
-      private const string GAME_VERSION_METHOD = "get_Version";
+      internal const string GAME_VERSION_TYPE   = "Base.Build.RuntimeBuildInfo";
+      internal const string GAME_VERSION_METHOD = "get_Version";
 
       private static readonly AppState State = new AppState();
       private static readonly ReceivedOptions OptionsIn = new ReceivedOptions();
@@ -94,28 +92,33 @@ namespace Sheepy.Modnix {
             SayHeader();
 
             if ( OptionsIn.Restoring ) {
-               if ( State.targetDllInjected > InjectionState.NONE )
-                  Restore( State.targetDllPath, State.targetDllBackupPath );
-               else
+               if ( ( State.ppmlDll.Status | State.modxDll.Status ) == InjectionState.NONE )
                   SayAlreadyRestored();
+               else {
+                  if ( State.ppmlDll.Status > InjectionState.NONE )
+                     State.ppmlDll.Restore();
+                  if ( State.modxDll.Status > InjectionState.NONE )
+                     State.modxDll.Restore();
+               }
                return PromptForKey( OptionsIn.RequireKeyPress );
             }
 
             if ( OptionsIn.Installing ) {
                bool injected = false;
                try {
-                  if ( State.targetDllInjected == InjectionState.NONE ) {
-                     Backup( State.targetDllPath, State.targetDllBackupPath );
-                     injected = Inject( State.targetDllPath, State.modLoaderDllPath );
-                  } else if ( State.targetDllInjected == InjectionState.PPML ) {
+                  if ( State.ppmlDll.Status > InjectionState.NONE ) {
                      SayPpmlMigrate();
-                     Restore( State.targetDllPath, State.targetDllBackupPath );
-                     injected = Inject( State.targetDllPath, State.modLoaderDllPath );
-                  } else if ( State.targetDllInjected == InjectionState.MODNIX ) {
+                     State.ppmlDll.Restore();
+                  }
+                  if ( State.modxDll.Status == InjectionState.NONE ) {
+                     State.modxDll.Backup();
+                     injected = State.modxDll.Inject( State.modLoaderDllPath );
+                  } else if ( State.modxDll.Status == InjectionState.MODNIX ) {
                      SayAlreadyInjected();
                      injected = true;
-                  } else
-                     throw new InvalidOperationException();
+                  } else {
+                     throw new InvalidOperationException( $"Unexpected injection status: {State.modxDll.Status}" );
+                  }
                } catch ( Exception ex ) {
                   SayException( ex );
                }
@@ -160,10 +163,12 @@ namespace Sheepy.Modnix {
             State.managedDirectory = Directory.GetCurrentDirectory();
 
          State.gameDllPath         = Path.Combine( State.managedDirectory, GAME_DLL_FILE_NAME );
-         State.targetDllPath       = Path.Combine( State.managedDirectory, INJECTED_DLL_FILE_NAME );
-         State.targetDllBackupPath = Path.Combine( State.managedDirectory, INJECTED_DLL_FILE_NAME + BACKUP_FILE_EXT );
+         State.targetDllPath       = Path.Combine( State.managedDirectory, INJECT_TO_DLL_FILE_NAME );
+         State.targetDllBackupPath = Path.Combine( State.managedDirectory, INJECT_TO_DLL_FILE_NAME + BACKUP_FILE_EXT );
          State.modLoaderDllPath    = Path.Combine( State.managedDirectory, MOD_LOADER_DLL_FILE_NAME );
          State.ppmlInjectorPath    = Path.Combine( State.managedDirectory, PPML_INJECTOR_EXE );
+         State.modxDll = new TargetFile( State.managedDirectory, INJECT_TO_DLL_FILE_NAME );
+         State.ppmlDll = new TargetFile( State.managedDirectory, GAME_DLL_FILE_NAME );
 
          if ( ! File.Exists( State.targetDllPath ) )
             Exit( SayGameAssemblyMissingError( OptionsIn.ManagedDir ) );
@@ -171,7 +176,7 @@ namespace Sheepy.Modnix {
          if ( ! File.Exists( State.modLoaderDllPath ) )
             Exit( SayModLoaderAssemblyMissingError( State.modLoaderDllPath ) );
 
-         State.gameVersion = LoadVersion( State.gameDllPath );
+         State.gameVersion = State.ppmlDll.ReadVersion();
          if ( OptionsIn.GameVersion )
             Exit( SayGameVersion( State.gameVersion ) );
 
@@ -180,182 +185,16 @@ namespace Sheepy.Modnix {
             Exit( PromptForKey( OptionsIn.RequireKeyPress, RC_REQUIRED_GAME_VERSION_MISMATCH ) );
          }
 
-         State.targetDllInjected = CheckInjection( State.targetDllPath );
+         State.ppmlDll.CheckInjection();
+         State.modxDll.CheckInjection();
+         var state = State.ppmlDll.Status | State.modxDll.Status;
          if ( OptionsIn.Detecting )
-            Exit( SayInjectedStatus( State.targetDllInjected ) );
+            Exit( SayInjectedStatus( state ) );
       }
 
       private static int SayInjectedStatus ( InjectionState injected ) {
          WriteLine( injected.ToString().ToLower() );
          return RC_NORMAL;
-      }
-
-      private static void Backup ( string filePath, string backupFilePath ) {
-         File.Copy( filePath, backupFilePath, true );
-         WriteLine( $"{Path.GetFileName( filePath )} backed up to {Path.GetFileName( backupFilePath )}" );
-      }
-
-      private static void Restore ( string filePath, string backupFilePath ) {
-         if ( ! File.Exists( backupFilePath ) )
-            throw new BackupFileNotFound();
-
-         if ( CheckInjection( backupFilePath ) > InjectionState.NONE )
-            throw new BackupFileInjected();
-
-         File.Copy( backupFilePath, filePath, true );
-         WriteLine( $"{Path.GetFileName( backupFilePath )} restored to {Path.GetFileName( filePath )}" );
-      }
-
-      private static bool Inject ( string hookFilePath, string injectFilePath ) {
-         WriteLine( $"Injecting {Path.GetFileName( hookFilePath )} with {INJECT_TYPE}.{INJECT_METHOD} at {HOOK_TYPE}.{HOOK_METHOD}" );
-         using ( var game = ModuleDefinition.ReadModule( hookFilePath, new ReaderParameters { ReadWrite = true } ) )
-         using ( var injecting = ModuleDefinition.ReadModule( injectFilePath ) ) {
-            var success = InjectModHookPoint( game, injecting );
-            if ( success )
-               success &= WriteNewAssembly( hookFilePath, game );
-            if ( !success )
-               WriteLine( "Failed to inject the game assembly." );
-            return success;
-         }
-      }
-
-      private static bool WriteNewAssembly ( string hookFilePath, ModuleDefinition game ) {
-         // save the modified assembly
-         WriteLine( $"Writing back to {Path.GetFileName( hookFilePath )}..." );
-         game.Write();
-         WriteLine( "Injection complete!" );
-         return true;
-      }
-
-      private static bool InjectModHookPoint ( ModuleDefinition game, ModuleDefinition injecting ) {
-         // get the methods that we're hooking and injecting
-         var injectedMethod = injecting.GetType( INJECT_TYPE ).Methods.Single( x => x.Name == INJECT_METHOD );
-         var hookedMethod = game.GetType( HOOK_TYPE ).Methods.First( x => x.Name == HOOK_METHOD );
-         /*
-         PPML injection code for late-injection (after logos and game splash) 
-
-         // Since the return type is an iterator -- need to go searching for its MoveNext method which contains the actual code you'll want to inject
-         if ( hookedMethod.ReturnType.Name.Contains( "IEnumerator" ) ) {
-            var nestedIterator = game.GetType( HOOK_TYPE ).NestedTypes.First( x => x.Name.Contains( HOOK_METHOD ) );
-            hookedMethod = nestedIterator.Methods.First( x => x.Name.Equals( "MoveNext" ) );
-         }
-
-         // As of Phoenix Point v1.0.54973 the BootCrt() iterator method of PhoenixGame has this at the end
-         //
-         //  ...
-         //    IEnumerator<NextUpdate> coroutine = this.MenuCrt(null, MenuEnterReason.None);
-         //    yield return timing.Call(coroutine, null);
-         //    yield break;
-         //  }
-         //
-         // We want to inject after the MenuCrt call -- so search for that call in the CIL
-
-         WriteLine( $"Scanning for {INJECT_CALL} call in {HOOK_METHOD}." );
-
-         var body = hookedMethod.Body;
-         var code = body.Instructions;
-         WriteLine( $"Total {code.Count} IL instructions." );
-         for ( var i = code.Count - 1 ; i >= 0 ; i-- ) {
-            var instruction = code[i];
-            var opcode = instruction.OpCode;
-            if ( ! opcode.Code.Equals( Code.Call ) ) continue;
-            if ( ! opcode.OperandType.Equals( OperandType.InlineMethod ) ) continue;
-            var methodReference = instruction.Operand as MethodReference;
-            if ( methodReference != null && methodReference.Name.Contains( INJECT_CALL ) ) {
-               WriteLine( $"Call found. Inserting mod loader after call." );
-               body.GetILProcessor().InsertAfter( instruction, Instruction.Create( OpCodes.Call, game.ImportReference( injectedMethod ) ) );
-               WriteLine( "Insertion done." );
-               return true;
-            }
-         }
-         */
-
-         var body = hookedMethod.Body;
-         var len = body.Instructions.Count;
-         var target = body.Instructions[ len - 1 ];
-         WriteLine( $"Found {len} IL instructions in {HOOK_METHOD}." );
-         if ( target.OpCode.Code.Equals( Code.Ret ) ) {
-            WriteLine( $"Injecting before last op {target}" );
-            body.GetILProcessor().InsertBefore( target, Instruction.Create( OpCodes.Call, game.ImportReference( injectedMethod ) ) );
-            return true;
-         }
-
-         WriteLine( $"Injection mark not found. Found {target.OpCode} instead." );
-         return false;
-      }
-
-      private static string LoadVersion ( string dllPath ) {
-         using ( var dll = ModuleDefinition.ReadModule( dllPath ) ) {
-            foreach ( var type in dll.Types ) {
-               if ( type.FullName == GAME_VERSION_TYPE )
-                  return FindGameVersion( type );
-            }
-         }
-         return null;
-      }
-
-      private static readonly string ModnixInjextCheck = $"System.Void {INJECT_TYPE}::{INJECT_METHOD}(";
-      private static readonly string PPMLInjextCheck = $"System.Void {INJECT_TYPE}::{INJECT_METHOD}(";
-
-      private static InjectionState CheckInjection ( string dllPath ) {
-         using ( var dll = ModuleDefinition.ReadModule( dllPath ) ) {
-            foreach ( var type in dll.Types ) {
-               var result = CheckInjection( type );
-               if ( result != InjectionState.NONE ) return result;
-            }
-         }
-         return InjectionState.NONE;
-      }
-
-      private static InjectionState CheckInjection ( TypeDefinition typeDefinition ) {
-         // Check standard methods, then in places like IEnumerator generated methods (Nested)
-         var result = typeDefinition.Methods.Select( CheckInjection ).FirstOrDefault( e => e != InjectionState.NONE );
-         if ( result != InjectionState.NONE ) return result;
-         return typeDefinition.NestedTypes.Select( CheckInjection ).FirstOrDefault( e => e != InjectionState.NONE );
-      }
-
-      private static InjectionState CheckInjection ( MethodDefinition methodDefinition ) {
-         if ( methodDefinition.Body == null )
-            return InjectionState.NONE;
-         foreach ( var instruction in methodDefinition.Body.Instructions ) {
-            if ( ! instruction.OpCode.Equals( OpCodes.Call ) ) continue;
-            string op = instruction.Operand.ToString();
-            if ( op.StartsWith( ModnixInjextCheck ) )
-               // Update check:
-               // if ( methodDefinition.FullName.Contains( HOOK_TYPE ) && methodDefinition.FullName.Contains( HOOK_METHOD ) )
-               return InjectionState.MODNIX;
-            else if ( op.StartsWith( PPMLInjextCheck ) )
-               return InjectionState.PPML;
-         }
-         return InjectionState.NONE;
-      }
-
-      private static string FindGameVersion ( TypeDefinition type ) {
-         var method = type.Methods.FirstOrDefault( e => e.Name == "get_Version" );
-         if ( method == null || ! method.HasBody ) return "ERR version not found";
-
-         try {
-            int[] version = new int[2];
-            int ldcCount = 0;
-            foreach ( var code in method.Body.Instructions ) {
-               string op = code.OpCode.ToString();
-               if ( ! op.StartsWith( "ldc.i4" ) ) continue;
-               if ( ldcCount >= 2 ) return "ERR too many vers";
-
-               int ver = 0;
-               if ( code.Operand is int num ) ver = num;
-               else if ( code.Operand is sbyte num2 ) ver = num2;
-               else if ( code.OpCode.Code.Equals( Code.Ldc_I4_M1 ) ) ver = -1;
-               else ver = int.Parse( op.Substring( 7 ) );
-
-               version[ ldcCount ] = ver;
-               ++ldcCount;
-            }
-            if ( ldcCount < 2 ) return "ERR too few vers";
-            return version[0].ToString() + '.' + version[1];
-         } catch ( Exception e ) {
-            return $"ERR {e}";
-         }
       }
 
       #region Console output
@@ -390,7 +229,7 @@ namespace Sheepy.Modnix {
 
       private static int SayGameAssemblyMissingError ( string givenManagedDir ) {
          SayHeader();
-         WriteLine( $"ERROR: We could not find target assembly {INJECTED_DLL_FILE_NAME} in directory '{givenManagedDir}'.\n" +
+         WriteLine( $"ERROR: We could not find target assembly {INJECT_TO_DLL_FILE_NAME} in directory '{givenManagedDir}'.\n" +
              "Are you sure that is the correct directory?" );
          return RC_BAD_MANAGED_DIRECTORY_PROVIDED;
       }
@@ -437,11 +276,11 @@ namespace Sheepy.Modnix {
          WriteLine( "You may need to reinstall or use Steam/GOG's file verification function if you have no other backup." );
       }
 
-      private static void SayPpmlMigrate () => WriteLine( $"{INJECTED_DLL_FILE_NAME} already injected by PPML.  Reverting the file and migrate to Modnix." );
+      private static void SayPpmlMigrate () => WriteLine( $"{INJECT_TO_DLL_FILE_NAME} already injected by PPML.  Reverting the file and migrate to Modnix." );
 
-      private static void SayAlreadyInjected () => WriteLine( $"{INJECTED_DLL_FILE_NAME} already injected with {INJECT_TYPE}.{INJECT_METHOD}." );
+      private static void SayAlreadyInjected () => WriteLine( $"{INJECT_TO_DLL_FILE_NAME} already injected with {INJECT_TYPE}.{INJECT_METHOD}." );
 
-      private static void SayAlreadyRestored () => WriteLine( $"{INJECTED_DLL_FILE_NAME} already clean.  No injection to revert." );
+      private static void SayAlreadyRestored () => WriteLine( $"{INJECT_TO_DLL_FILE_NAME} already clean.  No injection to revert." );
 
       private static void SayException ( Exception e ) => WriteLine( $"ERROR: An exception occured: {e}" );
 
@@ -496,8 +335,196 @@ namespace Sheepy.Modnix {
       internal string gameVersion;
       internal string modLoaderDllPath;
       internal string ppmlInjectorPath;
-      internal InjectionState targetDllInjected;
+      internal TargetFile modxDll;
+      internal TargetFile ppmlDll;
    }
 
-   internal enum InjectionState { NONE = 0, MODNIX = 1, PPML = 2 }
+   internal enum InjectionState { NONE = 0, MODNIX = 1, PPML = 2, BOTH = 3 }
+
+   internal class TargetFile {
+      internal readonly string Directory;
+      internal readonly string Filename;
+      internal readonly string Target;
+      internal readonly string BackupFile;
+      internal InjectionState Status;
+
+      internal TargetFile ( string directory, string filename ) {
+         Directory = directory;
+         Filename = filename;
+         Target = Path.Combine( Directory, Filename );
+         BackupFile = Target + Injector.BACKUP_FILE_EXT;
+      }
+
+      internal void Backup () {
+         File.Copy( Target, BackupFile, true );
+         WriteLine( $"{Path.GetFileName( Target )} backed up to {Path.GetFileName( BackupFile )}" );
+      }
+
+      internal void Restore () {
+         if ( ! File.Exists( BackupFile ) )
+            throw new BackupFileNotFound();
+
+         if ( CheckInjection( BackupFile ) != InjectionState.NONE )
+            throw new BackupFileInjected();
+
+         File.Copy( BackupFile, Target, true );
+         WriteLine( $"{Path.GetFileName( BackupFile )} restored to {Path.GetFileName( Target )}" );
+      }
+      
+      internal InjectionState CheckInjection ( string target = null ) {
+         if ( target == null ) target = Target;
+         using ( var dll = ModuleDefinition.ReadModule( target ) ) {
+            foreach ( var type in dll.Types ) {
+               var result = CheckInjection( type );
+               if ( result != InjectionState.NONE ) {
+                  if ( Target.Equals( target ) )
+                     Status = result; 
+                  return result;
+               }
+            }
+         }
+         return InjectionState.NONE;
+      }
+
+      private InjectionState CheckInjection ( TypeDefinition typeDefinition ) {
+         // Check standard methods, then in places like IEnumerator generated methods (Nested)
+         var result = typeDefinition.Methods.Select( CheckInjection ).FirstOrDefault( e => e != InjectionState.NONE );
+         if ( result != InjectionState.NONE ) return result;
+         return typeDefinition.NestedTypes.Select( CheckInjection ).FirstOrDefault( e => e != InjectionState.NONE );
+      }
+
+      private static readonly string ModnixInjectCheck = $"System.Void {Injector.INJECT_TYPE}::{Injector.INJECT_METHOD}(";
+      private static readonly string PPMLInjectCheck = $"System.Void {Injector.PPML_INJECTOR_TYPE}::{Injector.PPML_INJECTOR_METHOD}(";
+
+      private InjectionState CheckInjection ( MethodDefinition methodDefinition ) {
+         if ( methodDefinition.Body == null )
+            return InjectionState.NONE;
+         foreach ( var instruction in methodDefinition.Body.Instructions ) {
+            if ( ! instruction.OpCode.Equals( OpCodes.Call ) ) continue;
+            string op = instruction.Operand.ToString();
+            if ( op.StartsWith( ModnixInjectCheck ) )
+               // Update check:
+               // if ( methodDefinition.FullName.Contains( HOOK_TYPE ) && methodDefinition.FullName.Contains( HOOK_METHOD ) )
+               return InjectionState.MODNIX;
+            else if ( op.StartsWith( PPMLInjectCheck ) )
+               return InjectionState.PPML;
+         }
+         return InjectionState.NONE;
+      }
+
+      internal bool Inject ( string injectFilePath ) {
+         WriteLine( $"Injecting {Path.GetFileName(Target)} with {Injector.INJECT_TYPE}.{Injector.INJECT_METHOD} at {Injector.HOOK_TYPE}.{Injector.HOOK_METHOD}" );
+         using ( var game = ModuleDefinition.ReadModule( Target, new ReaderParameters { ReadWrite = true } ) )
+         using ( var injecting = ModuleDefinition.ReadModule( injectFilePath ) ) {
+            var success = InjectModHookPoint( game, injecting );
+            if ( success )
+               success &= SaveAssembly( game );
+            if ( !success )
+               WriteLine( "Failed to inject the game assembly." );
+            return success;
+         }
+      }
+
+      private bool InjectModHookPoint ( ModuleDefinition game, ModuleDefinition injecting ) {
+         // get the methods that we're hooking and injecting
+         var injectedMethod = injecting.GetType( Injector.INJECT_TYPE ).Methods.Single( x => x.Name == Injector.INJECT_METHOD );
+         var hookedMethod = game.GetType( Injector.HOOK_TYPE ).Methods.First( x => x.Name == Injector.HOOK_METHOD );
+         /*
+         PPML injection code for late-injection (after logos and game splash) 
+
+         // Since the return type is an iterator -- need to go searching for its MoveNext method which contains the actual code you'll want to inject
+         if ( hookedMethod.ReturnType.Name.Contains( "IEnumerator" ) ) {
+            var nestedIterator = game.GetType( HOOK_TYPE ).NestedTypes.First( x => x.Name.Contains( HOOK_METHOD ) );
+            hookedMethod = nestedIterator.Methods.First( x => x.Name.Equals( "MoveNext" ) );
+         }
+
+         // As of Phoenix Point v1.0.54973 the BootCrt() iterator method of PhoenixGame has this at the end
+         //
+         //  ...
+         //    IEnumerator<NextUpdate> coroutine = this.MenuCrt(null, MenuEnterReason.None);
+         //    yield return timing.Call(coroutine, null);
+         //    yield break;
+         //  }
+         //
+         // We want to inject after the MenuCrt call -- so search for that call in the CIL
+
+         WriteLine( $"Scanning for {INJECT_CALL} call in {HOOK_METHOD}." );
+
+         var body = hookedMethod.Body;
+         var code = body.Instructions;
+         WriteLine( $"Total {code.Count} IL instructions." );
+         for ( var i = code.Count - 1 ; i >= 0 ; i-- ) {
+            var instruction = code[i];
+            var opcode = instruction.OpCode;
+            if ( ! opcode.Code.Equals( Code.Call ) ) continue;
+            if ( ! opcode.OperandType.Equals( OperandType.InlineMethod ) ) continue;
+            var methodReference = instruction.Operand as MethodReference;
+            if ( methodReference != null && methodReference.Name.Contains( INJECT_CALL ) ) {
+               WriteLine( $"Call found. Inserting mod loader after call." );
+               body.GetILProcessor().InsertAfter( instruction, Instruction.Create( OpCodes.Call, game.ImportReference( injectedMethod ) ) );
+               WriteLine( "Insertion done." );
+               return true;
+            }
+         }
+         */
+
+         var body = hookedMethod.Body;
+         var len = body.Instructions.Count;
+         var target = body.Instructions[ len - 1 ];
+         WriteLine( $"Found {len} IL instructions in {Injector.HOOK_METHOD}." );
+         if ( target.OpCode.Code.Equals( Code.Ret ) ) {
+            WriteLine( $"Injecting before last op {target}" );
+            body.GetILProcessor().InsertBefore( target, Instruction.Create( OpCodes.Call, game.ImportReference( injectedMethod ) ) );
+            return true;
+         }
+
+         WriteLine( $"Injection mark not found. Found {target.OpCode} instead." );
+         return false;
+      }
+
+      private bool SaveAssembly ( ModuleDefinition game ) {
+         WriteLine( $"Writing back to {Path.GetFileName( Target )}..." );
+         game.Write();
+         WriteLine( "Injection complete!" );
+         return true;
+      }
+
+      internal string ReadVersion () {
+         using ( var dll = ModuleDefinition.ReadModule( Target ) ) {
+            foreach ( var type in dll.Types ) {
+               if ( type.FullName == Injector.GAME_VERSION_TYPE )
+                  return FindGameVersion( type );
+            }
+         }
+         return "ERR ver type not found";
+      }
+
+      private static string FindGameVersion ( TypeDefinition type ) {
+         var method = type.Methods.FirstOrDefault( e => e.Name == Injector.GAME_VERSION_METHOD );
+         if ( method == null || ! method.HasBody ) return "ERR ver method not found";
+
+         try {
+            int[] version = new int[2];
+            int ldcCount = 0;
+            foreach ( var code in method.Body.Instructions ) {
+               string op = code.OpCode.ToString();
+               if ( ! op.StartsWith( "ldc.i4" ) ) continue;
+               if ( ldcCount >= 2 ) return "ERR too many vers";
+
+               int ver = 0;
+               if ( code.Operand is int num ) ver = num;
+               else if ( code.Operand is sbyte num2 ) ver = num2;
+               else if ( code.OpCode.Code.Equals( Code.Ldc_I4_M1 ) ) ver = -1;
+               else ver = int.Parse( op.Substring( 7 ) );
+
+               version[ ldcCount ] = ver;
+               ++ldcCount;
+            }
+            if ( ldcCount < 2 ) return "ERR too few vers";
+            return version[0].ToString() + '.' + version[1];
+         } catch ( Exception e ) {
+            return $"ERR {e}";
+         }
+      }
+   }
 }
