@@ -60,9 +60,10 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>cd $(SolutionDir)
-mkdir release
-copy /y $(ProjectDir)$(OutDir)$(TargetFileName) release\
-copy /y $(ProjectDir)$(OutDir)Mono.Cecil.dll release\</PostBuildEvent>
+    <PostBuildEvent>cd $(SolutionDir)MainGUI\
+mkdir Resources
+cd Resources
+copy /y $(ProjectDir)$(OutDir)$(TargetFileName) .
+copy /y $(ProjectDir)$(OutDir)Mono.Cecil.dll .</PostBuildEvent>
   </PropertyGroup>
 </Project>

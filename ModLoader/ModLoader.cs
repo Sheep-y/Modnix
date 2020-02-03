@@ -1,15 +1,18 @@
 ﻿using Harmony;
 using Sheepy.Logging;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
+using static System.Reflection.BindingFlags;
 
 namespace Sheepy.Modnix {
 
    public static class ModLoader {
-      private static Logger Log;
+      private static Logger Log = new FileLogger( "ModnixLoader.log" ){ TimeFormat = "HH:mm:ss.ffff " };
 
       private const BindingFlags PUBLIC_STATIC_BINDING_FLAGS = BindingFlags.Public | BindingFlags.Static;
       private static readonly List<string> IGNORE_FILE_NAMES = new List<string>() {
@@ -49,7 +52,7 @@ namespace Sheepy.Modnix {
 
          // load the DLLs
          foreach ( var dllPath in dllPaths ) {
-            if ( !IGNORE_FILE_NAMES.Contains( Path.GetFileName( dllPath ) ) )
+            if ( ! IGNORE_FILE_NAMES.Contains( Path.GetFileName( dllPath ) ) )
                LoadDLL( dllPath );
          }
       }

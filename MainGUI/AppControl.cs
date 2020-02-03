@@ -10,11 +10,11 @@ using System.Threading.Tasks;
 namespace Sheepy.Modnix.MainGUI {
    public class AppControl {
 
-      private readonly static string DLL_PATH = @"PhoenixPointWin64_Data\Managed";
-      private readonly static string INJECTOR =  "ModnixInjector.exe";
-      private readonly static string LOADER   =  "ModnixLoader.dll";
-      private readonly static string GAME_EXE =  "PhoenixPointWin64.exe";
-      private readonly static string GAME_DLL =  "Assembly-CSharp.dll";
+      public readonly static string DLL_PATH = @"PhoenixPointWin64_Data\Managed";
+      public readonly static string INJECTOR =  "ModnixInjector.exe";
+      public readonly static string LOADER   =  "ModnixLoader.dll";
+      public readonly static string GAME_EXE =  "PhoenixPointWin64.exe";
+      public readonly static string GAME_DLL =  "Assembly-CSharp.dll";
 
       // Game and install files are considered corrupted and thus non exists if smaller than this size
       private readonly static long MIN_FILE_SIZE = 1024 * 10;
@@ -26,6 +26,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       private readonly MainWindow GUI;
       private readonly object SynRoot = new object();
+      private GameInstallation currentGame;
 
       private bool Checking;
 
@@ -50,14 +51,15 @@ namespace Sheepy.Modnix.MainGUI {
             Log( "Working Dir: " + Directory.GetCurrentDirectory() );
             GUI.SetAppVer( CheckAppVer() );
             bool found = FoundGame( out string gamePath );
-            if ( found )
+            if ( found ) {
+               currentGame = new GameInstallation( this, gamePath );
                GUI.SetGamePath( gamePath );
-
-            if ( CheckInjected( out string injectState ) ) {
-               GUI.SetAppState( injectState );
-               GUI.SetGameVer( CheckGameVer() );
+               if ( CheckInjected( out string injectState ) ) {
+                  GUI.SetAppState( injectState );
+                  GUI.SetGameVer( CheckGameVer() );
+               }
             } else {
-               if ( PackagesInPlace() && found ) {
+               if ( found ) {
                   GUI.SetAppState( "setup" );
                } else {
                   if ( found )
@@ -74,14 +76,14 @@ namespace Sheepy.Modnix.MainGUI {
          }
       }
 
-      public readonly string InjectorPath = Path.Combine( DLL_PATH, INJECTOR );
-      public readonly string LoaderPath   = Path.Combine( DLL_PATH, LOADER   );
+      public string InjectorPath ( string gamePath ) => Path.Combine( gamePath, DLL_PATH, INJECTOR );
+      public string LoaderPath   ( string gamePath ) => Path.Combine( gamePath, DLL_PATH, LOADER   );
 
       /// Check that mod injector and mod loader is in place
       public bool InjectorInPlace () { try {
-         if ( ! File.Exists( InjectorPath ) ) return Log( $"Missing injector: {InjectorPath}", false );
-         if ( ! File.Exists( LoaderPath ) ) return Log( $"Missing loader: {LoaderPath}", false );
-         return Log( $"Injector and loader found in {DLL_PATH}", true );
+         if ( ! File.Exists( currentGame.Injector ) ) return Log( $"Missing injector: {currentGame.Injector}", false );
+         if ( ! File.Exists( currentGame.Loader   ) ) return Log( $"Missing loader: {currentGame.Loader}", false );
+         return Log( $"Injector and loader found in {currentGame.CodeDir}", true );
       } catch ( IOException ex ) { return Log( ex, false ); } }
 
       /// Return true if injectors are in place and injected.
@@ -91,7 +93,7 @@ namespace Sheepy.Modnix.MainGUI {
          try {
             if ( ! InjectorInPlace() ) return false;
             Log( "Detecting injection status." );
-            string state = RunAndWait( DLL_PATH, InjectorPath, "/d" ).Trim();
+            string state = currentGame.RunInjector( "/d" );
             Log( $"Detection result: {state}" );
             if ( state == "ppml" || state == "modnix" ) {
                injectState = state;
@@ -114,21 +116,12 @@ namespace Sheepy.Modnix.MainGUI {
 
       public string CheckGameVer () { try {
          Log( "Detecting game version." );
-         string ver = RunAndWait( DLL_PATH, InjectorPath, "/g" ).Trim();
+         string ver = currentGame.RunInjector( "/g" );
          Log( "Game Version: " + ver );
          return ver;
       } catch ( Exception ex ) {
          return Log( ex, "error" );
       } }
-
-      /// Check that all install package files are in place
-      public bool PackagesInPlace () { try {
-         foreach ( string file in PACKAGES ) {
-            if ( File.Exists( file ) && new FileInfo( file ).Length > MIN_FILE_SIZE ) continue;
-            return Log( $"Missing install file: " + file, false );
-         }
-         return Log( $"All {PACKAGES.Length} install files found", true );
-      } catch ( IOException ex ) { return Log( ex, false ); } }
 
       /// Try to detect game path
       public bool FoundGame ( out string gamePath ) { gamePath = null; try {
@@ -145,7 +138,7 @@ namespace Sheepy.Modnix.MainGUI {
       } catch ( IOException ex ) { return Log( ex, false ); } }
 
       #region Helpers
-      private string RunAndWait ( string path, string exe, string param = null ) {
+      public string RunAndWait ( string path, string exe, string param = null ) {
          Log( $"Running at {path} : {exe} {param}" );
          
          Process p = new Process();
@@ -170,5 +163,25 @@ namespace Sheepy.Modnix.MainGUI {
          return result;
       }
       #endregion
+   }
+
+   public class GameInstallation {
+      public GameInstallation ( AppControl app, string gameDir ) {
+         App = app;
+         GameDir  = gameDir;
+         CodeDir  = Path.Combine( gameDir, AppControl.DLL_PATH );
+         Injector = Path.Combine( CodeDir, AppControl.INJECTOR );
+         Loader   = Path.Combine( CodeDir, AppControl.LOADER   );
+      }
+
+      public readonly AppControl App;
+      public readonly string GameDir;
+      public readonly string CodeDir;
+      public readonly string Injector;
+      public readonly string Loader;
+
+      public string RunInjector( string param ) {
+         return App.RunAndWait( CodeDir, Injector, param ).Trim();
+      }
    }
 }
