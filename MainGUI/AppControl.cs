@@ -21,8 +21,6 @@ namespace Sheepy.Modnix.MainGUI {
 
       private readonly static string[] GAME_PATHS =
          new string[]{ ".", @"C:\Program Files\Epic Games\PhoenixPoint" };
-      private readonly static string[] PACKAGES  =
-         new string[]{ "ModnixInjector.ex_", "ModnixLoader.dll", "0Harmony.dll", "Mono.Cecil.dll" };
 
       private readonly MainWindow GUI;
       private readonly object SynRoot = new object();
@@ -136,11 +134,20 @@ namespace Sheepy.Modnix.MainGUI {
          currentGame.WriteCodeFile( INJECTOR, SetupPackage.ModnixInjector );
          currentGame.RunInjector( "/y" );
          CheckStatus();
+         if ( currentGame.Status == "modnix" )
+            GUI.SetupSuccess( HasPPML() );
       } catch ( Exception ex ) {
          try { CheckStatus(); } catch ( Exception ) {}
          Log( ex );
          GUI.SetAppState( ex.GetType().ToString() );
       } } }
+
+      public void DeletePPMLAsync () {
+         Log( "Queuing delete PPML" );
+         Task.Run( () => {
+            currentGame.DeleteCodeFile( "PhoenixPointModLoaderInjector.exe" );
+         } );
+      }
       
       public void DoRestoreAsync () {
          Log( "Queuing restore" );
@@ -150,9 +157,17 @@ namespace Sheepy.Modnix.MainGUI {
       private void DoRestore () { lock ( SynRoot ) { try {
          currentGame.RunInjector( "/y /r" );
          CheckStatus();
+         if ( currentGame.Status == "setup" )
+            GUI.RestoreSuccess();
       } catch ( Exception ex ) {
          Log( ex );
       } } }
+
+      private bool HasPPML () { try {
+         return File.Exists( Path.Combine( currentGame.CodeDir, "PhoenixPointModLoaderInjector.exe" ) );
+      } catch ( Exception) {
+         return false;
+      } }
       #endregion
 
       #region Helpers
@@ -210,6 +225,16 @@ namespace Sheepy.Modnix.MainGUI {
          string target = Path.Combine( CodeDir, file );
          App.Log( $"Writing {content.Length} bytes to {target}" );
          File.WriteAllBytes( target, content );
+      }
+
+      public void DeleteCodeFile ( string file ) {
+         string target = Path.Combine( CodeDir, file );
+         App.Log( $"Deleting {target}" );
+         try {
+            File.Delete( target );
+         } catch ( Exception ex ) {
+            App.Log( ex );
+         }
       }
    }
 }

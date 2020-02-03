@@ -106,6 +106,14 @@ namespace Sheepy.Modnix.MainGUI {
          App.DoRestoreAsync();
       }
 
+      public void SetupSuccess ( bool HasPPML ) { Dispatch( () => {
+         if ( HasPPML && MessageBox.Show( "Setup success. Delete PPML to prevent accidents?", "Question", MessageBoxButton.YesNo ) == MessageBoxResult.Yes ) {
+            App.DeletePPMLAsync();
+         }
+      } ); }
+
+      public void RestoreSuccess () {}
+
       private void ButtonNexus_Click ( object sender, RoutedEventArgs e ) => OpenUrl( "nexus", e );
       #endregion
 
