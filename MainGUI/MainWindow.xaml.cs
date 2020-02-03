@@ -62,9 +62,8 @@ namespace Sheepy.Modnix.MainGUI {
                case "ppml"   : txt += "PPML found, need update"; break;
                case "modnix" : txt += "Injected"; break;
                case "setup"  : txt += "Requires Setup"; break;
-               case "no_game": txt += "Requires Manual Setup"; break;
-               case "missing": txt += "Setup files missing, please re-download"; break;
-               default: txt += "Need Setup"; break;
+               case "no_game": txt += "Game not found; Please do Manual Setup"; break;
+               default: txt += "Unknown state; see log"; break;
             }
          richAppInfo.TextRange().Text = txt;
       }

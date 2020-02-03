@@ -55,18 +55,15 @@ namespace Sheepy.Modnix.MainGUI {
                currentGame = new GameInstallation( this, gamePath );
                GUI.SetGamePath( gamePath );
                if ( CheckInjected( out string injectState ) ) {
+                  if ( injectState == "both" )
+                     injectState = "ppml"; // Make GUI shows ppml
                   GUI.SetAppState( injectState );
                   GUI.SetGameVer( CheckGameVer() );
+               } else {
+                  GUI.SetAppState( "setup" );
                }
             } else {
-               if ( found ) {
-                  GUI.SetAppState( "setup" );
-               } else {
-                  if ( found )
-                     GUI.SetAppState( "missing" );
-                  else
-                     GUI.SetAppState( "no_game" );
-               }
+               GUI.SetAppState( "no_game" );
             }
 
          } finally {
@@ -87,19 +84,14 @@ namespace Sheepy.Modnix.MainGUI {
       } catch ( IOException ex ) { return Log( ex, false ); } }
 
       /// Return true if injectors are in place and injected.
-      /// injectState may be null, "ppml", "modnix", or "error".
       public bool CheckInjected ( out string injectState ) {
          injectState = null;
          try {
             if ( ! InjectorInPlace() ) return false;
             Log( "Detecting injection status." );
-            string state = currentGame.RunInjector( "/d" );
-            Log( $"Detection result: {state}" );
-            if ( state == "ppml" || state == "modnix" ) {
-               injectState = state;
-               return true;
-            }
-            return false;
+            injectState = currentGame.RunInjector( "/d" );
+            Log( $"Detection result: {injectState}" );
+            return injectState == "modnix" || injectState == "both";
          } catch ( Exception ex ) {
             injectState = "error";
             return Log( ex, false );
