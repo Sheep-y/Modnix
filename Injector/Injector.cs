@@ -276,11 +276,11 @@ namespace Sheepy.Modnix {
          WriteLine( "You may need to reinstall or use Steam/GOG's file verification function if you have no other backup." );
       }
 
-      private static void SayPpmlMigrate () => WriteLine( $"{INJECT_TO_DLL_FILE_NAME} already injected by PPML.  Reverting the file and migrate to Modnix." );
+      private static void SayPpmlMigrate () => WriteLine( $"{GAME_DLL_FILE_NAME} already injected by PPML.  Reverting the file and migrate to Modnix." );
 
       private static void SayAlreadyInjected () => WriteLine( $"{INJECT_TO_DLL_FILE_NAME} already injected with {INJECT_TYPE}.{INJECT_METHOD}." );
 
-      private static void SayAlreadyRestored () => WriteLine( $"{INJECT_TO_DLL_FILE_NAME} already clean.  No injection to revert." );
+      private static void SayAlreadyRestored () => WriteLine( "Game DLLs already clean.  No injection to revert." );
 
       private static void SayException ( Exception e ) => WriteLine( $"ERROR: An exception occured: {e}" );
 

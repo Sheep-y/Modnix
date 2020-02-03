@@ -58,10 +58,10 @@ namespace Sheepy.Modnix.MainGUI {
       } } }
 
       private void CheckInjectionStatus () {
-         if ( CheckInjected( out string injectState ) ) {
-            if ( injectState == "both" )
-               injectState = "ppml"; // Make GUI shows ppml
-            GUI.SetAppState( injectState );
+         if ( CheckInjected() ) {
+            var status = currentGame.Status;
+            if ( status == "both" ) status = "ppml"; // Make GUI shows ppml
+            GUI.SetAppState( status );
             GUI.SetGameVer( CheckGameVer() );
          } else {
             GUI.SetAppState( "setup" );
@@ -79,16 +79,14 @@ namespace Sheepy.Modnix.MainGUI {
       } catch ( IOException ex ) { return Log( ex, false ); } }
 
       /// Return true if injectors are in place and injected.
-      public bool CheckInjected ( out string injectState ) {
-         injectState = null;
+      public bool CheckInjected () {
          try {
             if ( ! InjectorInPlace() ) return false;
             Log( "Detecting injection status." );
-            injectState = currentGame.RunInjector( "/d" );
-            Log( $"Detection result: {injectState}" );
-            return injectState == "modnix" || injectState == "both";
+            var result = currentGame.Status = currentGame.RunInjector( "/d" );
+            return result == "modnix" || result == "both";
          } catch ( Exception ex ) {
-            injectState = "error";
+            currentGame.Status  = "error";
             return Log( ex, false );
          }
       }
@@ -200,7 +198,9 @@ namespace Sheepy.Modnix.MainGUI {
       public readonly string CodeDir;
       public readonly string Injector;
       public readonly string Loader;
-      
+
+      public string Status { get; internal set; } // Injection status
+
       public string RunInjector ( string param ) {
          return App.RunAndWait( CodeDir, Injector, param );
       }
