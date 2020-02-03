@@ -37,26 +37,23 @@ namespace Sheepy.Modnix.MainGUI {
          new AppControl( this ).CheckStatusAsync();
       }
 
-      #region App Info
+      #region App Info Area
       public void SetAppVer ( string value ) { Dispatch( () => {
          AppVer = value;
          RefreshAppInfo();
       } ); }
 
       /// Set and update app state.
-      /// Value param May be "ppml", "modnix", "setup", "no_game", or "missing".
       public void SetAppState ( string value ) { Dispatch( () => {
-         Log( "Injection status: " + value );
+         Log( "App status: " + value );
          AppState = value;
          RefreshAppInfo();
-         ButtonModDir.IsEnabled = AppState == "modnix";
-         ButtonAddMod.IsEnabled = AppState == "modnix";
       } ); }
 
       private void RefreshAppInfo () {
          string txt = $"Modnix\rVer {AppVer}\rStatus: ";
          if ( AppState == null )
-            txt += "Checking";
+            txt += "Working";
          else
             switch ( AppState ) {
                case "ppml"   : txt += "PPML found, need update"; break;
@@ -66,10 +63,49 @@ namespace Sheepy.Modnix.MainGUI {
                default: txt += "Unknown state; see log"; break;
             }
          richAppInfo.TextRange().Text = txt;
+         RefreshAppButtons();
       }
+
+      private void RefreshAppButtons () {
+         ButtonSetup.IsEnabled  = AppState != null;
+         ButtonSetup.Content = AppState == "modnix" ? "Uninstall" : "Setup";
+         ButtonModDir.IsEnabled = AppState == "modnix";
+         ButtonAddMod.IsEnabled = AppState == "modnix";
+      }
+
+      private void ButtonSetup_Click ( object sender, RoutedEventArgs e ) {
+         switch ( AppState ) {
+            case "ppml" : case "setup" :
+               DoSetup();
+               break;
+            case "modnix" :
+               DoRestore();
+               break;
+            default:
+               DoManualSetup();
+               break;
+         }
+      }
+
+      private void DoSetup () {
+         Log( "Calling setup" );
+         SetAppState( null );
+      }
+
+      private void DoManualSetup () {
+         // TODO: Link to GitHub Doc
+         MessageBox.Show( "Not Implemented." );
+      }
+
+      private void DoRestore () {
+         Log( "Calling restore" );
+         SetAppState( null );
+      }
+
+      private void ButtonNexus_Click ( object sender, RoutedEventArgs e ) => OpenUrl( "nexus", e );
       #endregion
 
-      #region Game Info
+      #region Game Info Area
       public void SetGamePath ( string value ) { Dispatch( () => {
          GamePath = value;
          RefreshGameInfo();
@@ -90,12 +126,6 @@ namespace Sheepy.Modnix.MainGUI {
             txt += "Game not found";
          richGameInfo.TextRange().Text = txt;
       }
-      #endregion
-
-      private void RefreshModInfo () {
-         string txt = AppState == "modenix" ? "Select a mod to see info" : "";
-         richModInfo.TextRange().Text = txt;
-      }
 
       private void ButtonCanny_Click   ( object sender, RoutedEventArgs e ) => OpenUrl( "canny", e );
       private void ButtonDiscord_Click ( object sender, RoutedEventArgs e ) => OpenUrl( "discord", e );
@@ -103,6 +133,24 @@ namespace Sheepy.Modnix.MainGUI {
       private void ButtonManual_Click  ( object sender, RoutedEventArgs e ) => OpenUrl( "manual", e );
       private void ButtonReddit_Click  ( object sender, RoutedEventArgs e ) => OpenUrl( "reddit", e );
       private void ButtonWebsite_Click ( object sender, RoutedEventArgs e ) => OpenUrl( "www", e );
+      #endregion
+
+      #region Mod Info Area
+      private void RefreshModInfo () {
+         string txt = AppState == "modenix" ? "Select a mod to see info" : "";
+         richModInfo.TextRange().Text = txt;
+      }
+      #endregion
+
+      #region Log Tab
+      public void Log ( string message ) {
+         string time = DateTime.Now.ToString( "hh:mm:ss.ffff " );
+         Dispatch( () => {
+            textLog.AppendText( time + message );
+            textLog.AppendText( "\n" );
+            ButtonLogSave.IsEnabled = true;
+         } );
+      }
 
       private void ButtonLogSave_Click ( object sender, RoutedEventArgs e ) {
          var dialog = new Microsoft.Win32.SaveFileDialog {
@@ -122,6 +170,7 @@ namespace Sheepy.Modnix.MainGUI {
          textLog.Clear();
          ButtonLogSave.IsEnabled = false;
       }
+      #endregion
 
       private void OpenUrl ( string type, RoutedEventArgs e = null ) {
          Log( "OpenUrl " + type );
@@ -134,6 +183,7 @@ namespace Sheepy.Modnix.MainGUI {
             case "discord": url = "https://discordapp.com/invite/phoenixpoint"; break;
             case "forum"  : url = "https://forums.snapshotgames.com/c/phoenix-point"; break;
             case "manual" : url = "https://drive.google.com/open?id=1n8ORQeDtBkWcnn5Es4LcWBxif7NsXqet"; break;
+            case "nexus"  : url = "https://www.nexusmods.com/phoenixpoint"; break;
             case "reddit" : url = "https://www.reddit.com/r/PhoenixPoint/"; break;
             case "www"    : url = "https://phoenixpoint.info/"; break;
             default       : return;
@@ -143,15 +193,6 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       #region Helpers
-      public void Log ( string message ) {
-         string time = DateTime.Now.ToString( "hh:mm:ss.ffff " );
-         Dispatch( () => {
-            textLog.AppendText( time + message );
-            textLog.AppendText( "\n" );
-            ButtonLogSave.IsEnabled = true;
-         } );
-      }
-
       private void Dispatch ( Action task ) {
          if ( Dispatcher.CheckAccess() )
             task();

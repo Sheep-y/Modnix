@@ -31,11 +31,11 @@
                         <ColumnDefinition Width="10"/>
                         <ColumnDefinition/>
                      </Grid.ColumnDefinitions>
-                     <Button x:Name="ButtonSetup" Content="Setup" Margin="0" VerticalAlignment="Top"  Padding="10,5"/>
+                     <Button x:Name="ButtonSetup" Content="Setup" Margin="0" VerticalAlignment="Top"  Padding="10,5" IsEnabled="False" Click="ButtonSetup_Click"/>
                      <Button x:Name="ButtonModDir" Grid.Column="2" Margin="0" VerticalAlignment="Top"  Padding="10,5" IsEnabled="False">
                         <AccessText>Mod _Directory</AccessText>
                      </Button>
-                     <Button x:Name="ButtonNexus" Grid.Column="4" Margin="0" VerticalAlignment="Top"  Padding="10,5">
+                     <Button x:Name="ButtonNexus" Grid.Column="4" Margin="0" VerticalAlignment="Top"  Padding="10,5" Click="ButtonNexus_Click">
                         <AccessText>_Nexus Mods</AccessText>
                      </Button>
                   </Grid>
