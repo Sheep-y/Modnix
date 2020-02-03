@@ -192,7 +192,7 @@ namespace Sheepy.Logging {
    /// Log to file.  Log is processed and written in a threadpool thread.
    public class FileLogger : BackgroundLogger {
       public FileLogger ( string file, int writeDelay = 500 ) : base ( writeDelay ) {
-         if ( string.IsNullOrWhiteSpace( file ) ) throw new ArgumentNullException( "Log file must not be empty" );
+         if ( string.IsNullOrWhiteSpace( file ) ) throw new ArgumentNullException( "file" );
          LogFile = file.Trim();
          _TimeFormat += ' ';
       }
@@ -411,10 +411,9 @@ namespace Sheepy.Logging {
       private readonly List<T> _List = new List<T>();
       private readonly LockHelper _Reader, _Writer;
 
-      public RwlsList ( LoggerReadLockHelper Reader, LoggerWriteLockHelper Writer ) {
-         if ( Reader == null || Writer == null ) throw new ArgumentNullException();
-         _Reader = Reader;
-         _Writer = Writer;
+      public RwlsList ( LoggerReadLockHelper reader, LoggerWriteLockHelper writer ) {
+         _Reader = reader ?? throw new ArgumentNullException( "reader" );
+         _Writer = writer ?? throw new ArgumentNullException( "writer" );
       }
 
       public T this[ int index ] { 
@@ -431,7 +430,7 @@ namespace Sheepy.Logging {
       public void Insert ( int index, T item ) { using ( _Writer.Lock ) { _List.Insert( index, item ); } }
       public bool Remove ( T item ) { using ( _Writer.Lock ) { return _List.Remove( item ); } }
       public void RemoveAt ( int index )  { using ( _Writer.Lock ) { _List.RemoveAt( index ); } }
-      public T[] ToArray ()  { using ( _Reader.Lock ) { return _List.ToArray(); } }
+      public T[] ToArray () { using ( _Reader.Lock ) { return _List.ToArray(); } }
       public IEnumerator<T> GetEnumerator () { return _List.GetEnumerator(); }
       IEnumerator IEnumerable.GetEnumerator () => GetEnumerator();
    }
