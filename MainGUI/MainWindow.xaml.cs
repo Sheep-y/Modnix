@@ -20,6 +20,7 @@ namespace Sheepy.Modnix.MainGUI {
 
    public partial class MainWindow : Window {
 
+      private AppControl App;
       private string AppVer, AppState, GamePath, GameVer;
 
       public MainWindow () {
@@ -34,7 +35,8 @@ namespace Sheepy.Modnix.MainGUI {
          RefreshGameInfo();
          RefreshModInfo();
          Log( "Initiating Controller" );
-         new AppControl( this ).CheckStatusAsync();
+         App = new AppControl( this );
+         App.CheckStatusAsync();
       }
 
       #region App Info Area
@@ -90,6 +92,7 @@ namespace Sheepy.Modnix.MainGUI {
       private void DoSetup () {
          Log( "Calling setup" );
          SetAppState( null );
+         App.DoSetupAsync();
       }
 
       private void DoManualSetup () {
@@ -100,6 +103,7 @@ namespace Sheepy.Modnix.MainGUI {
       private void DoRestore () {
          Log( "Calling restore" );
          SetAppState( null );
+         App.DoRestoreAsync();
       }
 
       private void ButtonNexus_Click ( object sender, RoutedEventArgs e ) => OpenUrl( "nexus", e );

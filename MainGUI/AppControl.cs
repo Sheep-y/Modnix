@@ -28,11 +28,11 @@ namespace Sheepy.Modnix.MainGUI {
       private readonly object SynRoot = new object();
       private GameInstallation currentGame;
 
-      private bool Checking;
-
       public AppControl ( MainWindow _GUI ) => GUI = _GUI;
 
+      #region Check Status
       public void CheckStatusAsync () {
+         Log( "Queuing status check" );
          Task.Run( (Action) CheckStatus );
       }
 
@@ -40,36 +40,31 @@ namespace Sheepy.Modnix.MainGUI {
       /// 2. If injector is not in place, but dummy exists
       ///   Check Phoenix Point. Found = can setup. Not found = Error.
       /// 3. If dummy not exists = Error, re-download
-      private void CheckStatus () {
-         lock ( SynRoot ) {
-            if ( Checking ) return;
-            Checking = true;
-         }
+      private void CheckStatus () { lock ( SynRoot ) { try {
          Log( "Checking status" );
-         try {
-            Log( "Assembly: " + Assembly.GetExecutingAssembly().GetName().CodeBase );
-            Log( "Working Dir: " + Directory.GetCurrentDirectory() );
-            GUI.SetAppVer( CheckAppVer() );
-            bool found = FoundGame( out string gamePath );
-            if ( found ) {
-               currentGame = new GameInstallation( this, gamePath );
-               GUI.SetGamePath( gamePath );
-               if ( CheckInjected( out string injectState ) ) {
-                  if ( injectState == "both" )
-                     injectState = "ppml"; // Make GUI shows ppml
-                  GUI.SetAppState( injectState );
-                  GUI.SetGameVer( CheckGameVer() );
-               } else {
-                  GUI.SetAppState( "setup" );
-               }
-            } else {
-               GUI.SetAppState( "no_game" );
-            }
+         Log( "Assembly: " + Assembly.GetExecutingAssembly().GetName().CodeBase );
+         Log( "Working Dir: " + Directory.GetCurrentDirectory() );
+         GUI.SetAppVer( CheckAppVer() );
+         bool found = FoundGame( out string gamePath );
+         if ( found ) {
+            currentGame = new GameInstallation( this, gamePath );
+            GUI.SetGamePath( gamePath );
+            CheckInjectionStatus();
+         } else {
+            GUI.SetAppState( "no_game" );
+         }
+      } catch ( Exception ex ) {
+         Log( ex );
+      } } }
 
-         } finally {
-            lock ( SynRoot ) {
-               Checking = false;
-            }
+      private void CheckInjectionStatus () {
+         if ( CheckInjected( out string injectState ) ) {
+            if ( injectState == "both" )
+               injectState = "ppml"; // Make GUI shows ppml
+            GUI.SetAppState( injectState );
+            GUI.SetGameVer( CheckGameVer() );
+         } else {
+            GUI.SetAppState( "setup" );
          }
       }
 
@@ -128,6 +123,39 @@ namespace Sheepy.Modnix.MainGUI {
          }
          return false;
       } catch ( IOException ex ) { return Log( ex, false ); } }
+      #endregion
+
+      #region Setup / Restore
+      public void DoSetupAsync () {
+         Log( "Queuing setup" );
+         Task.Run( (Action) DoSetup );
+      }
+
+      private void DoSetup () { lock ( SynRoot ) { try {
+         currentGame.WriteCodeFile( "0Harmony.dll", SetupPackage._0Harmony );
+         currentGame.WriteCodeFile( "Mono.Cecil.dll", SetupPackage.Mono_Cecil );
+         currentGame.WriteCodeFile( LOADER, SetupPackage.ModnixLoader );
+         currentGame.WriteCodeFile( INJECTOR, SetupPackage.ModnixInjector );
+         currentGame.RunInjector( "/y" );
+         CheckStatus();
+      } catch ( Exception ex ) {
+         try { CheckStatus(); } catch ( Exception ) {}
+         Log( ex );
+         GUI.SetAppState( ex.GetType().ToString() );
+      } } }
+      
+      public void DoRestoreAsync () {
+         Log( "Queuing restore" );
+         Task.Run( (Action) DoRestore );
+      }
+
+      private void DoRestore () { lock ( SynRoot ) { try {
+         currentGame.RunInjector( "/y /r" );
+         CheckStatus();
+      } catch ( Exception ex ) {
+         Log( ex );
+      } } }
+      #endregion
 
       #region Helpers
       public string RunAndWait ( string path, string exe, string param = null ) {
@@ -143,14 +171,15 @@ namespace Sheepy.Modnix.MainGUI {
          p.StartInfo.WindowStyle = ProcessWindowStyle.Minimized;
          p.Start();
 
-         string output = p.StandardOutput.ReadToEnd();
+         string output = p.StandardOutput.ReadToEnd()?.Trim();
+         Log( $"Standard out: {output}" );
          p.WaitForExit();
          return output;
       }
 
-      private void Log ( object message ) => GUI.Log( message.ToString() );
+      public void Log ( object message ) => GUI.Log( message.ToString() );
 
-      private T Log<T> ( object message, T result ) {
+      public T Log<T> ( object message, T result ) {
          Log( message.ToString() );
          return result;
       }
@@ -171,9 +200,16 @@ namespace Sheepy.Modnix.MainGUI {
       public readonly string CodeDir;
       public readonly string Injector;
       public readonly string Loader;
+      
+      public string RunInjector ( string param ) {
+         return App.RunAndWait( CodeDir, Injector, param );
+      }
 
-      public string RunInjector( string param ) {
-         return App.RunAndWait( CodeDir, Injector, param ).Trim();
+      public void WriteCodeFile ( string file, byte[] content ) {
+         if ( content == null ) throw new ArgumentNullException( "content" );
+         string target = Path.Combine( CodeDir, file );
+         App.Log( $"Writing {content.Length} bytes to {target}" );
+         File.WriteAllBytes( target, content );
       }
    }
 }

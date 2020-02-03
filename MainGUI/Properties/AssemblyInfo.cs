@@ -7,12 +7,12 @@ using System.Windows;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle( "MainGUI" )]
+[assembly: AssemblyTitle( "Modnix Main GUI" )]
 [assembly: AssemblyDescription( "" )]
 [assembly: AssemblyConfiguration( "" )]
 [assembly: AssemblyCompany( "" )]
-[assembly: AssemblyProduct( "MainGUI" )]
-[assembly: AssemblyCopyright( "Copyright ©  2020" )]
+[assembly: AssemblyProduct( "Modnix" )]
+[assembly: AssemblyCopyright( "Copyright © 2020 Yeung Ho Yiu" )]
 [assembly: AssemblyTrademark( "" )]
 [assembly: AssemblyCulture( "" )]
 
