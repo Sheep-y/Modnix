@@ -87,8 +87,12 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       private void RefreshAppButtons () {
-         ButtonSetup.IsEnabled  = AppState != null && AppState != "running";
-         ButtonSetup.Content    = AppState == "modnix" ? "Uninstall" : "Setup";
+         ButtonSetup.IsEnabled  = AppState != null;
+         switch ( AppState ) {
+            case "modnix"  : ButtonSetup.Content = "Uninstall"; break;
+            case "running" : ButtonSetup.Content = "Refresh"; break;
+            default        : ButtonSetup.Content = "Setup"; break;
+         }
          ButtonModDir.IsEnabled = AppState == "modnix";
          ButtonAddMod.IsEnabled = AppState == "modnix";
       }
@@ -100,6 +104,9 @@ namespace Sheepy.Modnix.MainGUI {
                break;
             case "modnix" :
                DoRestore();
+               break;
+            case "running" :
+               App.CheckStatusAsync();
                break;
             default:
                DoManualSetup();

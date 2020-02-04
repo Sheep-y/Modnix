@@ -68,7 +68,7 @@ namespace Sheepy.Modnix.MainGUI {
       private void CheckInjectionStatus () {
          string status = null;
          if ( CheckInjected() ) {
-            status = currentGame.Status;
+            status = currentGame.Status; // status should be either modnix or both
             if ( status == "both" ) status = "ppml"; // Make GUI shows ppml, and thus require setup to remove ppml
             GUI.SetGameVer( CheckGameVer() );
          } else {
@@ -173,8 +173,11 @@ namespace Sheepy.Modnix.MainGUI {
       private void DoRestore () { lock ( SynRoot ) { try {
          currentGame.RunInjector( "/y /r" );
          CheckStatus();
-         if ( currentGame.Status == "setup" )
+         if ( currentGame.Status == "none" ) {
+            currentGame.DeleteCodeFile( INJECTOR );
+            currentGame.DeleteCodeFile( LOADER );
             GUI.RestoreSuccess();
+         }
       } catch ( Exception ex ) {
          Log( ex );
       } } }
