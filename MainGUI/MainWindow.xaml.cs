@@ -34,10 +34,27 @@ namespace Sheepy.Modnix.MainGUI {
          RefreshAppInfo();
          RefreshGameInfo();
          RefreshModInfo();
-         Log( "Initiating Controller" );
-         App = new AppControl( this );
-         App.CheckStatusAsync();
+         if ( ! FoundRunningModnix() ) {
+            Log( "Initiating Controller" );
+            App = new AppControl( this );
+            App.CheckStatusAsync();
+         }
       }
+
+      private bool FoundRunningModnix () { try {
+         int myId = Process.GetCurrentProcess().Id;
+         Process[] clones = Process.GetProcessesByName( Assembly.GetExecutingAssembly().GetName().Name ).Where( e => e.Id != myId ).ToArray();
+         if ( clones.Length <= 0 ) return false;
+         IntPtr handle = clones[0].MainWindowHandle;
+         if ( handle == IntPtr.Zero ) return false;
+         Log( "Another Modnix is found. Self-closing." );
+         ApiExternal.SetForegroundWindow( handle );
+         Close();
+         return true;
+      } catch ( Exception ex ) {
+         Log( ex.ToString() );
+         return false;
+      } }
 
       #region App Info Area
       public void SetAppVer ( string value ) { Dispatch( () => {
@@ -55,12 +72,13 @@ namespace Sheepy.Modnix.MainGUI {
       private void RefreshAppInfo () {
          string txt = $"Modnix\rVer {AppVer}\rStatus: ";
          if ( AppState == null )
-            txt += "Working";
+            txt += "Busy";
          else
             switch ( AppState ) {
                case "ppml"   : txt += "PPML found, need update"; break;
                case "modnix" : txt += "Injected"; break;
                case "setup"  : txt += "Requires Setup"; break;
+               case "running": txt += "Game is running"; break;
                case "no_game": txt += "Game not found; Please do Manual Setup"; break;
                default: txt += "Unknown state; see log"; break;
             }
@@ -69,8 +87,8 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       private void RefreshAppButtons () {
-         ButtonSetup.IsEnabled  = AppState != null;
-         ButtonSetup.Content = AppState == "modnix" ? "Uninstall" : "Setup";
+         ButtonSetup.IsEnabled  = AppState != null && AppState != "running";
+         ButtonSetup.Content    = AppState == "modnix" ? "Uninstall" : "Setup";
          ButtonModDir.IsEnabled = AppState == "modnix";
          ButtonAddMod.IsEnabled = AppState == "modnix";
       }

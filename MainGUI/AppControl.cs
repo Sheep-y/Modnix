@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -13,6 +14,7 @@ namespace Sheepy.Modnix.MainGUI {
       public readonly static string DLL_PATH = @"PhoenixPointWin64_Data\Managed";
       public readonly static string INJECTOR =  "ModnixInjector.exe";
       public readonly static string LOADER   =  "ModnixLoader.dll";
+      public readonly static string LEGACY   =  "PhoenixPointModLoaderInjector.exe";
       public readonly static string GAME_EXE =  "PhoenixPointWin64.exe";
       public readonly static string GAME_DLL =  "Assembly-CSharp.dll";
 
@@ -34,13 +36,16 @@ namespace Sheepy.Modnix.MainGUI {
          Task.Run( (Action) CheckStatus );
       }
 
+      private AssemblyName Myself;
+
       /// 1. If injector is in correct place = call injector to detect status
       /// 2. If injector is not in place, but dummy exists
       ///   Check Phoenix Point. Found = can setup. Not found = Error.
       /// 3. If dummy not exists = Error, re-download
       private void CheckStatus () { lock ( SynRoot ) { try {
          Log( "Checking status" );
-         Log( "Assembly: " + Assembly.GetExecutingAssembly().GetName().CodeBase );
+         Myself = Assembly.GetExecutingAssembly().GetName();
+         Log( "Assembly: " + Myself.CodeBase );
          Log( "Working Dir: " + Directory.GetCurrentDirectory() );
          GUI.SetAppVer( CheckAppVer() );
          bool found = FoundGame( out string gamePath );
@@ -55,15 +60,22 @@ namespace Sheepy.Modnix.MainGUI {
          Log( ex );
       } } }
 
+      private bool FoundRunningGame () {
+         Process[] clones = Process.GetProcessesByName( Path.GetFileNameWithoutExtension( GAME_EXE ) );
+         return clones.Length > 0;
+      }
+
       private void CheckInjectionStatus () {
+         string status = null;
          if ( CheckInjected() ) {
-            var status = currentGame.Status;
-            if ( status == "both" ) status = "ppml"; // Make GUI shows ppml
-            GUI.SetAppState( status );
+            status = currentGame.Status;
+            if ( status == "both" ) status = "ppml"; // Make GUI shows ppml, and thus require setup to remove ppml
             GUI.SetGameVer( CheckGameVer() );
          } else {
-            GUI.SetAppState( "setup" );
+            status = "setup";
          }
+         if ( FoundRunningGame() ) status = "running";
+         GUI.SetAppState( status );
       }
 
       public string InjectorPath ( string gamePath ) => Path.Combine( gamePath, DLL_PATH, INJECTOR );
@@ -144,10 +156,14 @@ namespace Sheepy.Modnix.MainGUI {
 
       public void DeletePPMLAsync () {
          Log( "Queuing delete PPML" );
-         Task.Run( () => {
-            currentGame.DeleteCodeFile( "PhoenixPointModLoaderInjector.exe" );
-         } );
+         Task.Run( (Action) DeletePPML );
       }
+
+      private void DeletePPML () { lock ( SynRoot ) { try {
+         currentGame.DeleteCodeFile( LEGACY );
+      } catch ( Exception ex ) {
+         Log( ex );
+      } } }
       
       public void DoRestoreAsync () {
          Log( "Queuing restore" );
@@ -164,7 +180,7 @@ namespace Sheepy.Modnix.MainGUI {
       } } }
 
       private bool HasPPML () { try {
-         return File.Exists( Path.Combine( currentGame.CodeDir, "PhoenixPointModLoaderInjector.exe" ) );
+         return File.Exists( Path.Combine( currentGame.CodeDir, LEGACY ) );
       } catch ( Exception) {
          return false;
       } }
@@ -173,21 +189,26 @@ namespace Sheepy.Modnix.MainGUI {
       #region Helpers
       public string RunAndWait ( string path, string exe, string param = null ) {
          Log( $"Running at {path} : {exe} {param}" );
-         
-         Process p = new Process();
-         p.StartInfo.UseShellExecute = false;
-         p.StartInfo.RedirectStandardOutput = true;
-         p.StartInfo.FileName = exe;
-         p.StartInfo.Arguments = param;
-         p.StartInfo.WorkingDirectory = path;
-         p.StartInfo.CreateNoWindow = true;
-         p.StartInfo.WindowStyle = ProcessWindowStyle.Minimized;
-         p.Start();
+         try {
+            using ( Process p = new Process() ) {
+               p.StartInfo.UseShellExecute = false;
+               p.StartInfo.RedirectStandardOutput = true;
+               p.StartInfo.FileName = exe;
+               p.StartInfo.Arguments = param;
+               p.StartInfo.WorkingDirectory = path;
+               p.StartInfo.CreateNoWindow = true;
+               p.StartInfo.WindowStyle = ProcessWindowStyle.Minimized;
+               p.Start();
 
-         string output = p.StandardOutput.ReadToEnd()?.Trim();
-         Log( $"Standard out: {output}" );
-         p.WaitForExit();
-         return output;
+               string output = p.StandardOutput.ReadToEnd()?.Trim();
+               Log( $"Standard out: {output}" );
+               p.WaitForExit( 1000 );
+               return output;
+            }
+         } catch ( Exception ex ) {
+            Log( ex );
+            return String.Empty;
+         }
       }
 
       public void Log ( object message ) => GUI.Log( message.ToString() );
