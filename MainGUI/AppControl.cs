@@ -11,21 +11,21 @@ using System.Threading.Tasks;
 namespace Sheepy.Modnix.MainGUI {
    internal class AppControl {
 
-      internal readonly static string MOD_PATH = @"My Games\Phoenix Point\Mods";
-      internal readonly static string DLL_PATH = @"PhoenixPointWin64_Data\Managed";
-      internal readonly static string SETUP_TO =  "Modnix.exe";
-      internal readonly static string INJECTOR =  "ModnixInjector.exe";
-      internal readonly static string LOADER   =  "ModnixLoader.dll";
-      internal readonly static string PAST     =  "PhoenixPointModLoaderInjector.exe";
-      internal readonly static string PAST_BK  =  "PhoenixPointModLoaderInjector.exe.orig";
-      internal readonly static string GAME_EXE =  "PhoenixPointWin64.exe";
-      internal readonly static string GAME_DLL =  "Assembly-CSharp.dll";
+      internal readonly static string MOD_PATH = "My Games/Phoenix Point/Mods".FixSlash();
+      internal readonly static string DLL_PATH = "PhoenixPointWin64_Data/Managed".FixSlash();
+      internal readonly static string GUI_EXE  = "Modnix.exe";
+      internal readonly static string INJECTOR = "ModnixInjector.exe";
+      internal readonly static string LOADER   = "ModnixLoader.dll";
+      internal readonly static string PAST     = "PhoenixPointModLoaderInjector.exe";
+      internal readonly static string PAST_BK  = "PhoenixPointModLoaderInjector.exe.orig";
+      internal readonly static string GAME_EXE = "PhoenixPointWin64.exe";
+      internal readonly static string GAME_DLL = "Assembly-CSharp.dll";
 
       // Game and install files are considered corrupted and thus non exists if smaller than this size
       private readonly static long MIN_FILE_SIZE = 1024 * 10;
 
       private readonly static string[] GAME_PATHS =
-         new string[]{ ".", @"C:\Program Files\Epic Games\PhoenixPoint" };
+         new string[]{ ".", "C:/Program Files/Epic Games/PhoenixPoint" };
 
       private readonly MainWindow GUI;
       private readonly object SynRoot = new object();
@@ -34,13 +34,26 @@ namespace Sheepy.Modnix.MainGUI {
       internal AppControl ( MainWindow _GUI ) => GUI = _GUI;
 
       #region Check Status
+      internal void InitPaths () { lock ( SynRoot ) { try {
+         Myself = Assembly.GetExecutingAssembly().GetName();
+         MyPath = Uri.UnescapeDataString( new UriBuilder( Myself.CodeBase ).Path ).FixSlash();
+         Log( "Assembly: " + MyPath );
+         Log( "Working Dir: " + Directory.GetCurrentDirectory() );
+         ModFolder = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.MyDocuments ), MOD_PATH );
+         Log( "Mod Dir: " + ModFolder );
+      } catch ( Exception ex ) {
+         Log( ex );
+      } } }
+
       internal void CheckStatusAsync () {
          Log( "Queuing status check" );
          Task.Run( (Action) CheckStatus );
       }
 
       internal AssemblyName Myself;
+      internal string MyPath;
       internal string ModFolder;
+      internal string ModGuiExe => Path.Combine( ModFolder, GUI_EXE );
 
       /// 1. If injector is in correct place = call injector to detect status
       /// 2. If injector is not in place, but dummy exists
@@ -48,11 +61,6 @@ namespace Sheepy.Modnix.MainGUI {
       /// 3. If dummy not exists = Error, re-download
       private void CheckStatus () { lock ( SynRoot ) { try {
          Log( "Checking status" );
-         Myself = Assembly.GetExecutingAssembly().GetName();
-         Log( "Assembly: " + Myself.CodeBase );
-         Log( "Working Dir: " + Directory.GetCurrentDirectory() );
-         ModFolder = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.MyDocuments ), MOD_PATH );
-         Log( "Mod Dir: " + ModFolder );
          GUI.SetAppVer( CheckAppVer() );
          if ( FoundGame( out string gamePath ) ) {
             currentGame = new GameInstallation( this, gamePath );
@@ -124,7 +132,8 @@ namespace Sheepy.Modnix.MainGUI {
 
       /// Try to detect game path
       internal bool FoundGame ( out string gamePath ) { gamePath = null; try {
-         foreach ( string path in GAME_PATHS ) {
+         foreach ( string dir in GAME_PATHS ) {
+            var path = dir.FixSlash();
             string exe = Path.Combine( path, GAME_EXE ), dll = Path.Combine( path, DLL_PATH, GAME_DLL );
             if ( File.Exists( exe ) && new FileInfo( exe ).Length > MIN_FILE_SIZE &&
                  File.Exists( dll ) && new FileInfo( dll ).Length > MIN_FILE_SIZE ) {
@@ -146,10 +155,8 @@ namespace Sheepy.Modnix.MainGUI {
       private void DoSetup () { lock ( SynRoot ) { try {
          string prompt = "setup_ok";
          // Copy exe to mod folder
-         string MyPath = Uri.UnescapeDataString( new UriBuilder( Myself.CodeBase ).Path );
-         string SetupExe = Path.Combine( ModFolder, SETUP_TO );
          Log( $"Setup from {MyPath}" );
-         if ( CopySelf( MyPath, SetupExe ) )
+         if ( CopySelf( MyPath, ModGuiExe ) )
             prompt += ",self_copy";
          // Copy hook files
          currentGame.WriteCodeFile( "0Harmony.dll", SetupPackage._0Harmony );

@@ -33,12 +33,24 @@ namespace Sheepy.Modnix.MainGUI {
          RefreshAppInfo();
          RefreshGameInfo();
          RefreshModInfo();
-         if ( ! FoundRunningModnix() ) {
-            Log( "Initiating Controller" );
-            App = new AppControl( this );
-            App.CheckStatusAsync();
-         }
+         App = new AppControl( this );
+         App.InitPaths();
+         if ( FoundRunningModnix() ) return;
+         if ( FoundProperModnix() ) return;
+         Log( "Initiating Controller" );
+         App.CheckStatusAsync();
       }
+
+      private bool FoundProperModnix () { try {
+         if ( App.MyPath == App.ModGuiExe ) return false;
+         if ( ! File.Exists( App.ModGuiExe ) ) return false;
+         string ver = FileVersionInfo.GetVersionInfo( App.ModGuiExe ).ProductVersion;
+         Log( $"Modnix found on mod path, version {ver}" );
+         return false;
+      } catch ( Exception ex ) {
+         Log( ex.ToString() );
+         return false;
+      } }
 
       private bool FoundRunningModnix () { try {
          int myId = Process.GetCurrentProcess().Id;
@@ -47,7 +59,7 @@ namespace Sheepy.Modnix.MainGUI {
          IntPtr handle = clones[0].MainWindowHandle;
          if ( handle == IntPtr.Zero ) return false;
          Log( "Another Modnix is found. Self-closing." );
-         ApiExternal.SetForegroundWindow( handle );
+         Tools.SetForegroundWindow( handle );
          Close();
          return true;
       } catch ( Exception ex ) {
@@ -141,7 +153,7 @@ namespace Sheepy.Modnix.MainGUI {
                txt += @"\rModnix installed to mod folder.  This setup file may be deleted.\rRestarting and showing mod folder.";
                if ( MessageBox.Show( txt, "Success", MessageBoxButton.OKCancel ) == MessageBoxResult.OK ) {
                   // TODO: Implement restart options and move to restart
-                  Process.Start( "explorer.exe", "/select, \"" + Path.Combine( App.ModFolder, AppControl.SETUP_TO ) +"\"" );
+                  Process.Start( "explorer.exe", "/select, \"" + App.ModGuiExe +"\"" );
                }
             } else {
                MessageBox.Show( txt, "Success" );
