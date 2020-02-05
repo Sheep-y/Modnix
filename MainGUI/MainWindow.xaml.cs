@@ -191,7 +191,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void ButtonLogSave_Click ( object sender, RoutedEventArgs e ) {
          var dialog = new Microsoft.Win32.SaveFileDialog {
-            FileName = "ModnixGuiLog " + DateTime.Now.ToString( "u" ).Replace( ':', '-' ),
+            FileName = Assembly.GetExecutingAssembly().GetName().Name + "Log " + DateTime.Now.ToString( "u" ).Replace( ':', '-' ),
             DefaultExt = ".txt",
             Filter = "Log Files (.txt .log)|*.txt;*.log|All Files|*.*"
          };

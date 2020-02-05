@@ -61,8 +61,7 @@ namespace Sheepy.Modnix.MainGUI {
       } } }
 
       private bool FoundRunningGame () {
-         Process[] clones = Process.GetProcessesByName( Path.GetFileNameWithoutExtension( GAME_EXE ) );
-         return clones.Length > 0;
+         return Process.GetProcessesByName( Path.GetFileNameWithoutExtension( GAME_EXE ) ).Length > 0;
       }
 
       private void CheckInjectionStatus () {
