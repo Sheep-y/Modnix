@@ -35,30 +35,53 @@ namespace Sheepy.Modnix.MainGUI {
          RefreshModInfo();
          App = new AppControl( this );
          App.InitPaths();
-         if ( FoundRunningModnix() ) return;
-         if ( FoundProperModnix() ) return;
+         ProcessParams();
+         if ( FoundRunningExe() ) return;
+         if ( FoundProperExe() ) return;
          Log( "Initiating Controller" );
          App.CheckStatusAsync();
       }
 
-      private bool FoundProperModnix () { try {
+      private void ProcessParams () {
+         // -i --ignore-pid (id)  Ignore given pid in running process check
+         // -o --open-mod-dir     Open mod folder on launch, used after successful setup
+         //Process.Start( "explorer.exe", "/select, \"" + App.ModGuiExe +"\"" );
+      }
+
+      private bool FoundProperExe () { try {
          if ( App.MyPath == App.ModGuiExe ) return false;
          if ( ! File.Exists( App.ModGuiExe ) ) return false;
-         string ver = FileVersionInfo.GetVersionInfo( App.ModGuiExe ).ProductVersion;
-         Log( $"Modnix found on mod path, version {ver}" );
+         long size = new FileInfo( App.ModGuiExe ).Length;
+         Log( $"Exe found on mod path, {size} bytes" );
+         try {
+            var ver = Version.Parse( FileVersionInfo.GetVersionInfo( App.ModGuiExe ).ProductVersion );
+            Log( $"Subject version {ver}" );
+            if ( ver >= App.Myself.Version ) return RunProperExe();
+            else return false;
+         } catch ( Exception ) {}
+         // If version check fails, check file size. Bigger = more code = more up to date.
+         if ( size >= new FileInfo( App.MyPath ).Length )
+            return RunProperExe();
          return false;
       } catch ( Exception ex ) {
          Log( ex.ToString() );
          return false;
       } }
 
-      private bool FoundRunningModnix () { try {
+      private bool RunProperExe () {
+         Log( "Running it instead of us" );
+         Process.Start( App.ModGuiExe, "/i " + Process.GetCurrentProcess().Id );
+         Close();
+         return true;
+      }
+
+      private bool FoundRunningExe () { try {
          int myId = Process.GetCurrentProcess().Id;
          Process[] clones = Process.GetProcessesByName( Assembly.GetExecutingAssembly().GetName().Name ).Where( e => e.Id != myId ).ToArray();
          if ( clones.Length <= 0 ) return false;
          IntPtr handle = clones[0].MainWindowHandle;
          if ( handle == IntPtr.Zero ) return false;
-         Log( "Another Modnix is found. Self-closing." );
+         Log( "Another instance is found. Self-closing." );
          Tools.SetForegroundWindow( handle );
          Close();
          return true;
@@ -153,7 +176,7 @@ namespace Sheepy.Modnix.MainGUI {
                txt += @"\rModnix installed to mod folder.  This setup file may be deleted.\rRestarting and showing mod folder.";
                if ( MessageBox.Show( txt, "Success", MessageBoxButton.OKCancel ) == MessageBoxResult.OK ) {
                   // TODO: Implement restart options and move to restart
-                  Process.Start( "explorer.exe", "/select, \"" + App.ModGuiExe +"\"" );
+                  Process.Start( App.ModGuiExe, "/o /i " + Process.GetCurrentProcess().Id );
                }
             } else {
                MessageBox.Show( txt, "Success" );
