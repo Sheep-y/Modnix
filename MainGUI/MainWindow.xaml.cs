@@ -23,6 +23,7 @@ namespace Sheepy.Modnix.MainGUI {
       private string AppVer, AppState, GamePath, GameVer;
 
       public MainWindow () {
+         App = AppControl.Instance;
          InitializeComponent();
          RefreshGUI();
       }
@@ -33,62 +34,9 @@ namespace Sheepy.Modnix.MainGUI {
          RefreshAppInfo();
          RefreshGameInfo();
          RefreshModInfo();
-         App = new AppControl( this );
-         App.InitPaths();
-         ProcessParams();
-         if ( FoundRunningExe() ) return;
-         if ( FoundProperExe() ) return;
          Log( "Initiating Controller" );
          App.CheckStatusAsync();
       }
-
-      private void ProcessParams () {
-         // -i --ignore-pid (id)  Ignore given pid in running process check
-         // -o --open-mod-dir     Open mod folder on launch, used after successful setup
-         //Process.Start( "explorer.exe", "/select, \"" + App.ModGuiExe +"\"" );
-      }
-
-      private bool FoundProperExe () { try {
-         if ( App.MyPath == App.ModGuiExe ) return false;
-         if ( ! File.Exists( App.ModGuiExe ) ) return false;
-         long size = new FileInfo( App.ModGuiExe ).Length;
-         Log( $"Exe found on mod path, {size} bytes" );
-         try {
-            var ver = Version.Parse( FileVersionInfo.GetVersionInfo( App.ModGuiExe ).ProductVersion );
-            Log( $"Subject version {ver}" );
-            if ( ver >= App.Myself.Version ) return RunProperExe();
-            else return false;
-         } catch ( Exception ) {}
-         // If version check fails, check file size. Bigger = more code = more up to date.
-         if ( size >= new FileInfo( App.MyPath ).Length )
-            return RunProperExe();
-         return false;
-      } catch ( Exception ex ) {
-         Log( ex.ToString() );
-         return false;
-      } }
-
-      private bool RunProperExe () {
-         Log( "Running it instead of us" );
-         Process.Start( App.ModGuiExe, "/i " + Process.GetCurrentProcess().Id );
-         Close();
-         return true;
-      }
-
-      private bool FoundRunningExe () { try {
-         int myId = Process.GetCurrentProcess().Id;
-         Process[] clones = Process.GetProcessesByName( Assembly.GetExecutingAssembly().GetName().Name ).Where( e => e.Id != myId ).ToArray();
-         if ( clones.Length <= 0 ) return false;
-         IntPtr handle = clones[0].MainWindowHandle;
-         if ( handle == IntPtr.Zero ) return false;
-         Log( "Another instance is found. Self-closing." );
-         Tools.SetForegroundWindow( handle );
-         Close();
-         return true;
-      } catch ( Exception ex ) {
-         Log( ex.ToString() );
-         return false;
-      } }
 
       #region App Info Area
       public void SetAppVer ( string value ) { Dispatch( () => {

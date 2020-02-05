@@ -1,8 +1,8 @@
-﻿<Application x:Class="MainGUI.App"
+﻿<Application x:Class="Sheepy.Modnix.MainGUI.AppControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:MainGUI"
-             StartupUri="MainWindow.xaml">
+             xmlns:local="clr-namespace:Sheepy.Modnix.MainGUI"
+             Startup="Application_Startup">
     <Application.Resources>
          
     </Application.Resources>
