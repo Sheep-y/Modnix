@@ -9,17 +9,17 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Sheepy.Modnix.MainGUI {
-   public class AppControl {
+   internal class AppControl {
 
-      public readonly static string MOD_PATH = @"My Games\Phoenix Point\Mods";
-      public readonly static string DLL_PATH = @"PhoenixPointWin64_Data\Managed";
-      public readonly static string SETUP_TO =  "Modnix.exe";
-      public readonly static string INJECTOR =  "ModnixInjector.exe";
-      public readonly static string LOADER   =  "ModnixLoader.dll";
-      public readonly static string PAST     =  "PhoenixPointModLoaderInjector.exe";
-      public readonly static string PAST_BK  =  "PhoenixPointModLoaderInjector.exe.orig";
-      public readonly static string GAME_EXE =  "PhoenixPointWin64.exe";
-      public readonly static string GAME_DLL =  "Assembly-CSharp.dll";
+      internal readonly static string MOD_PATH = @"My Games\Phoenix Point\Mods";
+      internal readonly static string DLL_PATH = @"PhoenixPointWin64_Data\Managed";
+      internal readonly static string SETUP_TO =  "Modnix.exe";
+      internal readonly static string INJECTOR =  "ModnixInjector.exe";
+      internal readonly static string LOADER   =  "ModnixLoader.dll";
+      internal readonly static string PAST     =  "PhoenixPointModLoaderInjector.exe";
+      internal readonly static string PAST_BK  =  "PhoenixPointModLoaderInjector.exe.orig";
+      internal readonly static string GAME_EXE =  "PhoenixPointWin64.exe";
+      internal readonly static string GAME_DLL =  "Assembly-CSharp.dll";
 
       // Game and install files are considered corrupted and thus non exists if smaller than this size
       private readonly static long MIN_FILE_SIZE = 1024 * 10;
@@ -31,10 +31,10 @@ namespace Sheepy.Modnix.MainGUI {
       private readonly object SynRoot = new object();
       private GameInstallation currentGame;
 
-      public AppControl ( MainWindow _GUI ) => GUI = _GUI;
+      internal AppControl ( MainWindow _GUI ) => GUI = _GUI;
 
       #region Check Status
-      public void CheckStatusAsync () {
+      internal void CheckStatusAsync () {
          Log( "Queuing status check" );
          Task.Run( (Action) CheckStatus );
       }
@@ -82,18 +82,18 @@ namespace Sheepy.Modnix.MainGUI {
          GUI.SetAppState( status );
       }
 
-      public string InjectorPath ( string gamePath ) => Path.Combine( gamePath, DLL_PATH, INJECTOR );
-      public string LoaderPath   ( string gamePath ) => Path.Combine( gamePath, DLL_PATH, LOADER   );
+      internal string InjectorPath ( string gamePath ) => Path.Combine( gamePath, DLL_PATH, INJECTOR );
+      internal string LoaderPath   ( string gamePath ) => Path.Combine( gamePath, DLL_PATH, LOADER   );
 
       /// Check that mod injector and mod loader is in place
-      public bool InjectorInPlace () { try {
+      internal bool InjectorInPlace () { try {
          if ( ! File.Exists( currentGame.Injector ) ) return Log( $"Missing injector: {currentGame.Injector}", false );
          if ( ! File.Exists( currentGame.Loader   ) ) return Log( $"Missing loader: {currentGame.Loader}", false );
          return Log( $"Injector and loader found in {currentGame.CodeDir}", true );
       } catch ( IOException ex ) { return Log( ex, false ); } }
 
       /// Return true if injectors are in place and injected.
-      public bool CheckInjected () {
+      internal bool CheckInjected () {
          try {
             if ( ! InjectorInPlace() ) return false;
             Log( "Detecting injection status." );
@@ -105,7 +105,7 @@ namespace Sheepy.Modnix.MainGUI {
          }
       }
 
-      public string CheckAppVer () { try {
+      internal string CheckAppVer () { try {
          string ver = Assembly.GetExecutingAssembly().GetName().Version.ToString();
          Log( "Version: " + ver );
          return ver;
@@ -113,7 +113,7 @@ namespace Sheepy.Modnix.MainGUI {
          return Log( ex, "error" );
       } }
 
-      public string CheckGameVer () { try {
+      internal string CheckGameVer () { try {
          Log( "Detecting game version." );
          string ver = currentGame.RunInjector( "/g" );
          Log( "Game Version: " + ver );
@@ -123,7 +123,7 @@ namespace Sheepy.Modnix.MainGUI {
       } }
 
       /// Try to detect game path
-      public bool FoundGame ( out string gamePath ) { gamePath = null; try {
+      internal bool FoundGame ( out string gamePath ) { gamePath = null; try {
          foreach ( string path in GAME_PATHS ) {
             string exe = Path.Combine( path, GAME_EXE ), dll = Path.Combine( path, DLL_PATH, GAME_DLL );
             if ( File.Exists( exe ) && new FileInfo( exe ).Length > MIN_FILE_SIZE &&
@@ -138,7 +138,7 @@ namespace Sheepy.Modnix.MainGUI {
       #endregion
 
       #region Setup / Restore
-      public void DoSetupAsync () {
+      internal void DoSetupAsync () {
          Log( "Queuing setup" );
          Task.Run( (Action) DoSetup );
       }
@@ -167,7 +167,7 @@ namespace Sheepy.Modnix.MainGUI {
          GUI.Prompt( "error", ex );
       } } }
 
-      public bool CopySelf ( string me, string there ) { try {
+      internal bool CopySelf ( string me, string there ) { try {
          if ( me == there ) return false;
          Log( $"Copying self to {there}" );
          Directory.CreateDirectory( ModFolder );
@@ -177,7 +177,7 @@ namespace Sheepy.Modnix.MainGUI {
          return Log( ex, false );
       } }
       
-      public void DoRestoreAsync () {
+      internal void DoRestoreAsync () {
          Log( "Queuing restore" );
          Task.Run( (Action) DoRestore );
       }
@@ -203,7 +203,7 @@ namespace Sheepy.Modnix.MainGUI {
       #endregion
 
       #region Helpers
-      public string RunAndWait ( string path, string exe, string param = null ) {
+      internal string RunAndWait ( string path, string exe, string param = null ) {
          Log( $"Running at {path} : {exe} {param}" );
          try {
             using ( Process p = new Process() ) {
@@ -226,17 +226,17 @@ namespace Sheepy.Modnix.MainGUI {
          }
       }
 
-      public void Log ( object message ) => GUI.Log( message.ToString() );
+      internal void Log ( object message ) => GUI.Log( message.ToString() );
 
-      public T Log<T> ( object message, T result ) {
+      internal T Log<T> ( object message, T result ) {
          Log( message.ToString() );
          return result;
       }
       #endregion
    }
 
-   public class GameInstallation {
-      public GameInstallation ( AppControl app, string gameDir ) {
+   internal class GameInstallation {
+      internal GameInstallation ( AppControl app, string gameDir ) {
          App = app;
          GameDir  = gameDir;
          CodeDir  = Path.Combine( gameDir, AppControl.DLL_PATH );
@@ -244,26 +244,26 @@ namespace Sheepy.Modnix.MainGUI {
          Loader   = Path.Combine( CodeDir, AppControl.LOADER   );
       }
 
-      public readonly AppControl App;
-      public readonly string GameDir;
-      public readonly string CodeDir;
-      public readonly string Injector;
-      public readonly string Loader;
+      internal readonly AppControl App;
+      internal readonly string GameDir;
+      internal readonly string CodeDir;
+      internal readonly string Injector;
+      internal readonly string Loader;
 
-      public string Status { get; internal set; } // Injection status
+      internal string Status; // Injection status
 
-      public string RunInjector ( string param ) {
+      internal string RunInjector ( string param ) {
          return App.RunAndWait( CodeDir, Injector, param );
       }
 
-      public void WriteCodeFile ( string file, byte[] content ) {
+      internal void WriteCodeFile ( string file, byte[] content ) {
          if ( content == null ) throw new ArgumentNullException( "content" );
          string target = Path.Combine( CodeDir, file );
          App.Log( $"Writing {content.Length} bytes to {target}" );
          File.WriteAllBytes( target, content );
       }
 
-      public bool DeleteCodeFile ( string file ) { try {
+      internal bool DeleteCodeFile ( string file ) { try {
       string subject = Path.Combine( CodeDir, file );
       App.Log( $"Deleting {subject}" );
          File.Delete( subject );
@@ -272,7 +272,7 @@ namespace Sheepy.Modnix.MainGUI {
          return App.Log( ex, false );
       } }
 
-      public bool RenameCodeFile ( string file, string toName ) { try {
+      internal bool RenameCodeFile ( string file, string toName ) { try {
       string subject = Path.Combine( CodeDir, file   );
       string target  = Path.Combine( CodeDir, toName );
       App.Log( $"Renaming {subject} to {toName}" );
