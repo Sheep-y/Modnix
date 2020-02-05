@@ -11,10 +11,13 @@ using System.Threading.Tasks;
 namespace Sheepy.Modnix.MainGUI {
    public class AppControl {
 
+      public readonly static string MOD_PATH = @"My Games\Phoenix Point\Mods";
       public readonly static string DLL_PATH = @"PhoenixPointWin64_Data\Managed";
+      public readonly static string SETUP_TO =  "Modnix.exe";
       public readonly static string INJECTOR =  "ModnixInjector.exe";
       public readonly static string LOADER   =  "ModnixLoader.dll";
-      public readonly static string LEGACY   =  "PhoenixPointModLoaderInjector.exe";
+      public readonly static string PAST     =  "PhoenixPointModLoaderInjector.exe";
+      public readonly static string PAST_BK  =  "PhoenixPointModLoaderInjector.exe.orig";
       public readonly static string GAME_EXE =  "PhoenixPointWin64.exe";
       public readonly static string GAME_DLL =  "Assembly-CSharp.dll";
 
@@ -36,7 +39,8 @@ namespace Sheepy.Modnix.MainGUI {
          Task.Run( (Action) CheckStatus );
       }
 
-      private AssemblyName Myself;
+      internal AssemblyName Myself;
+      internal string ModFolder;
 
       /// 1. If injector is in correct place = call injector to detect status
       /// 2. If injector is not in place, but dummy exists
@@ -47,9 +51,10 @@ namespace Sheepy.Modnix.MainGUI {
          Myself = Assembly.GetExecutingAssembly().GetName();
          Log( "Assembly: " + Myself.CodeBase );
          Log( "Working Dir: " + Directory.GetCurrentDirectory() );
+         ModFolder = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.MyDocuments ), MOD_PATH );
+         Log( "Mod Dir: " + ModFolder );
          GUI.SetAppVer( CheckAppVer() );
-         bool found = FoundGame( out string gamePath );
-         if ( found ) {
+         if ( FoundGame( out string gamePath ) ) {
             currentGame = new GameInstallation( this, gamePath );
             GUI.SetGamePath( gamePath );
             CheckInjectionStatus();
@@ -139,30 +144,38 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       private void DoSetup () { lock ( SynRoot ) { try {
+         string prompt = "setup_ok";
+         // Copy exe to mod folder
+         string MyPath = Uri.UnescapeDataString( new UriBuilder( Myself.CodeBase ).Path );
+         string SetupExe = Path.Combine( ModFolder, SETUP_TO );
+         Log( $"Setup from {MyPath}" );
+         if ( CopySelf( MyPath, SetupExe ) )
+            prompt += ",self_copy";
+         // Copy hook files
          currentGame.WriteCodeFile( "0Harmony.dll", SetupPackage._0Harmony );
          currentGame.WriteCodeFile( "Mono.Cecil.dll", SetupPackage.Mono_Cecil );
          currentGame.WriteCodeFile( LOADER, SetupPackage.ModnixLoader );
          currentGame.WriteCodeFile( INJECTOR, SetupPackage.ModnixInjector );
          currentGame.RunInjector( "/y" );
          CheckStatus();
-         if ( currentGame.Status == "modnix" )
-            GUI.SetupSuccess( HasPPML() );
+         if ( HasPPML() && currentGame.RenameCodeFile( PAST, PAST_BK ) )
+            prompt += ",ppml";
+         GUI.Prompt( prompt );
       } catch ( Exception ex ) {
          try { CheckStatus(); } catch ( Exception ) {}
          Log( ex );
-         GUI.SetAppState( ex.GetType().ToString() );
+         GUI.Prompt( "error", ex );
       } } }
 
-      public void DeletePPMLAsync () {
-         Log( "Queuing delete PPML" );
-         Task.Run( (Action) DeletePPML );
-      }
-
-      private void DeletePPML () { lock ( SynRoot ) { try {
-         currentGame.DeleteCodeFile( LEGACY );
+      public bool CopySelf ( string me, string there ) { try {
+         if ( me == there ) return false;
+         Log( $"Copying self to {there}" );
+         Directory.CreateDirectory( ModFolder );
+         File.Copy( me, there );
+         return File.Exists( there );
       } catch ( Exception ex ) {
-         Log( ex );
-      } } }
+         return Log( ex, false );
+      } }
       
       public void DoRestoreAsync () {
          Log( "Queuing restore" );
@@ -175,14 +188,15 @@ namespace Sheepy.Modnix.MainGUI {
          if ( currentGame.Status == "none" ) {
             currentGame.DeleteCodeFile( INJECTOR );
             currentGame.DeleteCodeFile( LOADER );
-            GUI.RestoreSuccess();
+            GUI.Prompt( "restore_ok" );
          }
       } catch ( Exception ex ) {
          Log( ex );
+         GUI.Prompt( "error", ex );
       } } }
 
       private bool HasPPML () { try {
-         return File.Exists( Path.Combine( currentGame.CodeDir, LEGACY ) );
+         return File.Exists( Path.Combine( currentGame.CodeDir, PAST ) );
       } catch ( Exception) {
          return false;
       } }
@@ -208,8 +222,7 @@ namespace Sheepy.Modnix.MainGUI {
                return output;
             }
          } catch ( Exception ex ) {
-            Log( ex );
-            return String.Empty;
+            return Log( ex, String.Empty );
          }
       }
 
@@ -250,14 +263,23 @@ namespace Sheepy.Modnix.MainGUI {
          File.WriteAllBytes( target, content );
       }
 
-      public void DeleteCodeFile ( string file ) {
-         string target = Path.Combine( CodeDir, file );
-         App.Log( $"Deleting {target}" );
-         try {
-            File.Delete( target );
-         } catch ( Exception ex ) {
-            App.Log( ex );
-         }
-      }
+      public bool DeleteCodeFile ( string file ) { try {
+      string subject = Path.Combine( CodeDir, file );
+      App.Log( $"Deleting {subject}" );
+         File.Delete( subject );
+         return ! File.Exists( subject );
+      } catch ( Exception ex ) {
+         return App.Log( ex, false );
+      } }
+
+      public bool RenameCodeFile ( string file, string toName ) { try {
+      string subject = Path.Combine( CodeDir, file   );
+      string target  = Path.Combine( CodeDir, toName );
+      App.Log( $"Renaming {subject} to {toName}" );
+         File.Move( subject, target );
+         return File.Exists( target );
+      } catch ( Exception ex ) {
+         return App.Log( ex, false );
+      } }
    }
 }

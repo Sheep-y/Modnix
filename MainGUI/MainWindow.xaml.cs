@@ -14,7 +14,6 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace Sheepy.Modnix.MainGUI {
 
@@ -131,13 +130,28 @@ namespace Sheepy.Modnix.MainGUI {
          App.DoRestoreAsync();
       }
 
-      public void SetupSuccess ( bool HasPPML ) { Dispatch( () => {
-         if ( HasPPML && MessageBox.Show( "Setup success. Delete PPML to prevent accidents?", "Question", MessageBoxButton.YesNo ) == MessageBoxResult.Yes ) {
-            App.DeletePPMLAsync();
+      public void Prompt ( string parts, Exception ex = null ) { Dispatch( () => {
+         Log( $"Prompt {parts}" );
+         string txt = "";
+         if ( parts.StartsWith( "setup_ok" ) ) {
+            txt = $"Setup success. Mod folder is My Documents\\{AppControl.MOD_PATH}";
+            if ( parts.Contains( ",ppml" ) )
+               txt += @"\rPPML has been renamed to prevent accidents.";
+            if ( parts.Contains( ",self_copy" ) ) {
+               txt += @"\rModnix installed to mod folder.  This setup file may be deleted.\rRestarting and showing mod folder.";
+               if ( MessageBox.Show( txt, "Success", MessageBoxButton.OKCancel ) == MessageBoxResult.OK ) {
+                  // TODO: Implement restart options and move to restart
+                  Process.Start( "explorer.exe", "/select, \"" + Path.Combine( App.ModFolder, AppControl.SETUP_TO ) +"\"" );
+               }
+            } else {
+               MessageBox.Show( txt, "Success" );
+            }
+         } else if ( parts.StartsWith( "restore_ok" ) ) {
+            MessageBox.Show( "Uninstall successful.", "Success" );
+         } else if ( parts.StartsWith( "error" ) ) {
+            MessageBox.Show( "Operation failed. Error: " + ex , "Error" );
          }
       } ); }
-
-      public void RestoreSuccess () {}
 
       private void ButtonNexus_Click ( object sender, RoutedEventArgs e ) => OpenUrl( "nexus", e );
       #endregion
