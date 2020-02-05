@@ -30,49 +30,46 @@ namespace Sheepy.Modnix.MainGUI {
       private readonly static string[] GAME_PATHS =
          new string[]{ ".", "C:/Program Files/Epic Games/PhoenixPoint".FixSlash() };
 
-      internal static AppControl Instance;
       private MainWindow GUI;
       private GameInstallation currentGame;
 
       private readonly object SynRoot = new object();
 
       #region Startup
+      private bool paramSkipProcessCheck;
       private int  paramIgnorePid;
 
       public void Application_Startup ( object sender, StartupEventArgs e ) { lock ( SynRoot ) { try {
-         Instance = this;
          Myself = Assembly.GetExecutingAssembly().GetName();
          MyPath = Uri.UnescapeDataString( new UriBuilder( Myself.CodeBase ).Path ).FixSlash();
-         Log( "Assembly: " + MyPath );
-         Log( "Working Dir: " + Directory.GetCurrentDirectory() );
          ModFolder = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.MyDocuments ), MOD_PATH );
-         Log( "Mod Dir: " + ModFolder );
          ProcessParams( e?.Args );
-         if ( FoundRunningExe() || FoundProperExe() ) {
+         if ( ! paramSkipProcessCheck && ( FoundRunningExe() || FoundProperExe() ) ) {
             Shutdown();
             return;
          }
-		 GUI = new MainWindow();
+         GUI = new MainWindow( this );
          GUI.Show();
       } catch ( Exception ex ) {
          Log( ex );
       } } }
 
       /// Parse command line arguments.
-      /// -i --ignore-pid (id)  Ignore given pid in running process check
-      /// -o --open-mod-dir     Open mod folder on launch, used after successful setup
+      /// -i --ignore-pid (id)     Ignore given pid in running process check
+      /// -o --open-mod-dir        Open mod folder on launch, used after successful setup
+      /// -s --skip-process-check  Skip checking running process and process path
       private void ProcessParams ( string[] args ) {
          if ( args == null || args.Length <= 0 ) return;
          List<string> param = args.ToList();
 
          int pid = ParamIndex( param, "i", "ignore-pid" );
-         if ( pid >= 0 && param.Count > pid+1 ) {
+         if ( pid >= 0 && param.Count > pid+1 )
             int.TryParse( param[pid+1], out paramIgnorePid );
-            Log( $"Ignoring {paramIgnorePid}" );
-         }
 
          if ( ParamIndex( param, "o", "open-mod-dir" ) >= 0 )
             Process.Start( "explorer.exe", "/select, \"" + ModGuiExe +"\"" );
+
+         paramSkipProcessCheck = ParamIndex( param, "s", "skip-process-check" ) < 0;
       }
 
       private static int ParamIndex ( List<String> args, string simple, string full ) {
@@ -87,13 +84,10 @@ namespace Sheepy.Modnix.MainGUI {
          if ( ! File.Exists( ModGuiExe ) ) return false;
          long size = new FileInfo( ModGuiExe ).Length;
          Log( $"Exe found on mod path, {size} bytes" );
-         try {
-            var ver = Version.Parse( FileVersionInfo.GetVersionInfo( ModGuiExe ).ProductVersion );
-            Log( $"Subject version {ver}" );
-            if ( ver >= Myself.Version ) return RunProperExe();
-            else return false;
-         } catch ( Exception ) {}
-         // If version check fails, check file size. Bigger = more code = more up to date.
+         var ver = Version.Parse( FileVersionInfo.GetVersionInfo( ModGuiExe ).ProductVersion );
+         if ( ver > Myself.Version ) return RunProperExe();
+         if ( ver < Myself.Version ) return false;
+         // If versions are equal, check file size. Bigger = more code = more up to date.
          if ( size >= new FileInfo( MyPath ).Length )
             return RunProperExe();
          return false;
@@ -103,7 +97,6 @@ namespace Sheepy.Modnix.MainGUI {
       } }
 
       private bool RunProperExe () {
-         Log( "Running it instead of us" );
          Process.Start( ModGuiExe, "/i " + Process.GetCurrentProcess().Id );
          return true;
       }

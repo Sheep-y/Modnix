@@ -22,9 +22,12 @@ namespace Sheepy.Modnix.MainGUI {
       private AppControl App;
       private string AppVer, AppState, GamePath, GameVer;
 
-      public MainWindow () {
-         App = AppControl.Instance;
+      public MainWindow ( AppControl app ) {
+         App = app;
          InitializeComponent();
+         Log( "Assembly: " + App.MyPath );
+         Log( "Working Dir: " + Directory.GetCurrentDirectory() );
+         Log( "Mod Dir: " + App.ModFolder );
          RefreshGUI();
       }
 
