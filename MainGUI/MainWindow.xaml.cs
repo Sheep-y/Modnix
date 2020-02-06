@@ -120,22 +120,28 @@ namespace Sheepy.Modnix.MainGUI {
          Log( $"Prompt {parts}" );
          string txt = "";
          if ( parts.StartsWith( "setup_ok" ) ) {
-            txt = $"Setup success. Mod folder is My Documents\\{AppControl.MOD_PATH}";
-            if ( parts.Contains( ",ppml" ) )
-               txt += @"\rPPML has been renamed to prevent accidents.";
+            txt = $"Setup success. Mod folder:\nMy Documents\\{AppControl.MOD_PATH}\n";
+            if ( parts.Contains( ",mod_moved" ) )
+               txt += "\nMods moved to new mod folder.";
             if ( parts.Contains( ",self_copy" ) ) {
-               txt += @"\rModnix installed to mod folder.  This setup file may be deleted.\rRestarting and showing mod folder.";
-               if ( MessageBox.Show( txt, "Success", MessageBoxButton.OKCancel ) == MessageBoxResult.OK ) {
-                  // TODO: Implement restart options and move to restart
-                  Process.Start( App.ModGuiExe, "/o /i " + Process.GetCurrentProcess().Id );
+               txt += "\nModnix installed to mod folder.";
+            if ( parts.Contains( ",ppml" ) )
+               txt += "\nPPML renamed to prevent accidents.";
+            if ( parts.Contains( ",self_copy" ) ) {
+               txt += "\n\nThis setup file may be deleted.\nModnix will be restarted.";
+               if ( MessageBox.Show( txt, "Success", MessageBoxButton.OKCancel, MessageBoxImage.Information ) == MessageBoxResult.OK ) {
+                  Process.Start( App.ModGuiExe, "/i " + Process.GetCurrentProcess().Id );
+                  Close();
                }
             } else {
-               MessageBox.Show( txt, "Success" );
+               MessageBox.Show( txt, "Success", MessageBoxButton.OK, MessageBoxImage.Information );
             }
          } else if ( parts.StartsWith( "restore_ok" ) ) {
             MessageBox.Show( "Uninstall successful.", "Success" );
          } else if ( parts.StartsWith( "error" ) ) {
-            MessageBox.Show( "Operation failed. Error: " + ex , "Error" );
+            txt = "Action failed. See log for details.";
+            if ( ex != null ) txt += "Error: " + ex;
+            MessageBox.Show(  txt , "Error", MessageBoxButton.OK, MessageBoxImage.Error );
          }
       } ); }
 

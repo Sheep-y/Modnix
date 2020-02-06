@@ -21,6 +21,7 @@ namespace Sheepy.Modnix.MainGUI {
       internal readonly static string LOADER   = "ModnixLoader.dll";
       internal readonly static string PAST     = "PhoenixPointModLoaderInjector.exe";
       internal readonly static string PAST_BK  = "PhoenixPointModLoaderInjector.exe.orig";
+      internal readonly static string PAST_MOD = "Mods";
       internal readonly static string GAME_EXE = "PhoenixPointWin64.exe";
       internal readonly static string GAME_DLL = "Assembly-CSharp.dll";
 
@@ -44,7 +45,7 @@ namespace Sheepy.Modnix.MainGUI {
          MyPath = Uri.UnescapeDataString( new UriBuilder( Myself.CodeBase ).Path ).FixSlash();
          ModFolder = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.MyDocuments ), MOD_PATH );
          ProcessParams( e?.Args );
-         if ( ! paramSkipProcessCheck && ( FoundRunningExe() || FoundProperExe() ) ) {
+         if ( ! paramSkipProcessCheck && ( FoundRunningExe() || ( FoundProperExe() && RunProperExe() ) ) ) {
             Shutdown();
             return;
          }
@@ -56,7 +57,6 @@ namespace Sheepy.Modnix.MainGUI {
 
       /// Parse command line arguments.
       /// -i --ignore-pid (id)     Ignore given pid in running process check
-      /// -o --open-mod-dir        Open mod folder on launch, used after successful setup
       /// -s --skip-process-check  Skip checking running process and process path
       private void ProcessParams ( string[] args ) {
          if ( args == null || args.Length <= 0 ) return;
@@ -66,17 +66,19 @@ namespace Sheepy.Modnix.MainGUI {
          if ( pid >= 0 && param.Count > pid+1 )
             int.TryParse( param[pid+1], out paramIgnorePid );
 
-         if ( ParamIndex( param, "o", "open-mod-dir" ) >= 0 )
-            Process.Start( "explorer.exe", "/select, \"" + ModGuiExe +"\"" );
+         /// -o --open-mod-dir        Open mod folder on launch, once used as part of setup
+         //if ( ParamIndex( param, "o", "open-mod-dir" ) >= 0 )
+         //   Process.Start( "explorer.exe", "/select, \"" + ModGuiExe +"\"" );
 
          paramSkipProcessCheck = ParamIndex( param, "s", "skip-process-check" ) < 0;
       }
 
-      private static int ParamIndex ( List<String> args, string simple, string full ) {
-         int win = args.IndexOf(  "/" + simple );
-         int sim = args.IndexOf(  "-" + simple );
-         int ful = args.IndexOf( "--" + full );
-         return Math.Max( win, Math.Max( sim, ful ) );
+      private static int ParamIndex ( List<String> args, string quick, string full ) {
+         int win1 = args.IndexOf(  "/" + quick );
+         int win2 = args.IndexOf(  "/" + full  );
+         int lin1 = args.IndexOf(  "-" + quick );
+         int lin2 = args.IndexOf( "--" + full  );
+         return Math.Max( Math.Max( win1, win2 ), Math.Max( lin1, lin2 ) );
       }
 
       private bool FoundProperExe () { try {
@@ -88,18 +90,14 @@ namespace Sheepy.Modnix.MainGUI {
          if ( ver > Myself.Version ) return RunProperExe();
          if ( ver < Myself.Version ) return false;
          // If versions are equal, check file size. Bigger = more code = more up to date.
-         if ( size >= new FileInfo( MyPath ).Length )
-            return RunProperExe();
+         if ( size >= new FileInfo( MyPath ).Length ) return true;
          return false;
-      } catch ( Exception ex ) {
-         Log( ex.ToString() );
-         return false;
-      } }
+      } catch ( Exception ex ) { return Log( ex, false ); } }
 
-      private bool RunProperExe () {
+      private bool RunProperExe () { try {
          Process.Start( ModGuiExe, "/i " + Process.GetCurrentProcess().Id );
          return true;
-      }
+      } catch ( Exception ex ) { return Log( ex, false ); } }
 
       private bool FoundRunningExe () { try {
          int myId = Process.GetCurrentProcess().Id;
@@ -111,10 +109,7 @@ namespace Sheepy.Modnix.MainGUI {
          Log( "Another instance is found. Self-closing." );
          Tools.SetForegroundWindow( handle );
          return true;
-      } catch ( Exception ex ) {
-         Log( ex.ToString() );
-         return false;
-      } }
+      } catch ( Exception ex ) { return Log( ex, false ); } }
       #endregion
 
       #region Check Status
@@ -142,9 +137,7 @@ namespace Sheepy.Modnix.MainGUI {
          } else {
             GUI.SetAppState( "no_game" );
          }
-      } catch ( Exception ex ) {
-         Log( ex );
-      } } }
+      } catch ( Exception ex ) { Log( ex ); } } }
 
       private bool FoundRunningGame () {
          return Process.GetProcessesByName( Path.GetFileNameWithoutExtension( GAME_EXE ) ).Length > 0;
@@ -190,18 +183,14 @@ namespace Sheepy.Modnix.MainGUI {
          string ver = Assembly.GetExecutingAssembly().GetName().Version.ToString();
          Log( "Version: " + ver );
          return ver;
-      } catch ( Exception ex ) {
-         return Log( ex, "error" );
-      } }
+      } catch ( Exception ex ) { return Log( ex, "error" ); } }
 
       internal string CheckGameVer () { try {
          Log( "Detecting game version." );
          string ver = currentGame.RunInjector( "/g" );
          Log( "Game Version: " + ver );
          return ver;
-      } catch ( Exception ex ) {
-         return Log( ex, "error" );
-      } }
+      } catch ( Exception ex ) { return Log( ex, "error" ); } }
 
       /// Try to detect game path
       internal bool FoundGame ( out string gamePath ) { gamePath = null; try {
@@ -236,10 +225,17 @@ namespace Sheepy.Modnix.MainGUI {
          currentGame.WriteCodeFile( LOADER, SetupPackage.ModnixLoader );
          currentGame.WriteCodeFile( INJECTOR, SetupPackage.ModnixInjector );
          currentGame.RunInjector( "/y" );
-         CheckStatus();
-         if ( HasPPML() && currentGame.RenameCodeFile( PAST, PAST_BK ) )
-            prompt += ",ppml";
-         GUI.Prompt( prompt );
+         CheckInjectionStatus();
+         if ( currentGame.Status == "modnix" ) {
+            // Migrate mods
+            if ( MigrateLegacy() )
+               prompt += ",mod_moved";
+            // Disable PPML
+            if ( HasLegacy() && currentGame.RenameCodeFile( PAST, PAST_BK ) )
+               prompt += ",ppml";
+            GUI.Prompt( prompt );
+         } else
+            GUI.Prompt( "error" );
       } catch ( Exception ex ) {
          try { CheckStatus(); } catch ( Exception ) {}
          Log( ex );
@@ -249,12 +245,48 @@ namespace Sheepy.Modnix.MainGUI {
       internal bool CopySelf ( string me, string there ) { try {
          if ( me == there ) return false;
          Log( $"Copying self to {there}" );
-         Directory.CreateDirectory( ModFolder );
+         if ( File.Exists( there ) )
+            File.Delete( there );
+         else
+            Directory.CreateDirectory( ModFolder );
          File.Copy( me, there );
          return File.Exists( there );
-      } catch ( Exception ex ) {
-         return Log( ex, false );
-      } }
+      } catch ( Exception ex ) { return Log( ex, false ); } }
+
+      private bool MigrateLegacy () { try {
+         string OldPath = Path.Combine( currentGame.GameDir, PAST_MOD );
+         string NewPath = ModFolder;
+         if ( ! Directory.Exists( OldPath ) ) return false;
+         bool ModsMoved = false;
+         Log( $"Migrating {OldPath} to {NewPath}" );
+         // Move mods
+         foreach ( var file in Directory.EnumerateFiles( OldPath ) ) try {
+            string to = Path.Combine( NewPath, Path.GetFileName( file ) );
+            Log( $"{file} => {to}" );
+            File.Move( file, to );
+            ModsMoved = true;
+         } catch ( Exception ex ) { Log( ex ); }
+         foreach ( var dir in Directory.EnumerateDirectories( OldPath ) ) try {
+            string to = Path.Combine( NewPath, dir.Replace( OldPath + Path.DirectorySeparatorChar, "" ) );
+            Log( $"{dir} => {to}" );
+            Directory.Move( dir, to );
+            ModsMoved = true;
+         } catch ( Exception ex ) { Log( ex ); }
+         // Remove Mods folder if empty
+         if ( Directory.EnumerateFiles( OldPath ).Count() <= 0 ) try {
+            Directory.Delete( OldPath, false );
+            if ( ! Directory.Exists( OldPath ) )
+               Tools.CreateShortcut( currentGame.GameDir, PAST_MOD, NewPath );
+            return true;
+         } catch ( Exception ex ) { Log( ex ); }
+         return ModsMoved;
+      } catch ( Exception ex ) { return Log( ex, false ); } }
+
+      private bool IsDir ( string path ) => File.GetAttributes( path ).HasFlag( FileAttributes.Directory );
+
+      private bool HasLegacy () { try {
+         return File.Exists( Path.Combine( currentGame.CodeDir, PAST ) );
+      } catch ( Exception ex ) { return Log( ex, false ); } }
       
       internal void DoRestoreAsync () {
          Log( "Queuing restore" );
@@ -263,22 +295,17 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void DoRestore () { lock ( SynRoot ) { try {
          currentGame.RunInjector( "/y /r" );
-         CheckStatus();
+         CheckInjectionStatus();
          if ( currentGame.Status == "none" ) {
             currentGame.DeleteCodeFile( INJECTOR );
             currentGame.DeleteCodeFile( LOADER );
             GUI.Prompt( "restore_ok" );
-         }
+         } else
+            GUI.Prompt( "error" );
       } catch ( Exception ex ) {
          Log( ex );
          GUI.Prompt( "error", ex );
       } } }
-
-      private bool HasPPML () { try {
-         return File.Exists( Path.Combine( currentGame.CodeDir, PAST ) );
-      } catch ( Exception) {
-         return false;
-      } }
       #endregion
 
       #region Helpers
@@ -348,23 +375,19 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       internal bool DeleteCodeFile ( string file ) { try {
-      string subject = Path.Combine( CodeDir, file );
-      App.Log( $"Deleting {subject}" );
+         string subject = Path.Combine( CodeDir, file );
+         App.Log( $"Deleting {subject}" );
          File.Delete( subject );
          return ! File.Exists( subject );
-      } catch ( Exception ex ) {
-         return App.Log( ex, false );
-      } }
+      } catch ( Exception ex ) { return App.Log( ex, false ); } }
 
       internal bool RenameCodeFile ( string file, string toName ) { try {
-      string subject = Path.Combine( CodeDir, file   );
-      string target  = Path.Combine( CodeDir, toName );
-      App.Log( $"Renaming {subject} to {toName}" );
+         string subject = Path.Combine( CodeDir, file   );
+         string target  = Path.Combine( CodeDir, toName );
+         App.Log( $"Renaming {subject} to {toName}" );
          File.Move( subject, target );
          return File.Exists( target );
-      } catch ( Exception ex ) {
-         return App.Log( ex, false );
-      } }
+      } catch ( Exception ex ) { return App.Log( ex, false ); } }
    }
 
 }
