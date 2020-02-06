@@ -254,7 +254,7 @@ namespace Sheepy.Modnix {
 
       private static string GetProductVersion () {
          var assembly = Assembly.GetExecutingAssembly();
-         var fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
+         var fvi = FileVersionInfo.GetVersionInfo( assembly.Location );
          return fvi.FileVersion;
       }
 

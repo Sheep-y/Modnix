@@ -1,17 +1,23 @@
 ﻿using Harmony;
+using Mono.Cecil;
 using Sheepy.Logging;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using static System.Reflection.BindingFlags;
 
 namespace Sheepy.Modnix {
 
+   using ModData = IDictionary< string,object >;
+
    public static class ModLoader {
+      private readonly static string MOD_PATH = "My Games/Phoenix Point/Mods".FixSlash();
+      public static ModData[] Mods;
+
       private static Logger Log = new FileLogger( "ModnixLoader.log" ){ TimeFormat = "HH:mm:ss.ffff " };
 
       private const BindingFlags PUBLIC_STATIC_BINDING_FLAGS = BindingFlags.Public | BindingFlags.Static;
@@ -19,43 +25,59 @@ namespace Sheepy.Modnix {
          "0Harmony.dll",
          "PPModLoader.dll",
          "ModnixLoader.dll",
+         "Mono.Cecil.dll",
       };
 
       public static string ModDirectory { get; private set; }
 
       public static void Init () {
-         var LoaderVersion = Assembly.GetExecutingAssembly().GetName().Version;
-         var manifestDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
-                ?? throw new InvalidOperationException("Manifest path is invalid.");
+         var LoaderInfo = Assembly.GetExecutingAssembly().GetName();
+         ModDirectory = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.MyDocuments ), MOD_PATH );
 
-         // this should be (wherever Phoenix Point is Installed)\PhoenixPoint\PhoenixPointWin64_Data\Managed
-         ModDirectory = Path.GetFullPath( Path.Combine( manifestDirectory, Path.Combine( @"..\..\Mods" ) ) );
-         Log = new FileLogger( Path.Combine( ModDirectory, "ModnixLoader.log" ) ){ TimeFormat = "HH:mm:ss.ffff " };
-
-         if ( !Directory.Exists( ModDirectory ) )
+         Log = new FileLogger( Path.Combine( ModDirectory, LoaderInfo.Name + ".log" ) ){ TimeFormat = "HH:mm:ss.ffff " };
+         if ( ! Directory.Exists( ModDirectory ) )
             Directory.CreateDirectory( ModDirectory );
-
-         // create log file, overwriting if it's already there
          Log.Clear();
-         Log.Info( "{0} --v{1} -- {2}", typeof( ModLoader ).FullName, LoaderVersion, DateTime.Now.ToString( "u" ) );
+         Log.Info( "{0} v{1} {2}", typeof( ModLoader ).FullName, LoaderInfo.Version, DateTime.Now.ToString( "u" ) );
 
-         // ReSharper disable once UnusedVariable
-         var harmony = HarmonyInstance.Create( typeof( ModLoader ).Namespace );
+         Mods = BuildModList();
+         //var harmony = HarmonyInstance.Create( typeof( ModLoader ).Namespace );
+      }
 
-         // get all dll paths
-         var dllPaths = Directory.GetFiles( ModDirectory ).Where( x => Path.GetExtension(x).ToLower() == ".dll" ).ToArray();
-
-         if ( dllPaths.Length == 0 ) {
-            Log.Error( @"No .DLLs loaded. DLLs must be placed in the root of the folder \PhoenixPoint\Mods\." );
-            return;
-         }
-
-         // load the DLLs
-         foreach ( var dllPath in dllPaths ) {
-            if ( ! IGNORE_FILE_NAMES.Contains( Path.GetFileName( dllPath ) ) )
-               LoadDLL( dllPath );
+      public static ModData[] BuildModList () {
+         Log.Info( "Scanning {0} for mods", ModDirectory );
+         var result = new List< ModData >();
+         RecurFindMod( result, ModDirectory, true );
+         Log.Info( "{0} mods found.", result.Count );
+         Log.Flush();
+         return result.ToArray();
+      }
+      
+      public static void RecurFindMod ( List< ModData > mods, string path, bool isRoot ) {
+         var dlls = Directory.EnumerateFiles( path, "*.dll", SearchOption.AllDirectories ).ToArray();
+         foreach ( var dll in dlls ) {
+            if ( ! IGNORE_FILE_NAMES.Contains( Path.GetFileName( dll ) ) ) {
+               var info = ReadModInfo( dll );
+               if ( info != null )
+                  mods.Add( info );
+            }
          }
       }
+
+      public static ModData ReadModInfo ( string file ) { try {
+         var result = new Dictionary<string,object>();
+         // using ( var dll = ModuleDefinition.ReadModule( file ) ) {
+         //    foreach ( var type in dll.Types ) {
+         //       // Check for setting methods
+         //    }
+         // }
+         Log.Info( "Parsing {0}", file );
+         var info = FileVersionInfo.GetVersionInfo( file );
+         result.Add( "ModFile", file );
+         result.Add( "ModName", info.FileDescription );
+         result.Add( "ModDesc", info.Comments );
+         return result;
+      } catch ( Exception ex ) { Log.Error( ex ); return null; } }
 
       public static Assembly LoadDLL ( string path, string methodName = "Init", string typeName = null, object[] parameters = null, BindingFlags bFlags = PUBLIC_STATIC_BINDING_FLAGS ) {
          var fileName = Path.GetFileName(path);
@@ -70,19 +92,14 @@ namespace Sheepy.Modnix {
             var name = assembly.GetName();
             var version = name.Version;
             var types = new List<Type>();
-
-            // if methodName is null, don't try to run an entry point
-            if ( methodName == null )
-               return assembly;
-
-            // find the type/s with our entry point/s
+            if ( methodName == null ) return assembly;
             if ( typeName == null )
                types.AddRange( assembly.GetTypes().Where( x => x.GetMethod( methodName, bFlags ) != null ) );
             else
                types.Add( assembly.GetType( typeName ) );
 
             if ( types.Count == 0 ) {
-               Log.Error( "{0} (v{1}): Failed to find specified entry point: {2}.{3}", fileName, version, typeName ?? "Unnamed", methodName );
+               Log.Error( "{0} (v{1}): Failed to find entry point: {2}.{3}", fileName, version, typeName ?? "Unnamed", methodName );
                return null;
             }
 
@@ -95,7 +112,7 @@ namespace Sheepy.Modnix {
                   continue;
 
                if ( methodParams.Length == 0 ) {
-                  Log.Info( "{0} (v{1}): Found and called entry point \"{2}\" in type \"{3}\"", fileName, version, entryMethod, type.FullName );
+                  Log.Info( "{0} (v{1}): Calling entry point \"{2}\" in type \"{3}\"", fileName, version, entryMethod, type.FullName );
                   entryMethod.Invoke( null, null );
                   continue;
                }
@@ -133,6 +150,10 @@ namespace Sheepy.Modnix {
             return null;
          }
       }
+   }
+
+   internal static class Tools {
+      internal static string FixSlash ( this string path ) => path.Replace( '/', Path.DirectorySeparatorChar );
    }
 }
 
