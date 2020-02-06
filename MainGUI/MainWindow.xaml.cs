@@ -123,12 +123,12 @@ namespace Sheepy.Modnix.MainGUI {
             txt = $"Setup success. Mod folder:\nMy Documents\\{AppControl.MOD_PATH}\n";
             if ( parts.Contains( ",mod_moved" ) )
                txt += "\nMods moved to new mod folder.";
-            if ( parts.Contains( ",self_copy" ) ) {
+            if ( parts.Contains( ",self_copy" ) )
                txt += "\nModnix installed to mod folder.";
             if ( parts.Contains( ",ppml" ) )
                txt += "\nPPML renamed to prevent accidents.";
             if ( parts.Contains( ",self_copy" ) ) {
-               txt += "\n\nThis setup file may be deleted.\nModnix will be restarted.";
+               txt += "\n\nThis setup file may be deleted.\nRestarting Modnix now.";
                if ( MessageBox.Show( txt, "Success", MessageBoxButton.OKCancel, MessageBoxImage.Information ) == MessageBoxResult.OK ) {
                   Process.Start( App.ModGuiExe, "/i " + Process.GetCurrentProcess().Id );
                   Close();
