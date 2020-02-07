@@ -96,6 +96,8 @@ namespace Sheepy.Logging {
             Console.Error.WriteLine( ex );
          }
       }
+
+      public override string ToString () => GetType().ToString();
    }
 
    /// A base logger that queue and process log entries in the background.
@@ -242,6 +244,8 @@ namespace Sheepy.Logging {
          File.AppendAllText( LogFile, buf.ToString() );
          buf.Clear();
       }
+
+      public override string ToString () => $"{GetType().ToString()}({LogFile},{WriteDelay})";
    }
 
    /// A Logger that forwards messages to one or more loggers.  The proxy itself does not run in background.  TimeFormat is ignored.
