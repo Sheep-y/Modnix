@@ -431,5 +431,4 @@ namespace Sheepy.Modnix.MainGUI {
          return File.Exists( target );
       } catch ( Exception ex ) { return App.Log( ex, false ); } }
    }
-
 }
