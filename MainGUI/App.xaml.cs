@@ -21,6 +21,7 @@ namespace Sheepy.Modnix.MainGUI {
       internal readonly static string LOADER   = "ModnixLoader.dll";
       internal readonly static string PAST     = "PhoenixPointModLoaderInjector.exe";
       internal readonly static string PAST_BK  = "PhoenixPointModLoaderInjector.exe.orig";
+      internal readonly static string PAST_DLL = "PPModLoader.dll";
       internal readonly static string PAST_MOD = "Mods";
       internal readonly static string GAME_EXE = "PhoenixPointWin64.exe";
       internal readonly static string GAME_DLL = "Assembly-CSharp.dll";
@@ -233,6 +234,9 @@ namespace Sheepy.Modnix.MainGUI {
             // Disable PPML
             if ( HasLegacy() && currentGame.RenameCodeFile( PAST, PAST_BK ) )
                prompt += ",ppml";
+            // Cleanup - accident prevention
+            currentGame.DeleteGameFile( LOADER );
+            currentGame.DeleteGameFile( PAST_DLL );
             GUI.Prompt( prompt );
          } else
             GUI.Prompt( "error" );
@@ -374,8 +378,17 @@ namespace Sheepy.Modnix.MainGUI {
          File.WriteAllBytes( target, content );
       }
 
+      internal bool DeleteGameFile ( string file ) { try {
+         string subject = Path.Combine( GameDir, file );
+         if ( ! File.Exists( subject ) ) return false;
+         App.Log( $"Deleting {subject}" );
+         File.Delete( subject );
+         return ! File.Exists( subject );
+      } catch ( Exception ex ) { return App.Log( ex, false ); } }
+
       internal bool DeleteCodeFile ( string file ) { try {
          string subject = Path.Combine( CodeDir, file );
+         if ( ! File.Exists( subject ) ) return false;
          App.Log( $"Deleting {subject}" );
          File.Delete( subject );
          return ! File.Exists( subject );
