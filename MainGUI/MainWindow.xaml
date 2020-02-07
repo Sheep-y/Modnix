@@ -31,11 +31,11 @@
                         <ColumnDefinition Width="10"/>
                         <ColumnDefinition/>
                      </Grid.ColumnDefinitions>
-                     <Button x:Name="ButtonSetup" Content="Setup" Margin="0" VerticalAlignment="Top"  Padding="10,5" IsEnabled="False" Click="ButtonSetup_Click"/>
-                     <Button x:Name="ButtonModDir" Grid.Column="2" Margin="0" VerticalAlignment="Top"  Padding="10,5" IsEnabled="False">
+                     <Button x:Name="ButtonSetup" Content="Setup" Margin="0"  Padding="10,5" IsEnabled="False" Click="ButtonSetup_Click"/>
+                     <Button x:Name="ButtonModDir" Grid.Column="2" Margin="0"  Padding="10,5" IsEnabled="False" Click="ButtonModDir_Click">
                         <AccessText>Mod _Directory</AccessText>
                      </Button>
-                     <Button x:Name="ButtonNexus" Grid.Column="4" Margin="0" VerticalAlignment="Top"  Padding="10,5" Click="ButtonNexus_Click">
+                     <Button x:Name="ButtonNexus" Grid.Column="4" Margin="0"  Padding="10,5" Click="ButtonNexus_Click">
                         <AccessText>_Nexus Mods</AccessText>
                      </Button>
                   </Grid>
@@ -61,31 +61,31 @@
                         <ColumnDefinition Width="10"/>
                         <ColumnDefinition/>
                      </Grid.ColumnDefinitions>
-                     <Button x:Name="ButtonRunOnline" Margin="0" VerticalAlignment="Top"  Padding="10,5" Click="ButtonOnline_Click" IsEnabled="False">
+                     <Button x:Name="ButtonRunOnline" Margin="0"  Padding="10,5" Click="ButtonOnline_Click" IsEnabled="False">
                         <AccessText>_Launch (Epic)</AccessText>
                      </Button>
-                     <Button x:Name="ButtonRunOffline" Margin="0" Grid.Column="2" VerticalAlignment="Top"  Padding="10,5" Click="ButtonOffline_Click" IsEnabled="False">
+                     <Button x:Name="ButtonRunOffline" Margin="0" Grid.Column="2"  Padding="10,5" Click="ButtonOffline_Click" IsEnabled="False">
                         <AccessText>Run _Offine</AccessText>
                      </Button>
-                     <Button x:Name="ButtonManual" Grid.Column="4" Margin="0" VerticalAlignment="Top"  Padding="10,5" Click="ButtonManual_Click">
+                     <Button x:Name="ButtonManual" Grid.Column="4" Margin="0"  Padding="10,5" Click="ButtonManual_Click">
                         <AccessText>_Manual</AccessText>
                      </Button>
-                     <Button x:Name="ButtonWebsite" Margin="0" Grid.Row="2" VerticalAlignment="Top"  Padding="10,5" Click="ButtonWebsite_Click">
+                     <Button x:Name="ButtonWebsite" Margin="0" Grid.Row="2"  Padding="10,5" Click="ButtonWebsite_Click">
                         <AccessText>_Website</AccessText>
                      </Button>
-                     <Button x:Name="ButtonTwitter" Grid.Column="2" Grid.Row="2" Margin="0" VerticalAlignment="Top"  Padding="10,5" Click="ButtonTwitter_Click">
+                     <Button x:Name="ButtonTwitter" Grid.Column="2" Grid.Row="2" Margin="0"  Padding="10,5" Click="ButtonTwitter_Click">
                         <AccessText>_Twitter</AccessText>
                      </Button>
-                     <Button x:Name="ButtonCanny" Grid.Column="4" Grid.Row="2" Margin="0" VerticalAlignment="Top"  Padding="10,5" Click="ButtonCanny_Click">
+                     <Button x:Name="ButtonCanny" Grid.Column="4" Grid.Row="2" Margin="0"  Padding="10,5" Click="ButtonCanny_Click">
                         <AccessText>_Canny</AccessText>
                      </Button>
-                     <Button x:Name="ButtonForum" Margin="0" VerticalAlignment="Top" Grid.Row="4"  Padding="10,5" Click="ButtonForum_Click">
+                     <Button x:Name="ButtonForum" Margin="0" Grid.Row="4"  Padding="10,5" Click="ButtonForum_Click">
                         <AccessText>_Forum</AccessText>
                      </Button>
-                     <Button x:Name="ButtonReddit" Grid.Column="2" Margin="0" VerticalAlignment="Top" Grid.Row="4"  Padding="10,5" Click="ButtonReddit_Click">
+                     <Button x:Name="ButtonReddit" Grid.Column="2" Margin="0" Grid.Row="4"  Padding="10,5" Click="ButtonReddit_Click">
                         <AccessText>_Reddit</AccessText>
                      </Button>
-                     <Button x:Name="ButtonDiscord" Grid.Column="4" Margin="0" VerticalAlignment="Top" Grid.Row="4"  Padding="10,5" Click="ButtonDiscord_Click">
+                     <Button x:Name="ButtonDiscord" Grid.Column="4" Margin="0" Grid.Row="4"  Padding="10,5" Click="ButtonDiscord_Click">
                         <AccessText>_Discord</AccessText>
                      </Button>
                   </Grid>

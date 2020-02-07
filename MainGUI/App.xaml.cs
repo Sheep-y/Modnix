@@ -70,7 +70,7 @@ namespace Sheepy.Modnix.MainGUI {
 
          /// -o --open-mod-dir        Open mod folder on launch, once used as part of setup
          //if ( ParamIndex( param, "o", "open-mod-dir" ) >= 0 )
-         //   Process.Start( "explorer.exe", "/select, \"" + ModGuiExe +"\"" );
+         //   Process.Start( "explorer.exe", $"/select, \"{ModGuiExe}\"" );
 
          paramSkipProcessCheck = ParamIndex( param, "s", "skip-process-check" ) < 0;
       }

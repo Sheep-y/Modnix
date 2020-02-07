@@ -116,6 +116,12 @@ namespace Sheepy.Modnix.MainGUI {
          App.DoRestoreAsync();
       }
 
+      private void ButtonModDir_Click ( object sender, RoutedEventArgs e ) {
+         string arg = $"/select, \"{Path.Combine( App.ModFolder, AppControl.GUI_EXE )}\"";
+         Log( $"Launching explorer.exe {arg}" );
+         Process.Start( "explorer.exe", arg );
+      }
+
       public void Prompt ( string parts, Exception ex = null ) { Dispatch( () => {
          Log( $"Prompt {parts}" );
          string txt = "";
@@ -213,7 +219,7 @@ namespace Sheepy.Modnix.MainGUI {
          };
          if ( dialog.ShowDialog().GetValueOrDefault() ) try {
             File.WriteAllText( dialog.FileName, textLog.Text );
-            Process.Start("explorer.exe", "/select, \"" + dialog.FileName +"\"" );
+            Process.Start("explorer.exe", $"/select, \"{dialog.FileName}\"" );
          } catch ( Exception ex ) {
             Log( ex.ToString() );
          }
