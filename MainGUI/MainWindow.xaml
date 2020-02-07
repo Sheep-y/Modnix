@@ -51,6 +51,8 @@
                         <RowDefinition/>
                         <RowDefinition Height="10"/>
                         <RowDefinition/>
+                        <RowDefinition Height="10"/>
+                        <RowDefinition/>
                      </Grid.RowDefinitions>
                      <Grid.ColumnDefinitions>
                         <ColumnDefinition/>
@@ -59,22 +61,31 @@
                         <ColumnDefinition Width="10"/>
                         <ColumnDefinition/>
                      </Grid.ColumnDefinitions>
-                     <Button x:Name="ButtonWebsite" Margin="0" VerticalAlignment="Top"  Padding="10,5" Click="ButtonWebsite_Click">
-                        <AccessText>_Website</AccessText>
+                     <Button x:Name="ButtonRunOnline" Margin="0" VerticalAlignment="Top"  Padding="10,5" Click="ButtonOnline_Click" IsEnabled="False">
+                        <AccessText>_Launch (Epic)</AccessText>
                      </Button>
-                     <Button x:Name="ButtonManual" Grid.Column="2" Margin="0" VerticalAlignment="Top"  Padding="10,5" Click="ButtonManual_Click">
+                     <Button x:Name="ButtonRunOffline" Margin="0" Grid.Column="2" VerticalAlignment="Top"  Padding="10,5" Click="ButtonOffline_Click" IsEnabled="False">
+                        <AccessText>Run _Offine</AccessText>
+                     </Button>
+                     <Button x:Name="ButtonManual" Grid.Column="4" Margin="0" VerticalAlignment="Top"  Padding="10,5" Click="ButtonManual_Click">
                         <AccessText>_Manual</AccessText>
                      </Button>
-                     <Button x:Name="ButtonCanny" Grid.Column="4" Margin="0" VerticalAlignment="Top"  Padding="10,5" Click="ButtonCanny_Click">
+                     <Button x:Name="ButtonWebsite" Margin="0" Grid.Row="2" VerticalAlignment="Top"  Padding="10,5" Click="ButtonWebsite_Click">
+                        <AccessText>_Website</AccessText>
+                     </Button>
+                     <Button x:Name="ButtonTwitter" Grid.Column="2" Grid.Row="2" Margin="0" VerticalAlignment="Top"  Padding="10,5" Click="ButtonTwitter_Click">
+                        <AccessText>_Twitter</AccessText>
+                     </Button>
+                     <Button x:Name="ButtonCanny" Grid.Column="4" Grid.Row="2" Margin="0" VerticalAlignment="Top"  Padding="10,5" Click="ButtonCanny_Click">
                         <AccessText>_Canny</AccessText>
                      </Button>
-                     <Button x:Name="ButtonForum" Margin="0" VerticalAlignment="Top" Grid.Row="2"  Padding="10,5" Click="ButtonForum_Click">
+                     <Button x:Name="ButtonForum" Margin="0" VerticalAlignment="Top" Grid.Row="4"  Padding="10,5" Click="ButtonForum_Click">
                         <AccessText>_Forum</AccessText>
                      </Button>
-                     <Button x:Name="ButtonReddit" Grid.Column="2" Margin="0" VerticalAlignment="Top" Grid.Row="2"  Padding="10,5" Click="ButtonReddit_Click">
+                     <Button x:Name="ButtonReddit" Grid.Column="2" Margin="0" VerticalAlignment="Top" Grid.Row="4"  Padding="10,5" Click="ButtonReddit_Click">
                         <AccessText>_Reddit</AccessText>
                      </Button>
-                     <Button x:Name="ButtonDiscord" Grid.Column="4" Margin="0" VerticalAlignment="Top" Grid.Row="2"  Padding="10,5" Click="ButtonDiscord_Click">
+                     <Button x:Name="ButtonDiscord" Grid.Column="4" Margin="0" VerticalAlignment="Top" Grid.Row="4"  Padding="10,5" Click="ButtonDiscord_Click">
                         <AccessText>_Discord</AccessText>
                      </Button>
                   </Grid>
@@ -97,7 +108,7 @@
             <DockPanel Grid.Column="2" Margin="10">
                <DockPanel DockPanel.Dock="Top">
                   <Label x:Name="label" Content="Total Mods: 12&#10;Enabled: 10 &#09;Disabled: 2" Grid.Column="2" Margin="0" VerticalAlignment="Top"/>
-                  <Button x:Name="ButtonAddMod" HorizontalAlignment="Right" DockPanel.Dock="Right" Padding="10,5" IsEnabled="False">
+                  <Button x:Name="ButtonAddMod" HorizontalAlignment="Right" DockPanel.Dock="Right" Padding="10,5" IsEnabled="False" Click="ButtonAddMod_Click">
                      <AccessText>_Add Mod</AccessText>
                   </Button>
                </DockPanel>
@@ -107,7 +118,7 @@
                      <ColumnDefinition Width="10"/>
                      <ColumnDefinition/>
                   </Grid.ColumnDefinitions>
-                  <Button x:Name="ButtonModDisable" Content="Disable" Padding="5" IsEnabled="False" />
+                  <Button x:Name="ButtonModDisable" Content="Disable" Padding="5" IsEnabled="False" Visibility="Hidden" />
                   <Button x:Name="ButtonModDelete" Content="Delete" Grid.Column="2" Padding="5" IsEnabled="False" />
                </Grid>
                <DataGrid x:Name="dataGrid" Margin="-2,10,0,10" VerticalScrollBarVisibility="Visible"/>

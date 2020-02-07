@@ -107,7 +107,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void DoManualSetup () {
          // TODO: Link to GitHub Doc
-         MessageBox.Show( "Not Implemented." );
+         MessageBox.Show( "Manual Setup not documented." );
       }
 
       private void DoRestore () {
@@ -162,25 +162,35 @@ namespace Sheepy.Modnix.MainGUI {
       private void RefreshGameInfo () {
          string txt = "Phoenix Point";
          if ( GamePath != null ) {
-            txt += "\r" + System.IO.Path.GetFullPath( GamePath );
+            txt += "\r" + Path.GetFullPath( GamePath );
             if ( GameVer  != null )
                txt += "\rVer: " + GameVer;
          } else
             txt += "Game not found";
          richGameInfo.TextRange().Text = txt;
+         ButtonRunOnline .IsEnabled = GamePath != null;
+         ButtonRunOffline.IsEnabled = GamePath != null;
       }
 
+      private void ButtonOnline_Click ( object sender, RoutedEventArgs e ) {
+         App.LaunchGame( "online" );
+      }
+      private void ButtonOffline_Click ( object sender, RoutedEventArgs e ) {
+         App.LaunchGame( "offline" );
+      }
       private void ButtonCanny_Click   ( object sender, RoutedEventArgs e ) => OpenUrl( "canny", e );
       private void ButtonDiscord_Click ( object sender, RoutedEventArgs e ) => OpenUrl( "discord", e );
       private void ButtonForum_Click   ( object sender, RoutedEventArgs e ) => OpenUrl( "forum", e );
       private void ButtonManual_Click  ( object sender, RoutedEventArgs e ) => OpenUrl( "manual", e );
       private void ButtonReddit_Click  ( object sender, RoutedEventArgs e ) => OpenUrl( "reddit", e );
+      private void ButtonTwitter_Click ( object sender, RoutedEventArgs e ) => OpenUrl( "twitter", e );
       private void ButtonWebsite_Click ( object sender, RoutedEventArgs e ) => OpenUrl( "www", e );
       #endregion
 
       #region Mod Info Area
       private void RefreshModInfo () {
-         string txt = AppState == "modenix" ? "Select a mod to see info" : "";
+         //string txt = AppState == "modenix" ? "Select a mod to see info" : "";
+         string txt = AppState == "modenix" ? "Mod list is being implemented" : "";
          richModInfo.TextRange().Text = txt;
       }
       #endregion
@@ -209,6 +219,10 @@ namespace Sheepy.Modnix.MainGUI {
          }
       }
 
+      private void ButtonAddMod_Click ( object sender, RoutedEventArgs e ) {
+          MessageBox.Show( "Not Implemened", "Sorry", MessageBoxButton.OK, MessageBoxImage.Exclamation );
+      }
+
       private void ButtonLogClear_Click ( object sender, RoutedEventArgs e ) {
          textLog.Clear();
          ButtonLogSave.IsEnabled = false;
@@ -228,6 +242,7 @@ namespace Sheepy.Modnix.MainGUI {
             case "manual" : url = "https://drive.google.com/open?id=1n8ORQeDtBkWcnn5Es4LcWBxif7NsXqet"; break;
             case "nexus"  : url = "https://www.nexusmods.com/phoenixpoint"; break;
             case "reddit" : url = "https://www.reddit.com/r/PhoenixPoint/"; break;
+            case "twitter": url = "https://twitter.com/Phoenix_Point"; break;
             case "www"    : url = "https://phoenixpoint.info/"; break;
             default       : return;
          }

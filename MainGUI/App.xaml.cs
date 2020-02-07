@@ -26,6 +26,8 @@ namespace Sheepy.Modnix.MainGUI {
       internal readonly static string GAME_EXE = "PhoenixPointWin64.exe";
       internal readonly static string GAME_DLL = "Assembly-CSharp.dll";
 
+      internal readonly static string EPIC_DIR = ".egstore";
+
       // Game and install files are considered corrupted and thus non exists if smaller than this size
       private readonly static long MIN_FILE_SIZE = 1024 * 10;
 
@@ -208,6 +210,28 @@ namespace Sheepy.Modnix.MainGUI {
       } catch ( IOException ex ) { return Log( ex, false ); } }
       #endregion
 
+      public void LaunchGame ( string type ) {
+         // Non-Async
+         try {
+            if ( type == "online" ) {
+               if ( currentGame.GameType == "epic" ) {
+                  Log( "Launching through epic game launcher" );
+                  Process.Start( "com.epicgames.launcher://apps/Iris?action=launch" );
+                  return;
+               }
+            } else {
+               string exe = Path.Combine( currentGame.GameDir, GAME_EXE );
+               Log( $"Launching {exe}" );
+               Process.Start( exe );
+               return;
+            }
+            Log( $"Unsupported launch type. Requested {type}. Game is {currentGame.GameType}." );
+            GUI.Prompt( "error" );
+         } catch ( Exception ex ) {
+            GUI.Prompt( "error", ex );
+         }
+      }
+
       #region Setup / Restore
       internal void DoSetupAsync () {
          Log( "Queuing setup" );
@@ -366,6 +390,12 @@ namespace Sheepy.Modnix.MainGUI {
       internal readonly string Loader;
 
       internal string Status; // Injection status
+
+      internal string GameType { get {
+         if ( Directory.Exists( Path.Combine( GameDir, AppControl.EPIC_DIR ) ) )
+            return "epic";
+         return "offline";
+      } }
 
       internal string RunInjector ( string param ) {
          return App.RunAndWait( CodeDir, Injector, param );
