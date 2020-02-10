@@ -31,7 +31,7 @@ Planned features, roughly in order:
 ## Mod Loading Logic
 
 1. All dll files and folders in the Mods folder are scanned recursively.
-2. If the folder contains `mod.json` and is not root, it is considered a Modnix code mod and folder processing stops.
+2. If the folder contains `mod.json` and is not root, it is considered a Modnix mod, and folder processing stops.
 3. Each dll in the folder will be scanned for ModInit static methods.  If either exists, it is considered a Modnix dll mod.
 4. Otherwise, if the dll has any Type that contains the Init static method, it is considered a PPML mod.
 
@@ -39,17 +39,20 @@ Planned features, roughly in order:
 
 A modnix dll mod may be loaded at one of these times:
 
-1. Splash - Very very early, for modifying Splash and Intro.
-2. Main - After first PP load screen, before the hottest year cutscene, i.e. same as PPML.
-3. Geoscape - Before the game enters Geoscape for the first time.
-4. Tactic - Before the game enters Tactical Mission for the first time.
+1. Startup - Very very early, for modifying Splash and Intro.
+2. Main - (Default) After first PP load screen, before the hottest year cutscene, i.e. same as PPML.
+3. Geoscape - When the game enters Geoscape for the first time.
+4. Tactic - When the game enters Tactical Mission for the first time.
 
 Prefer Geoscape and Tactic.
 They are lazily loaded, which allows the game to launch faster.
 (They may also be bumped up to Main by dependencies, but never to Splash.)
 
-If the mod folder contains `settings.json`, it will be parsed and passed to the `ModInit()`.
-The mod should do all its initiation in the method.  `Init()` will *not* be called.
+If the mod folder contains `settings.default.json`, it will be parsed first.
+Then `settings.json` is parsed, replacing any default.
+The result will then be passed to `ModInit()`.
+`Init()` will *not* be called by Modnix when `ModInit()` exists.
+If settings are not found but  and passed instead.
 
 If `modinfo.json` exists and it specified a type, that type will be scanned for `public static void ModInit`.
 If unspecified, or the type or method does not exists, every non-nested type in the dll will be scanned.
