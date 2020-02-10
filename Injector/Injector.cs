@@ -143,6 +143,8 @@ namespace Sheepy.Modnix {
       private static void ParseOptions ( string[] args ) {
          try {
             Options.Parse( args );
+            if ( OptionsIn.Restoring && OptionsIn.Installing ) 
+               throw new InvalidOperationException( "Restore or Install, please choose one." );
          } catch ( OptionException e ) {
             Exit( SayOptionException( e ) );
          }
