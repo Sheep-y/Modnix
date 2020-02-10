@@ -19,6 +19,7 @@ namespace Sheepy.Modnix {
       private const int RC_BAD_MANAGED_DIRECTORY_PROVIDED = 5;
       private const int RC_MISSING_MOD_LOADER_ASSEMBLY = 6;
       private const int RC_REQUIRED_GAME_VERSION_MISMATCH = 7;
+      private const int RC_INJECTION_FAILED = 8;
 
       internal const string MOD_LOADER_NAME = "Modnix";
       internal const string MOD_INJECTOR_EXE_FILE_NAME = "ModnixInjector.exe";
@@ -124,7 +125,7 @@ namespace Sheepy.Modnix {
                }
                if ( injected )
                   SayPpmlWarning();
-               return PromptForKey( OptionsIn.RequireKeyPress );
+               return PromptForKey( OptionsIn.RequireKeyPress, injected ? RC_NORMAL : RC_INJECTION_FAILED );
             }
 
          } catch ( BackupFileError e ) {
@@ -411,8 +412,8 @@ namespace Sheepy.Modnix {
             var success = InjectModHookPoint( game, injecting );
             if ( success )
                success &= SaveAssembly( game );
-            if ( !success )
-               WriteLine( "Failed to inject the game assembly." );
+            if ( ! success )
+               WriteLine( "Injection failed." );
             return success;
          }
       }
