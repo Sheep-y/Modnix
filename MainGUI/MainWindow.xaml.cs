@@ -246,7 +246,7 @@ namespace Sheepy.Modnix.MainGUI {
             case "discord": url = "https://discordapp.com/invite/phoenixpoint"; break;
             case "forum"  : url = "https://forums.snapshotgames.com/c/phoenix-point"; break;
             case "manual" : url = "https://drive.google.com/open?id=1n8ORQeDtBkWcnn5Es4LcWBxif7NsXqet"; break;
-            case "nexus"  : url = "https://www.nexusmods.com/phoenixpoint"; break;
+            case "nexus"  : url = "https://www.nexusmods.com/phoenixpoint/mods/?BH=0"; break;
             case "reddit" : url = "https://www.reddit.com/r/PhoenixPoint/"; break;
             case "twitter": url = "https://twitter.com/Phoenix_Point"; break;
             case "www"    : url = "https://phoenixpoint.info/"; break;
