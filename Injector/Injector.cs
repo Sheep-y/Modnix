@@ -162,15 +162,12 @@ namespace Sheepy.Modnix {
          } else
             State.managedDirectory = Directory.GetCurrentDirectory();
 
-         State.gameDllPath         = Path.Combine( State.managedDirectory, GAME_DLL_FILE_NAME );
-         State.targetDllPath       = Path.Combine( State.managedDirectory, INJECT_TO_DLL_FILE_NAME );
-         State.targetDllBackupPath = Path.Combine( State.managedDirectory, INJECT_TO_DLL_FILE_NAME + BACKUP_FILE_EXT );
          State.modLoaderDllPath    = Path.Combine( State.managedDirectory, MOD_LOADER_DLL_FILE_NAME );
          State.ppmlInjectorPath    = Path.Combine( State.managedDirectory, PPML_INJECTOR_EXE );
          State.modxDll = new TargetFile( State.managedDirectory, INJECT_TO_DLL_FILE_NAME );
          State.ppmlDll = new TargetFile( State.managedDirectory, GAME_DLL_FILE_NAME );
 
-         if ( ! File.Exists( State.targetDllPath ) )
+         if ( ! File.Exists( State.modxDll.Target ) )
             Exit( SayGameAssemblyMissingError( OptionsIn.ManagedDir ) );
 
          if ( ! File.Exists( State.modLoaderDllPath ) )
@@ -327,11 +324,9 @@ namespace Sheepy.Modnix {
       public bool Versioning = false;
    }
 
+   // TODO: Make Injector non-static and merge this as fields.
    internal class AppState {
       internal string managedDirectory;
-      internal string gameDllPath;
-      internal string targetDllPath;
-      internal string targetDllBackupPath;
       internal string gameVersion;
       internal string modLoaderDllPath;
       internal string ppmlInjectorPath;
@@ -430,7 +425,7 @@ namespace Sheepy.Modnix {
          var injectedMethod = injecting.GetType( Injector.INJECT_TYPE ).Methods.Single( x => x.Name == Injector.INJECT_METHOD );
          var hookedMethod = game.GetType( Injector.HOOK_TYPE ).Methods.First( x => x.Name == Injector.HOOK_METHOD );
          /*
-         PPML injection code for late-injection (after logos and game splash) 
+         PPML injection code for late-injection (after logos and game splash)
 
          // Since the return type is an iterator -- need to go searching for its MoveNext method which contains the actual code you'll want to inject
          if ( hookedMethod.ReturnType.Name.Contains( "IEnumerator" ) ) {
