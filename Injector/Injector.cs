@@ -299,18 +299,11 @@ namespace Sheepy.Modnix {
    }
 
    public class BackupFileError : Exception {
-      public BackupFileError ( string backupFileName, string message ) : base( message ) { BackupFileName = backupFileName; }
+      public BackupFileError ( string backupFileName, string message ) : base( message ) {
+         BackupFileName = backupFileName;
+         message = $"The backup file \"{backupFileName}\" ${message}.";
+      }
       public readonly string BackupFileName;
-   }
-
-   public class BackupFileInjected : BackupFileError {
-      public BackupFileInjected ( string backupFileName = "Assembly-CSharp.dll.orig" ) :
-         base( backupFileName, $"The backup file \"{backupFileName}\" was injected." ) { }
-   }
-
-   public class BackupFileNotFound : BackupFileError {
-      public BackupFileNotFound ( string backupFileName = "Assembly-CSharp.dll.orig" ) :
-         base( backupFileName, $"The backup file \"{backupFileName}\" could not be found." ) { }
    }
 
    // Values passed by the user into the program via command line.
@@ -354,15 +347,17 @@ namespace Sheepy.Modnix {
 
       internal void Backup () {
          File.Copy( Target, BackupFile, true );
+         if ( ! File.Exists( BackupFile ) )
+            throw new BackupFileError( BackupFile, "could not be made" );
          WriteLine( $"{Path.GetFileName( Target )} backed up to {Path.GetFileName( BackupFile )}" );
       }
 
       internal void Restore () {
          if ( ! File.Exists( BackupFile ) )
-            throw new BackupFileNotFound();
+            throw new BackupFileError( BackupFile, "could not be found" );
 
          if ( CheckInjection( BackupFile ) != InjectionState.NONE )
-            throw new BackupFileInjected();
+            throw new BackupFileError( BackupFile, "was injected" );
 
          File.Copy( BackupFile, Target, true );
          WriteLine( $"{Path.GetFileName( BackupFile )} restored to {Path.GetFileName( Target )}" );
