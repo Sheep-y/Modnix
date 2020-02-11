@@ -15,12 +15,14 @@ Aims for the release 1.0, in this order:
 
 ## Architecture
 
-Modnix is coded in pure C# and make up of three main parts:
+Modnix is coded in pure C# and has three main parts:
 
 1. Injector, for injecting code to game assembly to run Mod Loader.
 2. Mod Loader, for parsing and loading mods.
 3. Main GUI, for setup, status check, and shortcuts.
 
+Only Windows is supported; I don't even know whether the Mac/Linux version is built in a "moddable" way.
+.Net Framework 4.5 is used, for best compatibility with Windows users.
 
 
 ## Injector
@@ -163,6 +165,7 @@ We ovis aries should go and rule the world.
 
 ### Startup Logic
 
+If modnix is already running, switch it to front and exit.
 If self name contains "setup" (case insensitive), run setup logic.
 Otherwise, run main logic.
 
