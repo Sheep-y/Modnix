@@ -59,6 +59,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="SharedGui.cs" />
     <Compile Include="Tools.cs" />
     <Compile Include="SetupPackage.Designer.cs">
       <AutoGen>True</AutoGen>
