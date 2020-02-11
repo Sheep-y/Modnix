@@ -21,20 +21,20 @@ namespace Sheepy.Modnix.MainGUI {
       // Use slash for all paths, and use .FixSlash() to correct to platform slash.
       internal readonly static string MOD_PATH = "My Games/Phoenix Point/Mods".FixSlash();
       internal readonly static string DLL_PATH = "PhoenixPointWin64_Data/Managed".FixSlash();
-      internal readonly static string GUI_EXE  = "Modnix.exe";
-      internal readonly static string INJECTOR = "ModnixInjector.exe";
-      internal readonly static string LOADER   = "ModnixLoader.dll";
-      internal readonly static string PAST     = "PhoenixPointModLoaderInjector.exe";
-      internal readonly static string PAST_BK  = "PhoenixPointModLoaderInjector.exe.orig";
-      internal readonly static string PAST_DLL = "PPModLoader.dll";
-      internal readonly static string PAST_MOD = "Mods";
-      internal readonly static string GAME_EXE = "PhoenixPointWin64.exe";
-      internal readonly static string GAME_DLL = "Assembly-CSharp.dll";
+      internal const string GUI_EXE  = "Modnix.exe";
+      internal const string INJECTOR = "ModnixInjector.exe";
+      internal const string LOADER   = "ModnixLoader.dll";
+      internal const string PAST     = "PhoenixPointModLoaderInjector.exe";
+      internal const string PAST_BK  = "PhoenixPointModLoaderInjector.exe.orig";
+      internal const string PAST_DLL = "PPModLoader.dll";
+      internal const string PAST_MOD = "Mods";
+      internal const string GAME_EXE = "PhoenixPointWin64.exe";
+      internal const string GAME_DLL = "Assembly-CSharp.dll";
 
-      internal readonly static string EPIC_DIR = ".egstore";
+      internal const string EPIC_DIR = ".egstore";
 
       // Game and install files are considered corrupted and thus non exists if smaller than this size
-      private readonly static long MIN_FILE_SIZE = 1024 * 10;
+      private const long MIN_FILE_SIZE = 1024 * 10;
 
       private readonly static string[] GAME_PATHS =
          new string[]{ ".", "C:/Program Files/Epic Games/PhoenixPoint".FixSlash() };
@@ -48,7 +48,7 @@ namespace Sheepy.Modnix.MainGUI {
       private bool paramSkipProcessCheck;
       private int  paramIgnorePid;
 
-      public void Application_Startup ( object sender, StartupEventArgs e ) { lock ( SynRoot ) { try {
+      public void ApplicationStartup ( object sender, StartupEventArgs e ) { lock ( SynRoot ) { try {
          Myself = Assembly.GetExecutingAssembly().GetName();
          MyPath = Uri.UnescapeDataString( new UriBuilder( Myself.CodeBase ).Path ).FixSlash();
          ModFolder = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.MyDocuments ), MOD_PATH );
@@ -152,7 +152,7 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       private void CheckInjectionStatus () {
-         string status = null;
+         string status;
          if ( CheckInjected() ) {
             status = currentGame.Status; // status should be either modnix or both
             if ( status == "both" ) status = "ppml"; // Make GUI shows ppml, and thus require setup to remove ppml
@@ -306,7 +306,7 @@ namespace Sheepy.Modnix.MainGUI {
             ModsMoved = true;
          } catch ( Exception ex ) { Log( ex ); }
          // Remove Mods folder if empty
-         if ( Directory.EnumerateFiles( OldPath ).Count() <= 0 ) try {
+         if ( ! Directory.EnumerateFiles(OldPath).Any() ) try {
             Directory.Delete( OldPath, false );
             if ( ! Directory.Exists( OldPath ) )
                Tools.CreateShortcut( currentGame.GameDir, PAST_MOD, NewPath );
@@ -407,7 +407,7 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       internal void WriteCodeFile ( string file, byte[] content ) {
-         if ( content == null ) throw new ArgumentNullException( "content" );
+         if ( content == null ) throw new ArgumentNullException( nameof( content ) );
          string target = Path.Combine( CodeDir, file );
          App.Log( $"Writing {content.Length} bytes to {target}" );
          File.WriteAllBytes( target, content );

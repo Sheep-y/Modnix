@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -19,10 +20,11 @@ namespace Sheepy.Modnix.MainGUI {
 
    public partial class MainWindow : Window, IAppGui {
 
-      private AppControl App;
+      private readonly AppControl App;
       private string AppVer, AppState, GamePath, GameVer;
 
       public MainWindow ( AppControl app ) {
+         Contract.Requires( app != null );
          App = app;
          InitializeComponent();
          Log( "Assembly: " + App.MyPath );
@@ -242,7 +244,7 @@ namespace Sheepy.Modnix.MainGUI {
             case "www"    : url = "https://phoenixpoint.info/"; break;
             default       : return;
          }
-         Log( "Opening " + url );
+         Log( $"Opening {url}" );
          Process.Start( url );
       }
 
@@ -258,6 +260,7 @@ namespace Sheepy.Modnix.MainGUI {
 
    public static class WpfHelper {
       public static TextRange TextRange ( this RichTextBox box ) {
+         Contract.Requires( box != null );
          return new TextRange( box.Document.ContentStart, box.Document.ContentEnd );
       }
    }
