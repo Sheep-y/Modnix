@@ -179,7 +179,7 @@ Main Logic:
 1. If Modnix is installed to mod folder and version is equal or higher, do the same as setup, but with option to skip launch.
 2. Launch MainWindow, which initialise and ask AppControl to check status.
 3. AppControl asynchronously detects and report self version, game folder, injection status, and game version, in this order and only if previous step is positive.
-4. If injection is positive, dynamically loads Mod Loader and use it to parse mod list.
+4. If injection is positive, dynamically load Newton and Mod Loader and use it to parse mod list.
 
 ### Setup
 
@@ -192,6 +192,39 @@ Main Logic:
 7. Delete the game's Mods folder if it is empty.
 8. Create a symbolic link to the correct mod folder, for mods with hardcoded paths and gullible users who follow outdated instructions.
 9. If PPML exists, try to rename it.
-10. Report to user and, if step 1-5 success, prompt for launch or restart.
+10. Prompt for Desktop shortcut, if not exists.
+11. Report to user and, if step 1-5 success, prompt for launch or restart.
 
 
+
+## Vision
+
+For future versions
+
+- Auto-updater.
+- Disable mods without deleting them.
+- Mod info with dependency, game version range, incompatibility, supported languages, and the usual crowd.
+- Mod settings, in a different file from mod info, so that mod info can be updated without changing settings.
+- Replace ppdefmodifier with something more powerful.
+- Supply, on run time, a list of mods, plus Logger, Reflection, and Patching Helper.
+- Asset loader and overrider, like texture, music, sound etc.
+
+### Example mod.json
+
+Just an early draft. 100% certain to change.
+
+```
+{
+    "Name": "My Awesome Mod",
+    "Description": "An awesome mod to do awesome things",
+    "Author": "Sheepy",
+    "Website": "https://www.github.com/Sheep-y/Modnix",
+    "Contact": "fakeemail@fakeemail.com",
+    "DLL": "MyAwesomeMod.dll",
+    "InitAt": "Main",
+    "Manifest": [
+        { "Type": "WeaponDef", "Path": "MyWeaponDefs" },
+        { "Type": "ResearchRewardDef", "Path": "MyRewardDefs/research_reward_def.json" }
+    ]
+}
+```
