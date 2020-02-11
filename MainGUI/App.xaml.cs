@@ -10,6 +10,12 @@ using System.Windows;
 
 namespace Sheepy.Modnix.MainGUI {
 
+   internal interface IAppGui {
+      void SetInfo ( string info, string value );
+      void Prompt ( string v, Exception ex = null );
+      void Log ( string message );
+   }
+
    public partial class AppControl : Application {
 
       // Use slash for all paths, and use .FixSlash() to correct to platform slash.
@@ -33,7 +39,7 @@ namespace Sheepy.Modnix.MainGUI {
       private readonly static string[] GAME_PATHS =
          new string[]{ ".", "C:/Program Files/Epic Games/PhoenixPoint".FixSlash() };
 
-      private MainWindow GUI;
+      private IAppGui GUI;
       private GameInstallation currentGame;
 
       private readonly object SynRoot = new object();
@@ -52,7 +58,7 @@ namespace Sheepy.Modnix.MainGUI {
             return;
          }
          GUI = new MainWindow( this );
-         GUI.Show();
+         GUI.SetInfo( "visible", "true" );
       } catch ( Exception ex ) {
          Log( ex );
       } } }
@@ -131,13 +137,13 @@ namespace Sheepy.Modnix.MainGUI {
       /// 3. If dummy not exists = Error, re-download
       private void CheckStatus () { lock ( SynRoot ) { try {
          Log( "Checking status" );
-         GUI.SetAppVer( CheckAppVer() );
+         GUI.SetInfo( "version", CheckAppVer() );
          if ( FoundGame( out string gamePath ) ) {
             currentGame = new GameInstallation( this, gamePath );
-            GUI.SetGamePath( gamePath );
+            GUI.SetInfo( "game_path", gamePath );
             CheckInjectionStatus();
          } else {
-            GUI.SetAppState( "no_game" );
+            GUI.SetInfo( "state", "no_game" );
          }
       } catch ( Exception ex ) { Log( ex ); } } }
 
@@ -150,12 +156,12 @@ namespace Sheepy.Modnix.MainGUI {
          if ( CheckInjected() ) {
             status = currentGame.Status; // status should be either modnix or both
             if ( status == "both" ) status = "ppml"; // Make GUI shows ppml, and thus require setup to remove ppml
-            GUI.SetGameVer( CheckGameVer() );
+            GUI.SetInfo( "game_version", CheckGameVer() );
          } else {
             status = "setup";
          }
          if ( FoundRunningGame() ) status = "running";
-         GUI.SetAppState( status );
+         GUI.SetInfo( "state", status );
       }
 
       internal string InjectorPath ( string gamePath ) => Path.Combine( gamePath, DLL_PATH, INJECTOR );

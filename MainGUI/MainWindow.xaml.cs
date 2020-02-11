@@ -17,7 +17,7 @@ using System.Windows.Navigation;
 
 namespace Sheepy.Modnix.MainGUI {
 
-   public partial class MainWindow : Window {
+   public partial class MainWindow : Window, IAppGui {
 
       private AppControl App;
       private string AppVer, AppState, GamePath, GameVer;
@@ -41,19 +41,19 @@ namespace Sheepy.Modnix.MainGUI {
          App.CheckStatusAsync();
       }
 
+      public void SetInfo ( string info, string value ) { Dispatch( () => {
+         Log( $"Set {info} = {value}" );
+         switch ( info ) {
+            case "visible" : Show(); break;
+            case "version" : AppVer = value; RefreshAppInfo(); break;
+            case "state"   : AppState = value; RefreshAppInfo(); break;
+            case "game_path"    : GamePath = value; RefreshGameInfo(); break;
+            case "game_version" : GameVer  = value; RefreshGameInfo(); break;
+            default : Log( $"Unknown info {info}" ); break;
+         }
+      } ); }
+
       #region App Info Area
-      public void SetAppVer ( string value ) { Dispatch( () => {
-         AppVer = value;
-         RefreshAppInfo();
-      } ); }
-
-      /// Set and update app state.
-      public void SetAppState ( string value ) { Dispatch( () => {
-         Log( "App status: " + value );
-         AppState = value;
-         RefreshAppInfo();
-      } ); }
-
       private void RefreshAppInfo () {
          string txt = $"Modnix\rVer {AppVer}\rStatus: ";
          if ( AppState == null )
@@ -101,7 +101,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void DoSetup () {
          Log( "Calling setup" );
-         SetAppState( null );
+         SetInfo( "state", null );
          App.DoSetupAsync();
       }
 
@@ -112,7 +112,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void DoRestore () {
          Log( "Calling restore" );
-         SetAppState( null );
+         SetInfo( "state", null );
          App.DoRestoreAsync();
       }
 
@@ -155,16 +155,6 @@ namespace Sheepy.Modnix.MainGUI {
       #endregion
 
       #region Game Info Area
-      public void SetGamePath ( string value ) { Dispatch( () => {
-         GamePath = value;
-         RefreshGameInfo();
-      } ); }
-      
-      public void SetGameVer ( string value ) { Dispatch( () => {
-         GameVer = value;
-         RefreshGameInfo();
-      } ); }
-
       private void RefreshGameInfo () {
          string txt = "Phoenix Point";
          if ( GamePath != null ) {
