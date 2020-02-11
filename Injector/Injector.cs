@@ -14,8 +14,8 @@ namespace Sheepy.Modnix {
       private const int RC_NORMAL = 0;
       private const int RC_UNHANDLED_STATE = 1;
       private const int RC_BAD_OPTIONS = 2;
-      private const int RC_MISSING_BACKUP_FILE = 3;
-      private const int RC_BACKUP_FILE_INJECTED = 4;
+      private const int RC_BACKUP_FILE_ERROR = 3;
+      //private const int RC_BACKUP_FILE_INJECTED = 4;
       private const int RC_BAD_MANAGED_DIRECTORY_PROVIDED = 5;
       private const int RC_MISSING_MOD_LOADER_ASSEMBLY = 6;
       private const int RC_REQUIRED_GAME_VERSION_MISMATCH = 7;

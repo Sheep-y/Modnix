@@ -34,7 +34,7 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       private void RefreshGUI () {
-         Log( "Time is " + DateTime.Now.ToString("u") );
+         Log( "Time is " + DateTime.Now.ToString( "u" ) );
          Log( "Resetting GUI" );
          RefreshAppInfo();
          RefreshGameInfo();

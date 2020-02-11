@@ -5,12 +5,13 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
+using static System.StringComparison;
 
 namespace Sheepy.Modnix.MainGUI {
    internal static class SharedGui {
       internal static void Prompt ( string parts, Exception ex, Action OnRestart ) {
          string txt;
-         if ( parts.StartsWith( "setup_ok" ) ) {
+         if ( parts.StartsWith( "setup_ok", InvariantCulture ) ) {
             txt = $"Setup success.\nCheck status after every game patch.\n\nMod folder:\nMy Documents\\{AppControl.MOD_PATH}\n";
             if ( parts.Contains( ",mod_moved" ) )
                txt += "\nMods moved to new mod folder.";
@@ -25,9 +26,9 @@ namespace Sheepy.Modnix.MainGUI {
             } else {
                MessageBox.Show( txt, "Success", MessageBoxButton.OK, MessageBoxImage.Information );
             }
-         } else if ( parts.StartsWith( "restore_ok" ) ) {
+         } else if ( parts.StartsWith( "restore_ok", InvariantCulture ) ) {
             MessageBox.Show( "Uninstall successful.", "Success" );
-         } else if ( parts.StartsWith( "error" ) ) {
+         } else if ( parts.StartsWith( "error", InvariantCulture ) ) {
             txt = "Action failed. See log for details.";
             if ( ex != null ) txt += "Error: " + ex;
             MessageBox.Show(  txt , "Error", MessageBoxButton.OK, MessageBoxImage.Error );
