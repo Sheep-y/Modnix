@@ -1,0 +1,15 @@
+﻿<Window x:Class="Sheepy.Modnix.MainGUI.SetupWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Sheepy.Modnix.MainGUI"
+        mc:Ignorable="d"
+        Title="Modnix Setup" Height="250" Width="500">
+   <DockPanel>
+      <Button x:Name="ButtonAction" VerticalAlignment="Top" DockPanel.Dock="Bottom" HorizontalAlignment="Center" Margin="10" FontSize="24" Padding="10,5">
+         <AccessText>_Setup</AccessText>
+      </Button>
+      <TextBox x:Name="TextMessage" DockPanel.Dock="Top" Margin="20,10,20,0" FontSize="24" HorizontalContentAlignment="Center" Text="Modnix" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" TextWrapping="Wrap"/>
+   </DockPanel>
+</Window>

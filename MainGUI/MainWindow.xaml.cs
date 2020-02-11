@@ -43,7 +43,7 @@ namespace Sheepy.Modnix.MainGUI {
          App.CheckStatusAsync();
       }
 
-      public void SetInfo ( string info, string value ) { Dispatch( () => {
+      public void SetInfo ( string info, string value ) { this.Dispatch( () => {
          Log( $"Set {info} = {value}" );
          switch ( info ) {
             case "visible" : Show(); break;
@@ -124,7 +124,7 @@ namespace Sheepy.Modnix.MainGUI {
          Process.Start( "explorer.exe", arg );
       }
 
-      public void Prompt ( string parts, Exception ex = null ) { Dispatch( () => {
+      public void Prompt ( string parts, Exception ex = null ) { this.Dispatch( () => {
          Log( $"Prompt {parts}" );
          SharedGui.Prompt( parts, ex, () => {
             Process.Start( App.ModGuiExe, "/i " + Process.GetCurrentProcess().Id );
@@ -175,7 +175,7 @@ namespace Sheepy.Modnix.MainGUI {
       #region Log Tab
       public void Log ( string message ) {
          string time = DateTime.Now.ToString( "hh:mm:ss.ffff " );
-         Dispatch( () => {
+         this.Dispatch( () => {
             textLog.AppendText( time + message );
             textLog.AppendText( "\n" );
             ButtonLogSave.IsEnabled = true;
@@ -226,15 +226,6 @@ namespace Sheepy.Modnix.MainGUI {
          Log( $"Opening {url}" );
          Process.Start( url );
       }
-
-      #region Helpers
-      private void Dispatch ( Action task ) {
-         if ( Dispatcher.CheckAccess() )
-            task();
-         else
-            Dispatcher.Invoke( task );
-      }
-      #endregion
    }
 
    public static class WpfHelper {

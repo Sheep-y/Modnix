@@ -4,9 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Threading;
 
 namespace Sheepy.Modnix.MainGUI {
-   internal class SharedGui {
+   internal static class SharedGui {
       internal static void Prompt ( string parts, Exception ex, Action OnRestart ) {
          string txt;
          if ( parts.StartsWith( "setup_ok" ) ) {
@@ -31,6 +32,13 @@ namespace Sheepy.Modnix.MainGUI {
             if ( ex != null ) txt += "Error: " + ex;
             MessageBox.Show(  txt , "Error", MessageBoxButton.OK, MessageBoxImage.Error );
          }
+      }
+
+      internal static void Dispatch ( this Window win, Action task ) {
+         if ( win.Dispatcher.CheckAccess() )
+            task();
+         else
+            win.Dispatcher.Invoke( task );
       }
    }
 }
