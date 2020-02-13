@@ -21,7 +21,9 @@ namespace Sheepy.Modnix.MainGUI {
       // Use slash for all paths, and use .FixSlash() to correct to platform slash.
       internal readonly static string MOD_PATH = "My Games/Phoenix Point/Mods".FixSlash();
       internal readonly static string DLL_PATH = "PhoenixPointWin64_Data/Managed".FixSlash();
-      internal const string GUI_EXE  = "Modnix.exe";
+      internal const string APP_EXT  = ".exe";
+      internal const string SETUP_NAME = "ModnixSetup";
+      internal const string LIVE_NAME  = "Modnix";
       internal const string INJECTOR = "ModnixInjector.exe";
       internal const string LOADER   = "ModnixLoader.dll";
       internal const string PAST     = "PhoenixPointModLoaderInjector.exe";
@@ -53,7 +55,7 @@ namespace Sheepy.Modnix.MainGUI {
          MyPath = Uri.UnescapeDataString( new UriBuilder( Myself.CodeBase ).Path ).FixSlash();
          ModFolder = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.MyDocuments ), MOD_PATH );
          ProcessParams( e?.Args );
-         if ( ! paramSkipProcessCheck && ( FoundRunningExe() || ( FoundProperExe() && RunProperExe() ) ) ) {
+         if ( ! paramSkipProcessCheck && ( FoundRunningModnix() || ( FoundInstalledModnix() && LaunchInstalledModnix() ) ) ) {
             Shutdown();
             return;
          }
@@ -72,7 +74,7 @@ namespace Sheepy.Modnix.MainGUI {
 
          int pid = ParamIndex( param, "i", "ignore-pid" );
          if ( pid >= 0 && param.Count > pid+1 )
-            int.TryParse( param[pid+1], out paramIgnorePid );
+            int.TryParse( param[ pid + 1 ], out paramIgnorePid );
 
          /// -o --open-mod-dir        Open mod folder on launch, once used as part of setup
          //if ( ParamIndex( param, "o", "open-mod-dir" ) >= 0 )
@@ -89,27 +91,24 @@ namespace Sheepy.Modnix.MainGUI {
          return Math.Max( Math.Max( win1, win2 ), Math.Max( lin1, lin2 ) );
       }
 
-      private bool FoundProperExe () { try {
+      private bool FoundInstalledModnix () { try {
          if ( MyPath == ModGuiExe ) return false;
          if ( ! File.Exists( ModGuiExe ) ) return false;
          long size = new FileInfo( ModGuiExe ).Length;
          Log( $"Exe found on mod path, {size} bytes" );
          var ver = Version.Parse( FileVersionInfo.GetVersionInfo( ModGuiExe ).ProductVersion );
-         if ( ver > Myself.Version ) return RunProperExe();
-         if ( ver < Myself.Version ) return false;
-         // If versions are equal, check file size. Bigger = more code = more up to date.
-         if ( size >= new FileInfo( MyPath ).Length ) return true;
+         if ( ver >= Myself.Version ) return true;
          return false;
       } catch ( Exception ex ) { return Log( ex, false ); } }
 
-      private bool RunProperExe () { try {
+      private bool LaunchInstalledModnix () { try {
          Process.Start( ModGuiExe, "/i " + Process.GetCurrentProcess().Id );
          return true;
       } catch ( Exception ex ) { return Log( ex, false ); } }
 
-      private bool FoundRunningExe () { try {
+      private bool FoundRunningModnix () { try {
          int myId = Process.GetCurrentProcess().Id;
-         Process[] clones = Process.GetProcessesByName( Assembly.GetExecutingAssembly().GetName().Name )
+         Process[] clones = Process.GetProcessesByName( Path.GetFileNameWithoutExtension( GUI_EXE ).ToLowerInvariant() )
                .Where( e => e.Id != myId && ( paramIgnorePid == 0 || e.Id != paramIgnorePid ) ).ToArray();
          if ( clones.Length <= 0 ) return false;
          IntPtr handle = clones[0].MainWindowHandle;
@@ -147,7 +146,7 @@ namespace Sheepy.Modnix.MainGUI {
          }
       } catch ( Exception ex ) { Log( ex ); } } }
 
-      private bool FoundRunningGame () {
+      private static bool FoundRunningGame () {
          return Process.GetProcessesByName( Path.GetFileNameWithoutExtension( GAME_EXE ) ).Length > 0;
       }
 
