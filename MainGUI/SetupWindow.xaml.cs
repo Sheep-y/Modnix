@@ -19,7 +19,7 @@ namespace Sheepy.Modnix.MainGUI {
    public partial class SetupWindow : Window, IAppGui {
 
       private readonly AppControl App;
-      private string AppVer, AppState, GamePath;
+      private string AppVer, AppState, GamePath = "Detecting...";
       private string Mode = "log"; // launch, setup, log
       private string LogContent;
 
@@ -41,6 +41,7 @@ namespace Sheepy.Modnix.MainGUI {
             default: Log( $"Unknown info {info}" ); return;
          }
          RefreshInfo();
+         if ( info == "game_path" ) ButtonAction.Focus();
       } ); }
 
       private void RefreshInfo () {
@@ -54,11 +55,26 @@ namespace Sheepy.Modnix.MainGUI {
             AccessAction.Text = "_Launch";
             ButtonAction.IsEnabled = true;
          } else { // Mode == "setup"
-            txt += "\rPhoenix Point\r{GamePath}";
+            txt += $"\rPhoenix Point\r{GamePath}";
             AccessAction.Text = "_Setup";
             ButtonAction.IsEnabled = GamePath != null;
          }
          TextMessage.Text = txt;
+      }
+
+      private void ButtonAction_Click ( object sender, RoutedEventArgs e ) {
+         Log( $"\"{Mode}\" initiated" );
+         if ( e.Source is Button btn ) btn.Focus();
+         if ( Mode == "setup" ) {
+            Mode = "log";
+            ButtonAction.IsEnabled = false;
+            RefreshInfo();
+            App.DoSetupAsync();
+
+         } else { // Launch
+            Process.Start( App.ModGuiExe, "/i " + Process.GetCurrentProcess().Id );
+            Close();
+         }
       }
 
       public void Prompt ( string parts, Exception ex = null ) {

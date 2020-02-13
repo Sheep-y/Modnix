@@ -41,8 +41,8 @@ namespace Sheepy.Modnix.MainGUI {
       private readonly static string[] GAME_PATHS =
          new string[]{ ".", "C:/Program Files/Epic Games/PhoenixPoint".FixSlash() };
 
-      internal string ModFolder;
-      internal string ModGuiExe => Path.Combine( ModFolder, LIVE_NAME, APP_EXT );
+      internal string ModFolder = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.MyDocuments ), MOD_PATH );
+      internal string ModGuiExe;
       internal string MyPath;
 
       private IAppGui GUI;
@@ -56,22 +56,23 @@ namespace Sheepy.Modnix.MainGUI {
       private int  paramIgnorePid;
 
       public void ApplicationStartup ( object sender, StartupEventArgs e ) { lock ( SynRoot ) { try {
+         ModGuiExe = Path.Combine( ModFolder, LIVE_NAME + APP_EXT );
          Myself = Assembly.GetExecutingAssembly().GetName();
          MyPath = Uri.UnescapeDataString( new UriBuilder( Myself.CodeBase ).Path ).FixSlash();
-         ModFolder = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.MyDocuments ), MOD_PATH );
          ProcessParams( e?.Args );
-         if ( ! paramSkipProcessCheck && FoundRunningModnix() ) {
-            Shutdown();
-            return;
+         if ( ! paramSkipProcessCheck ) {
+            if ( FoundRunningModnix() ) {
+               Shutdown();
+               return;
+            }
+            if ( FoundInstalledModnix() ) {
+               GUI = new SetupWindow( this, "launch" );
+            } else if ( Path.GetFileName( MyPath ).ToLowerInvariant().Contains( "setup" ) ) {
+               GUI = new SetupWindow( this, "setup" );
+            }
          }
-         if ( FoundInstalledModnix() ) {
-            GUI = new SetupWindow( this, "launch" );
-            GUI.SetInfo( "mode", "launch" );
-         } else if ( Myself.Name.ToLowerInvariant().Contains( "setup" ) ) {
-            GUI = new SetupWindow( this, "setup" );
-         } else {
+         if ( GUI == null )
             GUI = new MainWindow( this );
-         }
          GUI.SetInfo( "visible", "true" );
       } catch ( Exception ex ) {
          Log( ex );
@@ -80,7 +81,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       /// Parse command line arguments.
       /// -i --ignore-pid (id)     Ignore given pid in running process check
-      /// -s --skip-process-check  Skip checking running process and process path
+      /// -s --skip-launch-check  Skip checking running process and installed path
       private void ProcessParams ( string[] args ) {
          if ( args == null || args.Length <= 0 ) return;
          List<string> param = args.ToList();
@@ -93,7 +94,7 @@ namespace Sheepy.Modnix.MainGUI {
          //if ( ParamIndex( param, "o", "open-mod-dir" ) >= 0 )
          //   Process.Start( "explorer.exe", $"/select, \"{ModGuiExe}\"" );
 
-         paramSkipProcessCheck = ParamIndex( param, "s", "skip-process-check" ) >= 0;
+         paramSkipProcessCheck = ParamIndex( param, "s", "skip-launch-check" ) >= 0;
       }
 
       private static int ParamIndex ( List<String> args, string quick, string full ) {
@@ -105,12 +106,16 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       private bool FoundInstalledModnix () { try {
-         if ( MyPath == ModGuiExe ) return false;
+         if ( MyPath == ModGuiExe || MyPath.Replace( "My Documents", "Documents" ) == ModGuiExe ) return false;
          if ( ! File.Exists( ModGuiExe ) ) return false;
-         long size = new FileInfo( ModGuiExe ).Length;
-         Log( $"Exe found on mod path, {size} bytes" );
+         Log( $"Found {ModGuiExe}" );
          var ver = Version.Parse( FileVersionInfo.GetVersionInfo( ModGuiExe ).ProductVersion );
-         if ( ver >= Myself.Version ) return true;
+         Log( $"Their version: {ver}" );
+         if ( ver >= Myself.Version ) {
+            if ( GUI != null )
+               GUI.SetInfo( "version", ver.ToString() );
+            return true;
+         }
          return false;
       } catch ( Exception ex ) { return Log( ex, false ); } }
 
