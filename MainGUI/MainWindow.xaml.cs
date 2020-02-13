@@ -149,12 +149,8 @@ namespace Sheepy.Modnix.MainGUI {
          ButtonRunOffline.IsEnabled = GamePath != null;
       }
 
-      private void ButtonOnline_Click ( object sender, RoutedEventArgs e ) {
-         App.LaunchGame( "online" );
-      }
-      private void ButtonOffline_Click ( object sender, RoutedEventArgs e ) {
-         App.LaunchGame( "offline" );
-      }
+      private void ButtonOnline_Click ( object sender, RoutedEventArgs e ) => App.LaunchGame( "online" );
+      private void ButtonOffline_Click ( object sender, RoutedEventArgs e ) => App.LaunchGame( "offline" );
       private void ButtonCanny_Click   ( object sender, RoutedEventArgs e ) => OpenUrl( "canny", e );
       private void ButtonDiscord_Click ( object sender, RoutedEventArgs e ) => OpenUrl( "discord", e );
       private void ButtonForum_Click   ( object sender, RoutedEventArgs e ) => OpenUrl( "forum", e );
@@ -196,6 +192,12 @@ namespace Sheepy.Modnix.MainGUI {
          }
       }
 
+      private void ButtonGitHub_Click ( object sender, RoutedEventArgs e ) => OpenUrl( "home", e );
+
+      private void ButtonCheckUpdate_Click ( object sender, RoutedEventArgs e ) {
+          MessageBox.Show( "Not Implemened", "Sorry", MessageBoxButton.OK, MessageBoxImage.Exclamation );
+      }
+
       private void ButtonAddMod_Click ( object sender, RoutedEventArgs e ) {
           MessageBox.Show( "Not Implemened", "Sorry", MessageBoxButton.OK, MessageBoxImage.Exclamation );
       }
@@ -216,6 +218,7 @@ namespace Sheepy.Modnix.MainGUI {
             case "canny"  : url = "https://phoenixpoint.canny.io/feedback?sort=trending"; break;
             case "discord": url = "https://discordapp.com/invite/phoenixpoint"; break;
             case "forum"  : url = "https://forums.snapshotgames.com/c/phoenix-point"; break;
+            case "home"   : url = "https://github.com/Sheep-y/Modnix"; break;
             case "manual" : url = "https://drive.google.com/open?id=1n8ORQeDtBkWcnn5Es4LcWBxif7NsXqet"; break;
             case "nexus"  : url = "https://www.nexusmods.com/phoenixpoint/mods/?BH=0"; break;
             case "reddit" : url = "https://www.reddit.com/r/PhoenixPoint/"; break;

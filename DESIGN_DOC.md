@@ -2,14 +2,15 @@
 
 This is the design documentation for Modnix ver 1.0.
 
-Modnix is a user friendly successor to Phoenix Point Mod Loader,
-the first modding tool for Phoenix Point.
+Modnix is a user friendly modding tool for Phoenix Point,
+and a successor of Phoenix Point Mod Loader.
 
 Aims for the release 1.0, in this order:
 
 1. Fully backward compatible with PPML installation and mods.
 2. User friendly, as foolproof as feasible.
 3. Enable launch / splash screen modding.
+4. Bring resources to players and players to community.
 
 
 

@@ -139,23 +139,6 @@
             <Button x:Name="ButtonLangZh" Content="中文" Grid.Column="4" Margin="0"/>
          </Grid>
       </TabItem>
-      <TabItem x:Name="TabCredits" Header="Credits">
-         <RichTextBox x:Name="richCredits" Margin="10" IsReadOnly="True" IsReadOnlyCaretVisible="True" HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Auto">
-            <FlowDocument>
-               <Paragraph>
-                  <Run Text="Injector and Loader based on PPML by RealityMachina."/>
-               </Paragraph>
-               <Paragraph>
-                  <Run Text="Mods can do funny things to your computer, that you may not find funny; use them at your own risk."/>
-               </Paragraph>
-               <!--
-               <Paragraph>
-                  <Run Text="This coding sheep is looking for a job to move out of Hong Kong and its ongoing assimilation by China. Find me on Discord. Thanks Carrie Lam."/>
-               </Paragraph>
-               -->
-            </FlowDocument>
-         </RichTextBox>
-      </TabItem>
       <TabItem x:Name="TabLog" Header="Log">
          <DockPanel Margin="10" >
             <DockPanel DockPanel.Dock="Top" Margin="0,0,0,10">
@@ -163,6 +146,15 @@
                <Button x:Name="ButtonLogSave" Content="Save As..." Padding="5" DockPanel.Dock="Right" Click="ButtonLogSave_Click" IsEnabled="False"></Button>
                <Label x:Name="LabelLogTitle" Content="Dialogistic Log" HorizontalAlignment="Center" VerticalAlignment="Center"/>
             </DockPanel>
+            <Grid DockPanel.Dock="Bottom">
+               <Grid.ColumnDefinitions>
+                  <ColumnDefinition/>
+                  <ColumnDefinition Width="10"/>
+                  <ColumnDefinition/>
+               </Grid.ColumnDefinitions>
+               <Button x:Name="ButtonGitHub" Content="Homepage" Padding="5" Click="ButtonGitHub_Click"></Button>
+               <Button x:Name="ButtonCheckUpdate" Content="Check Update" Padding="5" Grid.Column="2" Click="ButtonCheckUpdate_Click"/>
+            </Grid>
             <TextBox x:Name="textLog" Text="" VerticalScrollBarVisibility="Visible" DockPanel.Dock="Bottom" HorizontalScrollBarVisibility="Visible" IsReadOnly="True" IsReadOnlyCaretVisible="True"/>
          </DockPanel>
       </TabItem>
