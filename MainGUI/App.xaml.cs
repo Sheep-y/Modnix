@@ -106,8 +106,11 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       private bool FoundInstalledModnix () { try {
-         if ( MyPath == ModGuiExe || MyPath.Replace( "My Documents", "Documents" ) == ModGuiExe ) return false;
+         if ( MyPath == ModGuiExe ) return false;
          if ( ! File.Exists( ModGuiExe ) ) return false;
+         ModGuiExe = new FileInfo( ModFolder ).FullName; // Normalise path - e.g. My Documents to Documents
+         if ( MyPath == ModGuiExe ) return false;
+
          Log( $"Found {ModGuiExe}" );
          var ver = Version.Parse( FileVersionInfo.GetVersionInfo( ModGuiExe ).ProductVersion );
          Log( $"Their version: {ver}" );
