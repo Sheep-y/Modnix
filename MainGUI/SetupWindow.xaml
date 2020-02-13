@@ -7,8 +7,8 @@
         mc:Ignorable="d"
         Title="Modnix Setup" Height="250" Width="500">
    <DockPanel>
-      <Button x:Name="ButtonAction" VerticalAlignment="Top" DockPanel.Dock="Bottom" HorizontalAlignment="Center" Margin="10" FontSize="24" Padding="10,5">
-         <AccessText>_Setup</AccessText>
+      <Button x:Name="ButtonAction" VerticalAlignment="Top" DockPanel.Dock="Bottom" HorizontalAlignment="Center" Margin="10" FontSize="24" Padding="10,5" IsEnabled="False" MinWidth="150">
+         <AccessText x:Name="AccessAction">Loading...</AccessText>
       </Button>
       <TextBox x:Name="TextMessage" DockPanel.Dock="Top" Margin="20,10,20,0" FontSize="24" HorizontalContentAlignment="Center" Text="Modnix" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" TextWrapping="Wrap"/>
    </DockPanel>

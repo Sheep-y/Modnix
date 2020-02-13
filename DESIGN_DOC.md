@@ -165,28 +165,20 @@ We ovis aries should go and rule the world.
 
 ### Startup Logic
 
-If modnix is already running, switch it to front and exit.
-If self name contains "setup" (case insensitive), run setup logic.
-Otherwise, run main logic.
-
-Setup Logic:
-
-1. Check whether Modnix.exe exists at Mods folder, and version is equal or more up to date.
-2. If yes, show setup screen, but says Modnix is already installed, with a Launch button, and stop.
-3. Show setup screen and try to detect game folder.  Prompt for game folder if not detected.
-4. If game is not found, screens stays the same.  Action button will prompt for folder again.
-5. When game is found, show folder and Setup button.  A change folder link will also be shown.
-
-Main Logic:
-
-1. If Modnix is installed to mod folder and version is equal or higher, do the same as setup, but with option to skip launch.
-2. Launch MainWindow, which initialise and ask AppControl to check status.
-3. AppControl asynchronously detects and report self version, game folder, injection status, and game version, in this order and only if previous step is positive.
-4. If injection is positive, dynamically load Newton and Mod Loader and use it to parse mod list.
+1. If modnix is already running, switch it to front and exit.
+2. If Modnix is installed to mod folder and version is equal or higher, show setup window, but with launch button instead.
+3. Otherwise, If self name contains "setup" (case insensitive), run setup logic:
+    1. Show setup screen and try to detect game folder.  Prompt for game folder if not detected.
+    2. If game is not found, screens stays the same.  Action button will prompt for folder again.
+    3. When game is found, show folder and Setup button.  A change folder link will also be shown.
+4. Otherwise, run main logic:
+    1. Launch MainWindow, which initialise and ask AppControl to check status.
+    2. AppControl asynchronously detects and report self version, game folder, injection status, and game version, in this order and only if previous step is positive.
+    3. If injection is positive, dynamically load Newton and Mod Loader and use it to parse mod list.
 
 ### Setup
 
-1. If Injector or Modnix is already in place and has equal or higher version, prompt to confirm.
+1. If Modnix is already in place and has equal or higher version, prompt to confirm.
 2. Injector, Loader, and their libraries are loaded from SetupPackage, and saved to game folder.
 3. Injector is called to run injection. It should also undo PPML if exists.
 4. If game is not injected, abort setup and report error.

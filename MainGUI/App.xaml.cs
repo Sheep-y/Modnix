@@ -41,12 +41,17 @@ namespace Sheepy.Modnix.MainGUI {
       private readonly static string[] GAME_PATHS =
          new string[]{ ".", "C:/Program Files/Epic Games/PhoenixPoint".FixSlash() };
 
+      internal string ModFolder;
+      internal string ModGuiExe => Path.Combine( ModFolder, LIVE_NAME, APP_EXT );
+      internal string MyPath;
+
       private IAppGui GUI;
       private GameInstallation currentGame;
-
       private readonly object SynRoot = new object();
 
       #region Startup
+      private AssemblyName Myself;
+
       private bool paramSkipProcessCheck;
       private int  paramIgnorePid;
 
@@ -55,14 +60,22 @@ namespace Sheepy.Modnix.MainGUI {
          MyPath = Uri.UnescapeDataString( new UriBuilder( Myself.CodeBase ).Path ).FixSlash();
          ModFolder = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.MyDocuments ), MOD_PATH );
          ProcessParams( e?.Args );
-         if ( ! paramSkipProcessCheck && ( FoundRunningModnix() || ( FoundInstalledModnix() && LaunchInstalledModnix() ) ) ) {
+         if ( ! paramSkipProcessCheck && FoundRunningModnix() ) {
             Shutdown();
             return;
          }
-         GUI = new MainWindow( this );
+         if ( FoundInstalledModnix() ) {
+            GUI = new SetupWindow( this, "launch" );
+            GUI.SetInfo( "mode", "launch" );
+         } else if ( Myself.Name.ToLowerInvariant().Contains( "setup" ) ) {
+            GUI = new SetupWindow( this, "setup" );
+         } else {
+            GUI = new MainWindow( this );
+         }
          GUI.SetInfo( "visible", "true" );
       } catch ( Exception ex ) {
          Log( ex );
+         Shutdown();
       } } }
 
       /// Parse command line arguments.
@@ -80,7 +93,7 @@ namespace Sheepy.Modnix.MainGUI {
          //if ( ParamIndex( param, "o", "open-mod-dir" ) >= 0 )
          //   Process.Start( "explorer.exe", $"/select, \"{ModGuiExe}\"" );
 
-         paramSkipProcessCheck = ParamIndex( param, "s", "skip-process-check" ) < 0;
+         paramSkipProcessCheck = ParamIndex( param, "s", "skip-process-check" ) >= 0;
       }
 
       private static int ParamIndex ( List<String> args, string quick, string full ) {
@@ -107,15 +120,17 @@ namespace Sheepy.Modnix.MainGUI {
       } catch ( Exception ex ) { return Log( ex, false ); } }
 
       private bool FoundRunningModnix () { try {
+         // Find running instances
          int myId = Process.GetCurrentProcess().Id;
-         Process[] clones = Process.GetProcessesByName( Path.GetFileNameWithoutExtension( LIVE_NAME ).ToLowerInvariant() )
-               .Where( e => e.Id != myId && ( paramIgnorePid == 0 || e.Id != paramIgnorePid ) ).ToArray();
-         if ( clones.Length <= 0 ) return false;
-         IntPtr handle = clones[0].MainWindowHandle;
+         Process running = Process.GetProcesses()
+               .Where( e => e.ProcessName == LIVE_NAME || e.ProcessName == SETUP_NAME )
+               .Where( e => e.Id != myId && ( paramIgnorePid == 0 || e.Id != paramIgnorePid ) ).FirstOrDefault();
+         if ( running == null ) return false;
+         // Bring to foreground
+         IntPtr handle = running.MainWindowHandle;
          if ( handle == IntPtr.Zero ) return false;
-         Log( "Another instance is found. Self-closing." );
-         Tools.SetForegroundWindow( handle );
-         return true;
+         Log( $"Another instance (pid {running.Id}) found. Self-closing." );
+         return Tools.SetForegroundWindow( handle );
       } catch ( Exception ex ) { return Log( ex, false ); } }
       #endregion
 
@@ -124,11 +139,6 @@ namespace Sheepy.Modnix.MainGUI {
          Log( "Queuing status check" );
          Task.Run( (Action) CheckStatus );
       }
-
-      internal AssemblyName Myself;
-      internal string MyPath;
-      internal string ModFolder;
-      internal string ModGuiExe => Path.Combine( ModFolder, LIVE_NAME, APP_EXT );
 
       /// 1. If injector is in correct place = call injector to detect status
       /// 2. If injector is not in place, but dummy exists
@@ -245,7 +255,6 @@ namespace Sheepy.Modnix.MainGUI {
       private void DoSetup () { lock ( SynRoot ) { try {
          string prompt = "setup_ok";
          // Copy exe to mod folder
-         Log( $"Setup from {MyPath}" );
          if ( CopySelf( MyPath, ModGuiExe ) )
             prompt += ",self_copy";
          // Copy hook files
@@ -276,7 +285,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       internal bool CopySelf ( string me, string there ) { try {
          if ( me == there ) return false;
-         Log( $"Copying self to {there}" );
+         Log( $"Copying {MyPath} to {there}" );
          if ( File.Exists( there ) )
             File.Delete( there );
          else
