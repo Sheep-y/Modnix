@@ -325,7 +325,7 @@ namespace Sheepy.Modnix.MainGUI {
          if ( ! Directory.EnumerateFiles(OldPath).Any() ) try {
             Directory.Delete( OldPath, false );
             if ( ! Directory.Exists( OldPath ) )
-               Tools.CreateShortcut( currentGame.GameDir, PAST_MOD, NewPath );
+               CreateShortcut( currentGame.GameDir, PAST_MOD, NewPath );
             return true;
          } catch ( Exception ex ) { Log( ex ); }
          return ModsMoved;
@@ -337,6 +337,18 @@ namespace Sheepy.Modnix.MainGUI {
          return File.Exists( Path.Combine( currentGame.CodeDir, PAST ) );
       } catch ( Exception ex ) { return Log( ex, false ); } }
       
+
+      public void CreateShortcut ( string dir, string name, string linkTo ) {
+         RunAndWait( dir, "mklink", $"/d \"{name}\" \"{linkTo}\"" );
+         /*
+         var link = (IWshShortcut) new WshShell().CreateShortcut( Path.Combine( dir, name + ".lnk" ) );
+         link.Description = desc;
+         //shortcut.IconLocation = null;
+         link.TargetPath = linkTo;
+         link.Save();
+         */
+      }
+
       internal void DoRestoreAsync () {
          Log( "Queuing restore" );
          Task.Run( (Action) DoRestore );
