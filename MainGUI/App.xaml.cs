@@ -108,7 +108,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       private bool FoundRunningModnix () { try {
          int myId = Process.GetCurrentProcess().Id;
-         Process[] clones = Process.GetProcessesByName( Path.GetFileNameWithoutExtension( GUI_EXE ).ToLowerInvariant() )
+         Process[] clones = Process.GetProcessesByName( Path.GetFileNameWithoutExtension( LIVE_NAME ).ToLowerInvariant() )
                .Where( e => e.Id != myId && ( paramIgnorePid == 0 || e.Id != paramIgnorePid ) ).ToArray();
          if ( clones.Length <= 0 ) return false;
          IntPtr handle = clones[0].MainWindowHandle;
@@ -128,7 +128,7 @@ namespace Sheepy.Modnix.MainGUI {
       internal AssemblyName Myself;
       internal string MyPath;
       internal string ModFolder;
-      internal string ModGuiExe => Path.Combine( ModFolder, GUI_EXE );
+      internal string ModGuiExe => Path.Combine( ModFolder, LIVE_NAME, APP_EXT );
 
       /// 1. If injector is in correct place = call injector to detect status
       /// 2. If injector is not in place, but dummy exists

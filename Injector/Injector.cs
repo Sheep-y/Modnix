@@ -265,7 +265,7 @@ namespace Sheepy.Modnix {
          WriteLine( "----------------------------" );
          WriteLine( $"The backup game assembly file must be in the directory with the injector for /restore to work.  The backup file should be named \"{backupFileName}\"." );
          WriteLine( "You may need to reinstall or use Steam/GOG's file verification function if you have no other backup." );
-         return RC_MISSING_BACKUP_FILE;
+         return RC_BACKUP_FILE_ERROR;
       }
 
       private static void SayHowToRecoverInjectedBackup ( string backupFileName ) {

@@ -119,7 +119,7 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       private void ButtonModDir_Click ( object sender, RoutedEventArgs e ) {
-         string arg = $"/select, \"{Path.Combine( App.ModFolder, AppControl.GUI_EXE )}\"";
+         string arg = $"/select, \"{Path.Combine( App.ModFolder, App.ModGuiExe )}\"";
          Log( $"Launching explorer.exe {arg}" );
          Process.Start( "explorer.exe", arg );
       }
