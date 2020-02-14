@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Sheepy.Modnix.MainGUI"
         mc:Ignorable="d"
+        WindowStartupLocation="CenterScreen"
         Title="Modnix" Height="550" Width="700">
    <TabControl>
       <TabItem x:Name="TabMods" Header="Mods">

@@ -30,6 +30,7 @@ namespace Sheepy.Modnix.MainGUI {
          Mode = mode;
          InitializeComponent();
          RefreshInfo();
+         App.CheckStatusAsync();
       }
 
       public void SetInfo ( string info, string value ) { this.Dispatch( () => {

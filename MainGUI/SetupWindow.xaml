@@ -5,7 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Sheepy.Modnix.MainGUI"
         mc:Ignorable="d"
-        Title="Modnix Setup" Height="250" Width="500">
+        WindowStartupLocation="CenterScreen"
+        Title="Modnix Setup" Height="300" Width="500">
    <DockPanel>
       <Button x:Name="ButtonAction" VerticalAlignment="Top" DockPanel.Dock="Bottom" HorizontalAlignment="Center" Margin="10" FontSize="24" Padding="10,5" IsEnabled="False" MinWidth="150" Click="ButtonAction_Click">
          <AccessText x:Name="AccessAction">Loading...</AccessText>
