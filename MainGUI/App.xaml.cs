@@ -33,6 +33,8 @@ namespace Sheepy.Modnix.MainGUI {
       internal const string PAST_MOD = "Mods";
       internal const string GAME_EXE = "PhoenixPointWin64.exe";
       internal const string GAME_DLL = "Assembly-CSharp.dll";
+      internal const string HARM_DLL = "0Harmony.dll";
+      internal const string CECI_DLL = "Mono.Cecil.dll";
 
       internal const string EPIC_DIR = ".egstore";
 
@@ -274,8 +276,8 @@ namespace Sheepy.Modnix.MainGUI {
          if ( CopySelf( MyPath, ModGuiExe ) )
             prompt += ",self_copy";
          // Copy hook files
-         currentGame.WriteCodeFile( "0Harmony.dll", SetupPackage._0Harmony );
-         currentGame.WriteCodeFile( "Mono.Cecil.dll", SetupPackage.Mono_Cecil );
+         currentGame.WriteCodeFile( HARM_DLL, SetupPackage._0Harmony );
+         currentGame.WriteCodeFile( CECI_DLL, SetupPackage.Mono_Cecil );
          currentGame.WriteCodeFile( LOADER, SetupPackage.ModnixLoader );
          currentGame.WriteCodeFile( INJECTOR, SetupPackage.ModnixInjector );
          currentGame.RunInjector( "/y" );
@@ -287,9 +289,9 @@ namespace Sheepy.Modnix.MainGUI {
             // Disable PPML
             if ( HasLegacy() && currentGame.RenameCodeFile( PAST, PAST_BK ) )
                prompt += ",ppml";
-            // Cleanup - accident prevention
-            currentGame.DeleteGameFile( LOADER );
-            currentGame.DeleteGameFile( PAST_DLL );
+            // Cleanup - accident prevention. Old dlls at game base may override dlls in the managed folder.
+            foreach ( var file in new string[] { PAST, PAST_DLL, INJECTOR, LOADER, HARM_DLL, CECI_DLL } )
+               currentGame.DeleteGameFile( file );
             GUI.Prompt( prompt );
          } else
             GUI.Prompt( "error" );
@@ -313,7 +315,10 @@ namespace Sheepy.Modnix.MainGUI {
       private bool MigrateLegacy () { try {
          string OldPath = Path.Combine( currentGame.GameDir, PAST_MOD );
          string NewPath = ModFolder;
-         if ( ! Directory.Exists( OldPath ) ) return false;
+         if ( ! Directory.Exists( OldPath ) ) {
+            CreateShortcut( currentGame.GameDir, PAST_MOD, NewPath );
+            return false;
+         }
          bool ModsMoved = false;
          Log( $"Migrating {OldPath} to {NewPath}" );
          // Move mods
@@ -330,7 +335,7 @@ namespace Sheepy.Modnix.MainGUI {
             ModsMoved = true;
          } catch ( Exception ex ) { Log( ex ); }
          // Remove Mods folder if empty
-         if ( ! Directory.EnumerateFiles(OldPath).Any() ) try {
+         if ( ! Directory.EnumerateFiles( OldPath ).Any() ) try {
             Directory.Delete( OldPath, false );
             if ( ! Directory.Exists( OldPath ) )
                CreateShortcut( currentGame.GameDir, PAST_MOD, NewPath );
@@ -347,6 +352,7 @@ namespace Sheepy.Modnix.MainGUI {
       
 
       public void CreateShortcut ( string dir, string name, string linkTo ) {
+         Log( "Creating Mods shortcut to support legacy mods." );
          RunAndWait( dir, "mklink", $"/d \"{name}\" \"{linkTo}\"" );
          /*
          var link = (IWshShortcut) new WshShell().CreateShortcut( Path.Combine( dir, name + ".lnk" ) );

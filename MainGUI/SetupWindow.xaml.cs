@@ -48,14 +48,14 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void RefreshInfo () {
          if ( Mode == "log" ) {
-            TextMessage.Text = LogContent;
+            if ( AppState == "modnix" )
+               EnableLaunch();
             return;
          }
          string txt = $"Modnix {AppVer}\n";
          if ( Mode == "launch" ) {
-            txt += "Installed at " + App.ModGuiExe + "\n\nIt can handle setup / restore.";
-            AccessAction.Text = "_Launch";
-            ButtonAction.IsEnabled = true;
+            txt += "Installed at " + App.ModGuiExe + "\n\nUse it to (re)setup or restore.";
+            EnableLaunch();
          } else { // Mode == "setup"
             txt += $"\nPhoenix Point\n{GamePath}";
             AccessAction.Text = "_Setup";
@@ -64,14 +64,22 @@ namespace Sheepy.Modnix.MainGUI {
          TextMessage.Text = txt;
       }
 
+      private void EnableLaunch () {
+         AccessAction.Text = "_Launch";
+         ButtonAction.IsEnabled = true;
+      }
+
       private void ButtonAction_Click ( object sender, RoutedEventArgs e ) {
          Log( $"\"{Mode}\" initiated" );
          if ( e.Source is Button btn ) btn.Focus();
          if ( Mode == "setup" ) {
+            // Switch to log mode and call setup
             Mode = "log";
             ButtonAction.IsEnabled = false;
             TextMessage.TextAlignment = TextAlignment.Left;
             TextMessage.FontSize = 12;
+            TextMessage.Text = LogContent;
+            TextMessage.ScrollToEnd();
             RefreshInfo();
             App.DoSetupAsync();
 
@@ -93,11 +101,14 @@ namespace Sheepy.Modnix.MainGUI {
 
       public void Log ( string message ) {
          string time = DateTime.Now.ToString( "hh:mm:ss.ffff ", InvariantCulture );
-         lock ( this ) {
-            LogContent += $"{time} {message}\n";
-            if ( Mode == "Log" )
-               this.Dispatch( RefreshInfo );
-         }
+         string line = $"{time} {message}\n";
+         this.Dispatch( () => {
+            if ( Mode == "log" ) {
+               TextMessage.AppendText( line );
+               TextMessage.ScrollToEnd();
+            }  else
+               LogContent += line;
+         } );
       }
 
    }
