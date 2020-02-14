@@ -54,7 +54,7 @@ namespace Sheepy.Modnix.MainGUI {
          }
          string txt = $"Modnix {AppVer}\n";
          if ( Mode == "launch" ) {
-            txt += "Installed at " + App.ModGuiExe + "\n\nUse it to (re)setup or restore.";
+            txt += "Installed at " + App.ModGuiExe + "\n\nUse it to resetup or restore.";
             EnableLaunch();
          } else { // Mode == "setup"
             txt += $"\nPhoenix Point\n{GamePath}";
@@ -74,6 +74,7 @@ namespace Sheepy.Modnix.MainGUI {
          if ( e.Source is Button btn ) btn.Focus();
          if ( Mode == "setup" ) {
             // Switch to log mode and call setup
+            AccessAction.Text = "Wait";
             Mode = "log";
             ButtonAction.IsEnabled = false;
             TextMessage.TextAlignment = TextAlignment.Left;

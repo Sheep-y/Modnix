@@ -316,7 +316,7 @@ namespace Sheepy.Modnix.MainGUI {
          string OldPath = Path.Combine( currentGame.GameDir, PAST_MOD );
          string NewPath = ModFolder;
          if ( ! Directory.Exists( OldPath ) ) {
-            CreateShortcut( currentGame.GameDir, PAST_MOD, NewPath );
+            CreateShortcut();
             return false;
          }
          bool ModsMoved = false;
@@ -338,7 +338,7 @@ namespace Sheepy.Modnix.MainGUI {
          if ( ! Directory.EnumerateFiles( OldPath ).Any() ) try {
             Directory.Delete( OldPath, false );
             if ( ! Directory.Exists( OldPath ) )
-               CreateShortcut( currentGame.GameDir, PAST_MOD, NewPath );
+               CreateShortcut();
             return true;
          } catch ( Exception ex ) { Log( ex ); }
          return ModsMoved;
@@ -351,16 +351,10 @@ namespace Sheepy.Modnix.MainGUI {
       } catch ( Exception ex ) { return Log( ex, false ); } }
       
 
-      public void CreateShortcut ( string dir, string name, string linkTo ) {
+      public void CreateShortcut () {
+         string name = Path.Combine( currentGame.GameDir, PAST_MOD );
          Log( "Creating Mods shortcut to support legacy mods." );
-         RunAndWait( dir, "mklink", $"/d \"{name}\" \"{linkTo}\"" );
-         /*
-         var link = (IWshShortcut) new WshShell().CreateShortcut( Path.Combine( dir, name + ".lnk" ) );
-         link.Description = desc;
-         //shortcut.IconLocation = null;
-         link.TargetPath = linkTo;
-         link.Save();
-         */
+         RunAndWait( currentGame.GameDir, "cmd", $"/c mklink /d \"{name}\" \"{ModFolder}\"", true );
       }
 
       internal void DoRestoreAsync () {
@@ -384,22 +378,26 @@ namespace Sheepy.Modnix.MainGUI {
       #endregion
 
       #region Helpers
-      internal string RunAndWait ( string path, string exe, string param = null ) {
+      internal string RunAndWait ( string path, string exe, string param = null, bool asAdmin = false ) {
          Log( $"Running at {path} : {exe} {param}" );
          try {
             using ( Process p = new Process() ) {
-               p.StartInfo.UseShellExecute = false;
-               p.StartInfo.RedirectStandardOutput = true;
+               p.StartInfo.UseShellExecute = asAdmin;
+               p.StartInfo.RedirectStandardOutput = ! asAdmin;
                p.StartInfo.FileName = exe;
                p.StartInfo.Arguments = param;
                p.StartInfo.WorkingDirectory = path;
                p.StartInfo.CreateNoWindow = true;
                p.StartInfo.WindowStyle = ProcessWindowStyle.Minimized;
+               if ( asAdmin ) p.StartInfo.Verb = "runas";
                p.Start();
 
-               string output = p.StandardOutput.ReadToEnd()?.Trim();
-               Log( $"Standard out: {output}" );
-               p.WaitForExit( 1000 );
+               string output = "";
+               if ( ! asAdmin ) {
+                  output = p.StandardOutput.ReadToEnd()?.Trim();
+                  Log( $"Standard out: {output}" );
+               }
+               p.WaitForExit( 30_000 );
                return output;
             }
          } catch ( Exception ex ) {
