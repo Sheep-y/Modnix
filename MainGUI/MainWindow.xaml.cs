@@ -15,6 +15,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
+using static System.Globalization.CultureInfo;
 
 namespace Sheepy.Modnix.MainGUI {
 
@@ -34,7 +35,6 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       private void RefreshGUI () {
-         Log( "Time is " + DateTime.Now.ToString( "u" ) );
          Log( "Resetting GUI" );
          RefreshAppInfo();
          RefreshGameInfo();
@@ -170,7 +170,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       #region Log Tab
       public void Log ( string message ) {
-         string time = DateTime.Now.ToString( "hh:mm:ss.ffff " );
+         string time = DateTime.Now.ToString( "hh:mm:ss.ffff ", InvariantCulture );
          this.Dispatch( () => {
             textLog.AppendText( time + message );
             textLog.AppendText( "\n" );
@@ -180,7 +180,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void ButtonLogSave_Click ( object sender, RoutedEventArgs e ) {
          var dialog = new Microsoft.Win32.SaveFileDialog {
-            FileName = Assembly.GetExecutingAssembly().GetName().Name + "Log " + DateTime.Now.ToString( "u" ).Replace( ':', '-' ),
+            FileName = Assembly.GetExecutingAssembly().GetName().Name + "Log " + DateTime.Now.ToString( "u", InvariantCulture ).Replace( ':', '-' ),
             DefaultExt = ".txt",
             Filter = "Log Files (.txt .log)|*.txt;*.log|All Files|*.*"
          };

@@ -13,6 +13,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using static System.Globalization.CultureInfo;
 
 namespace Sheepy.Modnix.MainGUI {
 
@@ -88,7 +89,7 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       public void Log ( string message ) {
-         string time = DateTime.Now.ToString( "hh:mm:ss.ffff " );
+         string time = DateTime.Now.ToString( "hh:mm:ss.ffff ", InvariantCulture );
          lock ( this ) {
             LogContent += $"{time} {message}";
             if ( Mode == "Log" )

@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using static System.Globalization.CultureInfo;
 
 namespace Sheepy.Modnix.MainGUI {
 
@@ -56,6 +57,7 @@ namespace Sheepy.Modnix.MainGUI {
       private int  paramIgnorePid;
 
       public void ApplicationStartup ( object sender, StartupEventArgs e ) { lock ( SynRoot ) { try {
+         Log( $"Date is {DateTime.Now.ToString( "u", InvariantCulture )}" );
          ModGuiExe = Path.Combine( ModFolder, LIVE_NAME + APP_EXT );
          Myself = Assembly.GetExecutingAssembly().GetName();
          MyPath = Uri.UnescapeDataString( new UriBuilder( Myself.CodeBase ).Path ).FixSlash();
@@ -88,7 +90,7 @@ namespace Sheepy.Modnix.MainGUI {
 
          int pid = ParamIndex( param, "i", "ignore-pid" );
          if ( pid >= 0 && param.Count > pid+1 )
-            int.TryParse( param[ pid + 1 ], out paramIgnorePid );
+            _ = int.TryParse( param[ pid + 1 ], out paramIgnorePid );
 
          /// -o --open-mod-dir        Open mod folder on launch, once used as part of setup
          //if ( ParamIndex( param, "o", "open-mod-dir" ) >= 0 )
@@ -138,7 +140,7 @@ namespace Sheepy.Modnix.MainGUI {
          IntPtr handle = running.MainWindowHandle;
          if ( handle == IntPtr.Zero ) return false;
          Log( $"Another instance (pid {running.Id}) found. Self-closing." );
-         return Tools.SetForegroundWindow( handle );
+         return NativeMethods.SetForegroundWindow( handle );
       } catch ( Exception ex ) { return Log( ex, false ); } }
 
       private bool ShouldRunSetup () { try {
@@ -478,5 +480,9 @@ namespace Sheepy.Modnix.MainGUI {
          File.Move( subject, target );
          return File.Exists( target );
       } catch ( Exception ex ) { return App.Log( ex, false ); } }
+   }
+
+   internal static class ExtCls {
+      internal static string FixSlash ( this string path ) => path.Replace( '/', Path.DirectorySeparatorChar );
    }
 }
