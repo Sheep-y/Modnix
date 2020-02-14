@@ -40,7 +40,7 @@ namespace Sheepy.Modnix.MainGUI {
       private const long MIN_FILE_SIZE = 1024 * 10;
 
       private readonly static string[] GAME_PATHS =
-         new string[]{ ".", "C:/Program Files/Epic Games/PhoenixPoint".FixSlash() };
+         new string[]{ "C:/Program Files/Epic Games/PhoenixPoint".FixSlash(), "." };
 
       internal string ModFolder = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.MyDocuments ), MOD_PATH );
       internal string ModGuiExe;
@@ -110,7 +110,7 @@ namespace Sheepy.Modnix.MainGUI {
       private bool FoundInstalledModnix () { try {
          if ( MyPath == ModGuiExe ) return false;
          if ( ! File.Exists( ModGuiExe ) ) return false;
-         ModGuiExe = new FileInfo( ModFolder ).FullName; // Normalise path - e.g. My Documents to Documents
+         ModGuiExe = new FileInfo( ModGuiExe ).FullName; // Normalise path - e.g. My Documents to Documents
          if ( MyPath == ModGuiExe ) return false;
 
          Log( $"Found {ModGuiExe}" );

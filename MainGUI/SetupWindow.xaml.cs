@@ -51,13 +51,13 @@ namespace Sheepy.Modnix.MainGUI {
             TextMessage.Text = LogContent;
             return;
          }
-         string txt = $"Modnix {AppVer}\r";
+         string txt = $"Modnix {AppVer}\n";
          if ( Mode == "launch" ) {
-            txt += "Installed at\r" + App.ModGuiExe;
+            txt += "Installed at " + App.ModGuiExe + "\n\nIt can handle setup / restore.";
             AccessAction.Text = "_Launch";
             ButtonAction.IsEnabled = true;
          } else { // Mode == "setup"
-            txt += $"\rPhoenix Point\r{GamePath}";
+            txt += $"\nPhoenix Point\n{GamePath}";
             AccessAction.Text = "_Setup";
             ButtonAction.IsEnabled = GamePath != null;
          }

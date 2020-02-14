@@ -12,7 +12,7 @@ namespace Sheepy.Modnix.MainGUI {
       internal static void Prompt ( string parts, Exception ex, Action OnRestart ) {
          string txt;
          if ( parts.StartsWith( "setup_ok", InvariantCulture ) ) {
-            txt = $"Setup success.\nCheck status after every game patch.\n\nMod folder:\nMy Documents\\{AppControl.MOD_PATH}\n";
+            txt = $"Setup success.\nGame patch may requires re-setup.\n\nMod folder:\nMy Documents\\{AppControl.MOD_PATH}\n";
             if ( parts.Contains( ",mod_moved" ) )
                txt += "\nMods moved to new mod folder.";
             if ( parts.Contains( ",self_copy" ) )
