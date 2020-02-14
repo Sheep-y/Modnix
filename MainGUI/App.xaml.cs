@@ -67,7 +67,7 @@ namespace Sheepy.Modnix.MainGUI {
             }
             if ( FoundInstalledModnix() ) {
                GUI = new SetupWindow( this, "launch" );
-            } else if ( Path.GetFileName( MyPath ).ToLowerInvariant().Contains( "setup" ) ) {
+            } else if ( ShouldRunSetup() ) {
                GUI = new SetupWindow( this, "setup" );
             }
          }
@@ -139,6 +139,12 @@ namespace Sheepy.Modnix.MainGUI {
          if ( handle == IntPtr.Zero ) return false;
          Log( $"Another instance (pid {running.Id}) found. Self-closing." );
          return Tools.SetForegroundWindow( handle );
+      } catch ( Exception ex ) { return Log( ex, false ); } }
+
+      private bool ShouldRunSetup () { try {
+         if ( Path.GetFileName( MyPath ).ToLowerInvariant().Contains( "setup" ) ) return true;
+         if ( Path.GetFullPath( MyPath ) != Path.GetFullPath( ModGuiExe ) ) return true;
+         return false;
       } catch ( Exception ex ) { return Log( ex, false ); } }
       #endregion
 
@@ -393,11 +399,19 @@ namespace Sheepy.Modnix.MainGUI {
          }
       }
 
+      private string startup_log = "";
+
       internal void Log ( object message ) {
-         if ( GUI != null )
+         if ( GUI != null ) {
+            if ( startup_log != null ) {
+               message = startup_log + message;
+               startup_log = null;
+            }
             GUI.Log( message.ToString() );
-         else
+         } else {
+            startup_log += message + "\n";
             Console.WriteLine( message );
+         }
       }
 
       internal T Log<T> ( object message, T result ) {
