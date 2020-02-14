@@ -27,7 +27,7 @@ namespace Sheepy.Modnix.MainGUI {
                MessageBox.Show( txt, "Success", MessageBoxButton.OK, MessageBoxImage.Information );
             }
          } else if ( parts.StartsWith( "restore_ok", InvariantCulture ) ) {
-            MessageBox.Show( "Uninstall successful.", "Success" );
+            MessageBox.Show( "Revert successful.\nGame is now Modnix-free.", "Success" );
          } else if ( parts.StartsWith( "error", InvariantCulture ) ) {
             txt = "Action failed. See log for details.";
             if ( ex != null ) txt += "Error: " + ex;

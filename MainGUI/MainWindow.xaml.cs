@@ -76,7 +76,7 @@ namespace Sheepy.Modnix.MainGUI {
       private void RefreshAppButtons () {
          ButtonSetup.IsEnabled  = AppState != null;
          switch ( AppState ) {
-            case "modnix"  : ButtonSetup.Content = "Uninstall"; break;
+            case "modnix"  : ButtonSetup.Content = "Revert"; break;
             case "running" : ButtonSetup.Content = "Refresh"; break;
             default        : ButtonSetup.Content = "Setup"; break;
          }
@@ -90,7 +90,8 @@ namespace Sheepy.Modnix.MainGUI {
                DoSetup();
                break;
             case "modnix" :
-               DoRestore();
+               if ( MessageBox.Show( "Remove Modnix from Phoenix Poing?", "Revert", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No ) == MessageBoxResult.Yes )
+                  DoRestore();
                break;
             case "running" :
                App.CheckStatusAsync();

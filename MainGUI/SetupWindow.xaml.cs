@@ -70,6 +70,8 @@ namespace Sheepy.Modnix.MainGUI {
          if ( Mode == "setup" ) {
             Mode = "log";
             ButtonAction.IsEnabled = false;
+            TextMessage.TextAlignment = TextAlignment.Left;
+            TextMessage.FontSize = 12;
             RefreshInfo();
             App.DoSetupAsync();
 
@@ -92,7 +94,7 @@ namespace Sheepy.Modnix.MainGUI {
       public void Log ( string message ) {
          string time = DateTime.Now.ToString( "hh:mm:ss.ffff ", InvariantCulture );
          lock ( this ) {
-            LogContent += $"{time} {message}";
+            LogContent += $"{time} {message}\n";
             if ( Mode == "Log" )
                this.Dispatch( RefreshInfo );
          }
