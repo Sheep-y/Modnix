@@ -303,7 +303,7 @@ namespace Sheepy.Modnix.MainGUI {
             Log( $"{e.tag_name} ({(e.prerelease?"Prerelease":"Production")}) {e.assets?.Length??0} asset(s)" );
             if ( string.IsNullOrWhiteSpace( e.tag_name ) || e.tag_name[0] != 'v' ) continue;
             if ( e.assets == null || e.assets.Length <= 0 ) continue;
-            if ( e.prerelease ) continue;
+            if ( ! object.Equals( MainGUI.Properties.Settings.Default.Update_Branch, "dev" ) && e.prerelease ) continue;
             Version eVer = Version.Parse( e.tag_name.Substring( 1 ) );
             if ( eVer <= Myself.Version ) continue;
             foreach ( var a in e.assets ) {
