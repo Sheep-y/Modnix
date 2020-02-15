@@ -35,7 +35,7 @@ namespace Sheepy.Modnix.MainGUI {
          RefreshUpdateStatus();
          Log( "Initiating Controller" );
          App.CheckStatusAsync();
-         CheckUpdate( true );
+         CheckUpdate( false );
       }
 
       public void SetInfo ( string info, object value ) { this.Dispatch( () => {

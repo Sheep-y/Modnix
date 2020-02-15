@@ -85,11 +85,14 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void Init ( string[] args ) {
          // Migrate settings from old version
-         if ( ! MainGUI.Properties.Settings.Default.Settings_Migrated ) {
-            MainGUI.Properties.Settings.Default.Upgrade();
-            MainGUI.Properties.Settings.Default.Settings_Migrated = true;
-            MainGUI.Properties.Settings.Default.Save();
-         }
+         try {
+            if ( ! MainGUI.Properties.Settings.Default.Settings_Migrated ) {
+               MainGUI.Properties.Settings.Default.Upgrade();
+               MainGUI.Properties.Settings.Default.Settings_Migrated = true;
+               MainGUI.Properties.Settings.Default.Save();
+            }
+         }  catch ( Exception ex ) { Log( ex ); }
+
          // Dynamically load embedded dll
          AppDomain.CurrentDomain.AssemblyResolve += ( domain, dll ) => {
             Log( $"Loading {dll.Name}" );
@@ -97,6 +100,7 @@ namespace Sheepy.Modnix.MainGUI {
                return ( domain as AppDomain ?? AppDomain.CurrentDomain ).Load( MainGUI.Properties.Resources.Newtonsoft_Json );
             return null;
          };
+
          // Build important paths and self information
          ModGuiExe = Path.Combine( ModFolder, LIVE_NAME + APP_EXT );
          Myself = Assembly.GetExecutingAssembly().GetName();
@@ -104,6 +108,7 @@ namespace Sheepy.Modnix.MainGUI {
          Log( "Assembly: " + MyPath );
          Log( "Working Dir: " + Directory.GetCurrentDirectory() );
          Log( "Mod Dir: " + ModFolder );
+
          // Parse command line arguments
          if ( args != null )
             ProcessParams( args );
