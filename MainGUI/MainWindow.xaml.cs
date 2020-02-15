@@ -211,8 +211,8 @@ namespace Sheepy.Modnix.MainGUI {
       public void Log ( string message ) {
          string time = DateTime.Now.ToString( "hh:mm:ss.ffff ", InvariantCulture );
          this.Dispatch( () => {
-            textLog.AppendText( time + message );
-            textLog.AppendText( "\n" );
+            TextLog.AppendText( time + message + "\n" );
+            TextLog.ScrollToEnd();
             ButtonLogSave.IsEnabled = true;
          } );
       }
@@ -224,7 +224,7 @@ namespace Sheepy.Modnix.MainGUI {
             Filter = "Log Files (.txt .log)|*.txt;*.log|All Files|*.*"
          };
          if ( dialog.ShowDialog().GetValueOrDefault() ) try {
-            File.WriteAllText( dialog.FileName, textLog.Text );
+            File.WriteAllText( dialog.FileName, TextLog.Text );
             Process.Start("explorer.exe", $"/select, \"{dialog.FileName}\"" );
          } catch ( Exception ex ) {
             Log( ex.ToString() );
@@ -236,7 +236,7 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       private void ButtonLogClear_Click ( object sender, RoutedEventArgs e ) {
-         textLog.Clear();
+         TextLog.Clear();
          ButtonLogSave.IsEnabled = false;
       }
       #endregion

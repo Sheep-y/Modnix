@@ -48,8 +48,6 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void RefreshInfo () {
          if ( Mode == "log" ) {
-            if ( AppState == "modnix" )
-               EnableLaunch();
             return;
          }
          string txt = $"Modnix {AppVer}\n";
@@ -92,6 +90,8 @@ namespace Sheepy.Modnix.MainGUI {
 
       public void Prompt ( string parts, Exception ex = null ) {
          this.Dispatch( () => {
+            if ( AppState == "modnix" )
+               EnableLaunch();
             Log( $"Prompt {parts}" );
             SharedGui.Prompt( parts, ex, () => {
                App.LaunchInstalledModnix();

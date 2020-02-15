@@ -147,7 +147,7 @@
                <Button x:Name="ButtonLogSave" Content="Save As..." Padding="5" DockPanel.Dock="Right" Click="ButtonLogSave_Click" IsEnabled="False"></Button>
                <Label x:Name="LabelLogTitle" Content="Dialogistic Log" HorizontalAlignment="Center" VerticalAlignment="Center"/>
             </DockPanel>
-            <Grid DockPanel.Dock="Bottom">
+            <Grid DockPanel.Dock="Bottom" Margin="0,10,0,0">
                <Grid.ColumnDefinitions>
                   <ColumnDefinition/>
                   <ColumnDefinition Width="10"/>
@@ -156,7 +156,7 @@
                <Button x:Name="ButtonGitHub" Content="Homepage" Padding="5" Click="ButtonGitHub_Click"></Button>
                <Button x:Name="ButtonCheckUpdate" Content="Check Update" Padding="5" Grid.Column="2" Click="ButtonCheckUpdate_Click"/>
             </Grid>
-            <TextBox x:Name="textLog" Text="" VerticalScrollBarVisibility="Visible" DockPanel.Dock="Bottom" HorizontalScrollBarVisibility="Visible" IsReadOnly="True" IsReadOnlyCaretVisible="True"/>
+            <TextBox x:Name="TextLog" Text="" VerticalScrollBarVisibility="Visible" DockPanel.Dock="Bottom" HorizontalScrollBarVisibility="Visible" IsReadOnly="True" IsReadOnlyCaretVisible="True"/>
          </DockPanel>
       </TabItem>
    </TabControl>
