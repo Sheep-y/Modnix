@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
@@ -22,19 +23,21 @@ namespace Sheepy.Modnix.MainGUI {
       // Use slash for all paths, and use .FixSlash() to correct to platform slash.
       internal readonly static string MOD_PATH = "My Games/Phoenix Point/Mods".FixSlash();
       internal readonly static string DLL_PATH = "PhoenixPointWin64_Data/Managed".FixSlash();
-      internal const string APP_EXT  = ".exe";
       internal const string SETUP_NAME = "ModnixSetup";
       internal const string LIVE_NAME  = "Modnix";
+      internal const string APP_EXT  = ".exe";
+      internal const string GAME_EXE = "PhoenixPointWin64.exe";
+      internal const string GAME_DLL = "Assembly-CSharp.dll";
+
       internal const string INJECTOR = "ModnixInjector.exe";
       internal const string LOADER   = "ModnixLoader.dll";
       internal const string PAST     = "PhoenixPointModLoaderInjector.exe";
       internal const string PAST_BK  = "PhoenixPointModLoaderInjector.exe.orig";
       internal const string PAST_DLL = "PPModLoader.dll";
       internal const string PAST_MOD = "Mods";
-      internal const string GAME_EXE = "PhoenixPointWin64.exe";
-      internal const string GAME_DLL = "Assembly-CSharp.dll";
       internal const string HARM_DLL = "0Harmony.dll";
       internal const string CECI_DLL = "Mono.Cecil.dll";
+      internal const string RELEASE  = "https://api.github.com/repos/Sheep-y/Modnix/releases";
 
       internal const string EPIC_DIR = ".egstore";
 
@@ -58,11 +61,14 @@ namespace Sheepy.Modnix.MainGUI {
       private bool paramSkipProcessCheck;
       private int  paramIgnorePid;
 
-      public void ApplicationStartup ( object sender, StartupEventArgs e ) { lock ( SynRoot ) { try {
-         Log( $"Date is {DateTime.Now.ToString( "u", InvariantCulture )}" );
+      internal void ApplicationStartup ( object sender, StartupEventArgs e ) { lock ( SynRoot ) { try {
+         Log( $"Startup time {DateTime.Now.ToString( "u", InvariantCulture )}" );
          ModGuiExe = Path.Combine( ModFolder, LIVE_NAME + APP_EXT );
          Myself = Assembly.GetExecutingAssembly().GetName();
          MyPath = Uri.UnescapeDataString( new UriBuilder( Myself.CodeBase ).Path ).FixSlash();
+         Log( "Assembly: " + MyPath );
+         Log( "Working Dir: " + Directory.GetCurrentDirectory() );
+         Log( "Mod Dir: " + ModFolder );
          ProcessParams( e?.Args );
          if ( ! paramSkipProcessCheck ) {
             if ( FoundRunningModnix() ) {
@@ -135,7 +141,7 @@ namespace Sheepy.Modnix.MainGUI {
          // Find running instances
          int myId = Process.GetCurrentProcess().Id;
          Process running = Process.GetProcesses()
-               .Where( e => e.ProcessName == LIVE_NAME || e.ProcessName == SETUP_NAME )
+               .Where( e => e.ProcessName == LIVE_NAME || e.ProcessName.StartsWith( SETUP_NAME, StringComparison.InvariantCultureIgnoreCase ) )
                .Where( e => e.Id != myId && ( paramIgnorePid == 0 || e.Id != paramIgnorePid ) ).FirstOrDefault();
          if ( running == null ) return false;
          // Bring to foreground
@@ -155,13 +161,9 @@ namespace Sheepy.Modnix.MainGUI {
       #region Check Status
       internal void CheckStatusAsync () {
          Log( "Queuing status check" );
-         Task.Run( (Action) CheckStatus );
+         Task.Run( CheckStatus );
       }
 
-      /// 1. If injector is in correct place = call injector to detect status
-      /// 2. If injector is not in place, but dummy exists
-      ///   Check Phoenix Point. Found = can setup. Not found = Error.
-      /// 3. If dummy not exists = Error, re-download
       private void CheckStatus () { lock ( SynRoot ) { try {
          Log( "Checking status" );
          GUI.SetInfo( "version", CheckAppVer() );
@@ -242,7 +244,24 @@ namespace Sheepy.Modnix.MainGUI {
       } catch ( IOException ex ) { return Log( ex, false ); } }
       #endregion
 
-      public void LaunchGame ( string type ) {
+      #region Auto Updater
+      internal void CheckUpdateAsync () {
+         Log( "Queuing update check" );
+         Task.Run( (Action) CheckUpdate );
+      }
+      
+      private void CheckUpdate () { try {
+         Log( $"Checking update from {RELEASE}" );
+         ServicePointManager.Expect100Continue = true;
+         ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+         using( WebClient client = new WebClient() ) {
+            string s = client.DownloadString( RELEASE );
+            Log( s );
+         }
+      } catch ( Exception ex ) { Log( ex ); } }
+      #endregion
+
+      internal void LaunchGame ( string type ) {
          // Non-Async
          try {
             if ( type == "online" ) {
@@ -351,7 +370,7 @@ namespace Sheepy.Modnix.MainGUI {
       } catch ( Exception ex ) { return Log( ex, false ); } }
       
 
-      public void CreateShortcut () {
+      internal void CreateShortcut () {
          string name = Path.Combine( currentGame.GameDir, PAST_MOD );
          Log( "Creating Mods shortcut to support legacy mods." );
          RunAndWait( currentGame.GameDir, "cmd", $"/c mklink /d \"{name}\" \"{ModFolder}\"", true );
@@ -405,7 +424,7 @@ namespace Sheepy.Modnix.MainGUI {
          }
       }
 
-      private string startup_log = "";
+      private string startup_log = "Startup log:\n";
 
       internal void Log ( object message ) {
          if ( GUI != null ) {

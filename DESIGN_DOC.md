@@ -147,7 +147,7 @@ C# WPF App
 
 Functions:
 
-* Automated and user-friendly setup
+* Automated and user-friendly setup and update.
 * An all-in-one user interface to see injection status, mod list, and launch game.
 * Quick access to mod folders and game information and community including nexus, website, manual, SNS etc.
 * Easy diagnostic of injection and mod loading issue through detailed log.

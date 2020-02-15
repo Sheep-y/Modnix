@@ -28,9 +28,6 @@ namespace Sheepy.Modnix.MainGUI {
          Contract.Requires( app != null );
          App = app;
          InitializeComponent();
-         Log( "Assembly: " + App.MyPath );
-         Log( "Working Dir: " + Directory.GetCurrentDirectory() );
-         Log( "Mod Dir: " + App.ModFolder );
          RefreshGUI();
       }
 
@@ -39,6 +36,7 @@ namespace Sheepy.Modnix.MainGUI {
          RefreshAppInfo();
          RefreshGameInfo();
          RefreshModInfo();
+         RefreshUpdateStatus();
          Log( "Initiating Controller" );
          App.CheckStatusAsync();
       }
@@ -51,6 +49,7 @@ namespace Sheepy.Modnix.MainGUI {
             case "state"   : AppState = value; RefreshAppInfo(); break;
             case "game_path"    : GamePath = value; RefreshGameInfo(); break;
             case "game_version" : GameVer  = value; RefreshGameInfo(); break;
+            case "update"  : Update = value; RefreshUpdateStatus(); break;
             default : Log( $"Unknown info {info}" ); break;
          }
       } ); }
@@ -169,7 +168,34 @@ namespace Sheepy.Modnix.MainGUI {
       }
       #endregion
 
-      #region Log Tab
+      #region Updater
+      private string Update;
+
+      private void CheckUpdate () {
+         App.CheckUpdateAsync();
+         Update = "checking";
+         RefreshUpdateStatus();
+      }
+
+      private void ButtonGitHub_Click ( object sender, RoutedEventArgs e ) => OpenUrl( "home", e );
+      private void ButtonCheckUpdate_Click ( object sender, RoutedEventArgs e ) => CheckUpdate();
+
+      private void RefreshUpdateStatus () {
+         switch ( Update ) {
+            case null :
+               ButtonCheckUpdate.IsEnabled = true;
+               ButtonCheckUpdate.Content = "Check Update";
+               return;
+
+            case "checking" :
+               ButtonCheckUpdate.IsEnabled = false;
+               ButtonCheckUpdate.Content = "Checking...";
+               return;
+         }
+      }
+      #endregion
+
+      #region Logging
       public void Log ( string message ) {
          string time = DateTime.Now.ToString( "hh:mm:ss.ffff ", InvariantCulture );
          this.Dispatch( () => {
@@ -191,12 +217,6 @@ namespace Sheepy.Modnix.MainGUI {
          } catch ( Exception ex ) {
             Log( ex.ToString() );
          }
-      }
-
-      private void ButtonGitHub_Click ( object sender, RoutedEventArgs e ) => OpenUrl( "home", e );
-
-      private void ButtonCheckUpdate_Click ( object sender, RoutedEventArgs e ) {
-          MessageBox.Show( "Not Implemened", "Sorry", MessageBoxButton.OK, MessageBoxImage.Exclamation );
       }
 
       private void ButtonAddMod_Click ( object sender, RoutedEventArgs e ) {
