@@ -161,7 +161,7 @@ namespace Sheepy.Modnix.MainGUI {
       #region Check Status
       internal void CheckStatusAsync () {
          Log( "Queuing status check" );
-         Task.Run( CheckStatus );
+         Task.Run( (Action) CheckStatus );
       }
 
       private void CheckStatus () { lock ( SynRoot ) { try {
@@ -217,9 +217,7 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       internal string CheckAppVer () { try {
-         string ver = Assembly.GetExecutingAssembly().GetName().Version.ToString();
-         Log( "Version: " + ver );
-         return ver;
+         return Assembly.GetExecutingAssembly().GetName().Version.ToString();
       } catch ( Exception ex ) { return Log( ex, "error" ); } }
 
       internal string CheckGameVer () { try {
@@ -254,11 +252,30 @@ namespace Sheepy.Modnix.MainGUI {
          Log( $"Checking update from {RELEASE}" );
          ServicePointManager.Expect100Continue = true;
          ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-         using( WebClient client = new WebClient() ) {
-            string s = client.DownloadString( RELEASE );
-            Log( s );
+         HttpWebRequest request = WebRequest.Create( new Uri( RELEASE ) ) as HttpWebRequest;
+         if ( request == null ) {
+            Log( "WebRequest is not HttpWebRequest" );
+            return;
+         }
+         request.Credentials = CredentialCache.DefaultCredentials;
+         request.UserAgent = $"{LIVE_NAME}-Updater/{CheckAppVer()}";
+         try {
+            HttpWebResponse response = ( HttpWebResponse ) request.GetResponse();
+            Log( response.StatusDescription );
+            Log( ReadAsString( response ) );
+            response.Close();
+         } catch ( WebException wex ) {
+            Log( wex );
+            Log( ReadAsString( wex.Response ) );
+            GUI.SetInfo( "update", null );
          }
       } catch ( Exception ex ) { Log( ex ); } }
+
+      private string ReadAsString ( WebResponse response ) {
+         using ( StreamReader reader = new StreamReader( response.GetResponseStream() ) ) {
+            return reader.ReadToEnd ();
+         }
+      }
       #endregion
 
       internal void LaunchGame ( string type ) {
