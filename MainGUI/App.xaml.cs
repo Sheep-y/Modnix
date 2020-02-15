@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using static System.Globalization.CultureInfo;
@@ -234,7 +235,8 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       internal string CheckAppVer () { try {
-         return Assembly.GetExecutingAssembly().GetName().Version.ToString();
+         string version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
+         return new Regex( "(\\.0){1,2}$" ).Replace( version, "" );
       } catch ( Exception ex ) { return Log( ex, "error" ); } }
 
       internal string CheckGameVer () { try {

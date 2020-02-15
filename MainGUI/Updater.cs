@@ -29,7 +29,6 @@ namespace Sheepy.Modnix.MainGUI {
       private const string RELEASE  = "https://api.github.com/repos/Sheep-y/Modnix/releases";
 
       private readonly AppControl App;
-      private IAppGui GUI => App.GUI;
       private JsonSerializerSettings jsonOptions;
 
       internal Updater ( AppControl app ) {
