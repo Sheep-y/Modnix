@@ -64,7 +64,13 @@ namespace Sheepy.Modnix.MainGUI {
       private int  paramIgnorePid;
 
       internal void ApplicationStartup ( object sender, StartupEventArgs e ) { lock ( SynRoot ) { try {
-         Log( $"Startup time {DateTime.Now.ToString( "u", InvariantCulture )}" );
+         Log( $"Startup time {DateTime.Now.ToString( "yyyy-MM-dd HH:mm:ss.ffff", InvariantCulture )}" );
+         AppDomain.CurrentDomain.AssemblyResolve += ( resolver, args ) => {
+            Log( $"Loading {args.Name}" );
+            if ( args.Name.StartsWith( "Newtonsoft.Json,", StringComparison.InvariantCultureIgnoreCase ) )
+               return Assembly.Load( MainGUI.Properties.Resources.Newtonsoft_Json );
+            return null;
+         }; 
          ModGuiExe = Path.Combine( ModFolder, LIVE_NAME + APP_EXT );
          Myself = Assembly.GetExecutingAssembly().GetName();
          MyPath = Uri.UnescapeDataString( new UriBuilder( Myself.CodeBase ).Path ).FixSlash();
@@ -85,8 +91,10 @@ namespace Sheepy.Modnix.MainGUI {
          }
          if ( GUI == null )
             GUI = new MainWindow( this );
+         Log( null ); // Flush startup log
          GUI.SetInfo( "visible", "true" );
       } catch ( Exception ex ) {
+         File.WriteAllText( LIVE_NAME + " Error.log", ex.ToString() );
          Log( ex );
          Shutdown();
       } } }
@@ -504,10 +512,11 @@ namespace Sheepy.Modnix.MainGUI {
       internal void Log ( object message ) {
          if ( GUI != null ) {
             if ( startup_log != null ) {
-               message = startup_log + message;
+               GUI.Log( startup_log.Trim() );
                startup_log = null;
+               if ( message == null ) return;
             }
-            GUI.Log( message.ToString() );
+            GUI.Log( message?.ToString() );
          } else {
             startup_log += message + "\n";
             Console.WriteLine( message );
