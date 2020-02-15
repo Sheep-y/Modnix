@@ -125,7 +125,7 @@ namespace Sheepy.Modnix.MainGUI {
       public void Prompt ( string parts, Exception ex = null ) { this.Dispatch( () => {
          Log( $"Prompt {parts}" );
          SharedGui.Prompt( parts, ex, () => {
-            Process.Start( App.ModGuiExe, "/i " + Process.GetCurrentProcess().Id );
+            App.LaunchInstalledModnix();
             Close();
          } );
       } ); }

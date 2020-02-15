@@ -41,7 +41,7 @@ namespace Sheepy.Modnix.MainGUI {
       internal const string EPIC_DIR = ".egstore";
 
       private readonly static string[] GAME_PATHS =
-         new string[]{ "C:/Program Files/Epic Games/PhoenixPoint".FixSlash(), "." };
+         new string[]{ "C:/Program Files/Epic Games/PhoenixPoint".FixSlash(), ".." };
 
       internal string ModFolder = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.MyDocuments ), MOD_PATH );
       internal string ModGuiExe;
@@ -65,10 +65,12 @@ namespace Sheepy.Modnix.MainGUI {
                Shutdown();
                return;
             }
-            if ( FoundInstalledModnix() ) {
-               GUI = new SetupWindow( this, "launch" );
-            } else if ( ShouldRunSetup() ) {
-               GUI = new SetupWindow( this, "setup" );
+            if ( ! IsSelfInstalled() ) {
+               if ( FoundInstalledModnix() ) {
+                  GUI = new SetupWindow( this, "launch" );
+               } else if ( ShouldRunSetup() ) {
+                  GUI = new SetupWindow( this, "setup" );
+               }
             }
          }
          if ( GUI == null )
@@ -133,8 +135,31 @@ namespace Sheepy.Modnix.MainGUI {
          return Math.Max( Math.Max( win1, win2 ), Math.Max( lin1, lin2 ) );
       }
 
+      private bool FoundRunningModnix () { try {
+         // Find running instances
+         int myId = Process.GetCurrentProcess().Id;
+         Process running = Process.GetProcesses()
+               .Where( e => e.ProcessName == LIVE_NAME || e.ProcessName.StartsWith( SETUP_NAME, StringComparison.InvariantCultureIgnoreCase ) )
+               .Where( e => e.Id != myId && ( paramIgnorePid == 0 || e.Id != paramIgnorePid ) ).FirstOrDefault();
+         if ( running == null ) return false;
+         // Bring to foreground
+         IntPtr handle = running.MainWindowHandle;
+         if ( handle == IntPtr.Zero ) return false;
+         Log( $"Another instance (pid {running.Id}) found. Self-closing." );
+         return NativeMethods.SetForegroundWindow( handle );
+      } catch ( Exception ex ) { return Log( ex, false ); } }
+
+      internal void LaunchInstalledModnix () { try {
+         Process.Start( ModGuiExe, "/i " + Process.GetCurrentProcess().Id );
+      } catch ( Exception ex ) { Log( ex ); } }
+
+      private bool IsSelfInstalled () {
+         // Modnix may be launched from My Games or from PhoenixPoint symbolic link, so we're just checking the tail.
+         return MyPath.EndsWith( Path.Combine( PAST_MOD, LIVE_NAME + APP_EXT ), StringComparison.InvariantCultureIgnoreCase );
+         // Alternatively, use Win32 api to find real path: https://stackoverflow.com/questions/2302416/
+      }
+
       private bool FoundInstalledModnix () { try {
-         if ( MyPath == ModGuiExe ) return false;
          if ( ! File.Exists( ModGuiExe ) ) return false;
          ModGuiExe = new FileInfo( ModGuiExe ).FullName; // Normalise path - e.g. My Documents to Documents
          if ( MyPath == ModGuiExe ) return false;
@@ -150,28 +175,8 @@ namespace Sheepy.Modnix.MainGUI {
          return false;
       } catch ( Exception ex ) { return Log( ex, false ); } }
 
-      private bool LaunchInstalledModnix () { try {
-         Process.Start( ModGuiExe, "/i " + Process.GetCurrentProcess().Id );
-         return true;
-      } catch ( Exception ex ) { return Log( ex, false ); } }
-
-      private bool FoundRunningModnix () { try {
-         // Find running instances
-         int myId = Process.GetCurrentProcess().Id;
-         Process running = Process.GetProcesses()
-               .Where( e => e.ProcessName == LIVE_NAME || e.ProcessName.StartsWith( SETUP_NAME, StringComparison.InvariantCultureIgnoreCase ) )
-               .Where( e => e.Id != myId && ( paramIgnorePid == 0 || e.Id != paramIgnorePid ) ).FirstOrDefault();
-         if ( running == null ) return false;
-         // Bring to foreground
-         IntPtr handle = running.MainWindowHandle;
-         if ( handle == IntPtr.Zero ) return false;
-         Log( $"Another instance (pid {running.Id}) found. Self-closing." );
-         return NativeMethods.SetForegroundWindow( handle );
-      } catch ( Exception ex ) { return Log( ex, false ); } }
-
       private bool ShouldRunSetup () { try {
          if ( Path.GetFileName( MyPath ).ToLowerInvariant().Contains( "setup" ) ) return true;
-         if ( Path.GetFullPath( MyPath ) != Path.GetFullPath( ModGuiExe ) ) return true;
          return false;
       } catch ( Exception ex ) { return Log( ex, false ); } }
       #endregion
