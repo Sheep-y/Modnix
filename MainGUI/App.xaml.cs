@@ -370,10 +370,10 @@ namespace Sheepy.Modnix.MainGUI {
          if ( CopySelf( MyPath, ModGuiExe ) )
             prompt += ",self_copy";
          // Copy hook files
-         currentGame.WriteCodeFile( HARM_DLL, SetupPackage._0Harmony );
-         currentGame.WriteCodeFile( CECI_DLL, SetupPackage.Mono_Cecil );
-         currentGame.WriteCodeFile( LOADER, SetupPackage.ModnixLoader );
-         currentGame.WriteCodeFile( INJECTOR, SetupPackage.ModnixInjector );
+         currentGame.WriteCodeFile( HARM_DLL, MainGUI.Properties.Resources._0Harmony   );
+         currentGame.WriteCodeFile( CECI_DLL, MainGUI.Properties.Resources.Mono_Cecil   );
+         currentGame.WriteCodeFile( LOADER  , MainGUI.Properties.Resources.ModnixLoader  );
+         currentGame.WriteCodeFile( INJECTOR, MainGUI.Properties.Resources.ModnixInjector );
          currentGame.RunInjector( "/y" );
          CheckInjectionStatus();
          if ( currentGame.Status == "modnix" ) {
