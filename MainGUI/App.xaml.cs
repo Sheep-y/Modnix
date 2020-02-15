@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -249,32 +250,55 @@ namespace Sheepy.Modnix.MainGUI {
       }
       
       private void CheckUpdate () { try {
+         if ( HasUpdate() )
+            GUI.SetInfo( "update", "yes" );
+         else
+            GUI.SetInfo( "update", "none" );
+      } catch ( Exception ex ) { Log( ex ); } }
+
+      private bool HasUpdate () { try {
          Log( $"Checking update from {RELEASE}" );
          ServicePointManager.Expect100Continue = true;
          ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
          HttpWebRequest request = WebRequest.Create( new Uri( RELEASE ) ) as HttpWebRequest;
-         if ( request == null ) {
-            Log( "WebRequest is not HttpWebRequest" );
-            return;
-         }
+         if ( request == null )
+            return Log( "WebRequest is not HttpWebRequest", false );
          request.Credentials = CredentialCache.DefaultCredentials;
          request.UserAgent = $"{LIVE_NAME}-Updater/{CheckAppVer()}";
+
+         string json = null;
          try {
-            HttpWebResponse response = ( HttpWebResponse ) request.GetResponse();
-            Log( response.StatusDescription );
-            Log( ReadAsString( response ) );
-            response.Close();
+            using ( WebResponse response = request.GetResponse() ) {
+               json = ReadAsString( request.GetResponse() );
+               Log( json );
+            }
          } catch ( WebException wex ) {
             Log( wex );
-            Log( ReadAsString( wex.Response ) );
-            GUI.SetInfo( "update", null );
+            return Log( ReadAsString( wex.Response ), false );
          }
-      } catch ( Exception ex ) { Log( ex ); } }
+
+         GithubRelease[] releases = JsonConvert.DeserializeObject<GithubRelease[]>( json );
+         if ( releases.Length <= 0 ) return false;
+         Log( releases.Length );
+         return true;
+      } catch ( Exception ex ) { return Log( ex, false ); } }
 
       private string ReadAsString ( WebResponse response ) {
          using ( StreamReader reader = new StreamReader( response.GetResponseStream() ) ) {
             return reader.ReadToEnd ();
          }
+      }
+
+      private class GithubRelease {
+         string tag_name;
+         bool prerelease;
+         GithubAsset[] assets;
+      }
+      private class GithubAsset {
+         string name;
+         string state;
+         long   size;
+         string browser_download_url;
       }
       #endregion
 
