@@ -89,6 +89,7 @@
     </Compile>
     <Compile Include="SharedGui.cs" />
     <Compile Include="NativeMethods.cs" />
+    <Compile Include="Updater.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

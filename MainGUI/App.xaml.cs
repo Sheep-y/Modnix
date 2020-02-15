@@ -1,11 +1,8 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
@@ -39,7 +36,6 @@ namespace Sheepy.Modnix.MainGUI {
       internal const string PAST_MOD = "Mods";
       internal const string HARM_DLL = "0Harmony.dll";
       internal const string CECI_DLL = "Mono.Cecil.dll";
-      internal const string RELEASE  = "https://api.github.com/repos/Sheep-y/Modnix/releases";
 
       internal const string EPIC_DIR = ".egstore";
 
@@ -53,7 +49,7 @@ namespace Sheepy.Modnix.MainGUI {
       internal string ModGuiExe;
       internal string MyPath;
 
-      private IAppGui GUI;
+      internal IAppGui GUI;
       private GameInstallation currentGame;
       private readonly object SynRoot = new object();
 
@@ -65,19 +61,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       internal void ApplicationStartup ( object sender, StartupEventArgs e ) { lock ( SynRoot ) { try {
          Log( $"Startup time {DateTime.Now.ToString( "yyyy-MM-dd HH:mm:ss.ffff", InvariantCulture )}" );
-         AppDomain.CurrentDomain.AssemblyResolve += ( resolver, args ) => {
-            Log( $"Loading {args.Name}" );
-            if ( args.Name.StartsWith( "Newtonsoft.Json,", StringComparison.InvariantCultureIgnoreCase ) )
-               return Assembly.Load( MainGUI.Properties.Resources.Newtonsoft_Json );
-            return null;
-         }; 
-         ModGuiExe = Path.Combine( ModFolder, LIVE_NAME + APP_EXT );
-         Myself = Assembly.GetExecutingAssembly().GetName();
-         MyPath = Uri.UnescapeDataString( new UriBuilder( Myself.CodeBase ).Path ).FixSlash();
-         Log( "Assembly: " + MyPath );
-         Log( "Working Dir: " + Directory.GetCurrentDirectory() );
-         Log( "Mod Dir: " + ModFolder );
-         ProcessParams( e?.Args );
+         Init( e );
          if ( ! paramSkipProcessCheck ) {
             if ( FoundRunningModnix() ) {
                Shutdown();
@@ -98,6 +82,22 @@ namespace Sheepy.Modnix.MainGUI {
          Log( ex );
          Shutdown();
       } } }
+
+      private void Init ( StartupEventArgs e ) {
+         AppDomain.CurrentDomain.AssemblyResolve += ( domain, args ) => {
+            Log( $"Loading {args.Name}" );
+            if ( args.Name.StartsWith( "Newtonsoft.Json,", StringComparison.InvariantCultureIgnoreCase ) )
+               return ( domain as AppDomain ?? AppDomain.CurrentDomain ).Load( MainGUI.Properties.Resources.Newtonsoft_Json );
+            return null;
+         }; 
+         ModGuiExe = Path.Combine( ModFolder, LIVE_NAME + APP_EXT );
+         Myself = Assembly.GetExecutingAssembly().GetName();
+         MyPath = Uri.UnescapeDataString( new UriBuilder( Myself.CodeBase ).Path ).FixSlash();
+         Log( "Assembly: " + MyPath );
+         Log( "Working Dir: " + Directory.GetCurrentDirectory() );
+         Log( "Mod Dir: " + ModFolder );
+         ProcessParams( e?.Args );
+      }
 
       /// Parse command line arguments.
       /// -i --ignore-pid (id)     Ignore given pid in running process check
@@ -252,98 +252,6 @@ namespace Sheepy.Modnix.MainGUI {
       } catch ( IOException ex ) { return Log( ex, false ); } }
       #endregion
 
-      #region Auto Updater
-      JsonSerializerSettings jsonOptions;
-
-      internal void CheckUpdateAsync () {
-         Log( "Queuing update check" );
-         Task.Run( (Action) CheckUpdate );
-      }
-      
-      private void CheckUpdate () { try {
-         GUI.SetInfo( "update", FindUpdate() );
-      } catch ( Exception ex ) { Log( ex ); } }
-
-      private class JsonLogger : ITraceWriter {
-         internal AppControl App;
-         public TraceLevel LevelFilter { get; set; }
-         public void Trace ( TraceLevel level, string message, Exception ex ) {
-            if ( level > LevelFilter ) return;
-            App.Log( message ?? ex?.ToString() );
-         }
-      }
-
-      private GithubRelease FindUpdate () { try {
-         Log( $"Checking update from {RELEASE}" );
-         if ( jsonOptions == null ) {
-            ServicePointManager.Expect100Continue = true;
-            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-            jsonOptions = new JsonSerializerSettings() {
-               DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate,
-               Error = ( sender, err ) => Log( err ),
-               Formatting = Formatting.Indented,
-               MissingMemberHandling = MissingMemberHandling.Ignore,
-               TraceWriter = new JsonLogger() { App = this, LevelFilter = TraceLevel.Info }
-            };
-         }
-         HttpWebRequest request = WebRequest.Create( new Uri( RELEASE ) ) as HttpWebRequest;
-         if ( request == null )
-            return Log<GithubRelease>( "WebRequest is not HttpWebRequest", null );
-         request.Credentials = CredentialCache.DefaultCredentials;
-         request.UserAgent = $"{LIVE_NAME}-Updater/{CheckAppVer()}";
-         request.Accept = "application/vnd.github.v3+json";
-
-         string json = null;
-         try {
-            using ( WebResponse response = request.GetResponse() ) {
-               json = ReadAsString( request.GetResponse() );
-               Log( json );
-            }
-         } catch ( WebException wex ) {
-            Log( wex );
-            return Log<GithubRelease>( ReadAsString( wex.Response ), null );
-         }
-
-         GithubRelease[] releases = JsonConvert.DeserializeObject<GithubRelease[]>( json, jsonOptions );
-         Log( $"Found {releases?.Length} releases." );
-         if ( RELEASE == null || releases.Length <= 0 ) return null;
-         foreach ( var e in releases ) try {
-            Log( $"{e.tag_name} ({(e.prerelease?"Prerelease":"Production")}) {e.assets?.Length??0} asset(s)" );
-            if ( string.IsNullOrWhiteSpace( e.tag_name ) || e.tag_name[0] != 'v' ) continue;
-            if ( e.assets == null || e.assets.Length <= 0 ) continue;
-            if ( ! object.Equals( MainGUI.Properties.Settings.Default.Update_Branch, "dev" ) && e.prerelease ) continue;
-            Version eVer = Version.Parse( e.tag_name.Substring( 1 ) );
-            if ( eVer <= Myself.Version ) continue;
-            foreach ( var a in e.assets ) {
-               Log( $"{a.name} {a.state} {a.size} bytes {a.browser_download_url}" );
-               if ( a.state == "uploaded" && a.name.EndsWith( ".exe", StringComparison.InvariantCultureIgnoreCase ) ) {
-                  e.assets = new GithubAsset[] { a };
-                  return e;
-               }
-            }
-         } catch ( Exception ex ) { Log( ex ); } 
-         return null;
-      } catch ( Exception ex ) { return Log<GithubRelease>( ex, null ); } }
-
-      private string ReadAsString ( WebResponse response ) {
-         using ( StreamReader reader = new StreamReader( response.GetResponseStream() ) ) {
-            return reader.ReadToEnd ();
-         }
-      }
-
-      public class GithubRelease {
-         public string tag_name;
-         public bool prerelease = true;
-         public GithubAsset[] assets;
-      }
-      public class GithubAsset {
-         public string name;
-         public string state;
-         public long   size;
-         public string browser_download_url;
-      }
-      #endregion
-
       internal void LaunchGame ( string type ) {
          // Non-Async
          try {
@@ -477,6 +385,21 @@ namespace Sheepy.Modnix.MainGUI {
          Log( ex );
          GUI.Prompt( "error", ex );
       } } }
+
+      internal void CheckUpdateAsync () {
+         Log( "Queuing update check" );
+         Task.Run( (Action) CheckUpdate );
+      }
+
+      private Updater updater;
+
+      private void CheckUpdate () { try {
+         lock( SynRoot ) {
+            if ( updater == null )
+               updater = new Updater( this );
+         }
+         GUI.SetInfo( "update", updater.FindUpdate( Myself.Version ) );
+      } catch ( Exception ex ) { Log( ex ); } }
       #endregion
 
       #region Helpers
