@@ -35,6 +35,7 @@ namespace Sheepy.Modnix.MainGUI {
          RefreshUpdateStatus();
          Log( "Initiating Controller" );
          App.CheckStatusAsync();
+         App.CheckUpdateAsync();
       }
 
       public void SetInfo ( string info, object value ) { this.Dispatch( () => {
@@ -178,17 +179,20 @@ namespace Sheepy.Modnix.MainGUI {
       private void ButtonCheckUpdate_Click ( object sender, RoutedEventArgs e ) => CheckUpdate();
 
       private void RefreshUpdateStatus () {
-         switch ( Update ) {
-            case null :
-               ButtonCheckUpdate.IsEnabled = true;
-               ButtonCheckUpdate.Content = "Check Update";
-               return;
-
-            case "checking" :
-               ButtonCheckUpdate.IsEnabled = false;
-               ButtonCheckUpdate.Content = "Checking...";
-               return;
+         if ( Object.Equals( "checking", Update ) ) {
+            ButtonCheckUpdate.IsEnabled = false;
+            ButtonCheckUpdate.Content = "Checking...";
+            return;
          }
+         ButtonCheckUpdate.IsEnabled = true;
+         ButtonCheckUpdate.Content = "Check Update";
+         GithubRelease release = Update as GithubRelease;
+         if ( release == null ) return;
+
+         MessageBoxResult result = MessageBox.Show( $"Update {release.tag_name} released.\nOpen download page?", "Updater", MessageBoxButton.YesNo );
+         if ( result == MessageBoxResult.No ) return;
+         if ( ! String.IsNullOrWhiteSpace( release.html_url ) )
+            Process.Start( release.html_url );
       }
       #endregion
 

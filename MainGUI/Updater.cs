@@ -12,6 +12,7 @@ namespace Sheepy.Modnix.MainGUI {
    #pragma warning disable CA1051 // Do not declare visible instance fields
    public class GithubRelease {
       public string tag_name;
+      public string html_url;
       public bool prerelease = true;
       public GithubAsset[] assets;
    }
@@ -69,9 +70,9 @@ namespace Sheepy.Modnix.MainGUI {
          if ( RELEASE == null || releases.Length <= 0 ) return null;
          foreach ( var e in releases ) try {
             App.Log( $"{e.tag_name} ({(e.prerelease?"Prerelease":"Production")}) {e.assets?.Length??0} asset(s)" );
-            if ( string.IsNullOrWhiteSpace( e.tag_name ) || e.tag_name[0] != 'v' ) continue;
+            if ( String.IsNullOrWhiteSpace( e.tag_name ) || e.tag_name[0] != 'v' ) continue;
             if ( e.assets == null || e.assets.Length <= 0 ) continue;
-            if ( ! object.Equals( MainGUI.Properties.Settings.Default.Update_Branch, "dev" ) && e.prerelease ) continue;
+            if ( ! Object.Equals( MainGUI.Properties.Settings.Default.Update_Branch, "dev" ) && e.prerelease ) continue;
             Version eVer = Version.Parse( e.tag_name.Substring( 1 ) );
             if ( eVer <= update_from ) continue;
             foreach ( var a in e.assets ) {
