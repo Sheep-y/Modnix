@@ -39,9 +39,6 @@ namespace Sheepy.Modnix.MainGUI {
 
       internal const string EPIC_DIR = ".egstore";
 
-      // Game and install files are considered corrupted and thus non exists if smaller than this size
-      private const long MIN_FILE_SIZE = 1024 * 10;
-
       private readonly static string[] GAME_PATHS =
          new string[]{ "C:/Program Files/Epic Games/PhoenixPoint".FixSlash(), "." };
 
@@ -61,7 +58,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       internal void ApplicationStartup ( object sender, StartupEventArgs e ) { lock ( SynRoot ) { try {
          Log( $"Startup time {DateTime.Now.ToString( "yyyy-MM-dd HH:mm:ss.ffff", InvariantCulture )}" );
-         Init( e );
+         Init( e?.Args );
          if ( ! paramSkipProcessCheck ) {
             if ( FoundRunningModnix() ) {
                Shutdown();
@@ -83,20 +80,30 @@ namespace Sheepy.Modnix.MainGUI {
          Shutdown();
       } } }
 
-      private void Init ( StartupEventArgs e ) {
-         AppDomain.CurrentDomain.AssemblyResolve += ( domain, args ) => {
-            Log( $"Loading {args.Name}" );
-            if ( args.Name.StartsWith( "Newtonsoft.Json,", StringComparison.InvariantCultureIgnoreCase ) )
+      private void Init ( string[] args ) {
+         // Migrate settings from old version
+         if ( ! MainGUI.Properties.Settings.Default.Settings_Migrated ) {
+            MainGUI.Properties.Settings.Default.Upgrade();
+            MainGUI.Properties.Settings.Default.Settings_Migrated = true;
+            MainGUI.Properties.Settings.Default.Save();
+         }
+         // Dynamically load embedded dll
+         AppDomain.CurrentDomain.AssemblyResolve += ( domain, dll ) => {
+            Log( $"Loading {dll.Name}" );
+            if ( dll.Name.StartsWith( "Newtonsoft.Json,", StringComparison.InvariantCultureIgnoreCase ) )
                return ( domain as AppDomain ?? AppDomain.CurrentDomain ).Load( MainGUI.Properties.Resources.Newtonsoft_Json );
             return null;
-         }; 
+         };
+         // Build important paths and self information
          ModGuiExe = Path.Combine( ModFolder, LIVE_NAME + APP_EXT );
          Myself = Assembly.GetExecutingAssembly().GetName();
          MyPath = Uri.UnescapeDataString( new UriBuilder( Myself.CodeBase ).Path ).FixSlash();
          Log( "Assembly: " + MyPath );
          Log( "Working Dir: " + Directory.GetCurrentDirectory() );
          Log( "Mod Dir: " + ModFolder );
-         ProcessParams( e?.Args );
+         // Parse command line arguments
+         if ( args != null )
+            ProcessParams( args );
       }
 
       /// Parse command line arguments.
@@ -241,8 +248,7 @@ namespace Sheepy.Modnix.MainGUI {
       internal bool FoundGame ( out string gamePath ) { gamePath = null; try {
          foreach ( string path in GAME_PATHS ) {
             string exe = Path.Combine( path, GAME_EXE ), dll = Path.Combine( path, DLL_PATH, GAME_DLL );
-            if ( File.Exists( exe ) && new FileInfo( exe ).Length > MIN_FILE_SIZE &&
-                 File.Exists( dll ) && new FileInfo( dll ).Length > MIN_FILE_SIZE ) {
+            if ( File.Exists( exe ) && File.Exists( dll ) ) {
                gamePath = Path.GetFullPath( path );
                return Log( $"Found game at " + gamePath, true );
             }

@@ -31,5 +31,28 @@ namespace Sheepy.Modnix.MainGUI.Properties {
                 return ((string)(this["Update_Branch"]));
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        public global::System.DateTime Last_Update_Check {
+            get {
+                return ((global::System.DateTime)(this["Last_Update_Check"]));
+            }
+            set {
+                this["Last_Update_Check"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool Settings_Migrated {
+            get {
+                return ((bool)(this["Settings_Migrated"]));
+            }
+            set {
+                this["Settings_Migrated"] = value;
+            }
+        }
     }
 }

@@ -35,7 +35,7 @@ namespace Sheepy.Modnix.MainGUI {
          RefreshUpdateStatus();
          Log( "Initiating Controller" );
          App.CheckStatusAsync();
-         App.CheckUpdateAsync();
+         CheckUpdate( true );
       }
 
       public void SetInfo ( string info, object value ) { this.Dispatch( () => {
@@ -47,7 +47,7 @@ namespace Sheepy.Modnix.MainGUI {
             case "state"   : AppState = txt; RefreshAppInfo(); break;
             case "game_path"    : GamePath = txt; RefreshGameInfo(); break;
             case "game_version" : GameVer  = txt; RefreshGameInfo(); break;
-            case "update"  : Update = value; RefreshUpdateStatus(); break;
+            case "update"  : Update = value; UpdateChecked(); RefreshUpdateStatus(); break;
             default : Log( $"Unknown info {info}" ); break;
          }
       } ); }
@@ -82,6 +82,7 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       private void ButtonSetup_Click ( object sender, RoutedEventArgs e ) {
+         if ( e?.Source is UIElement src ) src.Focus();
          switch ( AppState ) {
             case "ppml" : case "setup" :
                DoSetup();
@@ -101,18 +102,17 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void DoSetup () {
          Log( "Calling setup" );
-         SetInfo( "state", null );
+         AppState = null;
+         RefreshAppInfo();
          App.DoSetupAsync();
       }
 
-      private void DoManualSetup () {
-         // TODO: Link to GitHub Doc
-         MessageBox.Show( "Manual Setup not documented." );
-      }
+      private void DoManualSetup () => OpenUrl( "my_doc", null );
 
       private void DoRestore () {
          Log( "Calling restore" );
-         SetInfo( "state", null );
+         AppState = null;
+         RefreshAppInfo();
          App.DoRestoreAsync();
       }
 
@@ -169,14 +169,25 @@ namespace Sheepy.Modnix.MainGUI {
       #region Updater
       private object Update;
 
-      private void CheckUpdate () {
+      private void CheckUpdate ( bool manual ) {
+         if ( ! manual ) {
+            DateTime lastCheck = Properties.Settings.Default.Last_Update_Check;
+            Log( $"Last update check was {lastCheck}" );
+            if ( lastCheck != null && ( DateTime.Now - lastCheck ).TotalDays < 7 ) return;
+         }
          App.CheckUpdateAsync();
          Update = "checking";
          RefreshUpdateStatus();
       }
 
+      private void UpdateChecked () {
+         Log( $"Updating last update check time." );
+         Properties.Settings.Default.Last_Update_Check = DateTime.Now;
+         Properties.Settings.Default.Save();
+      }
+
       private void ButtonGitHub_Click ( object sender, RoutedEventArgs e ) => OpenUrl( "home", e );
-      private void ButtonCheckUpdate_Click ( object sender, RoutedEventArgs e ) => CheckUpdate();
+      private void ButtonCheckUpdate_Click ( object sender, RoutedEventArgs e ) => CheckUpdate( true );
 
       private void RefreshUpdateStatus () {
          if ( Object.Equals( "checking", Update ) ) {
@@ -232,9 +243,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void OpenUrl ( string type, RoutedEventArgs e = null ) {
          Log( "OpenUrl " + type );
-         if ( e != null )
-            if ( e.Source is UIElement src )
-               src.Focus();
+         if ( e?.Source is UIElement src ) src.Focus();
          string url;
          switch ( type ) {
             case "canny"  : url = "https://phoenixpoint.canny.io/feedback?sort=trending"; break;
@@ -242,6 +251,7 @@ namespace Sheepy.Modnix.MainGUI {
             case "forum"  : url = "https://forums.snapshotgames.com/c/phoenix-point"; break;
             case "home"   : url = "https://github.com/Sheep-y/Modnix"; break;
             case "manual" : url = "https://drive.google.com/open?id=1n8ORQeDtBkWcnn5Es4LcWBxif7NsXqet"; break;
+            case "my_doc" : url = "https://github.com/Sheep-y/Modnix/wiki"; break;
             case "nexus"  : url = "https://www.nexusmods.com/phoenixpoint/mods/?BH=0"; break;
             case "reddit" : url = "https://www.reddit.com/r/PhoenixPoint/"; break;
             case "twitter": url = "https://twitter.com/Phoenix_Point"; break;
