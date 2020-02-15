@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -12,9 +11,6 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
 using static System.Globalization.CultureInfo;
 
 namespace Sheepy.Modnix.MainGUI {
@@ -208,7 +204,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void ButtonLogSave_Click ( object sender, RoutedEventArgs e ) {
          var dialog = new Microsoft.Win32.SaveFileDialog {
-            FileName = Assembly.GetExecutingAssembly().GetName().Name + "Log " + DateTime.Now.ToString( "u", InvariantCulture ).Replace( ':', '-' ),
+            FileName = AppControl.LIVE_NAME + " Log " + DateTime.Now.ToString( "u", InvariantCulture ).Replace( ':', '-' ),
             DefaultExt = ".txt",
             Filter = "Log Files (.txt .log)|*.txt;*.log|All Files|*.*"
          };
