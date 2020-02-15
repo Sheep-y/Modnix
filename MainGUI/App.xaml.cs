@@ -278,9 +278,21 @@ namespace Sheepy.Modnix.MainGUI {
          }
 
          GithubRelease[] releases = JsonConvert.DeserializeObject<GithubRelease[]>( json );
-         if ( releases.Length <= 0 ) return false;
-         Log( releases.Length );
-         return true;
+         Log( $"Found {releases?.Length} releases." );
+         if ( RELEASE == null || releases.Length <= 0 ) return false;
+         foreach ( var e in releases ) try {
+            Log( $"{e.tag_name} ({(e.prerelease?"Prerelease":"Production")}) {e.assets?.Length??0} asset(s)" );
+            if ( String.IsNullOrWhiteSpace( e.tag_name ) || e.tag_name[0] != 'v' ) continue;
+            if ( e.prerelease || e.assets == null || e.assets.Length <= 0 ) continue;
+            Version eVer = Version.Parse( e.tag_name.Substring( 1 ) );
+            if ( eVer <= Myself.Version ) continue;
+            foreach ( var a in e.assets ) {
+               Log( $"{a.name} {a.state} {a.size} bytes {a.browser_download_url}" );
+               if ( a.state == "uploaded" && a.name.EndsWith( ".exe", StringComparison.InvariantCultureIgnoreCase ) )
+                  return true;
+            }
+         } catch ( Exception ex ) { Log( ex ); } 
+         return false;
       } catch ( Exception ex ) { return Log( ex, false ); } }
 
       private string ReadAsString ( WebResponse response ) {
@@ -290,15 +302,15 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       private class GithubRelease {
-         string tag_name;
-         bool prerelease;
-         GithubAsset[] assets;
+         internal string tag_name;
+         internal bool prerelease;
+         internal GithubAsset[] assets;
       }
       private class GithubAsset {
-         string name;
-         string state;
-         long   size;
-         string browser_download_url;
+         internal string name;
+         internal string state;
+         internal long   size;
+         internal string browser_download_url;
       }
       #endregion
 
