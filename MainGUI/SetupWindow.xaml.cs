@@ -33,13 +33,16 @@ namespace Sheepy.Modnix.MainGUI {
          App.CheckStatusAsync();
       }
 
-      public void SetInfo ( string info, string value ) { this.Dispatch( () => {
+      public void SetInfo ( string info, object value ) { this.Dispatch( () => {
+         string txt = value?.ToString();
          switch ( info ) {
             case "visible": Show(); break;
-            case "version": AppVer = value; break;
-            case "state": AppState = value; break;
-            case "game_path": GamePath = value; break;
-            case "game_version": break;
+            case "version": AppVer = txt; break;
+            case "state": AppState = txt; break;
+            case "game_path": GamePath = txt; break;
+            case "game_version": 
+            case "update": 
+               break;
             default: Log( $"Unknown info {info}" ); return;
          }
          RefreshInfo();

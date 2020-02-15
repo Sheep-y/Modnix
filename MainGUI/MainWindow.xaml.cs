@@ -41,14 +41,15 @@ namespace Sheepy.Modnix.MainGUI {
          App.CheckStatusAsync();
       }
 
-      public void SetInfo ( string info, string value ) { this.Dispatch( () => {
+      public void SetInfo ( string info, object value ) { this.Dispatch( () => {
          Log( $"Set {info} = {value}" );
+         string txt = value?.ToString();
          switch ( info ) {
             case "visible" : Show(); break;
-            case "version" : AppVer = value; RefreshAppInfo(); break;
-            case "state"   : AppState = value; RefreshAppInfo(); break;
-            case "game_path"    : GamePath = value; RefreshGameInfo(); break;
-            case "game_version" : GameVer  = value; RefreshGameInfo(); break;
+            case "version" : AppVer = txt; RefreshAppInfo(); break;
+            case "state"   : AppState = txt; RefreshAppInfo(); break;
+            case "game_path"    : GamePath = txt; RefreshGameInfo(); break;
+            case "game_version" : GameVer  = txt; RefreshGameInfo(); break;
             case "update"  : Update = value; RefreshUpdateStatus(); break;
             default : Log( $"Unknown info {info}" ); break;
          }
@@ -169,7 +170,7 @@ namespace Sheepy.Modnix.MainGUI {
       #endregion
 
       #region Updater
-      private string Update;
+      private object Update;
 
       private void CheckUpdate () {
          App.CheckUpdateAsync();

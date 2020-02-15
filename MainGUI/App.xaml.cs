@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -14,7 +15,7 @@ using static System.Globalization.CultureInfo;
 namespace Sheepy.Modnix.MainGUI {
 
    internal interface IAppGui {
-      void SetInfo ( string info, string value );
+      void SetInfo ( string info, object value );
       void Prompt ( string v, Exception ex = null );
       void Log ( string message );
    }
@@ -244,27 +245,45 @@ namespace Sheepy.Modnix.MainGUI {
       #endregion
 
       #region Auto Updater
+      JsonSerializerSettings jsonOptions;
+
       internal void CheckUpdateAsync () {
          Log( "Queuing update check" );
          Task.Run( (Action) CheckUpdate );
       }
       
       private void CheckUpdate () { try {
-         if ( HasUpdate() )
-            GUI.SetInfo( "update", "yes" );
-         else
-            GUI.SetInfo( "update", "none" );
+         GUI.SetInfo( "update", FindUpdate() );
       } catch ( Exception ex ) { Log( ex ); } }
 
-      private bool HasUpdate () { try {
+      private class JsonLogger : ITraceWriter {
+         internal AppControl App;
+         public TraceLevel LevelFilter { get; set; }
+         public void Trace ( TraceLevel level, string message, Exception ex ) {
+            if ( level > LevelFilter ) return;
+            App.Log( message ?? ex?.ToString() );
+         }
+      }
+
+      private GithubRelease FindUpdate () { try {
          Log( $"Checking update from {RELEASE}" );
-         ServicePointManager.Expect100Continue = true;
-         ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+         if ( jsonOptions == null ) {
+            ServicePointManager.Expect100Continue = true;
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+            jsonOptions = new JsonSerializerSettings() {
+               DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate,
+               Error = ( sender, err ) => Log( err ),
+               Formatting = Formatting.Indented,
+               MissingMemberHandling = MissingMemberHandling.Ignore,
+               TraceWriter = new JsonLogger() { App = this, LevelFilter = TraceLevel.Info }
+            };
+         }
          HttpWebRequest request = WebRequest.Create( new Uri( RELEASE ) ) as HttpWebRequest;
          if ( request == null )
-            return Log( "WebRequest is not HttpWebRequest", false );
+            return Log<GithubRelease>( "WebRequest is not HttpWebRequest", null );
          request.Credentials = CredentialCache.DefaultCredentials;
          request.UserAgent = $"{LIVE_NAME}-Updater/{CheckAppVer()}";
+         request.Accept = "application/vnd.github.v3+json";
 
          string json = null;
          try {
@@ -274,26 +293,29 @@ namespace Sheepy.Modnix.MainGUI {
             }
          } catch ( WebException wex ) {
             Log( wex );
-            return Log( ReadAsString( wex.Response ), false );
+            return Log<GithubRelease>( ReadAsString( wex.Response ), null );
          }
 
-         GithubRelease[] releases = JsonConvert.DeserializeObject<GithubRelease[]>( json );
+         GithubRelease[] releases = JsonConvert.DeserializeObject<GithubRelease[]>( json, jsonOptions );
          Log( $"Found {releases?.Length} releases." );
-         if ( RELEASE == null || releases.Length <= 0 ) return false;
+         if ( RELEASE == null || releases.Length <= 0 ) return null;
          foreach ( var e in releases ) try {
             Log( $"{e.tag_name} ({(e.prerelease?"Prerelease":"Production")}) {e.assets?.Length??0} asset(s)" );
-            if ( String.IsNullOrWhiteSpace( e.tag_name ) || e.tag_name[0] != 'v' ) continue;
-            if ( e.prerelease || e.assets == null || e.assets.Length <= 0 ) continue;
+            if ( string.IsNullOrWhiteSpace( e.tag_name ) || e.tag_name[0] != 'v' ) continue;
+            if ( e.assets == null || e.assets.Length <= 0 ) continue;
+            if ( e.prerelease ) continue;
             Version eVer = Version.Parse( e.tag_name.Substring( 1 ) );
             if ( eVer <= Myself.Version ) continue;
             foreach ( var a in e.assets ) {
                Log( $"{a.name} {a.state} {a.size} bytes {a.browser_download_url}" );
-               if ( a.state == "uploaded" && a.name.EndsWith( ".exe", StringComparison.InvariantCultureIgnoreCase ) )
-                  return true;
+               if ( a.state == "uploaded" && a.name.EndsWith( ".exe", StringComparison.InvariantCultureIgnoreCase ) ) {
+                  e.assets = new GithubAsset[] { a };
+                  return e;
+               }
             }
          } catch ( Exception ex ) { Log( ex ); } 
-         return false;
-      } catch ( Exception ex ) { return Log( ex, false ); } }
+         return null;
+      } catch ( Exception ex ) { return Log<GithubRelease>( ex, null ); } }
 
       private string ReadAsString ( WebResponse response ) {
          using ( StreamReader reader = new StreamReader( response.GetResponseStream() ) ) {
@@ -301,16 +323,16 @@ namespace Sheepy.Modnix.MainGUI {
          }
       }
 
-      private class GithubRelease {
-         internal string tag_name;
-         internal bool prerelease;
-         internal GithubAsset[] assets;
+      public class GithubRelease {
+         public string tag_name;
+         public bool prerelease = true;
+         public GithubAsset[] assets;
       }
-      private class GithubAsset {
-         internal string name;
-         internal string state;
-         internal long   size;
-         internal string browser_download_url;
+      public class GithubAsset {
+         public string name;
+         public string state;
+         public long   size;
+         public string browser_download_url;
       }
       #endregion
 
