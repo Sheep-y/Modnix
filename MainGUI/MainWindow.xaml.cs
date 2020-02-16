@@ -202,10 +202,10 @@ namespace Sheepy.Modnix.MainGUI {
          GithubRelease release = Update as GithubRelease;
          if ( release == null ) return;
 
-         MessageBoxResult result = MessageBox.Show( $"Update {release.tag_name} released.\nOpen download page?", "Updater", MessageBoxButton.YesNo );
+         MessageBoxResult result = MessageBox.Show( $"Update {release.Tag_Name} released.\nOpen download page?", "Updater", MessageBoxButton.YesNo );
          if ( result == MessageBoxResult.No ) return;
-         if ( ! String.IsNullOrWhiteSpace( release.html_url ) )
-            Process.Start( release.html_url );
+         if ( ! String.IsNullOrWhiteSpace( release.Html_Url ) )
+            Process.Start( release.Html_Url );
       }
       #endregion
 

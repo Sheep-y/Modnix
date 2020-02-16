@@ -11,17 +11,17 @@ namespace Sheepy.Modnix.MainGUI {
 
    #pragma warning disable CA1051 // Do not declare visible instance fields
    public class GithubRelease {
-      public string tag_name;
-      public string html_url;
-      public bool prerelease = true;
-      public GithubAsset[] assets;
+      public string Tag_Name;
+      public string Html_Url;
+      public bool Prerelease = true;
+      public GithubAsset[] Assets;
    }
 
    public class GithubAsset {
-      public string name;
-      public string state;
-      public long   size;
-      public string browser_download_url;
+      public string Name;
+      public string State;
+      public long   Size;
+      public string Browser_Download_Url;
    }
    #pragma warning restore CA1051 // Do not declare visible instance fields
 
@@ -67,16 +67,16 @@ namespace Sheepy.Modnix.MainGUI {
          App.Log( $"Found {releases?.Length} releases." );
          if ( RELEASE == null || releases.Length <= 0 ) return null;
          foreach ( var e in releases ) try {
-            App.Log( $"{e.tag_name} ({(e.prerelease?"Prerelease":"Production")}) {e.assets?.Length??0} asset(s)" );
-            if ( String.IsNullOrWhiteSpace( e.tag_name ) || e.tag_name[0] != 'v' ) continue;
-            if ( e.assets == null || e.assets.Length <= 0 ) continue;
-            if ( ! Object.Equals( MainGUI.Properties.Settings.Default.Update_Branch, "dev" ) && e.prerelease ) continue;
-            Version eVer = Version.Parse( e.tag_name.Substring( 1 ) );
+            App.Log( $"{e.Tag_Name} ({(e.Prerelease?"Prerelease":"Production")}) {e.Assets?.Length??0} asset(s)" );
+            if ( String.IsNullOrWhiteSpace( e.Tag_Name ) || e.Tag_Name[0] != 'v' ) continue;
+            if ( e.Assets == null || e.Assets.Length <= 0 ) continue;
+            if ( ! Object.Equals( MainGUI.Properties.Settings.Default.Update_Branch, "dev" ) && e.Prerelease ) continue;
+            Version eVer = Version.Parse( e.Tag_Name.Substring( 1 ) );
             if ( eVer <= update_from ) continue;
-            foreach ( var a in e.assets ) {
-               App.Log( $"{a.name} {a.state} {a.size} bytes {a.browser_download_url}" );
-               if ( a.state == "uploaded" && a.name.EndsWith( ".exe", StringComparison.InvariantCultureIgnoreCase ) ) {
-                  e.assets = new GithubAsset[] { a };
+            foreach ( var a in e.Assets ) {
+               App.Log( $"{a.Name} {a.State} {a.Size} bytes {a.Browser_Download_Url}" );
+               if ( a.State == "uploaded" && a.Name.EndsWith( ".exe", StringComparison.InvariantCultureIgnoreCase ) ) {
+                  e.Assets = new GithubAsset[] { a };
                   return e;
                }
             }
