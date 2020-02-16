@@ -176,15 +176,16 @@ namespace Sheepy.Modnix.MainGUI {
             Log( $"Last update check was {lastCheck}" );
             if ( lastCheck != null && ( DateTime.Now - lastCheck ).TotalDays < 7 ) return;
          }
-         App.CheckUpdateAsync();
          Update = "checking";
          RefreshUpdateStatus();
+         App.CheckUpdateAsync();
       }
 
       private void UpdateChecked () {
          Log( $"Updating last update check time." );
          Properties.Settings.Default.Last_Update_Check = DateTime.Now;
          Properties.Settings.Default.Save();
+         ButtonCheckUpdate.IsEnabled = true;
       }
 
       private void ButtonGitHub_Click ( object sender, RoutedEventArgs e ) => OpenUrl( "home", e );
@@ -199,7 +200,6 @@ namespace Sheepy.Modnix.MainGUI {
          ButtonCheckUpdate.IsEnabled = true;
          ButtonCheckUpdate.Content = "Check Update";
          GithubRelease release = Update as GithubRelease;
-         if ( release == null ) return;
 
          MessageBoxResult result = MessageBox.Show( $"Update {release.tag_name} released.\nOpen download page?", "Updater", MessageBoxButton.YesNo );
          if ( result == MessageBoxResult.No ) return;
