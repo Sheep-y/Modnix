@@ -79,6 +79,7 @@ namespace Sheepy.Modnix.MainGUI {
          }
          ButtonModDir.IsEnabled = AppState == "modnix";
          ButtonAddMod.IsEnabled = AppState == "modnix";
+         ButtonLoaderLog.IsEnabled = AppState == "modnix";
       }
 
       private void ButtonSetup_Click ( object sender, RoutedEventArgs e ) {
@@ -225,14 +226,22 @@ namespace Sheepy.Modnix.MainGUI {
          };
          if ( dialog.ShowDialog().GetValueOrDefault() ) try {
             File.WriteAllText( dialog.FileName, TextLog.Text );
-            Process.Start("explorer.exe", $"/select, \"{dialog.FileName}\"" );
+            Explore( dialog.FileName );
          } catch ( Exception ex ) {
             Log( ex.ToString() );
          }
       }
 
+      private void ButtonLoaderLog_Click ( object sender, RoutedEventArgs e ) {
+         string path = Path.Combine( App.ModFolder, "ModnixLoader.log" );
+         if ( ! File.Exists( path ) )
+            MessageBox.Show( "Launch the game at least once to create loader log." );
+         else
+            Explore( path );
+      }
+
       private void ButtonAddMod_Click ( object sender, RoutedEventArgs e ) {
-          MessageBox.Show( "Not Implemened", "Sorry", MessageBoxButton.OK, MessageBoxImage.Exclamation );
+         MessageBox.Show( "Not Implemened", "Sorry", MessageBoxButton.OK, MessageBoxImage.Exclamation );
       }
 
       private void ButtonLogClear_Click ( object sender, RoutedEventArgs e ) {
@@ -241,6 +250,7 @@ namespace Sheepy.Modnix.MainGUI {
       }
       #endregion
 
+      #region Opener
       private void OpenUrl ( string type, RoutedEventArgs e = null ) {
          Log( "OpenUrl " + type );
          if ( e?.Source is UIElement src ) src.Focus();
@@ -261,6 +271,11 @@ namespace Sheepy.Modnix.MainGUI {
          Log( $"Opening {url}" );
          Process.Start( url );
       }
+
+      private void Explore ( string filename ) {
+         Process.Start( "explorer.exe", $"/select, \"{filename}\"" );
+      }
+      #endregion
    }
 
    public static class WpfHelper {

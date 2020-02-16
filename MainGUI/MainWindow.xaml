@@ -152,9 +152,12 @@
                   <ColumnDefinition/>
                   <ColumnDefinition Width="10"/>
                   <ColumnDefinition/>
+                  <ColumnDefinition Width="10"/>
+                  <ColumnDefinition/>
                </Grid.ColumnDefinitions>
                <Button x:Name="ButtonGitHub" Content="Homepage" Padding="5" Click="ButtonGitHub_Click"></Button>
-               <Button x:Name="ButtonCheckUpdate" Content="Check Update" Padding="5" Grid.Column="2" Click="ButtonCheckUpdate_Click"/>
+               <Button x:Name="ButtonLoaderLog" Content="Loader Log" Padding="5" Grid.Column="2" Click="ButtonLoaderLog_Click"></Button>
+               <Button x:Name="ButtonCheckUpdate" Content="Check Update" Padding="5" Grid.Column="4" Click="ButtonCheckUpdate_Click"/>
             </Grid>
             <TextBox x:Name="TextLog" Text="" VerticalScrollBarVisibility="Visible" DockPanel.Dock="Bottom" HorizontalScrollBarVisibility="Visible" IsReadOnly="True" IsReadOnlyCaretVisible="True"/>
          </DockPanel>
