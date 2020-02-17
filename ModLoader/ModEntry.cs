@@ -30,13 +30,13 @@ namespace Sheepy.Modnix {
       public string Version;
       public string Phase;
 
-      public object Name;
+      public L10nText Name;
       public string[] Langs;
-      public object Description;
-      public object Author;
-      public object Url;
+      public L10nText Description;
+      public L10nText Author;
+      public L10nText[] Url;
+      public L10nText[] Contact;
       public string Pingback;
-      public object Contact;
 
       public AppVer AppVer;
       public AppVer[] Requires;
@@ -46,6 +46,20 @@ namespace Sheepy.Modnix {
 
       public string[] Mods;
       public DllMeta[] Dlls;
+   }
+
+   public class L10nText {
+      public static string CurrentLang = "en";
+
+      public string Default;
+      public Dictionary<string, string> Localised;
+      public override string ToString () {
+         if ( Localised != null ) {
+            if ( Localised.TryGetValue( CurrentLang, out string txt ) ) return txt;
+            if ( Localised.TryGetValue( "en", out string eng ) ) return eng;
+         }
+         return Default;
+      }
    }
 
    public class AppVer {
