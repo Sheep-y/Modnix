@@ -49,6 +49,7 @@ namespace Sheepy.Modnix {
 
    public class L10nText {
       public static string CurrentLang = "en";
+      public static readonly List<string> AllowedLang = new string[]{ "en", "de", "es", "fr", "it", "pl", "ru", "zh" }.ToList();
 
       public string Default;
       public Dictionary<string, string> Localised;
@@ -99,6 +100,8 @@ namespace Sheepy.Modnix {
          if ( objectType == typeof( AppVer[] ) ) return true;
          if ( objectType == typeof( DllMeta ) ) return true;
          if ( objectType == typeof( DllMeta[] ) ) return true;
+         if ( objectType == typeof( L10nText ) ) return true;
+         if ( objectType == typeof( L10nText[] ) ) return true;
          return false;
       }
 
@@ -107,34 +110,43 @@ namespace Sheepy.Modnix {
          if ( objectType == typeof( AppVer[] ) ) return true;
          if ( objectType == typeof( DllMeta ) ) return true;
          if ( objectType == typeof( DllMeta[] ) ) return true;
+         if ( objectType == typeof( L10nText ) ) return true;
+         if ( objectType == typeof( L10nText[] ) ) return true;
          throw new InvalidOperationException();
       }
 
-      private AppVer ParseAppVer ( JsonReader r ) {
+      private static AppVer ParseAppVer ( JsonReader reader ) => ParseObject<AppVer>( reader, NewAppVer, "id", AssignAppVerProp );
+      private static AppVer NewAppVer () => new AppVer();
+      private static AppVer AssignAppVerProp ( AppVer e, string prop, object val ) {
+         string txt = val.ToString();
+         switch ( prop ) {
+            case "id"  : e.Id  = txt; break;
+            case "min" : e.Min = txt; break;
+            case "max" : e.Max = txt; break;
+         }
+         return e;
+      }
+
+      private static T ParseObject < T > ( JsonReader r, Func<T> newResult, string defaultProp, Func<T,string,object,T> assignProp ) {
          var firstToken = r.SkipComment();
-         if ( firstToken == JsonToken.Null || firstToken == JsonToken.Undefined ) return null;
-         AppVer result = new AppVer();
+         if ( firstToken == JsonToken.Null || firstToken == JsonToken.Undefined ) return default( T );
          if ( firstToken == JsonToken.String ) {
-            result.Id = r.Value.ToString();
+            return assignProp( newResult(), defaultProp, r.Value );
          } else if ( firstToken == JsonToken.StartObject ) {
-            if ( r.ReadAndSkipComment() == JsonToken.EndObject ) return null;
+            if ( r.ReadAndSkipComment() == JsonToken.EndObject ) return default( T );
+            T result = newResult();
             do {
                if ( r.TokenType == JsonToken.PropertyName ) {
                   string prop = r.Value?.ToString()?.ToLowerInvariant();
                   r.ReadAndSkipComment();
-                  string val = r.Value?.ToString();
-                  switch ( prop ) {
-                     case "id" : result.Id  = val; break;
-                     case "min": result.Min = val; break;
-                     case "max": result.Max = val; break;
-                  }
-                  if ( r.ReadAndSkipComment() == JsonToken.EndObject ) break;
+                  if ( r.TokenType == JsonToken.String )
+                     assignProp( result, prop, r.Value );
+                  if ( r.ReadAndSkipComment() == JsonToken.EndObject ) return result;
                } else
                   throw new JsonException( $"Unexpected TokenType.{r.TokenType} when parsing AppVerMeta" );
             } while ( true );
-         } else
-            throw new JsonException( "String or object expected for AppVerMeta" );
-         return result;
+         }
+         throw new JsonException( "String or object expected for AppVerMeta" );
       }
 
       public override void WriteJson ( JsonWriter writer, object value, JsonSerializer serializer ) {
