@@ -206,13 +206,12 @@ Extended example:
 
     /** Information for mod users; does not affect mod loading. */
     "Name": { en: "Refined Demo Mod", zh: "外掛示範" },
-    "Prerelease": false,
     "Langs" : [ "en", "zh" ], /* Supported game languages. "*" means all. */
     "Description": { en: "Lorem ipsum", zh: "上大人" },
     "Author": { en: "Demonstrator", zh: "示範者" },
     "Url": { "GitHub": "https://...", "Nexus Mods": "https://...", "六四事件": "...", "五大訴求": "" },
     "Pingback": "https://path.to.telemetry/",
-    "Contact": [ "Mail": "demo@example.info", "Skype": "..." ],
+    "Contact": { "Mail": "demo@example.info", "Skype": "..." },
 
     /** Mod Requirements */
               /* Game version to enable this mod. */
@@ -234,7 +233,7 @@ Extended example:
               /* Reserved for future use */
     "Alters": null,
               /* Reserved for future use */
-    "Assets": [{ "Type": "WeaponDef", "Path": "MyWeaponDefs" }, { "Include": "MoreDefs.json" }],
+    "Assets": [{ "Type": "WeaponDef", "Path": "MyWeaponDefs" }, { "Type": "Include", "Path": "MoreDefs.json" }],
 }
 ```
 
