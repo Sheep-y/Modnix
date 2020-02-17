@@ -144,11 +144,13 @@ Steps:
 
 1. If file extension is .json, parse as mod.json.  See example below.
     1. If success, but mod does not specify a dll and does not specify other contents (Mods, Alters, Assets), and is non-root, adds all dlls whose name match the folder (see above).
-2. If file extension is .dll, parse mod info from assembly information.
-3. If file extension is .dll, find embedded "mod" and, if found, parse as .json and override parsed info.
+2. If file extension is .dll, parse mod metadata from assembly information which serve as a default.
+3. If file extension is .dll, find embedded "mod" and, if found, parse as .json and merge with replace.
+4. Check built-in override list.  If any match, merge with replace.
+5. Check user override list.  If any match, merge with replace.
 
-Mods that failed to parse at step 1 or 2 are ignored.
-Won't even appears on mod list in GUI.
+Mods that fail to parse at step 1 or 2 will not be loaded.
+Parse failures at step 3-5 are ignored and proceed to next step.
 
 Currently only dll mods are supported.
 Data mods is planned in future releases.
@@ -177,7 +179,9 @@ The resolution repeats until no action is taken, or until a max depth.
 
 ### Example mod.json
 
-All fields are optional.
+A mod's metadata is held in mod.json, either as a real file or embedded in dll.
+
+Comments allowed.  All fields are optional.
 
 Simple example:
 
@@ -233,6 +237,18 @@ Extended example:
     "Assets": [{ "Type": "WeaponDef", "Path": "MyWeaponDefs" }, { "Include": "MoreDefs.json" }],
 }
 ```
+
+### Loader Settings
+
+These settings must be persisted:
+
+1. Global Safe Mode (on/off)
+2. Global Telemetry (on/off)
+3. Manually disabled mods.
+4. User override of mod metadata.
+
+The settings are associated with game path and mode,
+but most users should have only one default settings.
 
 ## Main GUI
 
