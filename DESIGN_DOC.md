@@ -2,6 +2,9 @@
 
 This is the design documentation for Modnix ver 1.0.
 
+Design doc is the vision and design of an app.
+Features may be dropped due to time constrain or other reasons.
+
 Modnix is a user friendly modding tool for Phoenix Point,
 and a successor of Phoenix Point Mod Loader.
 
@@ -22,7 +25,7 @@ Modnix is coded in pure C# and has three main parts:
 2. Mod Loader, for parsing and loading mods.
 3. Main GUI, for setup, status check, and shortcuts.
 
-Only Windows is supported; I don't even know whether the Mac/Linux version is built in a "moddable" way.
+Only Windows (Epic) is supported; not even sure whether the other platforms are moddable.
 .Net Framework 4.5 is used, for best compatibility with Windows users.
 
 
@@ -39,19 +42,20 @@ Functions:
 Depends on Mono.Cecil for detecting and performing injection.
 
 To make splash/launch screen modding possible,
-the injection point is different from PPML, fired much earlier.
+the injection point is different from PPML, first fire is much earlier.
+For compatibility, mods are loaded at a later point by default.
 
 Most command line options, main flow, and console options are inherited from PPML,
-but the rest of the code is heavily refactored and modified.
+but the rest is heavily refactored and modified.
 The main flow can use some refactoring, if big changes are to be made.
 
-All actual file operations are implemented in the TargetFile class,
-of which one is created for Modnix and one for PPML, to reuse code for PPML compatibility.
+All file operations are implemented in the TargetFile class,
+of which one is created for Modnix dll and one for PPML dll.
 
-Return code is always zero for successful operations.
-For install and restore, not needing to act is also considered success.
+Return code is always 0 (zero) for successful operations.
+"Already installed/restored" also returns 0.
 
-### Initialisation
+### Main Flow
 
 1. `ParseOptions` parses options and handles simple commands that does not involve game assemblies.
 2. `LoadGameAssembly` tests assembly paths, checks game version, and detects injection status.
@@ -104,7 +108,8 @@ Functions:
 * Load "startup" mods as early as possible.
 * Load "main" mods before main menu, around same time as PPML.
 
-Depends on Lib.Harmony, so that the latest harmony dll will be copied to output and can then be copied to MainGUI for embedding.
+Depends on Newtonsoft JSON.Net, to parse mod information.
+Also depends on Lib.Harmony, so that the latest harmony dll will be copied to output and can then be copied to MainGUI for embedding.
 The loader itself does not need Harmony, for now.
 
 All Modnix files - exe, settings, logs, and mods - are placed in My Documents\My Games\Phoenix Point\Mods
@@ -121,25 +126,105 @@ Subsequence calls are ignored.
 Also, Cinemachine may be updated less frequently than main assembly.
 Nothing to lose; worse is same as PPML, reinstall after every patch.
 
+### Mod Scanning
+
+Aims:
+1. Load manually extracted PPML mods, e.g. Mods/MyMod-1-0-1234/My Mod/MyMod.1.0.dll (note the space in path)
+2. Does not load manually created folder e.g. Mods/Backup/MyMod.dll or Mods/Disabled/MyMod.dll
+3. Mods collection must explictly specify mods, e.g. do not load Mod/Collection/AnUnlistedMod.json
+
+Steps:
+1. The root mod folder is scanned for files and folders.
+2. Files in root folder are parsed as mods.
+3. For folders, if mod.json exists, it will be parsed as a mod. The folder will not be further processed.
+4. Otherwise, files and subfolders whose alphabetic characters starts with the containing folder's, they are processed.
+5. Files are parsed as mods.  Subfolders are scanned recursively with step 3-5 up to a certain max depth.
+
 ### Mod Parsing
 
-1. The root mod folder is scanned for files and folders.
-2. Files in root, dlls are parsed as code mods, json are parsed as data mods.
-3. Folders in root are recursively scanned.
-4. Non-root folders, if mod.json exists, it will be parsed and, if success, the folder will not be further processed.
-5. Non-root files and folders, if first three alphabetic characters of name are the same as folder's first three (heuristic), process it, otherwise ignore.
-6. dlls are parsed as code mods.
-7. json are parsed as data mods, if the name does not contain "setting" (case insensitive).
-8. If no mods are found, subfolders will be recursively scanned as long as the first three characters match the first.
-9. All parsing errors are ignored, as if the file does not exist.
+1. If file extension is .json, parse as mod.json.  See example below.
+2. If file extension is .dll, parse mod info from assembly information.
+3. If file extension is .dll, find embedded "mod" and, if found, parse as .json and override parsed info.
 
-Currently only code mods are supported.
-Data mods will be partially implemented in future releases.
+Mods that failed to parse at step 1 or 2 are ignored.
+Won't even appears on mod list in GUI.
+
+Currently only dll mods are supported.
+Data mods is planned in future releases.
 
 Future releases may also change the parsing to run in parallel.
 It should be useful when mods get more complicated.
 
 
+### Mod Resolution
+
+After the "root" set of mods are scanned, they are "resolved" to bulid the mod tree.
+The resolution repeats until no action is taken, or until a max depth.
+
+1. Consolidation
+    1. Group mods by id.
+    2. For mods that have the same id, find highest version, then find latest modified, then find largest, finally just use the first.
+2. First Pass
+    1. Manually disabled mods are disabled and removed from resolution.
+    2. AppVer is checked.  If out of range, disable and removed from resolution.
+    3. Requires are checked.  If missing any requirement, disable and removed from resolution.
+3. Second Pass
+    1. Conflicts are checked.  Targetted mods are disabled and removed from resolution.
+    2. Mods are ordered by LoadsAfter and LoadsBefore.  Conflicting mods are disabled and removed from resolution.
+4. Expansion
+    1. Mods are parsed as mod and added to resolution.
+
+### Example mod.json
+
+Simple example:
+
+```
+{
+    "Id": "info.mod.simple.demo",
+    "Name": "Simple Demo Mod",
+    "Description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit",
+    "Author": "Demonstrator",
+    "Url": "https://www.github.com/Sheep-y/Modnix",
+}
+```
+
+Extended example:
+
+```
+{
+    "Id": "info.mod.refined.demo", /* Default to GUID of assembly */
+    "Name": { en: "Refined Demo Mod", zh: "外掛示範" },
+    "Version": "1.2.3.4",
+    "Prerelease": false,
+    "Langs" : [ "en", "zh" ], /* Game languages supported. "*" means all. */
+    "Description": { en: "Lorem ipsum", zh: "上大人" },
+    "Author": { en: "Demonstrator", zh: "示範者" },
+
+    "Url": { "GitHub": "https://...", "Nexus Mods": "https://...", "六四事件": "...", "五大訴求": "" },
+    "Pingback": "https://path.to.telemetry/",
+    "Contact": [ "Mail": "demo@example.info", "Skype": "..." ],
+
+              /* Game version to enable this mod. */
+    "AppVer": { "Min": "1.0.1234", "Max": "1.0.5678" },
+                /* Required mod; if requirement is not met, mod will be disabled. */
+    "Requires": [{ "Id": "info.mod.simple.demo", "Min": "1.0" }],
+                 /* Conflicting mod; mods listed here will be disabled. */
+    "Conflicts": [{ "Id": "info.mod.evil", "Max": "2.0" }],
+                   /* Load this mod before these mods. */
+    "LoadsAfter":  [ "info.mod.early" ],
+                   /* Load this mod after these mods. */
+    "LoadsBefore": "info.mod.late",
+
+            /* Load these files as mods. */
+    "Mods": [ "DllMod.dll", "SimpleMod.json" ],
+           /* Override default dll scanning */
+    "Dlls": [{ Path: "Loader.dll", Method: "MyCustomInit" }], 
+              /* Reserved for future use */
+    "Alters": null,
+              /* Reserved for future use */
+    "Assets": [{ "Type": "WeaponDef", "Path": "MyWeaponDefs" }, { "Include": "MoreDefs.json" }],
+}
+```
 
 ## Main GUI
 
@@ -152,23 +237,22 @@ Functions:
 * Quick access to mod folders and game information and community including nexus, website, manual, SNS etc.
 * Easy diagnostic of injection and mod loading issue through detailed log.
 
+Depends on Mod Loader and Newtonsoft JSON.Net to parse mods.
+JSON.Net is also used to check update.
+Dependencies are embedded and loaded on demand.
+
 Startup code is located at App.xaml.cs, before any windows are created.
 
-There are two windows: a very simple, message box like Setup Window, and the full blown Main Window.
+There are two windows: a very simple Setup Window, and the full blown Main Window.
 Which window is displayed depends on the startup logic.
 
-Post-build scripts in Injector and Loader will copy their assembly and library to Main GUI's resource folder, embedded as SetupPackage resource.
-
-To minimise dependency and dynamic loading, GUI save its own settings in an ini file, at the root of mod folder, instead of json.
-Mod settings are more complicated, so it is either xml or json.
-Most homo sapiens modders seems to find the later easier to read and write.
-We ovis aries should go and rule the world.
+Post-build scripts in Injector and Loader will copy their assemblies and libraries to Main GUI's resource folder, embedded as SetupPackage resource.
 
 ### Startup Logic
 
-1. If modnix is already running, switch it to front and exit.
-2. If Modnix is installed to mod folder and version is equal or higher, show setup window, but with launch button instead.
-3. Otherwise, If self name contains "setup" (case insensitive), run setup logic:
+1. If Modnix is already running, bring it to front and exit.
+2. If Modnix is installed to mod folder and version is equal or higher, show setup window with launch button.
+3. Otherwise, if file name contains "setup", run setup logic:
     1. Show setup screen and try to detect game folder.  Prompt for game folder if not detected.
     2. If game is not found, screens stays the same.  Action button will prompt for folder again.
     3. When game is found, show folder and Setup button.  A change folder link will also be shown.
@@ -197,30 +281,9 @@ We ovis aries should go and rule the world.
 
 For future versions
 
-- Auto-updater.
 - Disable mods without deleting them.
-- Mod info with dependency, game version range, incompatibility, supported languages, and the usual crowd.
+- Mod info with supported languages, and the usual crowd.
 - Mod settings, in a different file from mod info, so that mod info can be updated without changing settings.
 - Replace ppdefmodifier with something more powerful.
 - Supply, on run time, a list of mods, plus Logger, Reflection, and Patching Helper.
 - Asset loader and overrider, like texture, music, sound etc.
-
-### Example mod.json
-
-Just an early draft. 100% certain to change.
-
-```
-{
-    "Name": "My Awesome Mod",
-    "Description": "An awesome mod to do awesome things",
-    "Author": "Sheepy",
-    "Website": "https://www.github.com/Sheep-y/Modnix",
-    "Contact": "fakeemail@fakeemail.com",
-    "DLL": "MyAwesomeMod.dll",
-    "InitAt": "Main",
-    "Manifest": [
-        { "Type": "WeaponDef", "Path": "MyWeaponDefs" },
-        { "Type": "ResearchRewardDef", "Path": "MyRewardDefs/research_reward_def.json" }
-    ]
-}
-```
