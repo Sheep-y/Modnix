@@ -210,7 +210,6 @@ Extended example:
     "Description": { "en": "Lorem ipsum", "zh": "上大人" },
     "Author": { "en": "Demonstrator", "zh": "示範者" },
     "Url": { "GitHub": "https://...", "Nexus Mods": "https://...", "六四事件": "...", "五大訴求": "" },
-    "Pingback": "https://path.to.telemetry/",
     "Contact": { "Mail": "demo@example.info", "Skype": "..." },
 
     /** Mod Requirements */
@@ -242,7 +241,7 @@ Extended example:
 These settings must be persisted:
 
 1. Global Safe Mode (on/off)
-2. Global Telemetry (on/off)
+2. Global Log Level (on/off)
 3. Manually disabled mods.
 4. User override of mod metadata.
 

@@ -18,7 +18,7 @@ namespace Sheepy.Modnix {
       [ JsonProperty ]
       public bool Disabled { get; set; }
       [ JsonProperty ]
-      public bool NoPingback { get; set; }
+      public SourceLevels LogLevel { get; set; }
 
       public ModEntry ( ModMeta metadata ) {
          Metadata = metadata;
@@ -36,7 +36,6 @@ namespace Sheepy.Modnix {
       public L10nText Author;
       public L10nText[] Url;
       public L10nText[] Contact;
-      public string Pingback;
 
       public AppVer AppVer;
       public AppVer[] Requires;
