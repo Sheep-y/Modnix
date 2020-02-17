@@ -38,7 +38,6 @@ namespace Sheepy.Modnix.MainGUI {
          jsonOptions = new JsonSerializerSettings() {
             DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate,
             Error = ( sender, err ) => App.Log( err ),
-            Formatting = Formatting.Indented,
             MissingMemberHandling = MissingMemberHandling.Ignore,
             TraceWriter = new JsonLogger() { App = App, LevelFilter = TraceLevel.Info }
          };

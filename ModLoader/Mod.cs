@@ -1,5 +1,9 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
+using Sheepy.Logging;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -8,6 +12,7 @@ namespace Sheepy.Modnix {
    public class Mod {
       public bool Disabled { get; set; }
       public bool NoPingback { get; set; }
+      [JsonIgnore]
       public ModMeta Metadata { get; set; }
    }
 
@@ -44,4 +49,37 @@ namespace Sheepy.Modnix {
       public string Path;
       public string Method;
    }
+
+   public class ModMetaJson {
+      public readonly static LoggerProxy JsonLogger = new JsonTraceLogger();
+      private readonly static JsonSerializerSettings JsonOptions = new JsonSerializerSettings() {
+         DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate,
+         ReferenceLoopHandling = ReferenceLoopHandling.Error,
+         Error = ( sender, err ) => JsonLogger.Error( err ),
+         MetadataPropertyHandling = MetadataPropertyHandling.Ignore,
+         MissingMemberHandling = MissingMemberHandling.Ignore,
+         NullValueHandling = NullValueHandling.Ignore,
+         ObjectCreationHandling = ObjectCreationHandling.Replace,
+         TraceWriter = JsonLogger as JsonTraceLogger,
+         TypeNameHandling = TypeNameHandling.None
+      };
+   }
+
+   internal class JsonTraceLogger : LoggerProxy, ITraceWriter {
+      internal JsonTraceLogger ( params Logger[] Masters ) : base( false, Masters ) { }
+      public TraceLevel LevelFilter { get; set; }
+      public void Trace ( TraceLevel level, string message, Exception ex ) {
+         if ( level > LevelFilter ) return;
+         SourceLevels logLevel = SourceLevels.Off;
+         switch ( level ) {
+            case TraceLevel.Error : logLevel = SourceLevels.Critical; break;
+            case TraceLevel.Warning : logLevel = SourceLevels.Warning; break;
+            case TraceLevel.Info : logLevel = SourceLevels.Information; break;
+            case TraceLevel.Verbose : logLevel = SourceLevels.Verbose; break;
+            default: return;
+         }
+         Log( logLevel, message );
+      }
+   }
+
 }
