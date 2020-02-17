@@ -11,16 +11,16 @@ using System.Threading.Tasks;
 namespace Sheepy.Modnix {
 
    [ JsonObject( MemberSerialization.OptIn ) ]
-   public class Mod {
+   public class ModEntry {
       public ModMeta Metadata { get; set; }
-      public List<Mod> Children { get; set; }
+      public List<ModEntry> Children { get; set; }
 
       [ JsonProperty ]
       public bool Disabled { get; set; }
       [ JsonProperty ]
       public bool NoPingback { get; set; }
 
-      public Mod ( ModMeta metadata ) {
+      public ModEntry ( ModMeta metadata ) {
          Metadata = metadata;
       }
    }
