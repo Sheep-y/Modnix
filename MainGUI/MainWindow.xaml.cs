@@ -200,6 +200,7 @@ namespace Sheepy.Modnix.MainGUI {
          ButtonCheckUpdate.IsEnabled = true;
          ButtonCheckUpdate.Content = "Check Update";
          GithubRelease release = Update as GithubRelease;
+         if ( release == null ) return;
 
          MessageBoxResult result = MessageBox.Show( $"Update {release.tag_name} released.\nOpen download page?", "Updater", MessageBoxButton.YesNo );
          if ( result == MessageBoxResult.No ) return;
