@@ -93,7 +93,6 @@ namespace Sheepy.Modnix {
 
    internal class ModMetaReader : JsonConverter {
       public override bool CanWrite => false;
-      private JsonReader Reader;
 
       public override bool CanConvert ( Type objectType ) {
          if ( objectType == typeof( AppVer ) ) return true;
@@ -104,48 +103,37 @@ namespace Sheepy.Modnix {
       }
 
       public override object ReadJson ( JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer ) {
-         Reader = reader;
-         if ( objectType == typeof( AppVer ) ) return ParseAppVer();
+         if ( objectType == typeof( AppVer ) ) return ParseAppVer( reader );
          if ( objectType == typeof( AppVer[] ) ) return true;
          if ( objectType == typeof( DllMeta ) ) return true;
          if ( objectType == typeof( DllMeta[] ) ) return true;
          throw new InvalidOperationException();
       }
 
-      private void SkipComment ( bool consumeCurrent = false ) {
-         if ( consumeCurrent ) Reader.Read();
-         while ( Reader.TokenType == JsonToken.Comment && Reader.Read() );
-      }
-
-      private AppVer ParseAppVer () {
-         SkipComment();
-         if ( Reader.TokenType == JsonToken.Null ) return null;
-         if ( Reader.TokenType == JsonToken.Undefined ) return null;
+      private AppVer ParseAppVer ( JsonReader r ) {
+         var firstToken = r.SkipComment();
+         if ( firstToken == JsonToken.Null || firstToken == JsonToken.Undefined ) return null;
          AppVer result = new AppVer();
-         if ( Reader.TokenType == JsonToken.String ) {
-            result.Id = Reader.Value.ToString();
-         } else if ( Reader.TokenType == JsonToken.StartObject ) {
-            SkipComment( true );
-            if ( Reader.TokenType == JsonToken.EndObject ) return null;
+         if ( firstToken == JsonToken.String ) {
+            result.Id = r.Value.ToString();
+         } else if ( firstToken == JsonToken.StartObject ) {
+            if ( r.ReadAndSkipComment() == JsonToken.EndObject ) return null;
             do {
-               if ( Reader.TokenType == JsonToken.PropertyName ) {
-                  string prop = Reader.Value?.ToString()?.ToLowerInvariant();
-                  SkipComment( true );
-                  string val = Reader.Value?.ToString();
+               if ( r.TokenType == JsonToken.PropertyName ) {
+                  string prop = r.Value?.ToString()?.ToLowerInvariant();
+                  r.ReadAndSkipComment();
+                  string val = r.Value?.ToString();
                   switch ( prop ) {
                      case "id" : result.Id  = val; break;
                      case "min": result.Min = val; break;
                      case "max": result.Max = val; break;
                   }
-                  SkipComment( true );
-                  if ( Reader.TokenType == JsonToken.EndObject ) break;
+                  if ( r.ReadAndSkipComment() == JsonToken.EndObject ) break;
                } else
-                  throw new JsonException( $"Unexpected TokenType.{Reader.TokenType} when parsing AppVerMeta" );
+                  throw new JsonException( $"Unexpected TokenType.{r.TokenType} when parsing AppVerMeta" );
             } while ( true );
          } else
             throw new JsonException( "String or object expected for AppVerMeta" );
-         SkipComment( true );
-         Reader = null;
          return result;
       }
 
@@ -153,6 +141,17 @@ namespace Sheepy.Modnix {
          throw new InvalidOperationException();
       }
 
+   }
+
+   internal static class JsonReaderExtension {
+      internal static JsonToken ReadAndSkipComment ( this JsonReader r ) {
+         r.Read();
+         return SkipComment( r );
+      }
+      internal static JsonToken SkipComment ( this JsonReader r ) {
+         while ( r.TokenType == JsonToken.Comment && r.Read() );
+         return r.TokenType;
+      }
    }
 
    internal class JsonTraceLogger : LoggerProxy, ITraceWriter {
