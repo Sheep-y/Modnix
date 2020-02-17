@@ -107,7 +107,7 @@ namespace Sheepy.Modnix {
 
       public override object ReadJson ( JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer ) {
          if ( objectType == typeof( AppVer ) ) return ParseAppVer( reader );
-         if ( objectType == typeof( AppVer[] ) ) return true;
+         if ( objectType == typeof( AppVer[] ) ) return ParseAppVerArray( reader );
          if ( objectType == typeof( DllMeta ) ) return true;
          if ( objectType == typeof( DllMeta[] ) ) return true;
          if ( objectType == typeof( L10nText ) ) return true;
@@ -115,8 +115,9 @@ namespace Sheepy.Modnix {
          throw new InvalidOperationException();
       }
 
-      private static AppVer ParseAppVer ( JsonReader reader ) => ParseObject<AppVer>( reader, "id", AssignAppVerProp );
-      private static AppVer AssignAppVerProp ( AppVer e, string prop, object val ) {
+      private static AppVer   ParseAppVer ( JsonReader reader ) => ParseObject<AppVer>( reader, "id", AssignAppVerProp );
+      private static AppVer[] ParseAppVerArray ( JsonReader reader ) => ParseArray<AppVer>( reader, ParseAppVer );
+      private static AppVer   AssignAppVerProp ( AppVer e, string prop, object val ) {
          string txt = val.ToString();
          switch ( prop ) {
             case "id"  : e.Id  = txt; break;
@@ -126,26 +127,43 @@ namespace Sheepy.Modnix {
          return e;
       }
 
+      private static T[] ParseArray < T > ( JsonReader r, Func< JsonReader, T > objParser ) where T : class, new() {
+         var token = r.SkipComment();
+         if ( token == JsonToken.Null || token == JsonToken.Undefined ) return null;
+         if ( token == JsonToken.String || token == JsonToken.StartObject )
+            return new T[] { objParser( r ) };
+         if ( token == JsonToken.StartArray ) {
+            if ( r.ReadAndSkipComment() == JsonToken.EndArray ) return null;
+            List<T> result = new List<T>();
+            do {
+               T node = objParser( r );
+               if ( node != null ) result.Add( node );
+               if ( r.ReadAndSkipComment() == JsonToken.EndArray ) return result.ToArray();
+            } while ( true );
+         }
+         throw new JsonException( $"String, object, or array expected for {typeof(T)}" );
+      }
+
       private static T ParseObject < T > ( JsonReader r, string defaultProp, Func<T,string,object,T> assignProp ) where T : class, new() {
-         var firstToken = r.SkipComment();
-         if ( firstToken == JsonToken.Null || firstToken == JsonToken.Undefined ) return null;
-         if ( firstToken == JsonToken.String ) {
+         var token = r.SkipComment();
+         if ( token == JsonToken.Null || token == JsonToken.Undefined ) return null;
+         if ( token == JsonToken.String )
             return assignProp( new T(), defaultProp, r.Value );
-         } else if ( firstToken == JsonToken.StartObject ) {
+         if ( token == JsonToken.StartObject ) {
             if ( r.ReadAndSkipComment() == JsonToken.EndObject ) return null;
             T result = new T();
             do {
                if ( r.TokenType == JsonToken.PropertyName ) {
                   string prop = r.Value?.ToString()?.ToLowerInvariant();
-                  r.ReadAndSkipComment();
-                  if ( r.TokenType == JsonToken.String || r.TokenType == JsonToken.Integer || r.TokenType == JsonToken.Float )
+                  token = r.ReadAndSkipComment();
+                  if ( token == JsonToken.String || token == JsonToken.Integer || token == JsonToken.Float )
                      assignProp( result, prop, r.Value );
                   if ( r.ReadAndSkipComment() == JsonToken.EndObject ) return result;
                } else
-                  throw new JsonException( $"Unexpected TokenType.{r.TokenType} when parsing AppVerMeta" );
+                  throw new JsonException( $"Unexpected TokenType.{r.TokenType} when parsing {typeof(T)}" );
             } while ( true );
          }
-         throw new JsonException( "String or object expected for AppVerMeta" );
+         throw new JsonException( $"String or object expected for {typeof(T)}" );
       }
 
       public override void WriteJson ( JsonWriter writer, object value, JsonSerializer serializer ) {
