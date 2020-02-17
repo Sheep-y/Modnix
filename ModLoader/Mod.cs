@@ -9,11 +9,20 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Sheepy.Modnix {
+
+   [JsonObject(MemberSerialization.OptIn)]
    public class Mod {
-      public bool Disabled { get; set; }
-      public bool NoPingback { get; set; }
-      [JsonIgnore]
       public ModMeta Metadata { get; set; }
+      public List<Mod> Children { get; set; }
+
+      [JsonProperty]
+      public bool Disabled { get; set; }
+      [JsonProperty]
+      public bool NoPingback { get; set; }
+
+      public Mod ( ModMeta metadata ) {
+         Metadata = metadata;
+      }
    }
 
    public class ModMeta {
