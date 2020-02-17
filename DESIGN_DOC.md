@@ -207,8 +207,8 @@ Extended example:
     /** Information for mod users; does not affect mod loading. */
     "Name": { en: "Refined Demo Mod", zh: "外掛示範" },
     "Langs" : [ "en", "zh" ], /* Supported game languages. "*" means all. */
-    "Description": { en: "Lorem ipsum", zh: "上大人" },
-    "Author": { en: "Demonstrator", zh: "示範者" },
+    "Description": { "en": "Lorem ipsum", "zh": "上大人" },
+    "Author": { "en": "Demonstrator", "zh": "示範者" },
     "Url": { "GitHub": "https://...", "Nexus Mods": "https://...", "六四事件": "...", "五大訴求": "" },
     "Pingback": "https://path.to.telemetry/",
     "Contact": { "Mail": "demo@example.info", "Skype": "..." },
@@ -229,11 +229,11 @@ Extended example:
             /* Load these files as mods. */
     "Mods": [ "DllMod.dll", "SimpleMod.json" ],
             /* Override default dll scanning */
-    "Dlls": [{ Path: "Loader.dll", Method: "MyCustomInit" }], 
+    "Dlls": [{ "Path": "Loader.dll", "Method": "MyCustomInit" }], 
               /* Reserved for future use */
     "Alters": null,
               /* Reserved for future use */
-    "Assets": [{ "Type": "WeaponDef", "Path": "MyWeaponDefs" }, { "Type": "Include", "Path": "MoreDefs.json" }],
+    "Assets": [{ "Type": "WeaponDef", "Path": "MyWeaponDefs" }, { "Type": "Include", "Path": "MoreDefs.json" }]
 }
 ```
 
