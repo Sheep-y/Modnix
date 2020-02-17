@@ -143,6 +143,7 @@ Steps:
 ### Mod Parsing
 
 1. If file extension is .json, parse as mod.json.  See example below.
+    1. If success, but mod does not specify a dll and does not specify other contents (Mods, Alters, Assets), and is non-root, adds all dlls whose name match the folder (see above).
 2. If file extension is .dll, parse mod info from assembly information.
 3. If file extension is .dll, find embedded "mod" and, if found, parse as .json and override parsed info.
 
@@ -176,6 +177,8 @@ The resolution repeats until no action is taken, or until a max depth.
 
 ### Example mod.json
 
+All fields are optional.
+
 Simple example:
 
 ```
@@ -192,7 +195,7 @@ Extended example:
 
 ```
 {
-    "Id": "info.mod.refined.demo", /* Default to GUID of assembly */
+    "Id": "info.mod.refined.demo", /* Default to GUID of assembly, and fallback to file name. */
     "Name": { en: "Refined Demo Mod", zh: "外掛示範" },
     "Version": "1.2.3.4",
     "Prerelease": false,
@@ -210,14 +213,14 @@ Extended example:
     "Requires": [{ "Id": "info.mod.simple.demo", "Min": "1.0" }],
                  /* Conflicting mod; mods listed here will be disabled. */
     "Conflicts": [{ "Id": "info.mod.evil", "Max": "2.0" }],
-                   /* Load this mod before these mods. */
+                   /* Load me before these mods. */
     "LoadsAfter":  [ "info.mod.early" ],
-                   /* Load this mod after these mods. */
+                   /* Load me after these mods. */
     "LoadsBefore": "info.mod.late",
 
             /* Load these files as mods. */
     "Mods": [ "DllMod.dll", "SimpleMod.json" ],
-           /* Override default dll scanning */
+            /* Override default dll scanning */
     "Dlls": [{ Path: "Loader.dll", Method: "MyCustomInit" }], 
               /* Reserved for future use */
     "Alters": null,
