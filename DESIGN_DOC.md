@@ -198,7 +198,7 @@ Extended example:
     /** Mod Specification, affects mod loading. */
     "Id": "info.mod.refined.demo", /* Default to GUID of assembly, and fallback to file name. */
     "Version": "1.2.3.4",
-    "InitAt": "Default", /* (ignore-case) Splash, Default, MainMenu (same as Default), Geoscape, Tactic */
+    "Phase": "Default", /* (ignore-case) Splash, Default (same as MainMenu), MainMenu, Geoscape, Tactic */
 
     /** Information for mod users; does not affect mod loading. */
     "Name": { en: "Refined Demo Mod", zh: "外掛示範" },
