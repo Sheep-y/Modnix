@@ -115,8 +115,7 @@ namespace Sheepy.Modnix {
          throw new InvalidOperationException();
       }
 
-      private static AppVer ParseAppVer ( JsonReader reader ) => ParseObject<AppVer>( reader, NewAppVer, "id", AssignAppVerProp );
-      private static AppVer NewAppVer () => new AppVer();
+      private static AppVer ParseAppVer ( JsonReader reader ) => ParseObject<AppVer>( reader, "id", AssignAppVerProp );
       private static AppVer AssignAppVerProp ( AppVer e, string prop, object val ) {
          string txt = val.ToString();
          switch ( prop ) {
@@ -127,19 +126,19 @@ namespace Sheepy.Modnix {
          return e;
       }
 
-      private static T ParseObject < T > ( JsonReader r, Func<T> newResult, string defaultProp, Func<T,string,object,T> assignProp ) {
+      private static T ParseObject < T > ( JsonReader r, string defaultProp, Func<T,string,object,T> assignProp ) where T : class, new() {
          var firstToken = r.SkipComment();
-         if ( firstToken == JsonToken.Null || firstToken == JsonToken.Undefined ) return default( T );
+         if ( firstToken == JsonToken.Null || firstToken == JsonToken.Undefined ) return null;
          if ( firstToken == JsonToken.String ) {
-            return assignProp( newResult(), defaultProp, r.Value );
+            return assignProp( new T(), defaultProp, r.Value );
          } else if ( firstToken == JsonToken.StartObject ) {
-            if ( r.ReadAndSkipComment() == JsonToken.EndObject ) return default( T );
-            T result = newResult();
+            if ( r.ReadAndSkipComment() == JsonToken.EndObject ) return null;
+            T result = new T();
             do {
                if ( r.TokenType == JsonToken.PropertyName ) {
                   string prop = r.Value?.ToString()?.ToLowerInvariant();
                   r.ReadAndSkipComment();
-                  if ( r.TokenType == JsonToken.String )
+                  if ( r.TokenType == JsonToken.String || r.TokenType == JsonToken.Integer || r.TokenType == JsonToken.Float )
                      assignProp( result, prop, r.Value );
                   if ( r.ReadAndSkipComment() == JsonToken.EndObject ) return result;
                } else

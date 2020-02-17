@@ -15,21 +15,21 @@ namespace Sheepy.Logging.Tests {
 
          var appver = ModMetaJson.Parse<AppVer>( @"""text""" );
          Assert.IsNotNull( appver, "string => not null" );
-         Assert.IsTrue( appver.Id == "text", "string => id"  );
+         Assert.AreEqual( "text", appver.Id, "string => id"  );
          Assert.IsNull( appver.Min, "string => no min"  );
          Assert.IsNull( appver.Max, "string => no max"  );
 
          appver = ModMetaJson.Parse<AppVer>( @"{ id: ""simple"" }" );
          Assert.IsNotNull( appver, "simple => not null" );
-         Assert.IsTrue( appver.Id == "simple", "simple => id" );
+         Assert.AreEqual( "simple", appver.Id, "simple => id" );
          Assert.IsNull( appver.Min, "string => no min"  );
          Assert.IsNull( appver.Max, "string => no max"  );
 
-         appver = ModMetaJson.Parse<AppVer>( @"/*A*/ { /*B*/ Id : /*C*/ ""full"" /*D*/, /*E*/ Min: ""1"", Max: ""2.0"", NonExist: 12 /*F*/ } /*G*/" );
+         appver = ModMetaJson.Parse<AppVer>( @"/*A*/ { /*B*/ Id : /*C*/ ""full"" /*D*/, /*E*/ Min: 1, Max: 2.1, NonExist: 12 /*F*/ } /*G*/" );
          Assert.IsNotNull( appver, "full => AppVer is not null" );
-         Assert.IsTrue( appver.Id == "full", "full => AppVer id"  );
-         Assert.IsTrue( appver.Min == "1", "full => AppVer min"  );
-         Assert.IsTrue( appver.Max == "2.0", "full => AppVer max"  );
+         Assert.AreEqual( "full", appver.Id, "full => AppVer id"  );
+         Assert.AreEqual( "1", appver.Min, "full => AppVer min"  );
+         Assert.AreEqual( "2.1", appver.Max, "full => AppVer max"  );
       }
    }
 
