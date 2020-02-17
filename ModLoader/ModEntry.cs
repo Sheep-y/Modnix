@@ -105,32 +105,31 @@ namespace Sheepy.Modnix {
       }
 
       private AppVer ParseAppVer () {
-         //SkipComment();
+         SkipComment();
          if ( Reader.TokenType == JsonToken.Null ) return null;
          AppVer result = new AppVer();
          if ( Reader.TokenType == JsonToken.String ) {
             result.Id = Reader.Value.ToString();
          } else if ( Reader.TokenType == JsonToken.StartObject ) {
-            Reader.Read();
             do {
-               //SkipComment();
+               SkipComment( true );
                if ( Reader.TokenType == JsonToken.EndObject )
                   break;
                else if ( Reader.TokenType == JsonToken.PropertyName ) {
                   string prop = Reader.Value?.ToString()?.ToLowerInvariant();
+                  SkipComment( true );
+                  string val = Reader.Value?.ToString();
                   switch ( prop ) {
-                     case "id" : result.Id  = Reader.ReadAsString(); break;
-                     case "min": result.Min = Reader.ReadAsString(); break;
-                     case "max": result.Max = Reader.ReadAsString(); break;
+                     case "id" : result.Id  = val; break;
+                     case "min": result.Min = val; break;
+                     case "max": result.Max = val; break;
                   }
-                  Reader.Read();
-                  // SkipComment();
                } else
-                  throw new JsonException( $"Expected TokenType.{Reader.TokenType} when parsing AppVerMeta" );
+                  throw new JsonException( $"Unexpected TokenType.{Reader.TokenType} when parsing AppVerMeta" );
             } while ( true );
-            Reader.Read();
          } else
             throw new JsonException( "String or object expected for AppVerMeta" );
+         SkipComment( true );
          Reader = null;
          return result;
       }
