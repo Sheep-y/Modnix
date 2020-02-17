@@ -195,18 +195,22 @@ Extended example:
 
 ```
 {
+    /** Mod Specification, affects mod loading. */
     "Id": "info.mod.refined.demo", /* Default to GUID of assembly, and fallback to file name. */
-    "Name": { en: "Refined Demo Mod", zh: "外掛示範" },
     "Version": "1.2.3.4",
+    "InitAt": "Default", /* (ignore-case) Splash, Default, MainMenu (same as Default), Geoscape, Tactic */
+
+    /** Information for mod users; does not affect mod loading. */
+    "Name": { en: "Refined Demo Mod", zh: "外掛示範" },
     "Prerelease": false,
-    "Langs" : [ "en", "zh" ], /* Game languages supported. "*" means all. */
+    "Langs" : [ "en", "zh" ], /* Supported game languages. "*" means all. */
     "Description": { en: "Lorem ipsum", zh: "上大人" },
     "Author": { en: "Demonstrator", zh: "示範者" },
-
     "Url": { "GitHub": "https://...", "Nexus Mods": "https://...", "六四事件": "...", "五大訴求": "" },
     "Pingback": "https://path.to.telemetry/",
     "Contact": [ "Mail": "demo@example.info", "Skype": "..." ],
 
+    /** Mod Requirements */
               /* Game version to enable this mod. */
     "AppVer": { "Min": "1.0.1234", "Max": "1.0.5678" },
                 /* Required mod; if requirement is not met, mod will be disabled. */
@@ -218,6 +222,7 @@ Extended example:
                    /* Load me after these mods. */
     "LoadsBefore": "info.mod.late",
 
+    /** Mod Contents */
             /* Load these files as mods. */
     "Mods": [ "DllMod.dll", "SimpleMod.json" ],
             /* Override default dll scanning */
