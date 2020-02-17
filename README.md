@@ -4,7 +4,7 @@ Modnix is a mod loader for [Phoenix Point](https://phoenixpoint.info/), [Snapsho
 
 It is intended to be a successor and full replacement of [Phoenix Point Mod Loader](https://github.com/RealityMachina/PhoenixPointModInjector/) (v0.1 by RealityMachina).
 
-Modnix is under active development, and is advised for general use.
+Modnix is under active development, with incomplete interface, ready for testing but is not advised for general use.
 
 
 ## Features
