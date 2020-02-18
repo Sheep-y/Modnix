@@ -114,14 +114,16 @@ namespace Sheepy.Modnix.MainGUI {
          try {
             var settings = MainGUI.Properties.Settings.Default;
             if ( ! settings.Settings_Migrated ) {
+               Log( "Migrating settings from old version" );
                settings.Upgrade();
                settings.Settings_Migrated = true;
                settings.Save();
             }
             // v0.6 had no default value for Last_Update_Check which may cause NRE?
             try {
-               _ = settings.Last_Update_Check;
+               if ( settings.Last_Update_Check == null ) throw new NullReferenceException();
             } catch ( NullReferenceException ) {
+               Log( "Filling Last_Update_Check default" );
                settings.Last_Update_Check = DateTime.Parse( "2000-01-01T12:00", InvariantCulture );
                settings.Save();
             }
