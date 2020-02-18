@@ -14,7 +14,7 @@ namespace Sheepy.Modnix {
 
    public static class ModLoader {
       private readonly static string MOD_PATH  = "My Games/Phoenix Point/Mods".FixSlash();
-      public static ModData[] Mods;
+      public static List<ModEntry> AllMods = new List<ModEntry>();
       private static bool Initialized;
 
       private static Logger Log;
@@ -30,69 +30,67 @@ namespace Sheepy.Modnix {
 
       public static string ModDirectory { get; private set; }
 
-      public static void Init () {
+      public static void Init () { try {
          if ( Log != null ) {
             if ( Initialized ) return;
-            LoadMods( "normal" ); // Second call loads normal mods
             Initialized = true;
+            LoadMods( "default" );  // Second call loads default and mainmenu mods
+            LoadMods( "mainmenu" );
             return;
          }
+         Setup();
+         //Patcher = HarmonyInstance.Create( typeof( ModLoader ).Namespace );
+         BuildModList();
+         LoadMods( "splash" );
+      } catch ( Exception ex ) { Log?.Error( ex ); } }
+
+      public static void Setup () { try {
          var LoaderInfo = Assembly.GetExecutingAssembly().GetName();
          ModDirectory = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.MyDocuments ), MOD_PATH );
-
          Log = new FileLogger( Path.Combine( ModDirectory, LoaderInfo.Name + ".log" ) ){ TimeFormat = "HH:mm:ss.ffff " };
          if ( ! Directory.Exists( ModDirectory ) )
             Directory.CreateDirectory( ModDirectory );
-         Log.Clear();
+         else
+            Log.Clear();
          Log.Info( "{0} v{1} {2}", typeof( ModLoader ).FullName, LoaderInfo.Version, DateTime.Now.ToString( "u" ) );
-
-         Mods = BuildModList();
-         //Patcher = HarmonyInstance.Create( typeof( ModLoader ).Namespace );
-         LoadMods( "early" );
-         Log.Flush();
-      }
+      } catch ( Exception ex ) { Log?.Error( ex ); } }
 
       public static void LoadMods ( string flags ) {
          Log.Info( "Loading {0} mods", flags );
-         if ( flags == "early" ) return; // Not implemented
-         foreach ( var mod in Mods ) try {
-            LoadDLL( mod[ "ModFile" ].ToString() );
-         } catch ( Exception ex ) { Log.Error( ex ); }
+         if ( flags == "splash" ) return; // Not implemented
+         foreach ( var mod in AllMods )
+            foreach ( var dll in mod.Metadata.Dlls ) try {
+               LoadDLL( dll.Path, dll.Method ?? "Init" );
+            } catch ( Exception ex ) { Log.Error( ex ); }
+         Log.Flush();
       }
 
-      public static ModData[] BuildModList () {
+      public static void BuildModList () {
          Log.Info( "Scanning {0} for mods", ModDirectory );
-         var result = new List< ModData >();
-         RecurFindMod( result, ModDirectory, true );
-         Log.Info( "{0} mods found.", result.Count );
-         return result.ToArray();
+         AllMods.Clear();
+         ScanFolderForMod( ModDirectory, null );
+         Log.Info( "{0} mods found.", AllMods.Count );
       }
-      
-      public static void RecurFindMod ( List< ModData > mods, string path, bool isRoot ) {
-         var dlls = Directory.EnumerateFiles( path, "*.dll", SearchOption.AllDirectories ).ToArray();
+
+      public static void ScanFolderForMod ( string path, string parentName ) {
+         var dlls = Directory.EnumerateFiles( path, "*.dll", SearchOption.AllDirectories )
+            .Where( e => ! IGNORE_FILE_NAMES.Contains( Path.GetFileName( e ) ) ).ToArray();
          foreach ( var dll in dlls ) {
-            if ( ! IGNORE_FILE_NAMES.Contains( Path.GetFileName( dll ) ) ) {
-               var info = ReadModInfo( dll );
-               if ( info != null )
-                  mods.Add( info );
-            }
+            var info = ParseMod( dll );
+            if ( info != null )
+               AllMods.Add( info );
          }
       }
 
-      public static ModData ReadModInfo ( string file ) { try {
-         var result = new Dictionary<string,object>();
-         // using ( var dll = ModuleDefinition.ReadModule( file ) ) {
-         //    foreach ( var type in dll.Types ) {
-         //       // Check for setting methods
-         //    }
-         // }
-         Log.Info( "Parsing {0}", file );
+      public static ModEntry ParseMod ( string file ) {
          var info = FileVersionInfo.GetVersionInfo( file );
-         result.Add( "ModFile", file );
-         result.Add( "ModName", info.FileDescription );
-         result.Add( "ModDesc", info.Comments );
-         return result;
-      } catch ( Exception ex ) { Log.Error( ex ); return null; } }
+         var meta = new ModMeta();
+         meta.Id = Path.GetFullPath( file ).Replace( ModDirectory, "" ).ToLowerInvariant();
+         meta.Name = new TextSet(){ Default = info.FileDescription };
+         meta.Description = new TextSet(){ Default = info.Comments };
+         meta.Dlls = new DllMeta[] { new DllMeta() { Path = file } };
+         return new ModEntry( meta );
+      }
 
       public static Assembly LoadDLL ( string path, string methodName = "Init", string typeName = null, object[] parameters = null, BindingFlags bFlags = PUBLIC_STATIC_BINDING_FLAGS ) {
          Log.Info( "Loading {0}", path );
