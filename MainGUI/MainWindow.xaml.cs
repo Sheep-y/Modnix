@@ -68,6 +68,7 @@ namespace Sheepy.Modnix.MainGUI {
             }
          richAppInfo.TextRange().Text = txt;
          RefreshAppButtons();
+         RefreshModInfo();
       } catch ( Exception ex ) { Log( ex ); } }
 
       private void RefreshAppButtons () { try {
@@ -161,10 +162,17 @@ namespace Sheepy.Modnix.MainGUI {
 
       #region Mod Info Area
       private void RefreshModInfo () { try {
-         //string txt = AppState == "modenix" ? "Select a mod to see info" : "";
-         string txt = AppState == "modenix" ? "Mod list is being implemented" : "";
-         richModInfo.TextRange().Text = txt;
+         bool IsInjected = AppState == "modnix";
+         ButtonAddMod.IsEnabled = IsInjected;
+         ButtonRefreshMod.IsEnabled = IsInjected;
+         if ( ! IsInjected ) {
+            LabelModList.Content = "Requires Setup";
+            richModInfo.TextRange().Text = "";
+         }
+         GridModList.Items?.Refresh();
       } catch ( Exception ex ) { Log( ex ); } }
+
+      private void ButtonAddMod_Click ( object sender, RoutedEventArgs e ) => RefreshModInfo();
       #endregion
 
       #region Updater
@@ -237,10 +245,6 @@ namespace Sheepy.Modnix.MainGUI {
             MessageBox.Show( "Launch the game at least once to create loader log." );
          else
             Explore( path );
-      }
-
-      private void ButtonAddMod_Click ( object sender, RoutedEventArgs e ) {
-         MessageBox.Show( "Not Implemened", "Sorry", MessageBoxButton.OK, MessageBoxImage.Exclamation );
       }
 
       private void ButtonLogClear_Click ( object sender, RoutedEventArgs e ) {
