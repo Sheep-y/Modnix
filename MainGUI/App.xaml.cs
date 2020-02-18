@@ -91,8 +91,11 @@ namespace Sheepy.Modnix.MainGUI {
          // Dynamically load embedded dll
          AppDomain.CurrentDomain.AssemblyResolve += ( domain, dll ) => {
             Log( $"Loading {dll.Name}" );
+            AppDomain app = domain as AppDomain ?? AppDomain.CurrentDomain;
             if ( dll.Name.StartsWith( "Newtonsoft.Json,", StringComparison.InvariantCultureIgnoreCase ) )
-               return ( domain as AppDomain ?? AppDomain.CurrentDomain ).Load( MainGUI.Properties.Resources.Newtonsoft_Json );
+               return ( app ).Load( MainGUI.Properties.Resources.Newtonsoft_Json );
+            if ( dll.Name.StartsWith( "ModnixLoader,", StringComparison.InvariantCultureIgnoreCase ) )
+               return ( app ).Load( MainGUI.Properties.Resources.ModnixLoader );
             return null;
          };
 

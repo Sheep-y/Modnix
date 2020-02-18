@@ -179,6 +179,13 @@
   <ItemGroup>
     <None Include="Resources\Newtonsoft.Json.dll" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ModLoader\ModLoader.csproj">
+      <Project>{e72a9beb-e4d5-46ba-bec2-732a7f40b181}</Project>
+      <Name>ModLoader</Name>
+      <Private>False</Private>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

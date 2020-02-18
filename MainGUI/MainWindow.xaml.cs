@@ -168,6 +168,12 @@ namespace Sheepy.Modnix.MainGUI {
          if ( ! IsInjected ) {
             LabelModList.Content = "Requires Setup";
             richModInfo.TextRange().Text = "";
+            GridModList.ItemsSource = null;
+         }
+         if ( GridModList.ItemsSource == null ) {
+            ModLoader.Setup();
+            ModLoader.BuildModList();
+            GridModList.ItemsSource = ModLoader.AllMods.Select( e => e.Metadata );
          }
          GridModList.Items?.Refresh();
       } catch ( Exception ex ) { Log( ex ); } }

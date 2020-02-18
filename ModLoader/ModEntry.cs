@@ -19,21 +19,17 @@ namespace Sheepy.Modnix {
       public bool Disabled { get; set; }
       [ JsonProperty ]
       public SourceLevels LogLevel { get; set; }
-
-      public ModEntry ( ModMeta metadata ) {
-         Metadata = metadata;
-      }
    }
 
    public class ModMeta {
-      public string Id;
-      public string Version;
+      public string Id { get; set; }
+      public string Version { get; set; }
       public string Phase;
 
-      public TextSet Name;
+      public TextSet Name { get; set; }
       public string[] Langs;
       public TextSet Description;
-      public TextSet Author;
+      public TextSet Author { get; set; }
       public TextSet Url;
       public TextSet Contact;
 
@@ -48,7 +44,7 @@ namespace Sheepy.Modnix {
    }
 
    public class TextSet {
-      public string Default;
+      public string Default { get; set; }
       public Dictionary<string, string> Dict;
       public override string ToString () => ToString( null );
       public string ToString ( string preferred, string fallback = null ) {

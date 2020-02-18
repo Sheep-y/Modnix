@@ -90,9 +90,11 @@ namespace Sheepy.Modnix {
          var meta = new ModMeta();
          meta.Id = Path.GetFullPath( file ).Replace( ModDirectory, "" ).ToLowerInvariant();
          meta.Name = new TextSet(){ Default = info.FileDescription };
+         meta.Version = info.FileVersion;
          meta.Description = new TextSet(){ Default = info.Comments };
+         meta.Author = new TextSet() { Default = info.CompanyName };
          meta.Dlls = new DllMeta[] { new DllMeta() { Path = file } };
-         return new ModEntry( meta );
+         return new ModEntry(){ Metadata = meta };
       }
 
       public static Assembly LoadDLL ( string path, string methodName = "Init", string typeName = null, object[] parameters = null, BindingFlags bFlags = PUBLIC_STATIC_BINDING_FLAGS ) {
