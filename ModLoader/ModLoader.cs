@@ -14,7 +14,7 @@ namespace Sheepy.Modnix {
 
    public static class ModLoader {
       private readonly static string MOD_PATH  = "My Games/Phoenix Point/Mods".FixSlash();
-      public static List<ModEntry> AllMods = new List<ModEntry>();
+      public readonly static List<ModEntry> AllMods = new List<ModEntry>();
       private static bool Initialized;
 
       private static Logger Log;
@@ -44,18 +44,20 @@ namespace Sheepy.Modnix {
          LoadMods( "splash" );
       } catch ( Exception ex ) { Log?.Error( ex ); } }
 
-      public static void Setup () { try {
+      public static void Setup () { try { lock ( AllMods ) {
          var LoaderInfo = Assembly.GetExecutingAssembly().GetName();
          ModDirectory = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.MyDocuments ), MOD_PATH );
-         Log = new FileLogger( Path.Combine( ModDirectory, LoaderInfo.Name + ".log" ) ){ TimeFormat = "HH:mm:ss.ffff " };
-         if ( ! Directory.Exists( ModDirectory ) )
-            Directory.CreateDirectory( ModDirectory );
-         else
-            Log.Clear();
+         if ( Log == null ) {
+            Log = new FileLogger( Path.Combine( ModDirectory, LoaderInfo.Name + ".log" ) ){ TimeFormat = "HH:mm:ss.ffff " };
+            if ( ! Directory.Exists( ModDirectory ) )
+               Directory.CreateDirectory( ModDirectory );
+            else
+               Log.Clear();
+         }
          Log.Info( "{0} v{1} {2}", typeof( ModLoader ).FullName, LoaderInfo.Version, DateTime.Now.ToString( "u" ) );
-      } catch ( Exception ex ) { Log?.Error( ex ); } }
+      } } catch ( Exception ex ) { Log?.Error( ex ); } }
 
-      public static void LoadMods ( string flags ) {
+      public static void LoadMods ( string flags ) { try { lock ( AllMods ) {
          Log.Info( "Loading {0} mods", flags );
          if ( flags == "splash" ) return; // Not implemented
          foreach ( var mod in AllMods )
@@ -63,14 +65,15 @@ namespace Sheepy.Modnix {
                LoadDLL( dll.Path, dll.Method ?? "Init" );
             } catch ( Exception ex ) { Log.Error( ex ); }
          Log.Flush();
-      }
+      } } catch ( Exception ex ) { Log.Error( ex ); } }
 
-      public static void BuildModList () {
+      public static void BuildModList () { try { lock ( AllMods ) {
          Log.Info( "Scanning {0} for mods", ModDirectory );
          AllMods.Clear();
-         ScanFolderForMod( ModDirectory, null );
+         if ( Directory.Exists( ModDirectory ) )
+            ScanFolderForMod( ModDirectory, null );
          Log.Info( "{0} mods found.", AllMods.Count );
-      }
+      } } catch ( Exception ex ) { Log.Error( ex ); } }
 
       public static void ScanFolderForMod ( string path, string parentName ) {
          var dlls = Directory.EnumerateFiles( path, "*.dll", SearchOption.AllDirectories )
