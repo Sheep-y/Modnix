@@ -61,6 +61,7 @@ namespace Sheepy.Modnix.MainGUI {
          Log( $"Startup time {DateTime.Now.ToString( "yyyy-MM-dd HH:mm:ss.ffff", InvariantCulture )}" );
          Init( e?.Args );
          if ( ! paramSkipProcessCheck ) {
+            MigrateSettings();
             if ( FoundRunningModnix() ) {
                Shutdown();
                return;
@@ -87,15 +88,6 @@ namespace Sheepy.Modnix.MainGUI {
       } } }
 
       private void Init ( string[] args ) {
-         // Migrate settings from old version
-         try {
-            if ( ! MainGUI.Properties.Settings.Default.Settings_Migrated ) {
-               MainGUI.Properties.Settings.Default.Upgrade();
-               MainGUI.Properties.Settings.Default.Settings_Migrated = true;
-               MainGUI.Properties.Settings.Default.Save();
-            }
-         }  catch ( Exception ex ) { Log( ex ); }
-
          // Dynamically load embedded dll
          AppDomain.CurrentDomain.AssemblyResolve += ( domain, dll ) => {
             Log( $"Loading {dll.Name}" );
@@ -117,9 +109,28 @@ namespace Sheepy.Modnix.MainGUI {
             ProcessParams( args );
       }
 
+      private void MigrateSettings () {
+         // Migrate settings from old version
+         try {
+            var settings = MainGUI.Properties.Settings.Default;
+            if ( ! settings.Settings_Migrated ) {
+               settings.Upgrade();
+               settings.Settings_Migrated = true;
+               settings.Save();
+            }
+            // v0.6 had no default value for Last_Update_Check which may cause NRE?
+            try {
+               _ = settings.Last_Update_Check;
+            } catch ( NullReferenceException ) {
+               settings.Last_Update_Check = DateTime.Parse( "2000-01-01T12:00", InvariantCulture );
+               settings.Save();
+            }
+         } catch ( Exception ex ) { Log( ex ); }
+      }
+
       /// Parse command line arguments.
-      /// -i --ignore-pid (id)     Ignore given pid in running process check
-      /// -s --skip-launch-check  Skip checking running process and installed path
+      /// -i --ignore-pid (id)    Ignore given pid in running process check
+      /// -s --skip-launch-check  Skip checking running process, modnix installation, and setting migration
       private void ProcessParams ( string[] args ) {
          if ( args == null || args.Length <= 0 ) return;
          List<string> param = args.ToList();
