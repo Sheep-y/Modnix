@@ -31,22 +31,24 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       public void SetInfo ( string info, object value ) { this.Dispatch( () => {
-         string txt = value?.ToString();
-         switch ( info ) {
-            case "visible": Show(); break;
-            case "version": AppVer = txt; break;
-            case "state": AppState = txt; break;
-            case "game_path": GamePath = txt; break;
-            case "game_version": 
-            case "update": 
-               break;
-            default: Log( $"Unknown info {info}" ); return;
-         }
-         RefreshInfo();
-         if ( info == "game_path" ) ButtonAction.Focus();
+         try {
+            string txt = value?.ToString();
+            switch ( info ) {
+               case "visible": Show(); break;
+               case "version": AppVer = txt; break;
+               case "state": AppState = txt; break;
+               case "game_path": GamePath = txt; break;
+               case "game_version": 
+               case "update": 
+                  break;
+               default: Log( $"Unknown info {info}" ); return;
+            }
+            RefreshInfo();
+            if ( info == "game_path" ) ButtonAction.Focus();
+         } catch ( Exception ex ) { Log( ex ); }
       } ); }
 
-      private void RefreshInfo () {
+      private void RefreshInfo () { try {
          if ( Mode == "log" ) {
             return;
          }
@@ -60,14 +62,14 @@ namespace Sheepy.Modnix.MainGUI {
             ButtonAction.IsEnabled = GamePath != null;
          }
          TextMessage.Text = txt;
-      }
+      } catch ( Exception ex ) { Log( ex ); } }
 
       private void EnableLaunch () {
          AccessAction.Text = "_Launch";
          ButtonAction.IsEnabled = true;
       }
 
-      private void ButtonAction_Click ( object sender, RoutedEventArgs e ) {
+      private void ButtonAction_Click ( object sender, RoutedEventArgs e ) { try {
          Log( $"\"{Mode}\" initiated" );
          if ( e.Source is Button btn ) btn.Focus();
          if ( Mode == "setup" ) {
@@ -86,7 +88,7 @@ namespace Sheepy.Modnix.MainGUI {
             App.LaunchInstalledModnix();
             Close();
          }
-      }
+      } catch ( Exception ex ) { Log( ex ); } }
 
       public void Prompt ( string parts, Exception ex = null ) {
          this.Dispatch( () => {
@@ -100,7 +102,7 @@ namespace Sheepy.Modnix.MainGUI {
          } );
       }
 
-      public void Log ( string message ) {
+      public void Log ( object message ) {
          string time = DateTime.Now.ToString( "hh:mm:ss.ffff ", InvariantCulture );
          string line = $"{time} {message}\n";
          this.Dispatch( () => {

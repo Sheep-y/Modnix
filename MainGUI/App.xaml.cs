@@ -15,7 +15,7 @@ namespace Sheepy.Modnix.MainGUI {
    internal interface IAppGui {
       void SetInfo ( string info, object value );
       void Prompt ( string v, Exception ex = null );
-      void Log ( string message );
+      void Log ( object message );
    }
 
    public partial class AppControl : Application {
@@ -78,9 +78,12 @@ namespace Sheepy.Modnix.MainGUI {
          Log( null ); // Flush startup log
          GUI.SetInfo( "visible", "true" );
       } catch ( Exception ex ) {
-         File.WriteAllText( LIVE_NAME + " Error.log", ex.ToString() );
+         File.WriteAllText( LIVE_NAME + " Startup Error.log", startup_log + ex.ToString() );
          Log( ex );
-         Shutdown();
+         if ( GUI != null )
+            GUI.SetInfo( "visible", "true" );
+         else
+            Shutdown();
       } } }
 
       private void Init ( string[] args ) {

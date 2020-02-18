@@ -27,7 +27,7 @@ namespace Sheepy.Modnix.MainGUI {
          RefreshGUI();
       }
 
-      private void RefreshGUI () {
+      private void RefreshGUI () { try {
          Log( "Resetting GUI" );
          RefreshAppInfo();
          RefreshGameInfo();
@@ -36,9 +36,9 @@ namespace Sheepy.Modnix.MainGUI {
          Log( "Initiating Controller" );
          App.CheckStatusAsync();
          CheckUpdate( false );
-      }
+      } catch ( Exception ex ) { Log( ex ); } }
 
-      public void SetInfo ( string info, object value ) { this.Dispatch( () => {
+      public void SetInfo ( string info, object value ) { this.Dispatch( () => { try {
          Log( $"Set {info} = {value}" );
          string txt = value?.ToString();
          switch ( info ) {
@@ -50,10 +50,10 @@ namespace Sheepy.Modnix.MainGUI {
             case "update"  : Update = value; UpdateChecked(); RefreshUpdateStatus(); break;
             default : Log( $"Unknown info {info}" ); break;
          }
-      } ); }
+      } catch ( Exception ex ) { Log( ex ); } } ); }
 
       #region App Info Area
-      private void RefreshAppInfo () {
+      private void RefreshAppInfo () { try {
          string txt = $"Modnix\rVer {AppVer}\rStatus: ";
          if ( AppState == null )
             txt += "Busy";
@@ -68,9 +68,9 @@ namespace Sheepy.Modnix.MainGUI {
             }
          richAppInfo.TextRange().Text = txt;
          RefreshAppButtons();
-      }
+      } catch ( Exception ex ) { Log( ex ); } }
 
-      private void RefreshAppButtons () {
+      private void RefreshAppButtons () { try {
          ButtonSetup.IsEnabled  = AppState != null;
          switch ( AppState ) {
             case "modnix"  : ButtonSetup.Content = "Revert"; break;
@@ -80,9 +80,9 @@ namespace Sheepy.Modnix.MainGUI {
          ButtonModDir.IsEnabled = AppState == "modnix";
          ButtonAddMod.IsEnabled = AppState == "modnix";
          ButtonLoaderLog.IsEnabled = AppState == "modnix";
-      }
+      } catch ( Exception ex ) { Log( ex ); } }
 
-      private void ButtonSetup_Click ( object sender, RoutedEventArgs e ) {
+      private void ButtonSetup_Click ( object sender, RoutedEventArgs e ) { try {
          if ( e?.Source is UIElement src ) src.Focus();
          switch ( AppState ) {
             case "ppml" : case "setup" :
@@ -99,7 +99,7 @@ namespace Sheepy.Modnix.MainGUI {
                DoManualSetup();
                break;
          }
-      }
+      } catch ( Exception ex ) { Log( ex ); } }
 
       private void DoSetup () {
          Log( "Calling setup" );
@@ -117,25 +117,25 @@ namespace Sheepy.Modnix.MainGUI {
          App.DoRestoreAsync();
       }
 
-      private void ButtonModDir_Click ( object sender, RoutedEventArgs e ) {
+      private void ButtonModDir_Click ( object sender, RoutedEventArgs e ) { try {
          string arg = $"/select, \"{Path.Combine( App.ModFolder, App.ModGuiExe )}\"";
          Log( $"Launching explorer.exe {arg}" );
          Process.Start( "explorer.exe", arg );
-      }
+      } catch ( Exception ex ) { Log( ex ); } }
 
-      public void Prompt ( string parts, Exception ex = null ) { this.Dispatch( () => {
+      public void Prompt ( string parts, Exception ex = null ) { this.Dispatch( () => { try {
          Log( $"Prompt {parts}" );
          SharedGui.Prompt( parts, ex, () => {
             App.LaunchInstalledModnix();
             Close();
          } );
-      } ); }
+      } catch ( Exception err ) { Log( err ); } } ); }
 
       private void ButtonNexus_Click ( object sender, RoutedEventArgs e ) => OpenUrl( "nexus", e );
       #endregion
 
       #region Game Info Area
-      private void RefreshGameInfo () {
+      private void RefreshGameInfo () { try {
          string txt = "Phoenix Point";
          if ( GamePath != null ) {
             txt += "\r" + Path.GetFullPath( GamePath );
@@ -146,7 +146,7 @@ namespace Sheepy.Modnix.MainGUI {
          richGameInfo.TextRange().Text = txt;
          ButtonRunOnline .IsEnabled = GamePath != null;
          ButtonRunOffline.IsEnabled = GamePath != null;
-      }
+      } catch ( Exception ex ) { Log( ex ); } }
 
       private void ButtonOnline_Click ( object sender, RoutedEventArgs e ) => App.LaunchGame( "online" );
       private void ButtonOffline_Click ( object sender, RoutedEventArgs e ) => App.LaunchGame( "offline" );
@@ -160,17 +160,17 @@ namespace Sheepy.Modnix.MainGUI {
       #endregion
 
       #region Mod Info Area
-      private void RefreshModInfo () {
+      private void RefreshModInfo () { try {
          //string txt = AppState == "modenix" ? "Select a mod to see info" : "";
          string txt = AppState == "modenix" ? "Mod list is being implemented" : "";
          richModInfo.TextRange().Text = txt;
-      }
+      } catch ( Exception ex ) { Log( ex ); } }
       #endregion
 
       #region Updater
       private object Update;
 
-      private void CheckUpdate ( bool manual ) {
+      private void CheckUpdate ( bool manual ) { try {
          if ( ! manual ) {
             DateTime lastCheck = Properties.Settings.Default.Last_Update_Check;
             Log( $"Last update check was {lastCheck}" );
@@ -179,19 +179,19 @@ namespace Sheepy.Modnix.MainGUI {
          Update = "checking";
          RefreshUpdateStatus();
          App.CheckUpdateAsync();
-      }
+      } catch ( Exception ex ) { Log( ex ); } }
 
-      private void UpdateChecked () {
+      private void UpdateChecked () { try {
          Log( $"Updating last update check time." );
          Properties.Settings.Default.Last_Update_Check = DateTime.Now;
          Properties.Settings.Default.Save();
          ButtonCheckUpdate.IsEnabled = true;
-      }
+      } catch ( Exception ex ) { Log( ex ); } }
 
       private void ButtonGitHub_Click ( object sender, RoutedEventArgs e ) => OpenUrl( "home", e );
       private void ButtonCheckUpdate_Click ( object sender, RoutedEventArgs e ) => CheckUpdate( true );
 
-      private void RefreshUpdateStatus () {
+      private void RefreshUpdateStatus () { try {
          if ( Object.Equals( "checking", Update ) ) {
             ButtonCheckUpdate.IsEnabled = false;
             ButtonCheckUpdate.Content = "Checking...";
@@ -206,32 +206,30 @@ namespace Sheepy.Modnix.MainGUI {
          if ( result == MessageBoxResult.No ) return;
          if ( ! String.IsNullOrWhiteSpace( release.Html_Url ) )
             Process.Start( release.Html_Url );
-      }
+      } catch ( Exception ex ) { Log( ex ); } }
       #endregion
 
       #region Logging
-      public void Log ( string message ) {
+      public void Log ( object message ) {
          string time = DateTime.Now.ToString( "hh:mm:ss.ffff ", InvariantCulture );
-         this.Dispatch( () => {
-            TextLog.AppendText( time + message + "\n" );
+         this.Dispatch( () => { try {
+            TextLog.AppendText( time + message?.ToString() + "\n" );
             TextLog.ScrollToEnd();
             ButtonLogSave.IsEnabled = true;
-         } );
+         } catch ( Exception ) { } } );
       }
 
-      private void ButtonLogSave_Click ( object sender, RoutedEventArgs e ) {
+      private void ButtonLogSave_Click ( object sender, RoutedEventArgs e ) { try {
          var dialog = new Microsoft.Win32.SaveFileDialog {
             FileName = AppControl.LIVE_NAME + " Log " + DateTime.Now.ToString( "u", InvariantCulture ).Replace( ':', '-' ),
             DefaultExt = ".txt",
             Filter = "Log Files (.txt .log)|*.txt;*.log|All Files|*.*"
          };
-         if ( dialog.ShowDialog().GetValueOrDefault() ) try {
+         if ( dialog.ShowDialog().GetValueOrDefault() ) {
             File.WriteAllText( dialog.FileName, TextLog.Text );
             Explore( dialog.FileName );
-         } catch ( Exception ex ) {
-            Log( ex.ToString() );
          }
-      }
+      } catch ( Exception ex ) { Log( ex ); } }
 
       private void ButtonLoaderLog_Click ( object sender, RoutedEventArgs e ) {
          string path = Path.Combine( App.ModFolder, "ModnixLoader.log" );
@@ -251,7 +249,7 @@ namespace Sheepy.Modnix.MainGUI {
       }
       #endregion
 
-      #region Opener
+      #region Openers
       private void OpenUrl ( string type, RoutedEventArgs e = null ) {
          Log( "OpenUrl " + type );
          if ( e?.Source is UIElement src ) src.Focus();

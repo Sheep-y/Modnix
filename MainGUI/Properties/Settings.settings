@@ -6,7 +6,7 @@
       <Value Profile="(Default)">dev</Value>
     </Setting>
     <Setting Name="Last_Update_Check" Type="System.DateTime" Scope="User">
-      <Value Profile="(Default)" />
+      <Value Profile="(Default)">01/01/2000 12:00:00</Value>
     </Setting>
     <Setting Name="Settings_Migrated" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
