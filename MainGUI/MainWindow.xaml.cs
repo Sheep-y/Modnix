@@ -173,12 +173,19 @@ namespace Sheepy.Modnix.MainGUI {
          if ( GridModList.ItemsSource == null ) {
             ModLoader.Setup();
             ModLoader.BuildModList();
-            GridModList.ItemsSource = ModLoader.AllMods.Select( e => e.Metadata );
+            GridModList.ItemsSource = ModLoader.AllMods.Select( e => new GridModItem(){ Mod = e } );
          }
          GridModList.Items?.Refresh();
       } catch ( Exception ex ) { Log( ex ); } }
 
       private void ButtonAddMod_Click ( object sender, RoutedEventArgs e ) => RefreshModInfo();
+
+      private class GridModItem {
+         internal ModEntry Mod;
+         public string Name => Mod.Metadata?.Name?.ToString();
+         public string Version => Mod.Metadata?.Version;
+         public string Author => Mod.Metadata?.Author?.ToString();
+      }
       #endregion
 
       #region Updater

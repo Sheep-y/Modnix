@@ -128,9 +128,9 @@
                </Grid>
                <DataGrid x:Name="GridModList" Margin="-2,10,0,10" VerticalScrollBarVisibility="Visible" AutoGenerateColumns="False">
                   <DataGrid.Columns>
-                     <DataGridTextColumn Binding="{Binding Name}" ClipboardContentBinding="{x:Null}"/>
-                     <DataGridTextColumn Binding="{Binding Version}" ClipboardContentBinding="{x:Null}"/>
-                     <DataGridTextColumn Binding="{Binding Author.Default}" ClipboardContentBinding="{x:Null}"/>
+                     <DataGridTextColumn Header="Mod" Binding="{Binding Name}" ClipboardContentBinding="{x:Null}"/>
+                     <DataGridTextColumn Header="Version" Binding="{Binding Version}" ClipboardContentBinding="{x:Null}"/>
+                     <DataGridTextColumn Header="Author" Binding="{Binding Author}" ClipboardContentBinding="{x:Null}"/>
                   </DataGrid.Columns>
                </DataGrid>
             </DockPanel>

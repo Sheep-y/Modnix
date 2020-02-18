@@ -12,24 +12,24 @@ namespace Sheepy.Modnix {
 
    [ JsonObject( MemberSerialization.OptIn ) ]
    public class ModEntry {
-      public ModMeta Metadata { get; set; }
-      public List<ModEntry> Children { get; set; }
+      public ModMeta Metadata;
+      public List<ModEntry> Children;
 
       [ JsonProperty ]
-      public bool Disabled { get; set; }
+      public bool Disabled;
       [ JsonProperty ]
-      public SourceLevels LogLevel { get; set; }
+      public SourceLevels LogLevel;
    }
 
    public class ModMeta {
-      public string Id { get; set; }
-      public string Version { get; set; }
+      public string Id;
+      public string Version;
       public string Phase;
 
-      public TextSet Name { get; set; }
+      public TextSet Name;
       public string[] Langs;
       public TextSet Description;
-      public TextSet Author { get; set; }
+      public TextSet Author;
       public TextSet Url;
       public TextSet Contact;
 
