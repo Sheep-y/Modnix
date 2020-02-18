@@ -359,6 +359,10 @@ namespace Sheepy.Modnix.MainGUI {
       private bool MigrateLegacy () { try {
          string OldPath = Path.Combine( currentGame.GameDir, PAST_MOD );
          string NewPath = ModFolder;
+         if ( IsSymlink( OldPath ) ) {
+            Log( $"{OldPath} is symbolic link, skipping migration." );
+            return false;
+         }
          if ( ! Directory.Exists( OldPath ) ) {
             CreateShortcut();
             return false;
@@ -388,7 +392,8 @@ namespace Sheepy.Modnix.MainGUI {
          return ModsMoved;
       } catch ( Exception ex ) { return Log( ex, false ); } }
 
-      private bool IsDir ( string path ) => File.GetAttributes( path ).HasFlag( FileAttributes.Directory );
+      private static bool IsDir ( string path ) => File.GetAttributes( path ).HasFlag( FileAttributes.Directory );
+      private static bool IsSymlink ( string path ) => File.GetAttributes( path ).HasFlag( FileAttributes.ReparsePoint );
 
       private bool HasLegacy () { try {
          return File.Exists( Path.Combine( currentGame.CodeDir, PAST ) );
