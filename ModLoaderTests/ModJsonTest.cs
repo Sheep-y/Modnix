@@ -63,6 +63,16 @@ namespace Sheepy.Modnix.Tests {
          Assert.AreEqual( min, appver.Min, $"{id}.min"  );
          Assert.AreEqual( max, appver.Max, $"{id}.max"  );
       }
+
+      [TestMethod()] public void ModMetaTest () {
+         var appver = ModMetaJson.ParseMod( @"{ Id:""simple"", Name:""Simple"", Requires:""lib"", Dlls:""dll"" }" );
+         Assert.IsNotNull( appver, "simple" );
+         Assert.AreEqual( "simple", appver.Id, "simple.id" );
+         Assert.AreEqual( "Simple", appver.Name.ToString(), "simple.name" );
+         Assert.AreEqual( "lib", appver.Requires[0].Id, "simple.requires" );
+         Assert.AreEqual( "dll", appver.Dlls[0].Path, "simple.dll" );
+      }
+
    }
 
 }

@@ -30,12 +30,12 @@ namespace Sheepy.Modnix {
       public string Version;
       public string Phase;
 
-      public L10nText Name;
+      public TextSet Name;
       public string[] Langs;
-      public L10nText Description;
-      public L10nText Author;
-      public L10nText[] Url;
-      public L10nText[] Contact;
+      public TextSet Description;
+      public TextSet Author;
+      public TextSet Url;
+      public TextSet Contact;
 
       public AppVer AppVer;
       public AppVer[] Requires;
@@ -47,16 +47,15 @@ namespace Sheepy.Modnix {
       public DllMeta[] Dlls;
    }
 
-   public class L10nText {
-      public static string CurrentLang = "en";
-      public static readonly List<string> AllowedLang = new string[]{ "en", "de", "es", "fr", "it", "pl", "ru", "zh" }.ToList();
-
+   public class TextSet {
       public string Default;
-      public Dictionary<string, string> Localised;
-      public override string ToString () {
-         if ( Localised != null ) {
-            if ( Localised.TryGetValue( CurrentLang, out string txt ) ) return txt;
-            if ( Localised.TryGetValue( "en", out string eng ) ) return eng;
+      public Dictionary<string, string> Dict;
+      public override string ToString () => ToString( null );
+      public string ToString ( string preferred, string fallback = null ) {
+         if ( preferred == null ) return Default;
+         if ( Dict != null ) {
+            if ( Dict.TryGetValue( preferred, out string txt ) ) return txt;
+            if ( fallback != null && Dict.TryGetValue( fallback, out string eng ) ) return eng;
          }
          return Default;
       }
@@ -96,22 +95,22 @@ namespace Sheepy.Modnix {
       public override bool CanWrite => false;
 
       public override bool CanConvert ( Type objectType ) {
-         if ( objectType == typeof( AppVer ) ) return true;
-         if ( objectType == typeof( AppVer[] ) ) return true;
-         if ( objectType == typeof( DllMeta ) ) return true;
+         if ( objectType == typeof( AppVer    ) ) return true;
+         if ( objectType == typeof( AppVer[]  ) ) return true;
+         if ( objectType == typeof( DllMeta   ) ) return true;
          if ( objectType == typeof( DllMeta[] ) ) return true;
-         if ( objectType == typeof( L10nText ) ) return true;
-         if ( objectType == typeof( L10nText[] ) ) return true;
+         if ( objectType == typeof( TextSet   ) ) return true;
+         if ( objectType == typeof( TextSet[] ) ) return true;
          return false;
       }
 
       public override object ReadJson ( JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer ) {
-         if ( objectType == typeof( AppVer ) ) return ParseAppVer( reader );
-         if ( objectType == typeof( AppVer[] ) ) return ParseAppVerArray( reader );
-         if ( objectType == typeof( DllMeta ) ) return true;
-         if ( objectType == typeof( DllMeta[] ) ) return true;
-         if ( objectType == typeof( L10nText ) ) return true;
-         if ( objectType == typeof( L10nText[] ) ) return true;
+         if ( objectType == typeof( AppVer    ) ) return ParseAppVer( reader );
+         if ( objectType == typeof( AppVer[]  ) ) return ParseAppVerArray( reader );
+         if ( objectType == typeof( DllMeta   ) ) return ParseDllMeta( reader );
+         if ( objectType == typeof( DllMeta[] ) ) return ParseDllMetaArray( reader );
+         if ( objectType == typeof( TextSet   ) ) return ParseTextSet( reader );
+         if ( objectType == typeof( TextSet[] ) ) return ParseTextSetArray( reader );
          throw new InvalidOperationException();
       }
 
@@ -124,6 +123,30 @@ namespace Sheepy.Modnix {
             case "min" : e.Min = txt; break;
             case "max" : e.Max = txt; break;
          }
+         return e;
+      }
+
+      private static DllMeta   ParseDllMeta ( JsonReader reader ) => ParseObject<DllMeta>( reader, "path", AssignDllMetaProp );
+      private static DllMeta[] ParseDllMetaArray ( JsonReader reader ) => ParseArray<DllMeta>( reader, ParseDllMeta );
+      private static DllMeta   AssignDllMetaProp ( DllMeta e, string prop, object val ) {
+         string txt = val.ToString();
+         switch ( prop ) {
+            case "path"   : e.Path   = txt; break;
+            case "method" : e.Method = txt; break;
+         }
+         return e;
+      }
+
+      private static TextSet   ParseTextSet ( JsonReader reader ) => ParseObject<TextSet>( reader, "", AssignTextSetProp );
+      private static TextSet[] ParseTextSetArray ( JsonReader reader ) => ParseArray<TextSet>( reader, ParseTextSet );
+      private static TextSet   AssignTextSetProp ( TextSet e, string prop, object val ) {
+         string txt = val.ToString();
+         if ( e.Default == null ) {
+            e.Default = txt;
+            e.Dict = new Dictionary<string, string>();
+         }
+         if ( ! string.IsNullOrWhiteSpace( prop ) )
+            e.Dict.Add( prop, txt );
          return e;
       }
 
