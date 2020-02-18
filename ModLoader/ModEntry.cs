@@ -138,7 +138,8 @@ namespace Sheepy.Modnix {
             do {
                T node = objParser( r );
                if ( node != null ) result.Add( node );
-               if ( r.ReadAndSkipComment() == JsonToken.EndArray ) return result.ToArray();
+               if ( r.ReadAndSkipComment() == JsonToken.EndArray )
+                  return result.Count > 0 ? result.ToArray() : null;
             } while ( true );
          }
          throw new JsonException( $"String, object, or array expected for {typeof(T)}" );
