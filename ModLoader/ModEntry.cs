@@ -13,12 +13,16 @@ namespace Sheepy.Modnix {
    [ JsonObject( MemberSerialization.OptIn ) ]
    public class ModEntry {
       public ModMeta Metadata;
+
+      public ModEntry Parent;
       public List<ModEntry> Children;
 
       [ JsonProperty ]
       public bool Disabled;
       [ JsonProperty ]
       public SourceLevels LogLevel;
+
+      public override string ToString () => $"Mod {Metadata?.Name}{(Disabled?" (Disabled)":"")}";
    }
 
    public class ModMeta {

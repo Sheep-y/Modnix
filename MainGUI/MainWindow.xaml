@@ -125,7 +125,7 @@
                      <AccessText Text="Refresh"/>
                   </Button>
                </DockPanel>
-               <DataGrid x:Name="GridModList" VerticalScrollBarVisibility="Visible" AutoGenerateColumns="False" IsReadOnly="True" Margin="0,5,0,0">
+               <DataGrid x:Name="GridModList" VerticalScrollBarVisibility="Visible" AutoGenerateColumns="False" IsReadOnly="True" Margin="0,5,0,0" CurrentCellChanged="GridModList_CurrentCellChanged">
                   <DataGrid.Columns>
                      <DataGridTextColumn Header="Mod" Binding="{Binding Name}" ClipboardContentBinding="{x:Null}"/>
                      <DataGridTextColumn Header="Version" Binding="{Binding Version}" ClipboardContentBinding="{x:Null}"/>

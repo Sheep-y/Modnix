@@ -167,6 +167,8 @@ namespace Sheepy.Modnix.MainGUI {
       #endregion
 
       #region Mod Info Area
+      private object CurrentItem;
+
       private void RefreshModInfo () { try {
          Log( "Refreshing mod list" );
          bool IsInjected = AppState == "modnix";
@@ -183,6 +185,14 @@ namespace Sheepy.Modnix.MainGUI {
       } catch ( Exception ex ) { Log( ex ); } }
 
       private void ButtonAddMod_Click ( object sender, RoutedEventArgs e ) => RefreshModInfo();
+
+      private void GridModList_CurrentCellChanged ( object sender, EventArgs e ) {
+         if ( GridModList.CurrentItem == null || GridModList.CurrentItem == CurrentItem ) return;
+         CurrentItem = GridModList.CurrentItem;
+         Log( $"Selection changed to {CurrentItem}" );
+         richModInfo.TextRange().Text = "";
+      }
+
       #endregion
 
       #region Updater

@@ -23,5 +23,6 @@ namespace Sheepy.Modnix.MainGUI {
       public string Version => Mod?.Metadata?.Version;
       public string Author => Mod?.Metadata?.Author?.ToString();
       public string Type => "PPML";
+      public override string ToString () => Mod?.ToString();
    }
 }
