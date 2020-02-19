@@ -185,6 +185,7 @@ namespace Sheepy.Modnix.MainGUI {
          public string Name => Mod.Metadata?.Name?.ToString();
          public string Version => Mod.Metadata?.Version;
          public string Author => Mod.Metadata?.Author?.ToString();
+         public string Type => "PPML";
       }
       #endregion
 

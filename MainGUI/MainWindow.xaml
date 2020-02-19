@@ -126,11 +126,12 @@
                   <Button x:Name="ButtonModDisable" Content="Disable" Padding="5" IsEnabled="False" Visibility="Hidden" />
                   <Button x:Name="ButtonModDelete" Content="Delete" Grid.Column="2" Padding="5" IsEnabled="False" />
                </Grid>
-               <DataGrid x:Name="GridModList" Margin="-2,10,0,10" VerticalScrollBarVisibility="Visible" AutoGenerateColumns="False">
+               <DataGrid x:Name="GridModList" Margin="-2,10,0,10" VerticalScrollBarVisibility="Visible" AutoGenerateColumns="False" IsReadOnly="True">
                   <DataGrid.Columns>
                      <DataGridTextColumn Header="Mod" Binding="{Binding Name}" ClipboardContentBinding="{x:Null}"/>
                      <DataGridTextColumn Header="Version" Binding="{Binding Version}" ClipboardContentBinding="{x:Null}"/>
                      <DataGridTextColumn Header="Author" Binding="{Binding Author}" ClipboardContentBinding="{x:Null}"/>
+                     <DataGridTextColumn Header="Type" Binding="{Binding Type}" ClipboardContentBinding="{x:Null}"/>
                   </DataGrid.Columns>
                </DataGrid>
             </DockPanel>
