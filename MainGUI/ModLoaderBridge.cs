@@ -6,8 +6,11 @@ using System.Threading.Tasks;
 
 namespace Sheepy.Modnix.MainGUI {
    internal class ModLoaderBridge {
+      private AppControl App;
 
-      internal static object LoadModList () {
+      public ModLoaderBridge ( AppControl app ) => App = app;
+
+      internal object LoadModList () {
          ModLoader.Setup();
          ModLoader.BuildModList();
          return ModLoader.AllMods.Select( e => new GridModItem(){ Mod = e } );

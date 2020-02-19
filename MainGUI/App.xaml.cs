@@ -41,7 +41,13 @@ namespace Sheepy.Modnix.MainGUI {
       internal const string EPIC_DIR = ".egstore";
 
       private readonly static string[] GAME_PATHS =
-         new string[]{ "C:/Program Files/Epic Games/PhoenixPoint".FixSlash(), ".." };
+         new string[]{
+            "C:/Program Files/Epic Games/PhoenixPoint".FixSlash(),
+            ".." ,
+            "." ,
+            "D:/Program Files/Epic Games/PhoenixPoint".FixSlash(),
+            "E:/Program Files/Epic Games/PhoenixPoint".FixSlash(),
+            };
 
       internal string ModFolder = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.MyDocuments ), MOD_PATH );
       internal string ModGuiExe;
@@ -76,7 +82,7 @@ namespace Sheepy.Modnix.MainGUI {
          }
          if ( GUI == null )
             GUI = new MainWindow( this );
-         Log( null ); // Flush startup log
+         Log( null ); // Send startup log to GUI
          GUI.SetInfo( "visible", "true" );
       } catch ( Exception ex ) {
          File.WriteAllText( LIVE_NAME + " Startup Error.log", startup_log + ex.ToString() );
@@ -207,6 +213,8 @@ namespace Sheepy.Modnix.MainGUI {
       #endregion
 
       #region Check Status
+      private ModLoaderBridge bridge;
+
       internal void CheckStatusAsync () {
          Log( "Queuing status check" );
          Task.Run( (Action) CheckStatus );
@@ -219,8 +227,10 @@ namespace Sheepy.Modnix.MainGUI {
             currentGame = new GameInstallation( this, gamePath );
             GUI.SetInfo( "game_path", gamePath );
             CheckInjectionStatus();
-            if ( currentGame.Status == "modnix" )
-               GUI.SetInfo( "mod_list", ModLoaderBridge.LoadModList() );
+            if ( currentGame.Status == "modnix" ) {
+               if ( bridge == null ) bridge = new ModLoaderBridge( this );
+               GUI.SetInfo( "mod_list", bridge.LoadModList() );
+            }
          } else {
             GUI.SetInfo( "state", "no_game" );
          }

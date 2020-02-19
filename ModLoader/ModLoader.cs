@@ -45,6 +45,7 @@ namespace Sheepy.Modnix {
       } catch ( Exception ex ) { Log?.Error( ex ); } }
 
       public static void Setup () { try { lock ( AllMods ) {
+         if ( ModDirectory != null ) return;
          var LoaderInfo = Assembly.GetExecutingAssembly().GetName();
          ModDirectory = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.MyDocuments ), MOD_PATH );
          if ( Log == null ) {

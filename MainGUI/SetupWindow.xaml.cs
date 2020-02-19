@@ -116,6 +116,8 @@ namespace Sheepy.Modnix.MainGUI {
       public void Log ( object message ) {
          string time = DateTime.Now.ToString( "hh:mm:ss.ffff ", InvariantCulture );
          string line = $"{time} {message}\n";
+         if ( Mode != "log" )
+            Console.WriteLine( line );
          this.Dispatch( () => {
             if ( Mode == "log" ) {
                TextMessage.AppendText( line );
