@@ -394,12 +394,19 @@ namespace Sheepy.Modnix.MainGUI {
       private bool MigrateLegacy () { try {
          string OldPath = Path.Combine( currentGame.GameDir, PAST_MOD );
          string NewPath = ModFolder;
-         if ( IsSymlink( OldPath ) ) {
-            Log( $"{OldPath} is symbolic link, skipping migration." );
-            return false;
-         }
          if ( ! Directory.Exists( OldPath ) ) {
             CreateShortcut();
+            return false;
+         }
+         // Delete a few files that should not be in the mods folder, or will be replaced
+         var dllCheck = new GameInstallation( this, OldPath );
+         dllCheck.DeleteGameFile( LIVE_NAME + APP_EXT );
+         dllCheck.DeleteGameFile( LOADER );
+         dllCheck.DeleteGameFile( INJECTOR );
+         dllCheck.DeleteGameFile( PAST );
+         dllCheck.DeleteGameFile( PAST_DLL );
+         if ( IsSameDir( OldPath, ModFolder ) ) {
+            Log( $"{OldPath} seems to be symbolic link, skipping migration." );
             return false;
          }
          bool ModsMoved = false;
@@ -420,16 +427,31 @@ namespace Sheepy.Modnix.MainGUI {
          // Remove Mods folder if empty
          if ( ! Directory.EnumerateFiles( OldPath ).Any() ) try {
             Log( $"Deleting empty {OldPath}" );
-            Directory.Delete( OldPath, false );
-            if ( ! Directory.Exists( OldPath ) )
+            try {
+               Directory.Delete( OldPath, false );
                CreateShortcut();
-            return true;
+            } catch ( Exception ex ) { Log( ex ); }
          } catch ( Exception ex ) { Log( ex ); }
          return ModsMoved;
       } catch ( Exception ex ) { return Log( ex, false ); } }
 
-      private static bool IsDir ( string path ) => File.GetAttributes( path ).HasFlag( FileAttributes.Directory );
-      private static bool IsSymlink ( string path ) => File.GetAttributes( path ).HasFlag( FileAttributes.ReparsePoint );
+      private static bool IsSameDir ( string path1, string path2 ) {
+         if ( ! Directory.Exists( path1 ) || ! Directory.Exists( path2 ) ) return false;
+         // Very stupid, I know, but I don't want to go the very long win32 route...
+         foreach ( var e in Directory.EnumerateFiles( path1 ) )
+            if ( ! File.Exists( Path.Combine( path2, Path.GetFileName( e ) ) ) )
+               return false;
+         foreach ( var e in Directory.EnumerateFiles( path2 ) )
+            if ( ! File.Exists( Path.Combine( path1, Path.GetFileName( e ) ) ) )
+               return false;
+         foreach ( var e in Directory.EnumerateDirectories( path1 ) )
+            if ( ! Directory.Exists( Path.Combine( path2, Path.GetFileName( e ) ) ) )
+               return false;
+         foreach ( var e in Directory.EnumerateDirectories( path2 ) )
+            if ( ! Directory.Exists( Path.Combine( path1, Path.GetFileName( e ) ) ) )
+               return false;
+         return true;
+      }
 
       private bool HasLegacy () { try {
          return File.Exists( Path.Combine( currentGame.CodeDir, PAST ) );
@@ -508,7 +530,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       #region Helpers
       internal string RunAndWait ( string path, string exe, string param = null, bool asAdmin = false ) {
-         Log( $"Running {( asAdmin ? "as admin" : "" )} at {path} : {exe} {param}" );
+         Log( $"Running{( asAdmin ? " as admin" : "" )} at {path} : {exe} {param}" );
          try {
             using ( Process p = new Process() ) {
                p.StartInfo.UseShellExecute = asAdmin;
