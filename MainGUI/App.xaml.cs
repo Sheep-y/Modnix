@@ -200,6 +200,7 @@ namespace Sheepy.Modnix.MainGUI {
       } catch ( Exception ex ) { return Log( ex, false ); } }
 
       private bool ShouldRunSetup () { try {
+         if ( ! MyPath.Contains( "/Mods/" ) && ! MyPath.Contains( "\\Mods\\" ) ) return true;
          if ( Path.GetFileName( MyPath ).ToLowerInvariant().Contains( "setup" ) ) return true;
          return false;
       } catch ( Exception ex ) { return Log( ex, false ); } }

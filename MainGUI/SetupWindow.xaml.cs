@@ -17,7 +17,7 @@ namespace Sheepy.Modnix.MainGUI {
    public partial class SetupWindow : Window, IAppGui {
 
       private readonly AppControl App;
-      private string AppVer, AppState, GamePath = "Detecting...";
+      private string AppVer, AppState, GamePath = null;
       private string Mode = "log"; // launch, setup, log
       private string LogContent;
 
@@ -57,9 +57,16 @@ namespace Sheepy.Modnix.MainGUI {
             txt += "Installed at " + App.ModGuiExe + "\n\nUse it to resetup or restore.";
             EnableLaunch();
          } else { // Mode == "setup"
-            txt += $"\nPhoenix Point\n{GamePath}";
-            AccessAction.Text = "_Setup";
-            ButtonAction.IsEnabled = GamePath != null;
+            txt += "\nPhoenix Point\n";
+            if ( AppState == "no_game" ) {
+               txt += "Not Found";
+               AccessAction.Text = "Manual _Setup";
+               ButtonAction.IsEnabled = true;
+            } else {
+               txt += GamePath ?? "Detecting...";
+               AccessAction.Text = "_Setup";
+               ButtonAction.IsEnabled = GamePath != null;
+            }
          }
          TextMessage.Text = txt;
       } catch ( Exception ex ) { Log( ex ); } }
@@ -73,6 +80,10 @@ namespace Sheepy.Modnix.MainGUI {
          Log( $"\"{Mode}\" initiated" );
          if ( e.Source is Button btn ) btn.Focus();
          if ( Mode == "setup" ) {
+            if ( AppState == "no_game" ) {
+               Process.Start( "https://github.com/Sheep-y/Modnix/wiki/Manual-Setup#wiki-wrapper" );
+               return;
+            }
             // Switch to log mode and call setup
             AccessAction.Text = "Wait";
             Mode = "log";
