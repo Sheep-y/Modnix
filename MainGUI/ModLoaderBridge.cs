@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,8 +13,17 @@ namespace Sheepy.Modnix.MainGUI {
 
       internal object LoadModList () {
          ModLoader.Setup();
+         App.Log( "Building mod list" );
          ModLoader.BuildModList();
          return ModLoader.AllMods.Select( e => new GridModItem(){ Mod = e } );
+      }
+
+      internal void Delete ( ModInfo mod ) {
+         App.Log( $"Deleting Mod {mod.Name}" );
+         string path = mod.Path;
+         App.Log( $"Deleting {path}" );
+         if ( ! File.Exists( path ) ) throw new FileNotFoundException( path );
+         File.Delete( path );
       }
    }
 

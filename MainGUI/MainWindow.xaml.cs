@@ -176,11 +176,15 @@ namespace Sheepy.Modnix.MainGUI {
          ButtonRefreshMod.IsEnabled = IsInjected;
          if ( ! IsInjected ) {
             LabelModList.Content = "Requires Setup";
-            richModInfo.TextRange().Text = "";
+            RefreshModInfo( null );
             GridModList.ItemsSource = null;
+            return;
          }
-         if ( GridModList.ItemsSource != ModList )
+         if ( GridModList.ItemsSource != ModList ) {
+            Log( "New list of mods" );
             GridModList.ItemsSource = ModList;
+            RefreshModInfo( null );
+         }
          GridModList.Items?.Refresh();
       } catch ( Exception ex ) { Log( ex ); } }
 
@@ -191,20 +195,35 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       private void RefreshModInfo () { try {
-         ButtonModDelete.IsEnabled = CurrentMod == null;
-         ButtonModOpenModDir.IsEnabled = CurrentMod == null;
+         ButtonModDelete.IsEnabled = CurrentMod != null;
+         ButtonModOpenModDir.IsEnabled = CurrentMod != null;
          if ( CurrentMod == null ) {
             Log( "Clearing mod info" );
+            richModInfo.TextRange().Text = "";
             return;
          }
          Log( $"Refreshing mod {CurrentMod}" );
          richModInfo.TextRange().Text = 
-            $"{CurrentMod.Name}\rVer {CurrentMod.Version}\rType {CurrentMod.Type}\r{CurrentMod.Path}\nAuthor\t{(CurrentMod.Author)}";
+            $"{CurrentMod.Name}\rVersion {CurrentMod.Version}\rType {CurrentMod.Type}\nAuthor\t{(CurrentMod.Author)}";
       } catch ( Exception ex ) { Log( ex ); } }
 
       private void ButtonAddMod_Click ( object sender, RoutedEventArgs e ) {
          RefreshModInfo( null );
          RefreshModList();
+      }
+
+      private void ButtonModOpenModDir_Click ( object sender, RoutedEventArgs e ) {
+         string path = CurrentMod?.Path;
+         if ( string.IsNullOrWhiteSpace( path ) ) return;
+         Explore( path );
+      }
+
+      private void ButtonModDelete_Click ( object sender, RoutedEventArgs e ) {
+         if ( CurrentMod == null ) return;
+         if ( MessageBox.Show( $"Delete {CurrentMod.Name}?", "Confirm", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No ) == MessageBoxResult.Yes ) {
+            ButtonModDelete.IsEnabled = false;
+            App.DoModActionAsync( ModAction.DELETE, CurrentMod );
+         }
       }
 
       private void GridModList_CurrentCellChanged ( object sender, EventArgs e ) {

@@ -17,6 +17,8 @@ namespace Sheepy.Modnix.MainGUI {
       public abstract string Type { get; }
    }
 
+   internal enum ModAction { NONE, DELETE, ENABLE, DISABLE }
+
    internal static class SharedGui {
       internal static void Prompt ( string parts, Exception ex, Action OnRestart ) {
          string txt;

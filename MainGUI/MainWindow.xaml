@@ -97,19 +97,16 @@
                      <ColumnDefinition Width="10"/>
                      <ColumnDefinition/>
                   </Grid.ColumnDefinitions>
-                  <Button x:Name="ButtonModOpenModDir" Content="Explore" Padding="5" IsEnabled="False" />
-                  <Button x:Name="ButtonModDelete" Content="Delete" Grid.Column="2" Padding="5" IsEnabled="False" />
+                  <Button x:Name="ButtonModOpenModDir" Padding="5" IsEnabled="False" Click="ButtonModOpenModDir_Click">
+                     <AccessText Text="Explore"/>
+                  </Button>
+                  <Button x:Name="ButtonModDelete" Grid.Column="2" Padding="5" IsEnabled="False" Click="ButtonModDelete_Click">
+                     <AccessText Text="Delete"/>
+                  </Button>
                </Grid>
                <RichTextBox x:Name="richModInfo" IsReadOnly="True" VerticalScrollBarVisibility="Auto" BorderBrush="{x:Null}" Margin="0,10,0,5">
                   <FlowDocument>
                      <Paragraph>
-                        <Run Text="Select a Mod&#xA;Ver 1.2.3.4&#x9;Built 2020-12-12 12:34 Z&#x9;Size 12KB&#xA;Type PPML"/>
-                     </Paragraph>
-                     <Paragraph>
-                        <Run Text="MANUALLY DISABLED"/>
-                     </Paragraph>
-                     <Paragraph>
-                        <Run Text="Author&#x9;Sheepy&#xA;Lang&#x9;en,fr,de,zh&#xA;Mod Description&#xA;Link 1&#xA;Link 2&#xA;Link 3"/>
                      </Paragraph>
                   </FlowDocument>
                </RichTextBox>

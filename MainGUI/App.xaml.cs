@@ -465,10 +465,32 @@ namespace Sheepy.Modnix.MainGUI {
       #endregion
 
       #region mods
-      private void GetModList () {
+      private void GetModList () { try {
          if ( bridge == null ) bridge = new ModLoaderBridge( this );
          GUI.SetInfo( "mod_list", bridge.LoadModList() );
+      } catch ( IOException ex ) { Log( ex ); } }
+
+      internal void DoModActionAsync ( ModAction action, ModInfo mod ) {
+         Log( $"Queuing mod {action}" );
+         Task.Run( () => DoModAction( action, mod ) );
       }
+
+      private void DoModAction ( ModAction action, ModInfo mod ) { try { lock ( SynRoot) {
+         if ( mod == null ) return;
+         switch ( action ) {
+            case ModAction.DELETE : 
+               bridge.Delete( mod );
+               GetModList();
+               break;
+            default :
+               Log( $"Unknown command {action}" );
+               return;
+         }
+      } } catch ( IOException ex ) {
+         Log( ex );
+         GUI.Prompt( "error", ex );
+         GetModList();
+      } }
       #endregion
 
       #region Helpers
