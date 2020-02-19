@@ -20,12 +20,12 @@ namespace Sheepy.Modnix.MainGUI {
       private string AppVer, AppState, GamePath, GameVer;
       private System.Collections.IEnumerable ModList;
 
-      public MainWindow ( AppControl app ) {
+      public MainWindow ( AppControl app ) { try {
          Contract.Requires( app != null );
          App = app;
          InitializeComponent();
          RefreshGUI();
-      }
+      } catch ( Exception ex ) { Console.WriteLine( ex ); } }
 
       private void RefreshGUI () { try {
          Log( "Resetting GUI" );
@@ -229,7 +229,7 @@ namespace Sheepy.Modnix.MainGUI {
             TextLog.AppendText( time + message?.ToString() + "\n" );
             TextLog.ScrollToEnd();
             ButtonLogSave.IsEnabled = true;
-         } catch ( Exception ) { } } );
+         } catch ( Exception ex ) { Console.WriteLine( ex ); } } );
       }
 
       private void ButtonLogSave_Click ( object sender, RoutedEventArgs e ) { try {

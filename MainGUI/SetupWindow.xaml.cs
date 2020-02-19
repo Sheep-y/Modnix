@@ -21,14 +21,14 @@ namespace Sheepy.Modnix.MainGUI {
       private string Mode = "log"; // launch, setup, log
       private string LogContent;
 
-      public SetupWindow ( AppControl app, string mode ) {
+      public SetupWindow ( AppControl app, string mode ) { try {
          Contract.Requires( app != null );
          App = app;
          Mode = mode;
          InitializeComponent();
          RefreshInfo();
          App.CheckStatusAsync();
-      }
+      } catch ( Exception ex ) { Console.WriteLine( ex ); } }
 
       public void SetInfo ( string info, object value ) { this.Dispatch( () => {
          try {
@@ -114,17 +114,17 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       public void Log ( object message ) {
-         string time = DateTime.Now.ToString( "hh:mm:ss.ffff ", InvariantCulture );
-         string line = $"{time} {message}\n";
-         if ( Mode != "log" )
-            Console.WriteLine( line );
-         this.Dispatch( () => {
+         this.Dispatch( () => { try {
+            string time = DateTime.Now.ToString( "hh:mm:ss.ffff ", InvariantCulture );
+            string line = $"{time} {message}\n";
+            if ( Mode != "log" )
+               Console.WriteLine( line );
             if ( Mode == "log" ) {
                TextMessage.AppendText( line );
                TextMessage.ScrollToEnd();
             }  else
                LogContent += line;
-         } );
+         } catch ( Exception ex ) { Console.WriteLine( ex ); } } );
       }
 
    }

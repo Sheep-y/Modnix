@@ -85,12 +85,16 @@ namespace Sheepy.Modnix.MainGUI {
          Log( null ); // Send startup log to GUI
          GUI.SetInfo( "visible", "true" );
       } catch ( Exception ex ) {
-         File.WriteAllText( LIVE_NAME + " Startup Error.log", startup_log + ex.ToString() );
-         Log( ex );
-         if ( GUI != null )
+         try {
+            Console.WriteLine( ex );
+            File.WriteAllText( LIVE_NAME + " Startup Error.log", startup_log + ex.ToString() );
+         } catch ( Exception ) { }
+         if ( GUI != null ) {
             GUI.SetInfo( "visible", "true" );
-         else
+            Log( ex );
+         } else {
             Shutdown();
+         }
       } } }
 
       private void Init ( string[] args ) {
