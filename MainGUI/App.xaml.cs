@@ -54,7 +54,7 @@ namespace Sheepy.Modnix.MainGUI {
       #region Startup
       private AssemblyName Myself;
 
-      private bool paramSkipProcessCheck;
+      internal bool paramSkipProcessCheck;
       private int  paramIgnorePid;
 
       internal void ApplicationStartup ( object sender, StartupEventArgs e ) { lock ( SynRoot ) { try {
@@ -219,6 +219,8 @@ namespace Sheepy.Modnix.MainGUI {
             currentGame = new GameInstallation( this, gamePath );
             GUI.SetInfo( "game_path", gamePath );
             CheckInjectionStatus();
+            if ( currentGame.Status == "modnix" )
+               GUI.SetInfo( "mod_list", ModLoaderBridge.LoadModList() );
          } else {
             GUI.SetInfo( "state", "no_game" );
          }
@@ -230,14 +232,15 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void CheckInjectionStatus () {
          string status;
-         if ( CheckInjected() ) {
+         if ( FoundRunningGame() )
+            status = "running";
+         else if ( CheckInjected() ) {
             status = currentGame.Status; // status should be either modnix or both
             if ( status == "both" ) status = "ppml"; // Make GUI shows ppml, and thus require setup to remove ppml
             GUI.SetInfo( "game_version", CheckGameVer() );
          } else {
             status = "setup";
          }
-         if ( FoundRunningGame() ) status = "running";
          GUI.SetInfo( "state", status );
       }
 

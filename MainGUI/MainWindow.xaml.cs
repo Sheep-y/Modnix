@@ -16,9 +16,9 @@ using static System.Globalization.CultureInfo;
 namespace Sheepy.Modnix.MainGUI {
 
    public partial class MainWindow : Window, IAppGui {
-
       private readonly AppControl App;
       private string AppVer, AppState, GamePath, GameVer;
+      private System.Collections.IEnumerable ModList;
 
       public MainWindow ( AppControl app ) {
          Contract.Requires( app != null );
@@ -35,7 +35,8 @@ namespace Sheepy.Modnix.MainGUI {
          RefreshUpdateStatus();
          Log( "Initiating Controller" );
          App.CheckStatusAsync();
-         CheckUpdate( false );
+         if ( ! App.paramSkipProcessCheck )
+            CheckUpdate( false );
       } catch ( Exception ex ) { Log( ex ); } }
 
       public void SetInfo ( string info, object value ) { this.Dispatch( () => { try {
@@ -48,6 +49,7 @@ namespace Sheepy.Modnix.MainGUI {
             case "game_path"    : GamePath = txt; RefreshGameInfo(); break;
             case "game_version" : GameVer  = txt; RefreshGameInfo(); break;
             case "update"  : Update = value; UpdateChecked(); RefreshUpdateStatus(); break;
+            case "mod_list" : ModList = value as System.Collections.IEnumerable; RefreshModInfo(); break;
             default : Log( $"Unknown info {info}" ); break;
          }
       } catch ( Exception ex ) { Log( ex ); } } ); }
@@ -170,23 +172,12 @@ namespace Sheepy.Modnix.MainGUI {
             richModInfo.TextRange().Text = "";
             GridModList.ItemsSource = null;
          }
-         if ( GridModList.ItemsSource == null ) {
-            ModLoader.Setup();
-            ModLoader.BuildModList();
-            GridModList.ItemsSource = ModLoader.AllMods.Select( e => new GridModItem(){ Mod = e } );
-         }
+         if ( GridModList.ItemsSource != ModList )
+            GridModList.ItemsSource = ModList;
          GridModList.Items?.Refresh();
       } catch ( Exception ex ) { Log( ex ); } }
 
       private void ButtonAddMod_Click ( object sender, RoutedEventArgs e ) => RefreshModInfo();
-
-      private class GridModItem {
-         internal ModEntry Mod;
-         public string Name => Mod?.Metadata?.Name?.ToString();
-         public string Version => Mod?.Metadata?.Version;
-         public string Author => Mod?.Metadata?.Author?.ToString();
-         public string Type => "PPML";
-      }
       #endregion
 
       #region Updater
