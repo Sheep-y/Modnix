@@ -182,9 +182,9 @@ namespace Sheepy.Modnix.MainGUI {
 
       private class GridModItem {
          internal ModEntry Mod;
-         public string Name => Mod.Metadata?.Name?.ToString();
-         public string Version => Mod.Metadata?.Version;
-         public string Author => Mod.Metadata?.Author?.ToString();
+         public string Name => Mod?.Metadata?.Name?.ToString();
+         public string Version => Mod?.Metadata?.Version;
+         public string Author => Mod?.Metadata?.Author?.ToString();
          public string Type => "PPML";
       }
       #endregion
