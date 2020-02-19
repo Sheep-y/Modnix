@@ -67,6 +67,7 @@ namespace Sheepy.Modnix.MainGUI {
          Log( $"Startup time {DateTime.Now.ToString( "yyyy-MM-dd HH:mm:ss.ffff", InvariantCulture )}" );
          Init( e?.Args );
          if ( ! paramSkipProcessCheck ) {
+            Log( $"Running startup checks" );
             MigrateSettings();
             if ( FoundRunningModnix() ) {
                Shutdown();
@@ -80,6 +81,7 @@ namespace Sheepy.Modnix.MainGUI {
                }
             }
          }
+         Log( $"Launching main window" );
          if ( GUI == null )
             GUI = new MainWindow( this );
          Log( null ); // Send startup log to GUI
@@ -212,6 +214,7 @@ namespace Sheepy.Modnix.MainGUI {
       private bool ShouldRunSetup () { try {
          if ( ! MyPath.Contains( "/Mods/" ) && ! MyPath.Contains( "\\Mods\\" ) ) return true;
          if ( Path.GetFileName( MyPath ).ToLowerInvariant().Contains( "setup" ) ) return true;
+         Log( $"No need to run setup." );
          return false;
       } catch ( Exception ex ) { return Log( ex, false ); } }
       #endregion
@@ -464,7 +467,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       #region Helpers
       internal string RunAndWait ( string path, string exe, string param = null, bool asAdmin = false ) {
-         Log( $"Running at {path} : {exe} {param}" );
+         Log( $"Running {( asAdmin ? "as admin" : "" )} at {path} : {exe} {param}" );
          try {
             using ( Process p = new Process() ) {
                p.StartInfo.UseShellExecute = asAdmin;
@@ -475,7 +478,7 @@ namespace Sheepy.Modnix.MainGUI {
                p.StartInfo.CreateNoWindow = true;
                p.StartInfo.WindowStyle = ProcessWindowStyle.Minimized;
                if ( asAdmin ) p.StartInfo.Verb = "runas";
-               p.Start();
+               if ( ! p.Start() ) Log( "Process reused." );
 
                string output = "";
                if ( ! asAdmin ) {

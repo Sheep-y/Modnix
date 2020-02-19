@@ -31,6 +31,7 @@ namespace Sheepy.Modnix.MainGUI {
       } catch ( Exception ex ) { Console.WriteLine( ex ); } }
 
       public void SetInfo ( string info, object value ) { this.Dispatch( () => {
+         Log( $"Set {info} = {value}" );
          try {
             string txt = value?.ToString();
             switch ( info ) {
@@ -49,6 +50,7 @@ namespace Sheepy.Modnix.MainGUI {
       } ); }
 
       private void RefreshInfo () { try {
+         Log( $"Refreshing {Mode}" );
          if ( Mode == "log" ) {
             return;
          }
@@ -102,15 +104,15 @@ namespace Sheepy.Modnix.MainGUI {
       } catch ( Exception ex ) { Log( ex ); } }
 
       public void Prompt ( string parts, Exception ex = null ) {
-         this.Dispatch( () => {
+         this.Dispatch( () => { try {
+            Log( $"Prompt {parts}" );
             if ( AppState == "modnix" )
                EnableLaunch();
-            Log( $"Prompt {parts}" );
             SharedGui.Prompt( parts, ex, () => {
                App.LaunchInstalledModnix();
                Close();
             } );
-         } );
+         } catch ( Exception err ) { Log( err ); } } );
       }
 
       public void Log ( object message ) {

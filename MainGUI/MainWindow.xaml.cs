@@ -56,6 +56,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       #region App Info Area
       private void RefreshAppInfo () { try {
+         Log( "Refreshing app info" );
          string txt = $"Modnix\rVer {AppVer}\rStatus: ";
          if ( AppState == null )
             txt += "Busy";
@@ -74,6 +75,7 @@ namespace Sheepy.Modnix.MainGUI {
       } catch ( Exception ex ) { Log( ex ); } }
 
       private void RefreshAppButtons () { try {
+         Log( "Refreshing app buttons" );
          ButtonSetup.IsEnabled  = AppState != null;
          switch ( AppState ) {
             case "modnix"  : ButtonSetup.Content = "Revert"; break;
@@ -86,6 +88,7 @@ namespace Sheepy.Modnix.MainGUI {
       } catch ( Exception ex ) { Log( ex ); } }
 
       private void ButtonSetup_Click ( object sender, RoutedEventArgs e ) { try {
+         Log( "Main action button clicked" );
          if ( e?.Source is UIElement src ) src.Focus();
          switch ( AppState ) {
             case "ppml" : case "setup" :
@@ -139,6 +142,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       #region Game Info Area
       private void RefreshGameInfo () { try {
+         Log( "Refreshing game info" );
          string txt = "Phoenix Point";
          if ( GamePath != null ) {
             txt += "\r" + Path.GetFullPath( GamePath );
@@ -151,7 +155,7 @@ namespace Sheepy.Modnix.MainGUI {
          ButtonRunOffline.IsEnabled = GamePath != null;
       } catch ( Exception ex ) { Log( ex ); } }
 
-      private void ButtonOnline_Click ( object sender, RoutedEventArgs e ) => App.LaunchGame( "online" );
+      private void ButtonOnline_Click  ( object sender, RoutedEventArgs e ) => App.LaunchGame( "online" );
       private void ButtonOffline_Click ( object sender, RoutedEventArgs e ) => App.LaunchGame( "offline" );
       private void ButtonCanny_Click   ( object sender, RoutedEventArgs e ) => OpenUrl( "canny", e );
       private void ButtonDiscord_Click ( object sender, RoutedEventArgs e ) => OpenUrl( "discord", e );
@@ -164,6 +168,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       #region Mod Info Area
       private void RefreshModInfo () { try {
+         Log( "Refreshing mod list" );
          bool IsInjected = AppState == "modnix";
          ButtonAddMod.IsEnabled = IsInjected;
          ButtonRefreshMod.IsEnabled = IsInjected;
@@ -189,6 +194,7 @@ namespace Sheepy.Modnix.MainGUI {
             Log( $"Last update check was {lastCheck}" );
             if ( lastCheck != null && ( DateTime.Now - lastCheck ).TotalDays < 7 ) return;
          }
+         Log( "Checking update" );
          Update = "checking";
          RefreshUpdateStatus();
          App.CheckUpdateAsync();
@@ -205,6 +211,7 @@ namespace Sheepy.Modnix.MainGUI {
       private void ButtonCheckUpdate_Click ( object sender, RoutedEventArgs e ) => CheckUpdate( true );
 
       private void RefreshUpdateStatus () { try {
+         Log( $"Update is {(Update ?? "null")}" );
          if ( Object.Equals( "checking", Update ) ) {
             ButtonCheckUpdate.IsEnabled = false;
             ButtonCheckUpdate.Content = "Checking...";

@@ -84,7 +84,7 @@ namespace Sheepy.Modnix.MainGUI {
          return null;
       } catch ( Exception ex ) { return App.Log<GithubRelease>( ex, null ); } }
 
-      private string ReadAsString ( WebResponse response ) {
+      private static string ReadAsString ( WebResponse response ) {
          using ( StreamReader reader = new StreamReader( response.GetResponseStream() ) ) {
             return reader.ReadToEnd ();
          }
