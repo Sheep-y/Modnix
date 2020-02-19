@@ -11,5 +11,8 @@
     <Setting Name="Settings_Migrated" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
+    <Setting Name="Settings_Version" Type="System.String" Scope="User">
+      <Value Profile="(Default)">0.0.0.0</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

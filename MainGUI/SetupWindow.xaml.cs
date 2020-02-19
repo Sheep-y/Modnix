@@ -120,7 +120,7 @@ namespace Sheepy.Modnix.MainGUI {
             string time = DateTime.Now.ToString( "hh:mm:ss.ffff ", InvariantCulture );
             string line = $"{time} {message}\n";
             if ( Mode != "log" )
-               Console.WriteLine( line );
+               Console.Write( line );
             if ( Mode == "log" ) {
                TextMessage.AppendText( line );
                TextMessage.ScrollToEnd();

@@ -130,10 +130,12 @@ namespace Sheepy.Modnix.MainGUI {
          try {
             var settings = MainGUI.Properties.Settings.Default;
             if ( ! settings.Settings_Migrated ) {
-               Log( "Migrating settings from old version" );
+               Log( $"Migrating settings from {settings.Settings_Version}" );
                settings.Upgrade();
                settings.Settings_Migrated = true;
+               settings.Settings_Version = Myself.Version.ToString();
                settings.Save();
+            Log( "Settings saved." );
             }
             // v0.6 had no default value for Last_Update_Check which may cause NRE?
             try {
@@ -149,9 +151,19 @@ namespace Sheepy.Modnix.MainGUI {
       /// Parse command line arguments.
       /// -i --ignore-pid (id)    Ignore given pid in running process check
       /// -s --skip-launch-check  Skip checking running process, modnix installation, and setting migration
+      /// -reset --reset          Clear and reset App settings
       private void ProcessParams ( string[] args ) {
          if ( args == null || args.Length <= 0 ) return;
          List<string> param = args.ToList();
+
+         if ( ParamIndex( param, "reset", "reset" ) >= 0 ) {
+            Log( "Resetting app settings." );
+            var settings = MainGUI.Properties.Settings.Default;
+            settings.Reset();
+            settings.Settings_Migrated = true;
+            settings.Save();
+            Log( "Settings saved." );
+         }
 
          int pid = ParamIndex( param, "i", "ignore-pid" );
          if ( pid >= 0 && param.Count > pid+1 )
@@ -407,6 +419,7 @@ namespace Sheepy.Modnix.MainGUI {
          } catch ( Exception ex ) { Log( ex ); }
          // Remove Mods folder if empty
          if ( ! Directory.EnumerateFiles( OldPath ).Any() ) try {
+            Log( $"Deleting empty {OldPath}" );
             Directory.Delete( OldPath, false );
             if ( ! Directory.Exists( OldPath ) )
                CreateShortcut();
