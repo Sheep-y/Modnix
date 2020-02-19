@@ -64,7 +64,7 @@ namespace Sheepy.Modnix.MainGUI {
       internal bool paramSkipProcessCheck;
       private int  paramIgnorePid;
 
-      internal void ApplicationStartup ( object sender, StartupEventArgs e ) { lock ( SynRoot ) { try {
+      internal void ApplicationStartup ( object sender, StartupEventArgs e ) { try { lock ( SynRoot ) {
          Log( $"Startup time {DateTime.Now.ToString( "yyyy-MM-dd HH:mm:ss.ffff", InvariantCulture )}" );
          Init( e?.Args );
          if ( ! paramSkipProcessCheck ) {
@@ -87,7 +87,7 @@ namespace Sheepy.Modnix.MainGUI {
             GUI = new MainWindow( this );
          Log( null ); // Send startup log to GUI
          GUI.SetInfo( "visible", "true" );
-      } catch ( Exception ex ) {
+      } } catch ( Exception ex ) {
          try {
             Console.WriteLine( ex );
             File.WriteAllText( LIVE_NAME + " Startup Error.log", startup_log + ex.ToString() );
@@ -98,7 +98,7 @@ namespace Sheepy.Modnix.MainGUI {
          } else {
             Shutdown();
          }
-      } } }
+      } }
 
       private void Init ( string[] args ) {
          // Dynamically load embedded dll
@@ -228,7 +228,7 @@ namespace Sheepy.Modnix.MainGUI {
          Task.Run( (Action) CheckStatus );
       }
 
-      private void CheckStatus () { lock ( SynRoot ) { try {
+      private void CheckStatus () { try { lock ( SynRoot ) {
          Log( "Checking status" );
          GUI.SetInfo( "version", CheckAppVer() );
          if ( FoundGame( out string gamePath ) ) {
@@ -240,7 +240,7 @@ namespace Sheepy.Modnix.MainGUI {
          } else {
             GUI.SetInfo( "state", "no_game" );
          }
-      } catch ( Exception ex ) { Log( ex ); } } }
+      } } catch ( Exception ex ) { Log( ex ); } }
 
       private static bool FoundRunningGame () {
          return Process.GetProcessesByName( Path.GetFileNameWithoutExtension( GAME_EXE ) ).Length > 0;
@@ -337,7 +337,7 @@ namespace Sheepy.Modnix.MainGUI {
          Task.Run( (Action) DoSetup );
       }
 
-      private void DoSetup () { lock ( SynRoot ) { try {
+      private void DoSetup () { try { lock ( SynRoot ) {
          string prompt = "setup_ok";
          // Copy exe to mod folder
          if ( CopySelf( MyPath, ModGuiExe ) )
@@ -362,11 +362,11 @@ namespace Sheepy.Modnix.MainGUI {
             GUI.Prompt( prompt );
          } else
             GUI.Prompt( "error" );
-      } catch ( Exception ex ) {
+      } } catch ( Exception ex ) {
          try { CheckStatus(); } catch ( Exception ) {}
          Log( ex );
          GUI.Prompt( "error", ex );
-      } } }
+      } }
 
       internal bool CopySelf ( string me, string there ) { try {
          if ( me == there ) return false;
@@ -434,7 +434,7 @@ namespace Sheepy.Modnix.MainGUI {
          Task.Run( (Action) DoRestore );
       }
 
-      private void DoRestore () { lock ( SynRoot ) { try {
+      private void DoRestore () { try { lock ( SynRoot ) { 
          currentGame.RunInjector( "/y /r" );
          CheckInjectionStatus();
          if ( currentGame.Status == "none" ) {
@@ -443,10 +443,10 @@ namespace Sheepy.Modnix.MainGUI {
             GUI.Prompt( "restore_ok" );
          } else
             GUI.Prompt( "error" );
-      } catch ( Exception ex ) {
+      } } catch ( Exception ex ) {
          Log( ex );
          GUI.Prompt( "error", ex );
-      } } }
+      } }
 
       internal void CheckUpdateAsync () {
          Log( "Queuing update check" );
@@ -481,7 +481,7 @@ namespace Sheepy.Modnix.MainGUI {
             case ModAction.DELETE : 
                bridge.Delete( mod );
                GetModList();
-               break;
+               return;
             default :
                Log( $"Unknown command {action}" );
                return;
