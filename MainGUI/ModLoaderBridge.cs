@@ -17,12 +17,13 @@ namespace Sheepy.Modnix.MainGUI {
       }
    }
 
-   internal class GridModItem {
+   internal class GridModItem : ModInfo {
       internal ModEntry Mod;
-      public string Name => Mod?.Metadata?.Name?.ToString();
-      public string Version => Mod?.Metadata?.Version;
-      public string Author => Mod?.Metadata?.Author?.ToString();
-      public string Type => "PPML";
+      public override string Name => Mod?.Metadata?.Name?.ToString();
+      public override string Version => Mod?.Metadata?.Version;
+      public override string Author => Mod?.Metadata?.Author?.ToString();
+      public override string Path => Mod?.Metadata?.Dlls?[0]?.Path;
+      public override string Type => "PPML";
       public override string ToString () => Mod?.ToString();
    }
 }

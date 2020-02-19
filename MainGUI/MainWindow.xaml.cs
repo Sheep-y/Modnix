@@ -31,7 +31,7 @@ namespace Sheepy.Modnix.MainGUI {
          Log( "Resetting GUI" );
          RefreshAppInfo();
          RefreshGameInfo();
-         RefreshModInfo();
+         RefreshModList();
          RefreshUpdateStatus();
          Log( "Initiating Controller" );
          App.CheckStatusAsync();
@@ -49,7 +49,7 @@ namespace Sheepy.Modnix.MainGUI {
             case "game_path"    : GamePath = txt; RefreshGameInfo(); break;
             case "game_version" : GameVer  = txt; RefreshGameInfo(); break;
             case "update"  : Update = value; UpdateChecked(); RefreshUpdateStatus(); break;
-            case "mod_list" : ModList = value as System.Collections.IEnumerable; RefreshModInfo(); break;
+            case "mod_list" : ModList = value as System.Collections.IEnumerable; RefreshModList(); break;
             default : Log( $"Unknown info {info}" ); break;
          }
       } catch ( Exception ex ) { Log( ex ); } } ); }
@@ -71,7 +71,7 @@ namespace Sheepy.Modnix.MainGUI {
             }
          richAppInfo.TextRange().Text = txt;
          RefreshAppButtons();
-         RefreshModInfo();
+         RefreshModList();
       } catch ( Exception ex ) { Log( ex ); } }
 
       private void RefreshAppButtons () { try {
@@ -167,9 +167,9 @@ namespace Sheepy.Modnix.MainGUI {
       #endregion
 
       #region Mod Info Area
-      private object CurrentItem;
+      private ModInfo CurrentMod;
 
-      private void RefreshModInfo () { try {
+      private void RefreshModList () { try {
          Log( "Refreshing mod list" );
          bool IsInjected = AppState == "modnix";
          ButtonAddMod.IsEnabled = IsInjected;
@@ -184,15 +184,33 @@ namespace Sheepy.Modnix.MainGUI {
          GridModList.Items?.Refresh();
       } catch ( Exception ex ) { Log( ex ); } }
 
-      private void ButtonAddMod_Click ( object sender, RoutedEventArgs e ) => RefreshModInfo();
-
-      private void GridModList_CurrentCellChanged ( object sender, EventArgs e ) {
-         if ( GridModList.CurrentItem == null || GridModList.CurrentItem == CurrentItem ) return;
-         CurrentItem = GridModList.CurrentItem;
-         Log( $"Selection changed to {CurrentItem}" );
-         richModInfo.TextRange().Text = "";
+      private void RefreshModInfo ( ModInfo mod ) {
+         if ( mod == CurrentMod ) return;
+         CurrentMod = mod;
+         RefreshModInfo();
       }
 
+      private void RefreshModInfo () { try {
+         ButtonModDelete.IsEnabled = CurrentMod == null;
+         ButtonModOpenModDir.IsEnabled = CurrentMod == null;
+         if ( CurrentMod == null ) {
+            Log( "Clearing mod info" );
+            return;
+         }
+         Log( $"Refreshing mod {CurrentMod}" );
+         richModInfo.TextRange().Text = 
+            $"{CurrentMod.Name}\rVer {CurrentMod.Version}\rType {CurrentMod.Type}\r{CurrentMod.Path}\nAuthor\t{(CurrentMod.Author)}";
+      } catch ( Exception ex ) { Log( ex ); } }
+
+      private void ButtonAddMod_Click ( object sender, RoutedEventArgs e ) {
+         RefreshModInfo( null );
+         RefreshModList();
+      }
+
+      private void GridModList_CurrentCellChanged ( object sender, EventArgs e ) {
+         if ( GridModList.CurrentItem == null ) return;
+         RefreshModInfo( GridModList.CurrentItem as ModInfo );
+      }
       #endregion
 
       #region Updater

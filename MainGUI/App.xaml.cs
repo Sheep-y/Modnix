@@ -8,6 +8,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
+using static Sheepy.Modnix.MainGUI.SharedGui;
 using static System.Globalization.CultureInfo;
 
 namespace Sheepy.Modnix.MainGUI {
@@ -234,10 +235,8 @@ namespace Sheepy.Modnix.MainGUI {
             currentGame = new GameInstallation( this, gamePath );
             GUI.SetInfo( "game_path", gamePath );
             CheckInjectionStatus();
-            if ( currentGame.Status == "modnix" ) {
-               if ( bridge == null ) bridge = new ModLoaderBridge( this );
-               GUI.SetInfo( "mod_list", bridge.LoadModList() );
-            }
+            if ( currentGame.Status == "modnix" )
+               GetModList();
          } else {
             GUI.SetInfo( "state", "no_game" );
          }
@@ -463,6 +462,13 @@ namespace Sheepy.Modnix.MainGUI {
          }
          GUI.SetInfo( "update", updater.FindUpdate( Myself.Version ) );
       } catch ( Exception ex ) { Log( ex ); } }
+      #endregion
+
+      #region mods
+      private void GetModList () {
+         if ( bridge == null ) bridge = new ModLoaderBridge( this );
+         GUI.SetInfo( "mod_list", bridge.LoadModList() );
+      }
       #endregion
 
       #region Helpers

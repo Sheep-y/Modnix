@@ -8,6 +8,15 @@ using System.Windows.Threading;
 using static System.StringComparison;
 
 namespace Sheepy.Modnix.MainGUI {
+   
+   internal abstract class ModInfo {
+      public abstract string Name { get; }
+      public abstract string Version { get; }
+      public abstract string Author { get; }
+      public abstract string Path { get; }
+      public abstract string Type { get; }
+   }
+
    internal static class SharedGui {
       internal static void Prompt ( string parts, Exception ex, Action OnRestart ) {
          string txt;
