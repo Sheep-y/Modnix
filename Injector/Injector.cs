@@ -101,7 +101,7 @@ namespace Sheepy.Modnix {
                   if ( State.modxDll.Status > InjectionState.NONE )
                      State.modxDll.Restore();
                }
-               return PromptForKey( OptionsIn.RequireKeyPress );
+               return PromptForKey();
             }
 
             if ( OptionsIn.Installing ) {
@@ -125,7 +125,7 @@ namespace Sheepy.Modnix {
                }
                if ( injected )
                   SayPpmlWarning();
-               return PromptForKey( OptionsIn.RequireKeyPress, injected ? RC_NORMAL : RC_INJECTION_FAILED );
+               return PromptForKey( injected ? RC_NORMAL : RC_INJECTION_FAILED );
             }
 
          } catch ( BackupFileError e ) {
@@ -169,17 +169,17 @@ namespace Sheepy.Modnix {
          State.ppmlDll = new TargetFile( State.managedDirectory, GAME_DLL_FILE_NAME );
 
          if ( ! File.Exists( State.modxDll.Target ) )
-            Exit( PromptForKey( OptionsIn.RequireKeyPress, SayGameAssemblyMissingError( OptionsIn.ManagedDir ) ) );
+            Exit( PromptForKey( SayGameAssemblyMissingError( OptionsIn.ManagedDir ) ) );
 
          if ( ! File.Exists( State.modLoaderDllPath ) )
-            Exit( PromptForKey( OptionsIn.RequireKeyPress, SayModLoaderAssemblyMissingError( State.modLoaderDllPath ) ) );
+            Exit( PromptForKey( SayModLoaderAssemblyMissingError( State.modLoaderDllPath ) ) );
 
          State.gameVersion = State.ppmlDll.ReadVersion();
          if ( OptionsIn.GameVersion )
             Exit( SayGameVersion( State.gameVersion ) );
 
          if ( ! string.IsNullOrEmpty( OptionsIn.RequiredGameVersion ) && OptionsIn.RequiredGameVersion != State.gameVersion )
-            Exit( PromptForKey( OptionsIn.RequireKeyPress, SayRequiredGameVersionMismatchMessage( State.gameVersion, OptionsIn.RequiredGameVersion ) ) );
+            Exit( PromptForKey( SayRequiredGameVersionMismatchMessage( State.gameVersion, OptionsIn.RequiredGameVersion ) ) );
 
          State.ppmlDll.CheckInjection();
          State.modxDll.CheckInjection();
@@ -286,8 +286,8 @@ namespace Sheepy.Modnix {
             WriteLine( $"!!! {PPML_INJECTOR_EXE} found.  Deletion is advised as PPML is incompaible with Modnix. !!!" );
       }
 
-      private static int PromptForKey ( bool requireKeyPress, int returnCode = RC_NORMAL ) {
-         if ( requireKeyPress ) {
+      private static int PromptForKey ( int returnCode = RC_NORMAL ) {
+         if ( OptionsIn.RequireKeyPress ) {
             WriteLine( "Press any key to continue." );
             ReadKey();
          }
