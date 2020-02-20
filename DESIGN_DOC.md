@@ -136,16 +136,20 @@ Aims:
 Steps:
 1. The root mod folder is scanned for files and folders.
 2. Files in root folder are parsed as mods.
-3. For folders, if mod.json exists, it will be parsed as a mod. The folder will not be further processed.
-4. Otherwise, files and subfolders whose alphabetic characters starts with the containing folder's, they are processed.
-5. Files are parsed as mods.  Subfolders are scanned recursively with step 3-5 up to a certain max depth.
+3. If folders, and if mod.js exists, it will be parsed as a mod. The folder will not be further processed.
+4. If non-root folders, and only one .js or .json match the folder name, it will be parsed as a mod. The folder will not be further processed.
+5. Otherwise, files whose name match the containing folder's, are parsed as mods.
+6. If no file match the requirement, subfolders are scanned recursively up to a max depth.
+
+After the "root" set of mods are scanned, they are "resolved" to bulid the working mod tree.
+See Mod Resolution.
 
 ### Mod Parsing
 
-1. If file extension is .json, parse as mod.json.  See example below.
+1. If file extension is .js or .json, parse as mod.js.  See example below.
     1. If success, but mod does not specify a dll and does not specify other contents (Mods, Alters, Assets), and is non-root, adds all dlls whose name match the folder (see above).
 2. If file extension is .dll, parse mod metadata from assembly information which serve as a default.
-3. If file extension is .dll, find embedded "mod" and, if found, parse as .json and merge with replace.
+3. If file extension is .dll, find embedded "mod" and, if found, parse as .js and merge with replace.
 4. Check built-in override list.  If any match, merge with replace.
 5. Check user override list.  If any match, merge with replace.
 
@@ -161,27 +165,28 @@ It should be useful when mods get more complicated.
 
 ### Mod Resolution
 
-After the "root" set of mods are scanned, they are "resolved" to bulid the mod tree.
 The resolution repeats until no action is taken, or until a max depth.
 
 1. Consolidation
     1. Group mods by id.
-    2. For mods that have the same id, find highest version, then find latest modified, then find largest, finally just use the first.
-2. First Pass
-    1. Manually disabled mods are disabled and removed from resolution.
-    2. AppVer is checked.  If out of range, disable and removed from resolution.
-    3. Requires are checked.  If missing any requirement, disable and removed from resolution.
-3. Second Pass
-    1. Conflicts are checked.  Targetted mods are disabled and removed from resolution.
-    2. Mods are ordered by LoadsAfter and LoadsBefore.  Conflicting mods are disabled and removed from resolution.
-4. Expansion
+    2. For mods that have the same id, find highest version, then find latest modified, then find largest, finally just find the first.
+    3. The remaining duplicates are disabled and removed from resolution.
+2. Manually disabled mods are disabled and removed from resolution.
+3. AppVer is checked for each mod.  If out of range, disable and removed from resolution.
+4. Requires are checked for each mod.  If missing any requirement, disable and removed from resolution.
+5. Conflicts are checked for each mod.  Targetted mods are disabled and removed from resolution.
+6. Mods are ordered by LoadsAfter and LoadsBefore. Conflicts cause the rule to be ignored.
+7. Expansion
     1. Mods are parsed as mod and added to resolution.
 
-### Example mod.json
+### Example mod.js
 
-A mod's metadata is held in mod.json, either as a real file or embedded in dll.
+A mod's metadata is held in mod.js, or (mod name).js,
+either as a real file or embedded in dll.
 
-Comments allowed.  All fields are optional.
+Comments allowed.  Property quotes optional.  All fields optional.
+All paths are relative to the containing folder and can only go down.
+File may be wrapped by a pair of parentheses for js compatibility, not shown here.
 
 Simple example:
 
@@ -201,11 +206,10 @@ Extended example:
 {
     /** Mod Specification, affects mod loading. */
     "Id": "info.mod.refined.demo", /* Default to GUID of assembly, and fallback to file name. */
-    "Version": "1.2.3.4",
-    "Phase": "Default", /* (ignore-case) Splash, Default (same as MainMenu), MainMenu, Geoscape, Tactic */
+    "Version": "1.2.3.4",         /* Must be version parse-able, i.e. 1 to 4 integers. */
 
     /** Information for mod users; does not affect mod loading. */
-    "Name": { en: "Refined Demo Mod", zh: "外掛示範" },
+    "Name": { "en": "Refined Demo Mod", "zh": "外掛示範" },
     "Langs" : [ "en", "zh" ], /* Supported game languages. "*" means all. */
     "Description": { "en": "Lorem ipsum", "zh": "上大人" },
     "Author": { "en": "Demonstrator", "zh": "示範者" },
@@ -215,13 +219,13 @@ Extended example:
     /** Mod Requirements */
               /* Game version to enable this mod. */
     "AppVer": { "Min": "1.0.1234", "Max": "1.0.5678" },
-                /* Required mod; if requirement is not met, mod will be disabled. */
+                /* Required mod; if requirement is not met, this mod will be disabled. */
     "Requires": [{ "Id": "info.mod.simple.demo", "Min": "1.0" }],
                  /* Conflicting mod; mods listed here will be disabled. */
     "Conflicts": [{ "Id": "info.mod.evil", "Max": "2.0" }],
-                   /* Load me before these mods. */
+                   /* Try load me before these mods, no guarantee. */
     "LoadsAfter":  [ "info.mod.early" ],
-                   /* Load me after these mods. */
+                   /* Try load me after these mods, no guarantee. */
     "LoadsBefore": "info.mod.late",
 
     /** Mod Contents */
@@ -240,13 +244,29 @@ Extended example:
 
 These settings must be persisted:
 
-1. Global Safe Mode (on/off)
-2. Global Log Level (on/off)
-3. Manually disabled mods.
-4. User override of mod metadata.
+1. Global Log Level (on/off)
+2. Status of each mods.
+3. User override of mod metadata.
 
 The settings are associated with game path and mode,
 but most users should have only one default settings.
+
+### Loading Phase
+
+Mods may implement multiple methods which will be called at different phases.
+
+The phases are being determined and will be documented.  These phases are planned:
+
+1. Splash
+2. Default
+3. MainMenuFirstLoad
+4. MainMenuOnLoad
+5. GeoLevelFirstLoad
+6. GeoLevelOnLoad
+7. TacLevelFirstLoad
+8. TacLevelOnLoad
+
+
 
 ## Main GUI
 
