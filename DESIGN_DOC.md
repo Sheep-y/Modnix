@@ -149,12 +149,13 @@ See Mod Resolution.
 1. If file extension is .js or .json, parse as mod.js.  See example below.
     1. If success, but mod does not specify a dll and does not specify other contents (Mods, Alters, Assets), and is non-root, adds all dlls whose name match the folder (see above).
 2. If file extension is .dll, parse mod metadata from assembly information which serve as a default.
-3. If file extension is .dll, find embedded "mod" and, if found, parse as .js and merge with replace.
-4. Check built-in override list.  If any match, merge with replace.
-5. Check user override list.  If any match, merge with replace.
+3. If file extension is .dll, find embedded "mod" and, if found, parse as .js, merge with replace, and set mod type to Modnix.
+4. If file extension is .dll and not Modnix, parse as PPML.  Abort if failed.
+5. Check built-in override list.  If any match, merge with replace.
+6. Check user override list.  If any match, merge with replace.
 
-Mods that fail to parse at step 1 or 2 will not be loaded.
-Parse failures at step 3-5 are ignored and proceed to next step.
+Mods that fail to parse at step 1, 2, and 4 will not be loaded.
+Parse failures at step 3, 5, and 6 are ignored and proceed to next step.
 
 Currently only dll mods are supported.
 Data mods is planned in future releases.
@@ -173,7 +174,7 @@ The resolution repeats until no action is taken, or until a max depth.
     3. The remaining duplicates are disabled and removed from resolution.
 2. Manually disabled mods are disabled and removed from resolution.
 3. Modnix, PPML, and Phoenix Point requirements are checked for each mod.  If out of range, disable and removed from resolution.
-4. Requires are checked for each mod.  If missing any requirement, disable and removed from resolution.
+4. Remaining requirements are checked for each mod.  If missing any requirement, disable and removed from resolution.
 5. Conflicts are checked for each mod.  Targetted mods are disabled and removed from resolution.
 6. Mods are ordered by LoadsAfter and LoadsBefore. Conflicts cause the rule to be ignored.
 7. Expansion
@@ -205,7 +206,7 @@ Extended example:
 ```
 {
     /** Mod Specification, affects mod loading. */
-    "Id": "info.mod.refined.demo", /* Default to GUID of assembly, and fallback to file name. */
+    "Id": "info.mod.refined.demo", /* Default to GUID of assembly, and fallback to file name. Non-alphanumeric are discarded. */
     "Version": "1.2.3.4",         /* Must be version parse-able, i.e. 1 to 4 integers. */
 
     /** Information for mod users; does not affect mod loading. */
@@ -217,7 +218,7 @@ Extended example:
     "Contact": { "Mail": "demo@example.info", "Skype": "..." },
 
     /** Mod Requirements */
-                /* Required mod; if requirement is not met, this mod will be disabled. Reserved: Modnix, PPML, PhoenixPoint, and Phoenix Point. */
+                /* Required mod; if requirement is not met, this mod will be disabled. Reserved: Modnix, PPML, PhoenixPoint. */
     "Requires": [{ "Id": "info.mod.simple.demo", "Min": "1.0" }],
                  /* Conflicting mod; mods listed here will be disabled. */
     "Conflicts": [{ "Id": "info.mod.evil", "Max": "2.0" }],
@@ -256,7 +257,7 @@ Mods may implement multiple methods which will be called at different phases.
 The phases are being determined and will be documented.  These phases are planned:
 
 1. Splash
-2. Default
+2. IntroCinematic
 3. MainMenuFirstLoad
 4. MainMenuOnLoad
 5. GeoLevelFirstLoad
