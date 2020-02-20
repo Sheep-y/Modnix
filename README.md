@@ -1,10 +1,16 @@
 # Modnix
 
+⮞⮞⮞ [Downloads](https://github.com/Sheep-y/Modnix/releases) ⮜⮜⮜
+
 Modnix is a mod loader for [Phoenix Point](https://phoenixpoint.info/), [Snapshot Games](http://www.snapshotgames.com/) 2019.
 
-It is designed to succeed (replace) [Phoenix Point Mod Loader](https://github.com/RealityMachina/PhoenixPointModInjector/), v0.1 by RealityMachina.
+It is designed to succeed (replace) [Phoenix Point Mod Loader](https://github.com/RealityMachina/PhoenixPointModInjector/#readme), v0.1 by RealityMachina.
 
 Modnix is under active development, and mature enough to be tested by developers and power users.
+
+See the [Wiki](https://github.com/Sheep-y/Modnix/wiki#wiki-wrapper) for documentation,
+such as [User Guide](https://github.com/Sheep-y/Modnix/wiki/User-Guide#wiki-wrapper)
+and [Troubleshooting](https://github.com/Sheep-y/Modnix/wiki/Troubleshooting-Modnix#wiki-wrapper).
 
 ## Features
 
