@@ -24,7 +24,6 @@ namespace Sheepy.Modnix.MainGUI {
       // Use slash for all paths, and use .FixSlash() to correct to platform slash.
       internal readonly static string MOD_PATH = "My Games/Phoenix Point/Mods".FixSlash();
       internal readonly static string DLL_PATH = "PhoenixPointWin64_Data/Managed".FixSlash();
-      internal const string SETUP_NAME = "ModnixSetup";
       internal const string LIVE_NAME  = "Modnix";
       internal const string APP_EXT  = ".exe";
       internal const string GAME_EXE = "PhoenixPointWin64.exe";
@@ -105,10 +104,12 @@ namespace Sheepy.Modnix.MainGUI {
          AppDomain.CurrentDomain.AssemblyResolve += ( domain, dll ) => {
             Log( $"Loading {dll.Name}" );
             AppDomain app = domain as AppDomain ?? AppDomain.CurrentDomain;
-            if ( dll.Name.StartsWith( "Newtonsoft.Json,", StringComparison.InvariantCultureIgnoreCase ) )
-               return ( app ).Load( MainGUI.Properties.Resources.Newtonsoft_Json );
             if ( dll.Name.StartsWith( "ModnixLoader,", StringComparison.InvariantCultureIgnoreCase ) )
-               return ( app ).Load( MainGUI.Properties.Resources.ModnixLoader );
+               return app.Load( MainGUI.Properties.Resources.ModnixLoader );
+            if ( dll.Name.StartsWith( "Mono.Cecil,", StringComparison.InvariantCultureIgnoreCase ) )
+               return app.Load( MainGUI.Properties.Resources.ModnixLoader );
+            if ( dll.Name.StartsWith( "Newtonsoft.Json,", StringComparison.InvariantCultureIgnoreCase ) )
+               return app.Load( MainGUI.Properties.Resources.Newtonsoft_Json );
             return null;
          };
 
@@ -188,7 +189,9 @@ namespace Sheepy.Modnix.MainGUI {
          // Find running instances
          int myId = Process.GetCurrentProcess().Id;
          Process running = Process.GetProcesses()
-               .Where( e => e.ProcessName == LIVE_NAME || e.ProcessName.StartsWith( SETUP_NAME, StringComparison.InvariantCultureIgnoreCase ) )
+               .Where( e => e.ProcessName == LIVE_NAME ||
+                       e.ProcessName.StartsWith( LIVE_NAME+"Setup", StringComparison.InvariantCultureIgnoreCase ) ||
+                       e.ProcessName.StartsWith( LIVE_NAME+"Install", StringComparison.InvariantCultureIgnoreCase ) )
                .Where( e => e.Id != myId && ( paramIgnorePid == 0 || e.Id != paramIgnorePid ) ).FirstOrDefault();
          if ( running == null ) return false;
          // Bring to foreground
@@ -227,6 +230,7 @@ namespace Sheepy.Modnix.MainGUI {
       private bool ShouldRunSetup () { try {
          if ( ! MyPath.Contains( "/Mods/" ) && ! MyPath.Contains( "\\Mods\\" ) ) return true;
          if ( Path.GetFileName( MyPath ).ToLowerInvariant().Contains( "setup" ) ) return true;
+         if ( Path.GetFileName( MyPath ).ToLowerInvariant().Contains( "install" ) ) return true;
          Log( $"No need to run setup." );
          return false;
       } catch ( Exception ex ) { return Log( ex, false ); } }
