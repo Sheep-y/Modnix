@@ -147,7 +147,7 @@ See Mod Resolution.
 ### Mod Parsing
 
 1. If file extension is .js or .json, parse as mod.js.  See example below.
-    1. If success, but mod does not specify a dll and does not specify other contents (Mods, Alters, Assets), and is non-root, adds all dlls whose name match the folder (see above).
+    1. If success, but mod does not specify any contents (Mods, Dlls, Alters, Assets), and is non-root, adds all dlls whose name match the folder (see above).
 2. If file extension is .dll, parse mod metadata from assembly information which serve as a default.
 3. If file extension is .dll, find embedded "mod" and, if found, parse as .js, merge with replace, and set mod type to Modnix.
 4. If file extension is .dll and not Modnix, parse as PPML.  Abort if failed.
@@ -231,7 +231,7 @@ Extended example:
             /* Load these files as mods. */
     "Mods": [ "DllMod.dll", "SimpleMod.json" ],
             /* Override default dll scanning */
-    "Dlls": [{ "Path": "Loader.dll", "Method": "MyCustomInit" }],
+    "Dlls": [{ "Path": "Loader.dll", "MainMenuLoad": "MyCustomMethod" }],
               /* Reserved for future use */
     "Alters": null,
               /* Reserved for future use */
@@ -259,11 +259,11 @@ The phases are being determined and will be documented.  These phases are planne
 1. Splash
 2. IntroCinematic
 3. MainMenuFirstLoad
-4. MainMenuOnLoad
+4. MainMenuLoad
 5. GeoLevelFirstLoad
-6. GeoLevelOnLoad
+6. GeoLevelLoad
 7. TacLevelFirstLoad
-8. TacLevelOnLoad
+8. TacLevelLoad
 
 
 

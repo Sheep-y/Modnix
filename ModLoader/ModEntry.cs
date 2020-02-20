@@ -28,7 +28,6 @@ namespace Sheepy.Modnix {
    public class ModMeta {
       public string Id;
       public string Version;
-      public string Phase;
 
       public TextSet Name;
       public string[] Langs;
@@ -68,12 +67,12 @@ namespace Sheepy.Modnix {
 
    public class DllMeta {
       public string Path;
-      public string Method;
+      public Dictionary<string,string> Methods;
    }
 
-   public class ModMetaJson {
+   public static class ModMetaJson {
       public readonly static LoggerProxy JsonLogger = new JsonTraceLogger();
-      public readonly static JsonSerializerSettings JsonOptions = new JsonSerializerSettings() {
+      public readonly static JsonSerializerSettings JsonOptions = new JsonSerializerSettings{
          Converters = new JsonConverter[]{ new ModMetaReader() }.ToList(),
          DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate,
          ReferenceLoopHandling = ReferenceLoopHandling.Error,
@@ -121,6 +120,7 @@ namespace Sheepy.Modnix {
             case "id"  : e.Id  = txt; break;
             case "min" : e.Min = txt; break;
             case "max" : e.Max = txt; break;
+            default: break;
          }
          return e;
       }
@@ -130,8 +130,13 @@ namespace Sheepy.Modnix {
       private static DllMeta   AssignDllMetaProp ( DllMeta e, string prop, object val ) {
          string txt = val.ToString();
          switch ( prop ) {
-            case "path"   : e.Path   = txt; break;
-            case "method" : e.Method = txt; break;
+            case "path" :
+               e.Path   = txt;
+               break;
+            default :
+               if ( e.Methods == null ) e.Methods = new Dictionary<string,string>();
+               e.Methods.Add( prop, txt );
+               break;
          }
          return e;
       }

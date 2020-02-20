@@ -21,7 +21,7 @@ namespace Sheepy.Modnix {
       //private static HarmonyInstance Patcher;
 
       private const BindingFlags PUBLIC_STATIC_BINDING_FLAGS = Public | Static;
-      private static readonly List<string> IGNORE_FILE_NAMES = new List<string>() {
+      private static readonly List<string> IGNORE_FILE_NAMES = new List<string> {
          "0Harmony.dll",
          "PPModLoader.dll",
          "ModnixLoader.dll",
@@ -63,7 +63,7 @@ namespace Sheepy.Modnix {
          if ( flags == "splash" ) return; // Not implemented
          foreach ( var mod in AllMods )
             foreach ( var dll in mod.Metadata.Dlls ) try {
-               LoadDLL( dll.Path, dll.Method ?? "Init" );
+               LoadDLL( dll.Path, "Init" );
             } catch ( Exception ex ) { Log.Error( ex ); }
          Log.Flush();
       } } catch ( Exception ex ) { Log.Error( ex ); } }
@@ -88,14 +88,15 @@ namespace Sheepy.Modnix {
 
       public static ModEntry ParseMod ( string file ) {
          var info = FileVersionInfo.GetVersionInfo( file );
-         var meta = new ModMeta();
-         meta.Id = Path.GetFullPath( file ).Replace( ModDirectory, "" ).ToLowerInvariant();
-         meta.Name = new TextSet(){ Default = info.FileDescription };
-         meta.Version = info.FileVersion;
-         meta.Description = new TextSet(){ Default = info.Comments };
-         meta.Author = new TextSet() { Default = info.CompanyName };
-         meta.Dlls = new DllMeta[] { new DllMeta() { Path = file } };
-         return new ModEntry(){ Metadata = meta };
+         var meta = new ModMeta{
+            Id = Path.GetFullPath( file ).Replace( ModDirectory, "" ).ToLowerInvariant(),
+            Name = new TextSet{ Default = info.FileDescription },
+            Version = info.FileVersion,
+            Description = new TextSet{ Default = info.Comments },
+            Author = new TextSet{ Default = info.CompanyName },
+            Dlls = new DllMeta[] { new DllMeta{ Path = file } },
+         };
+         return new ModEntry{ Metadata = meta };
       }
 
       public static Assembly LoadDLL ( string path, string methodName = "Init", string typeName = null, object[] parameters = null, BindingFlags bFlags = PUBLIC_STATIC_BINDING_FLAGS ) {
