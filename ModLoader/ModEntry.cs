@@ -175,21 +175,23 @@ namespace Sheepy.Modnix {
       private static T ParseObject < T > ( JsonReader r, string defaultProp, Func<T,string,object,T> assignProp ) where T : class, new() {
          var token = r.SkipComment();
          if ( token == JsonToken.Null || token == JsonToken.Undefined ) return null;
-         if ( token == JsonToken.String )
-            return assignProp( new T(), defaultProp, r.Value );
-         if ( token == JsonToken.StartObject ) {
-            if ( r.ReadAndSkipComment() == JsonToken.EndObject ) return null;
-            T result = new T();
-            do {
-               if ( r.TokenType == JsonToken.PropertyName ) {
-                  string prop = r.Value?.ToString()?.ToLowerInvariant();
-                  token = r.ReadAndSkipComment();
-                  if ( token == JsonToken.String || token == JsonToken.Integer || token == JsonToken.Float )
-                     assignProp( result, prop, r.Value );
-                  if ( r.ReadAndSkipComment() == JsonToken.EndObject ) return result;
-               } else
-                  throw new JsonException( $"Unexpected TokenType.{r.TokenType} when parsing {typeof(T)}" );
-            } while ( true );
+         var result = new T();
+         lock ( result ) {
+            if ( token == JsonToken.String )
+               return assignProp( result, defaultProp, r.Value );
+            if ( token == JsonToken.StartObject ) {
+               if ( r.ReadAndSkipComment() == JsonToken.EndObject ) return null;
+               do {
+                  if ( r.TokenType == JsonToken.PropertyName ) {
+                     var prop = r.Value?.ToString()?.ToLowerInvariant();
+                     token = r.ReadAndSkipComment();
+                     if ( token == JsonToken.String || token == JsonToken.Integer || token == JsonToken.Float )
+                        assignProp( result, prop, r.Value );
+                     if ( r.ReadAndSkipComment() == JsonToken.EndObject ) return result;
+                  } else
+                     throw new JsonException( $"Unexpected TokenType.{r.TokenType} when parsing {typeof(T)}" );
+               } while ( true );
+            }
          }
          throw new JsonException( $"String or object expected for {typeof(T)}" );
       }
