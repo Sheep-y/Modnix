@@ -119,7 +119,7 @@ For 100% PPML compatibility, a symbolic link to this folder would be required at
 For compatibility, mods must be loaded on or around the same time as PPML's injection point, unless they opt-in to load on startup.
 
 Most early loadings are done through async functions, which are difficult to patch with Harmony.
-To keep things simple, Cinemabrain.OnEnable is choosen.
+To keep things simple, Cinemabrain.OnEnable is chosen.
 The first call comes before first logo, and the second call is before the Hottest Year opening, roughly the same stage with PPML.
 Subsequence calls are ignored.
 
@@ -131,7 +131,7 @@ Nothing to lose; worse is same as PPML, reinstall after every patch.
 Aims:
 1. Load manually extracted PPML mods, e.g. Mods/MyMod-1-0-1234/My Mod/MyMod.1.0.dll (note the space in path)
 2. Does not load manually created folder e.g. Mods/Backup/MyMod.dll or Mods/Disabled/MyMod.dll
-3. Mods collection must explictly specify mods, e.g. do not load Mod/Collection/AnUnlistedMod.json
+3. Mods collection must explicitly specify mods, e.g. do not load Mod/Collection/AnUnlistedMod.json
 
 Steps:
 1. The root mod folder is scanned for files and folders.
@@ -172,7 +172,7 @@ The resolution repeats until no action is taken, or until a max depth.
     2. For mods that have the same id, find highest version, then find latest modified, then find largest, finally just find the first.
     3. The remaining duplicates are disabled and removed from resolution.
 2. Manually disabled mods are disabled and removed from resolution.
-3. AppVer is checked for each mod.  If out of range, disable and removed from resolution.
+3. Modnix, PPML, and Phoenix Point requirements are checked for each mod.  If out of range, disable and removed from resolution.
 4. Requires are checked for each mod.  If missing any requirement, disable and removed from resolution.
 5. Conflicts are checked for each mod.  Targetted mods are disabled and removed from resolution.
 6. Mods are ordered by LoadsAfter and LoadsBefore. Conflicts cause the rule to be ignored.
@@ -217,9 +217,7 @@ Extended example:
     "Contact": { "Mail": "demo@example.info", "Skype": "..." },
 
     /** Mod Requirements */
-              /* Game version to enable this mod. */
-    "AppVer": { "Min": "1.0.1234", "Max": "1.0.5678" },
-                /* Required mod; if requirement is not met, this mod will be disabled. */
+                /* Required mod; if requirement is not met, this mod will be disabled. Reserved: Modnix, PPML, PhoenixPoint, and Phoenix Point. */
     "Requires": [{ "Id": "info.mod.simple.demo", "Min": "1.0" }],
                  /* Conflicting mod; mods listed here will be disabled. */
     "Conflicts": [{ "Id": "info.mod.evil", "Max": "2.0" }],
@@ -232,7 +230,7 @@ Extended example:
             /* Load these files as mods. */
     "Mods": [ "DllMod.dll", "SimpleMod.json" ],
             /* Override default dll scanning */
-    "Dlls": [{ "Path": "Loader.dll", "Method": "MyCustomInit" }], 
+    "Dlls": [{ "Path": "Loader.dll", "Method": "MyCustomInit" }],
               /* Reserved for future use */
     "Alters": null,
               /* Reserved for future use */
@@ -324,7 +322,6 @@ Post-build scripts in Injector and Loader will copy their assemblies and librari
 For future versions
 
 - Disable mods without deleting them.
-- Mod info with supported languages, and the usual crowd.
 - Mod settings, in a different file from mod info, so that mod info can be updated without changing settings.
 - Replace ppdefmodifier with something more powerful.
 - Supply, on run time, a list of mods, plus Logger, Reflection, and Patching Helper.

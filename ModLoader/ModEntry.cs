@@ -37,7 +37,6 @@ namespace Sheepy.Modnix {
       public TextSet Url;
       public TextSet Contact;
 
-      public AppVer AppVer;
       public AppVer[] Requires;
       public AppVer[] Conflicts;
       public AppVer[] LoadsAfter;
