@@ -12,7 +12,7 @@ namespace Sheepy.Logging {
    // A thread-safe base logger with basic properties and methods.
    public abstract class Logger {
 
-      public Logger () {
+      protected Logger () {
          ReaderWriterLockSlim locker = new ReaderWriterLockSlim();
          _Reader  = new LoggerReadLockHelper ( locker );
          _Writer  = new LoggerWriteLockHelper( locker );
@@ -59,6 +59,18 @@ namespace Sheepy.Logging {
          _Log( new LogEntry(){ Time = DateTime.Now, Level = level, Message = message, Args = args } );
       }
 
+      public void Log ( TraceLevel level, object message, params object[] args ) {
+         SourceLevels logLevel;
+         switch ( level ) {
+            case TraceLevel.Error   : logLevel = SourceLevels.Critical; break;
+            case TraceLevel.Warning : logLevel = SourceLevels.Warning; break;
+            case TraceLevel.Info    : logLevel = SourceLevels.Information; break;
+            case TraceLevel.Verbose : logLevel = SourceLevels.Verbose; break;
+            default: return; // TraceLevel.Off
+         }
+         Log( logLevel, message, args );
+      }
+
       public virtual void Log ( LogEntry entry ) {
          if ( ( entry.Level & Level ) != entry.Level ) return;
          _Log( entry );
@@ -102,7 +114,7 @@ namespace Sheepy.Logging {
 
    /// A base logger that queue and process log entries in the background.
    public abstract class BackgroundLogger : Logger {
-      public BackgroundLogger ( int writeDelay = 100 ) {
+      protected BackgroundLogger ( int writeDelay = 100 ) {
          _WriteDelay = Math.Max( 0, writeDelay );
          _Queue   = new List<LogEntry>();
       }

@@ -218,15 +218,7 @@ namespace Sheepy.Modnix {
       public TraceLevel LevelFilter { get; set; }
       public void Trace ( TraceLevel level, string message, Exception ex ) {
          if ( level > LevelFilter ) return;
-         SourceLevels logLevel;
-         switch ( level ) {
-            case TraceLevel.Error   : logLevel = SourceLevels.Critical; break;
-            case TraceLevel.Warning : logLevel = SourceLevels.Warning; break;
-            case TraceLevel.Info    : logLevel = SourceLevels.Information; break;
-            case TraceLevel.Verbose : logLevel = SourceLevels.Verbose; break;
-            default: return;
-         }
-         Log( logLevel, message );
+         Log( level, message );
       }
    }
 
