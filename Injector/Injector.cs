@@ -169,19 +169,17 @@ namespace Sheepy.Modnix {
          State.ppmlDll = new TargetFile( State.managedDirectory, GAME_DLL_FILE_NAME );
 
          if ( ! File.Exists( State.modxDll.Target ) )
-            Exit( SayGameAssemblyMissingError( OptionsIn.ManagedDir ) );
+            Exit( PromptForKey( OptionsIn.RequireKeyPress, SayGameAssemblyMissingError( OptionsIn.ManagedDir ) ) );
 
          if ( ! File.Exists( State.modLoaderDllPath ) )
-            Exit( SayModLoaderAssemblyMissingError( State.modLoaderDllPath ) );
+            Exit( PromptForKey( OptionsIn.RequireKeyPress, SayModLoaderAssemblyMissingError( State.modLoaderDllPath ) ) );
 
          State.gameVersion = State.ppmlDll.ReadVersion();
          if ( OptionsIn.GameVersion )
             Exit( SayGameVersion( State.gameVersion ) );
 
-         if ( ! string.IsNullOrEmpty( OptionsIn.RequiredGameVersion ) && OptionsIn.RequiredGameVersion != State.gameVersion ) {
-            SayRequiredGameVersionMismatchMessage( State.gameVersion, OptionsIn.RequiredGameVersion );
-            Exit( PromptForKey( OptionsIn.RequireKeyPress, RC_REQUIRED_GAME_VERSION_MISMATCH ) );
-         }
+         if ( ! string.IsNullOrEmpty( OptionsIn.RequiredGameVersion ) && OptionsIn.RequiredGameVersion != State.gameVersion )
+            Exit( PromptForKey( OptionsIn.RequireKeyPress, SayRequiredGameVersionMismatchMessage( State.gameVersion, OptionsIn.RequiredGameVersion ) ) );
 
          State.ppmlDll.CheckInjection();
          State.modxDll.CheckInjection();
@@ -244,10 +242,11 @@ namespace Sheepy.Modnix {
          return RC_NORMAL;
       }
 
-      private static void SayRequiredGameVersionMismatchMessage ( string version, string expectedVersion ) {
+      private static int SayRequiredGameVersionMismatchMessage ( string version, string expectedVersion ) {
          WriteLine( $"Expected game v{expectedVersion}" );
          WriteLine( $"Actual game v{version}" );
          WriteLine( "Game version mismatch" );
+         return RC_REQUIRED_GAME_VERSION_MISMATCH;
       }
 
       private static string GetProductVersion () {
