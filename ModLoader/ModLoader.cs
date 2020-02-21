@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 using static System.Reflection.BindingFlags;
 
 namespace Sheepy.Modnix {
@@ -22,10 +23,11 @@ namespace Sheepy.Modnix {
 
       private const BindingFlags PUBLIC_STATIC_BINDING_FLAGS = Public | Static;
       private static readonly List<string> IGNORE_FILE_NAMES = new List<string> {
-         "0Harmony.dll",
-         "PPModLoader.dll",
-         "ModnixLoader.dll",
-         "Mono.Cecil.dll",
+         "0Harmony",
+         "PhoenixPointModLoader",
+         "PPModLoader",
+         "ModnixLoader",
+         "Mono.Cecil",
       };
 
       public static string ModDirectory { get; private set; }
@@ -69,21 +71,39 @@ namespace Sheepy.Modnix {
       } } catch ( Exception ex ) { Log.Error( ex ); } }
 
       public static void BuildModList () { try { lock ( AllMods ) {
-         Log.Info( "Scanning {0} for mods", ModDirectory );
          AllMods.Clear();
          if ( Directory.Exists( ModDirectory ) )
-            ScanFolderForMod( ModDirectory, null );
+            ScanFolderForMod( ModDirectory, true );
          Log.Info( "{0} mods found.", AllMods.Count );
       } } catch ( Exception ex ) { Log.Error( ex ); } }
 
-      public static void ScanFolderForMod ( string path, string parentName ) {
-         var dlls = Directory.EnumerateFiles( path, "*.dll", SearchOption.AllDirectories )
-            .Where( e => ! IGNORE_FILE_NAMES.Contains( Path.GetFileName( e ) ) ).ToArray();
-         foreach ( var dll in dlls ) {
-            var info = ParseMod( dll );
-            if ( info != null )
-               AllMods.Add( info );
+      public static void ScanFolderForMod ( string path, bool isRoot ) {
+         Log.Info( "Scanning {0} for mods", path );
+         var container = Path.GetFileName( path );
+         foreach ( var dll in Directory.EnumerateFiles( path, "*.dll" ) ) {
+            var name = Path.GetFileNameWithoutExtension( dll );
+            if ( IGNORE_FILE_NAMES.Contains( name ) ) continue;
+            if ( isRoot || NameMatch( container, name ) ) {
+               var info = ParseMod( dll );
+               if ( info != null )
+                  AllMods.Add( info );
+            }
          }
+         foreach ( var dir in Directory.EnumerateDirectories( path ) ) {
+            if ( isRoot || NameMatch( container, Path.GetFileName( dir ) ) )
+               ScanFolderForMod( dir, false );
+         }
+      }
+
+      private static readonly Regex DropFromName = new Regex( "\\W+", RegexOptions.Compiled );
+
+      private static bool NameMatch ( string container, string subject ) {
+         if ( container == null || subject == null ) return false;
+         container = DropFromName.Replace( container, "" );
+         subject = DropFromName.Replace( subject, "" );
+         if ( container.Length < 3 || subject.Length < 3 ) return false;
+         int len = Math.Max( 3, (int) Math.Round( Math.Min( container.Length, subject.Length ) * 2.0 / 3.0 ) );
+         return container.Substring( 0, len ) == subject.Substring( 0, len );
       }
 
       public static ModEntry ParseMod ( string file ) {
