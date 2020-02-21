@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Sheepy.Logging;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -12,7 +13,10 @@ namespace Sheepy.Modnix.MainGUI {
       public ModLoaderBridge ( AppControl app ) => App = app;
 
       internal object LoadModList () {
-         ModLoader.Setup();
+         if ( ModLoader.NeedSetup ) {
+            ModLoader.SetLog( new GUILogger( App.GUI ) );
+            ModLoader.Setup();
+         }
          App.Log( "Building mod list" );
          ModLoader.BuildModList();
          return ModLoader.AllMods.Select( e => new GridModItem(){ Mod = e } );
@@ -35,5 +39,13 @@ namespace Sheepy.Modnix.MainGUI {
       public override string Path => Mod?.Metadata?.Dlls?[0]?.Path;
       public override string Type => "PPML";
       public override string ToString () => Mod?.ToString();
+   }
+
+   internal class GUILogger : Logger {
+      private readonly IAppGui GUI;
+      public GUILogger ( IAppGui gUI ) => GUI = gUI;
+      public override void Clear () { }
+      public override void Flush () { }
+      protected override void _Log ( LogEntry entry ) => GUI.Log( EntryToString( entry ) );
    }
 }

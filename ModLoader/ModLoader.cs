@@ -46,6 +46,14 @@ namespace Sheepy.Modnix {
          LoadMods( "splash" );
       } catch ( Exception ex ) { Log?.Error( ex ); } }
 
+      public static bool NeedSetup => Log == null;
+
+      public static void SetLog ( Logger logger ) {
+         if ( logger == null ) throw new NullReferenceException( nameof( logger ) );
+         if ( Log != null ) throw new InvalidOperationException();
+         Log = logger;
+      }
+
       public static void Setup () { try { lock ( AllMods ) {
          if ( ModDirectory != null ) return;
          var LoaderInfo = Assembly.GetExecutingAssembly().GetName();
@@ -57,6 +65,7 @@ namespace Sheepy.Modnix {
             else
                Log.Clear();
          }
+         ModMetaJson.JsonLogger.Masters.Add( Log );
          Log.Info( "{0} v{1} {2}", typeof( ModLoader ).FullName, LoaderInfo.Version, DateTime.Now.ToString( "u" ) );
       } } catch ( Exception ex ) { Log?.Error( ex ); } }
 
