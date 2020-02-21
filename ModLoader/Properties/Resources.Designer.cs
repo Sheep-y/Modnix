@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Sheepy.Modnix.MainGUI.Properties {
+namespace Sheepy.Modnix.Properties {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace Sheepy.Modnix.MainGUI.Properties {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Sheepy.Modnix.MainGUI.Properties.Resources", typeof(Resources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Sheepy.Modnix.Properties.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -63,9 +63,9 @@ namespace Sheepy.Modnix.MainGUI.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
-        internal static byte[] ModnixInjector {
+        internal static byte[] _0Harmony {
             get {
-                object obj = ResourceManager.GetObject("ModnixInjector", resourceCulture);
+                object obj = ResourceManager.GetObject("_0Harmony", resourceCulture);
                 return ((byte[])(obj));
             }
         }
@@ -73,29 +73,9 @@ namespace Sheepy.Modnix.MainGUI.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
-        internal static byte[] ModnixLoader {
+        internal static byte[] HarmonyMigration {
             get {
-                object obj = ResourceManager.GetObject("ModnixLoader", resourceCulture);
-                return ((byte[])(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Byte[].
-        /// </summary>
-        internal static byte[] Mono_Cecil {
-            get {
-                object obj = ResourceManager.GetObject("Mono_Cecil", resourceCulture);
-                return ((byte[])(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Byte[].
-        /// </summary>
-        internal static byte[] Newtonsoft_Json {
-            get {
-                object obj = ResourceManager.GetObject("Newtonsoft_Json", resourceCulture);
+                object obj = ResourceManager.GetObject("HarmonyMigration", resourceCulture);
                 return ((byte[])(obj));
             }
         }

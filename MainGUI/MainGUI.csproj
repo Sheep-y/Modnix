@@ -119,6 +119,7 @@
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
@@ -128,9 +129,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\0Harmony.dll" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\ModnixInjector.exe" />
@@ -160,9 +158,6 @@
       <Name>ModLoader</Name>
       <Private>False</Private>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\HarmonyMigration.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

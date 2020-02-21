@@ -33,7 +33,7 @@
   <ItemGroup>
     <Reference Include="0Harmony, Version=2.0.0.5, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Lib.Harmony.2.0.0.5\lib\net45\0Harmony.dll</HintPath>
-      <Private>False</Private>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -53,9 +53,10 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>cd $(SolutionDir)MainGUI\
+    <PostBuildEvent>cd $(SolutionDir)ModLoader\
 mkdir Resources
 cd Resources
-copy /y $(ProjectDir)$(OutDir)$(TargetFileName) .</PostBuildEvent>
+copy /y $(ProjectDir)$(OutDir)$(TargetFileName) .
+copy /y $(ProjectDir)$(OutDir)0Harmony.dll .</PostBuildEvent>
   </PropertyGroup>
 </Project>

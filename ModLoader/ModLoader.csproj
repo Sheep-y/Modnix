@@ -36,6 +36,7 @@
   <ItemGroup>
     <Reference Include="0Harmony, Version=2.0.0.5, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Lib.Harmony.2.0.0.5\lib\net45\0Harmony.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="Mono.Cecil, Version=0.11.2.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e, processorArchitecture=MSIL">
       <HintPath>..\packages\Mono.Cecil.0.11.2\lib\net40\Mono.Cecil.dll</HintPath>
@@ -65,12 +66,29 @@
     <Compile Include="ModEntry.cs" />
     <Compile Include="ModLoader.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\.editorconfig">
       <Link>.editorconfig</Link>
     </None>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\HarmonyMigration.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\0Harmony.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

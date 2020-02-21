@@ -56,6 +56,20 @@ namespace Sheepy.Modnix {
 
       public static void Setup () { try { lock ( AllMods ) {
          if ( ModDirectory != null ) return;
+
+         // Dynamically load embedded dll
+         AppDomain.CurrentDomain.AssemblyResolve += ( domain, dll ) => {
+            Log.Info( $"Resolving {dll.Name}" );
+            if ( dll.Name.StartsWith( "0Harmony, ", StringComparison.InvariantCultureIgnoreCase ) ) {
+               AppDomain app = domain as AppDomain ?? AppDomain.CurrentDomain;
+               if ( dll.Name.Contains( ", Version=1." ) )
+                  return app.Load( Properties.Resources.HarmonyMigration );
+               else if ( dll.Name.Contains( ", Version=2." ) )
+                  return app.Load( Properties.Resources._0Harmony );
+            }
+            return null;
+         };
+
          var LoaderInfo = Assembly.GetExecutingAssembly().GetName();
          ModDirectory = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.MyDocuments ), MOD_PATH );
          if ( Log == null ) {
