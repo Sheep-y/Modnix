@@ -110,6 +110,12 @@ namespace Sheepy.Modnix.MainGUI {
                return app.Load( MainGUI.Properties.Resources.ModnixLoader );
             if ( dll.Name.StartsWith( "Newtonsoft.Json,", StringComparison.InvariantCultureIgnoreCase ) )
                return app.Load( MainGUI.Properties.Resources.Newtonsoft_Json );
+            if ( dll.Name.StartsWith( "Harmony", StringComparison.InvariantCultureIgnoreCase ) ||
+                 dll.Name.StartsWith( "0Harmony", StringComparison.InvariantCultureIgnoreCase ) )
+               if ( dll.Name.Contains( "Version=1." ) )
+                  return app.Load( MainGUI.Properties.Resources.HarmonyMigration );
+               else
+                  return app.Load( MainGUI.Properties.Resources._0Harmony );
             return null;
          };
 
