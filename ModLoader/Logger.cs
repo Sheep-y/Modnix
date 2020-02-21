@@ -90,6 +90,23 @@ namespace Sheepy.Logging {
 
       // ============ Implementations ============
 
+      /// Internal method to convert an entry to string. Return null if any filter says no or input/result is null.
+      protected virtual string EntryToString ( LogEntry entry, IEnumerable<LogFilter> filters = null ) {
+         if ( entry == null ) return null;
+         if ( filters == null ) filters = _Filters;
+         foreach ( LogFilter filter in filters ) try {
+            if ( ! filter( entry ) ) return null;
+         } catch ( Exception ex ) { CallOnError( ex ); }
+
+         string txt = entry.Message?.ToString();
+         if ( string.IsNullOrEmpty( txt ) ) return null;
+
+         if ( entry.Args != null && entry.Args.Length > 0 && txt != null ) try {
+            return string.Format( txt, entry.Args );
+         } catch ( FormatException ex ) { CallOnError( ex ); }
+         return txt;
+      }
+
       /// Internal method to queue an entry for processing
       protected abstract void _Log ( LogEntry entry );
 
@@ -177,13 +194,9 @@ namespace Sheepy.Logging {
             try {
                StartProcess();
                foreach ( LogEntry line in entries ) try {
-                  foreach ( LogFilter filter in filters ) try {
-                     if ( ! filter( line ) ) goto NextEntry;
-                  } catch ( Exception ex ) { CallOnError( ex ); }
-                  string txt = line.Message?.ToString();
+                  string txt = EntryToString( line, filters );
                   if ( ! string.IsNullOrEmpty( txt ) )
                      ProcessEntry( line, txt, timeFormat );
-                  NextEntry: ;
                } catch ( Exception ex ) {
                   CallOnError( ex );
                }
@@ -243,12 +256,8 @@ namespace Sheepy.Logging {
          else if ( level <= SourceLevels.Information ) levelText = "INFO ";
          else if ( level <= SourceLevels.Verbose     ) levelText = "FINE ";
          else levelText = "TRAC ";
-         buf.Append( levelText );
 
-         if ( entry.Args != null && entry.Args.Length > 0 && txt != null ) try {
-            txt = string.Format( txt, entry.Args );
-         } catch ( FormatException ) {}
-         buf.Append( txt ).Append( Environment.NewLine );
+         buf.Append( levelText ).Append( txt ).Append( Environment.NewLine );
       }
 
       protected override void EndProcess () {
