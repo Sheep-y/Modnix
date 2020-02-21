@@ -89,15 +89,19 @@ namespace Sheepy.Modnix {
       public static void ScanFolderForMod ( string path, bool isRoot ) {
          Log.Info( "Scanning {0} for mods", path );
          var container = Path.GetFileName( path );
+         var foundMod = false;
          foreach ( var dll in Directory.EnumerateFiles( path, "*.dll" ) ) {
             var name = Path.GetFileNameWithoutExtension( dll );
             if ( IGNORE_FILE_NAMES.Contains( name ) ) continue;
             if ( isRoot || NameMatch( container, name ) ) {
                var info = ParseMod( dll );
-               if ( info != null )
+               if ( info != null ) {
                   AllMods.Add( info );
+                  foundMod = true;
+               }
             }
          }
+         if ( ! isRoot && foundMod ) return;
          foreach ( var dir in Directory.EnumerateDirectories( path ) ) {
             if ( isRoot || NameMatch( container, Path.GetFileName( dir ) ) )
                ScanFolderForMod( dir, false );
@@ -115,7 +119,8 @@ namespace Sheepy.Modnix {
          return container.Substring( 0, len ) == subject.Substring( 0, len );
       }
 
-      public static ModEntry ParseMod ( string file ) {
+      public static ModEntry ParseMod ( string file ) { try {
+         Log.Info( $"Parsing {file}" );
          var info = FileVersionInfo.GetVersionInfo( file );
          var meta = new ModMeta{
             Id = Path.GetFullPath( file ).Replace( ModDirectory, "" ).ToLowerInvariant(),
@@ -126,7 +131,7 @@ namespace Sheepy.Modnix {
             Dlls = new DllMeta[] { new DllMeta{ Path = file } },
          };
          return new ModEntry{ Metadata = meta };
-      }
+      } catch ( Exception ex ) { Log.Warn( ex ); return null; } }
 
       public static Assembly LoadDLL ( string path, string methodName = "Init", string typeName = null, object[] parameters = null, BindingFlags bFlags = PUBLIC_STATIC_BINDING_FLAGS ) {
          Log.Info( "Loading {0}", path );
