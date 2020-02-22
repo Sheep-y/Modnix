@@ -3,14 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Harmony {
    public class HarmonyInstance {
       public static bool DEBUG;
       public string Id => Me.Id;
       private HarmonyLib.Harmony Me;
+      public static Action<string> Log;
 
       public static HarmonyInstance Create ( string id )
          => new HarmonyInstance{ Me = new HarmonyLib.Harmony( id ) };
@@ -27,10 +26,78 @@ namespace Harmony {
          => Me.Patch( original, prefix?.Me, postfix?.Me, transpiler?.Me ) as DynamicMethod;
 
       public void PatchAll ()
-         => Me.PatchAll();
+         => PatchAll( Assembly.GetExecutingAssembly() );
 
-      public void PatchAll ( Assembly assembly )
-         => Me.PatchAll( assembly );
+      public void PatchAll ( Assembly assembly ) {
+         foreach ( Type type in assembly.GetTypes() ) {
+            var methods = type.GetCustomAttributes( typeof(HarmonyAttribute), true )
+               .Select( e => ( e as HarmonyAttribute )?.info?.SyncTo() )
+               .ToList();
+            if ( methods == null || methods.Count <= 0 ) return;
+            DoPatch( type, HarmonyLib.HarmonyMethod.Merge( methods ) );
+         }
+      }
+
+      private void DoPatch ( Type type, HarmonyLib.HarmonyMethod info ) {
+         var target = FindPatchMethod( type, typeof( HarmonyTargetMethod ), "TargetMethod" );
+         info.method = InvokeWithParam( target, this, info.method );
+         if ( info.method == null ) info.method = FindOriginalMethod( info );
+
+         var prepare = FindPatchMethod( type, typeof( HarmonyPrepare ), "Prepare" );
+         if ( ! InvokeWithParam( prepare, info.method, true ) ) return;
+
+         var pre = FindPatchMethod( type, typeof( HarmonyPrefix ), "Prefix" );
+         var post = FindPatchMethod( type, typeof( HarmonyPostfix ), "Postfix" );
+         var trans = FindPatchMethod( type, typeof( HarmonyTranspiler ), "Transpiler" );
+         Me.Patch( info.method, new HarmonyLib.HarmonyMethod( pre ), new HarmonyLib.HarmonyMethod( post ), new HarmonyLib.HarmonyMethod( trans ) );
+
+         var cleanup = FindPatchMethod( type, typeof( HarmonyCleanup ), "Cleanup" );
+         _ = InvokeWithParam( cleanup, info.method, true );
+      }
+
+      private MethodInfo FindOriginalMethod ( HarmonyLib.HarmonyMethod info ) {
+         switch ( info.methodType ) {
+            case HarmonyLib.MethodType.Normal :
+               return AccessTools.Method( info.declaringType, info.methodName, info.argumentTypes );
+            case HarmonyLib.MethodType.Getter :
+               return AccessTools.PropertyGetter( info.declaringType, info.methodName );
+            case HarmonyLib.MethodType.Setter :
+               return AccessTools.PropertySetter( info.declaringType, info.methodName );
+            case HarmonyLib.MethodType.Constructor :
+               return AccessTools.Constructor( info.declaringType, info.argumentTypes, false );
+            case HarmonyLib.MethodType.StaticConstructor :
+               return AccessTools.Constructor( info.declaringType, info.argumentTypes, true );
+         }
+         return null;
+      }
+
+      private const BindingFlags MethodFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static;
+
+      private static MethodInfo FindPatchMethod ( Type type, Type attr, string name ) { try {
+         var fixedName = type.GetMethod( name, MethodFlags );
+         if ( fixedName != null ) return fixedName;
+         foreach ( var m in type.GetMethods( MethodFlags ) )
+            if ( m.GetCustomAttribute( attr ) != null )
+               return m;
+         return null;
+      } catch ( Exception ) { return null; } }
+
+      private static T InvokeWithParam<T> ( MethodInfo target, object param, T defVal ) { try {
+         if ( target == null ) return defVal;
+         var args = target.GetParameters().Length;
+         if ( args == 0 ) return (T) target.Invoke( null, new object[] { } );
+         if ( args == 1 ) return (T) target.Invoke( null, new object[] { param } );
+         return defVal;
+      } catch ( Exception ) { return defVal; } }
+
+      /*
+   public sealed class HarmonyTargetMethod : Attribute {}
+   public sealed class HarmonyPrepare : Attribute {}
+   public sealed class HarmonyPrefix : Attribute {}
+   public sealed class HarmonyPostfix : Attribute {}
+   public sealed class HarmonyTranspiler : Attribute {}
+   public sealed class HarmonyCleanup : Attribute {}
+   */
 
       public void Unpatch ( MethodBase original, HarmonyPatchType type, string harmonyID = null )
          => Me.Unpatch( original, type.ToV2(), harmonyID );
@@ -57,21 +124,47 @@ namespace Harmony {
       internal HarmonyLib.HarmonyMethod Me;
 
       public HarmonyMethod ()
-         => Me = new HarmonyLib.HarmonyMethod();
+         => SyncFrom( new HarmonyLib.HarmonyMethod() );
 
       public HarmonyMethod ( MethodInfo method )
-         => Me = new HarmonyLib.HarmonyMethod( method );
+         => SyncFrom( new HarmonyLib.HarmonyMethod( method ) );
 
       public HarmonyMethod ( Type type, string name, Type[] parameters = null )
-         => Me = new HarmonyLib.HarmonyMethod( type, name, parameters );
+         => SyncFrom( new HarmonyLib.HarmonyMethod( type, name, parameters ) );
 
       public static List<string> HarmonyFields ()
          => HarmonyLib.HarmonyMethod.HarmonyFields();
 
       public static HarmonyMethod Merge ( List<HarmonyMethod> attributes ) {
-         var result = HarmonyLib.HarmonyMethod.Merge( attributes.Select( e => e?.Me ).Where( e => e != null ).ToList() );
+         var result = HarmonyLib.HarmonyMethod.Merge( attributes.Select( e => e?.SyncTo() ).Where( e => e != null ).ToList() );
          if ( result == null ) return null;
-         return new HarmonyMethod{ Me = result };
+         return new HarmonyMethod().SyncFrom( result );
+      }
+
+      internal HarmonyMethod SyncFrom ( HarmonyLib.HarmonyMethod me ) {
+         if ( me == null ) me = Me;
+         else Me = me;
+         declaringType = me.declaringType;
+         method = me.method;
+         methodName = me.methodName;
+         methodType = me.methodType?.ToV1();
+         argumentTypes = me.argumentTypes;
+         prioritiy = me.priority;
+         before = me.before;
+         after = me.after;
+         return this;
+      }
+
+      internal HarmonyLib.HarmonyMethod SyncTo () {
+         Me.declaringType = declaringType;
+         Me.method = method;
+         Me.methodName = methodName;
+         Me.methodType = methodType?.ToV2();
+         Me.argumentTypes = argumentTypes;
+         Me.priority = prioritiy;
+         Me.before = before;
+         Me.after = after;
+         return Me;
       }
 
       public override string ToString () => Me.ToString();
@@ -91,15 +184,30 @@ namespace Harmony {
       Constructor = 3,
       StaticConstructor = 4
    }
+   
+   public enum ArgumentType {
+      Normal = 0,
+      Ref = 1,
+      Out = 2,
+      Pointer = 3
+   }
 
-   internal static class HarmonyMigrationExt {
+   public static class HarmonyMethodExtensions {
+      public static List<HarmonyMethod> GetHarmonyMethods ( this Type type ) {
+         return ( from HarmonyAttribute hattr in
+                     from attr in type.GetCustomAttributes( true )
+                     where attr is HarmonyAttribute
+                     select attr
+                  select hattr.info ).ToList();
+      }
       internal static HarmonyLib.HarmonyPatchType ToV2 ( this HarmonyPatchType from ) {
-         switch ( from ) {
-            case HarmonyPatchType.Prefix : return HarmonyLib.HarmonyPatchType.Prefix;
-            case HarmonyPatchType.Postfix : return HarmonyLib.HarmonyPatchType.Postfix;
-            case HarmonyPatchType.Transpiler : return HarmonyLib.HarmonyPatchType.Transpiler;
-         }
-         return HarmonyLib.HarmonyPatchType.All;
+         return (HarmonyLib.HarmonyPatchType) (int) from;
+      }
+      internal static HarmonyLib.MethodType ToV2 ( this MethodType from ) {
+         return (HarmonyLib.MethodType) (int) from;
+      }
+      internal static MethodType ToV1 ( this HarmonyLib.MethodType from ) {
+         return (MethodType) (int) from;
       }
    }
 }

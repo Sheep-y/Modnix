@@ -374,6 +374,8 @@ namespace Sheepy.Modnix.MainGUI {
             // Cleanup - accident prevention. Old dlls at game base may override dlls in the managed folder.
             foreach ( var file in new string[] { PAST, PAST_DLL, INJECTOR, LOADER, HARM_DLL, CECI_DLL } )
                currentGame.DeleteGameFile( file );
+            // Also remove harmony to make sure our bridge is used.
+            currentGame.DeleteCodeFile( HARM_DLL );
             GUI.Prompt( prompt );
          } else
             GUI.Prompt( "error" );
