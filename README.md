@@ -22,4 +22,4 @@ and [Troubleshooting](https://github.com/Sheep-y/Modnix/wiki/Troubleshooting-Mod
 ## License
 
 The Injector and Mod Loader, being simple and succeed from PPML, are in the public domain.
-The main program including the installer are licenced under AGPL v3.
+The rest are licensed under MIT, same as Harmony, since Modnix's Harmony bridge copied lots of Harmony code.
