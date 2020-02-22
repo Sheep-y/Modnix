@@ -37,7 +37,7 @@ namespace Sheepy.Modnix {
             if ( Initialized ) return;
             Initialized = true;
             LoadMods( "default" );  // Second call loads default and mainmenu mods
-            LoadMods( "mainmenu" );
+            //LoadMods( "mainmenu" );
             return;
          }
          Setup();
