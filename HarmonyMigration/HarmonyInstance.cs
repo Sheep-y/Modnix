@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -31,15 +32,18 @@ namespace Harmony {
       public DynamicMethod Patch ( MethodBase original, HarmonyMethod prefix = null, HarmonyMethod postfix = null, HarmonyMethod transpiler = null )
          => Me.Patch( original, prefix?.Me, postfix?.Me, transpiler?.Me ) as DynamicMethod;
 
-      public void PatchAll ()
-         => PatchAll( Assembly.GetExecutingAssembly() );
+      public void PatchAll () {
+         var method = new StackTrace().GetFrame( 1 ).GetMethod();
+         var assembly = method.ReflectedType.Assembly;
+         PatchAll( assembly );
+      }
 
       public void PatchAll ( Assembly assembly ) {
          foreach ( Type type in assembly.GetTypes() ) {
             var methods = type.GetCustomAttributes( typeof(HarmonyAttribute), true )
                .Select( e => ( e as HarmonyAttribute )?.info?.SyncTo() )
                .ToList();
-            if ( methods == null || methods.Count <= 0 ) return;
+            if ( methods == null || methods.Count <= 0 ) continue;
             DoPatch( type, HarmonyLib.HarmonyMethod.Merge( methods ) );
          }
       }
@@ -55,7 +59,10 @@ namespace Harmony {
          var pre = FindPatchMethod( type, typeof( HarmonyPrefix ), "Prefix" );
          var post = FindPatchMethod( type, typeof( HarmonyPostfix ), "Postfix" );
          var trans = FindPatchMethod( type, typeof( HarmonyTranspiler ), "Transpiler" );
-         Me.Patch( subject, new HarmonyLib.HarmonyMethod( pre ), new HarmonyLib.HarmonyMethod( post ), new HarmonyLib.HarmonyMethod( trans ) );
+         var hPre = pre != null ? new HarmonyLib.HarmonyMethod( pre ) : null;
+         var hPos = post != null ? new HarmonyLib.HarmonyMethod( post ) : null;
+         var hTra = trans != null ? new HarmonyLib.HarmonyMethod( trans ) : null;
+         Me.Patch( subject, hPre, hPos, hTra );
 
          var cleanup = FindPatchMethod( type, typeof( HarmonyCleanup ), "Cleanup" );
          _ = InvokeWithParam( cleanup, info.method, true );
@@ -63,6 +70,7 @@ namespace Harmony {
 
       private MethodBase FindOriginalMethod ( HarmonyLib.HarmonyMethod info ) {
          switch ( info.methodType ) {
+            case null :
             case HarmonyLib.MethodType.Normal :
                return AccessTools.Method( info.declaringType, info.methodName, info.argumentTypes );
             case HarmonyLib.MethodType.Getter :

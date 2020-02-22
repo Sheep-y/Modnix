@@ -56,6 +56,7 @@ namespace Sheepy.Modnix {
 
       public static void Setup () { try { lock ( AllMods ) {
          if ( ModDirectory != null ) return;
+         ModDirectory = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.MyDocuments ), MOD_PATH );
 
          // Dynamically load embedded dll
          AppDomain.CurrentDomain.AssemblyResolve += ( domain, dll ) => {
@@ -71,7 +72,6 @@ namespace Sheepy.Modnix {
          };
 
          var LoaderInfo = Assembly.GetExecutingAssembly().GetName();
-         ModDirectory = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.MyDocuments ), MOD_PATH );
          if ( Log == null ) {
             Log = new FileLogger( Path.Combine( ModDirectory, LoaderInfo.Name + ".log" ) ){ TimeFormat = "HH:mm:ss.ffff " };
             if ( ! Directory.Exists( ModDirectory ) )
