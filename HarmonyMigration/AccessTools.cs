@@ -43,7 +43,7 @@ namespace Harmony {
                 .SelectMany( a => GetTypesFromAssembly( a ) )
                 .FirstOrDefault( t => t.Name == name );
          if ( type == null && HarmonyInstance.DEBUG )
-            Log( $"AccessTools.TypeByName: Could not find type named {name}" );
+            FileLog.Log( $"AccessTools.TypeByName: Could not find type named {name}" );
          return type;
       }
 
@@ -105,17 +105,17 @@ namespace Harmony {
       public static FieldInfo DeclaredField ( Type type, string name ) {
          if ( type == null ) {
             if ( HarmonyInstance.DEBUG )
-               Log( "AccessTools.DeclaredField: type is null" );
+               FileLog.Log( "AccessTools.DeclaredField: type is null" );
             return null;
          }
          if ( name == null ) {
             if ( HarmonyInstance.DEBUG )
-               Log( "AccessTools.DeclaredField: name is null" );
+               FileLog.Log( "AccessTools.DeclaredField: name is null" );
             return null;
          }
          var field = type.GetField(name, allDeclared);
          if ( field == null && HarmonyInstance.DEBUG )
-            Log( $"AccessTools.DeclaredField: Could not find field for type {type} and name {name}" );
+            FileLog.Log( $"AccessTools.DeclaredField: Could not find field for type {type} and name {name}" );
          return field;
       }
 
@@ -127,17 +127,17 @@ namespace Harmony {
       public static FieldInfo Field ( Type type, string name ) {
          if ( type == null ) {
             if ( HarmonyInstance.DEBUG )
-               Log( "AccessTools.Field: type is null" );
+               FileLog.Log( "AccessTools.Field: type is null" );
             return null;
          }
          if ( name == null ) {
             if ( HarmonyInstance.DEBUG )
-               Log( "AccessTools.Field: name is null" );
+               FileLog.Log( "AccessTools.Field: name is null" );
             return null;
          }
          var field = FindIncludingBaseTypes(type, t => t.GetField(name, all));
          if ( field == null && HarmonyInstance.DEBUG )
-            Log( $"AccessTools.Field: Could not find field for type {type} and name {name}" );
+            FileLog.Log( $"AccessTools.Field: Could not find field for type {type} and name {name}" );
          return field;
       }
 
@@ -149,12 +149,12 @@ namespace Harmony {
       public static FieldInfo DeclaredField ( Type type, int idx ) {
          if ( type == null ) {
             if ( HarmonyInstance.DEBUG )
-               Log( "AccessTools.DeclaredField: type is null" );
+               FileLog.Log( "AccessTools.DeclaredField: type is null" );
             return null;
          }
          var field = GetDeclaredFields(type).ElementAtOrDefault(idx);
          if ( field == null && HarmonyInstance.DEBUG )
-            Log( $"AccessTools.DeclaredField: Could not find field for type {type} and idx {idx}" );
+            FileLog.Log( $"AccessTools.DeclaredField: Could not find field for type {type} and idx {idx}" );
          return field;
       }
 
@@ -166,17 +166,17 @@ namespace Harmony {
       public static PropertyInfo DeclaredProperty ( Type type, string name ) {
          if ( type == null ) {
             if ( HarmonyInstance.DEBUG )
-               Log( "AccessTools.DeclaredProperty: type is null" );
+               FileLog.Log( "AccessTools.DeclaredProperty: type is null" );
             return null;
          }
          if ( name == null ) {
             if ( HarmonyInstance.DEBUG )
-               Log( "AccessTools.DeclaredProperty: name is null" );
+               FileLog.Log( "AccessTools.DeclaredProperty: name is null" );
             return null;
          }
          var property = type.GetProperty(name, allDeclared);
          if ( property == null && HarmonyInstance.DEBUG )
-            Log( $"AccessTools.DeclaredProperty: Could not find property for type {type} and name {name}" );
+            FileLog.Log( $"AccessTools.DeclaredProperty: Could not find property for type {type} and name {name}" );
          return property;
       }
 
@@ -206,17 +206,17 @@ namespace Harmony {
       public static PropertyInfo Property ( Type type, string name ) {
          if ( type == null ) {
             if ( HarmonyInstance.DEBUG )
-               Log( "AccessTools.Property: type is null" );
+               FileLog.Log( "AccessTools.Property: type is null" );
             return null;
          }
          if ( name == null ) {
             if ( HarmonyInstance.DEBUG )
-               Log( "AccessTools.Property: name is null" );
+               FileLog.Log( "AccessTools.Property: name is null" );
             return null;
          }
          var property = FindIncludingBaseTypes(type, t => t.GetProperty(name, all));
          if ( property == null && HarmonyInstance.DEBUG )
-            Log( $"AccessTools.Property: Could not find property for type {type} and name {name}" );
+            FileLog.Log( $"AccessTools.Property: Could not find property for type {type} and name {name}" );
          return property;
       }
 
@@ -248,12 +248,12 @@ namespace Harmony {
       public static MethodInfo DeclaredMethod ( Type type, string name, Type[] parameters = null, Type[] generics = null ) {
          if ( type == null ) {
             if ( HarmonyInstance.DEBUG )
-               Log( "AccessTools.DeclaredMethod: type is null" );
+               FileLog.Log( "AccessTools.DeclaredMethod: type is null" );
             return null;
          }
          if ( name == null ) {
             if ( HarmonyInstance.DEBUG )
-               Log( "AccessTools.DeclaredMethod: name is null" );
+               FileLog.Log( "AccessTools.DeclaredMethod: name is null" );
             return null;
          }
          MethodInfo result;
@@ -266,7 +266,7 @@ namespace Harmony {
 
          if ( result == null ) {
             if ( HarmonyInstance.DEBUG )
-               Log( $"AccessTools.DeclaredMethod: Could not find method for type {type} and name {name} and parameters {parameters}" );
+               FileLog.Log( $"AccessTools.DeclaredMethod: Could not find method for type {type} and name {name} and parameters {parameters}" );
             return null;
          }
 
@@ -284,12 +284,12 @@ namespace Harmony {
       public static MethodInfo Method ( Type type, string name, Type[] parameters = null, Type[] generics = null ) {
          if ( type == null ) {
             if ( HarmonyInstance.DEBUG )
-               Log( "AccessTools.Method: type is null" );
+               FileLog.Log( "AccessTools.Method: type is null" );
             return null;
          }
          if ( name == null ) {
             if ( HarmonyInstance.DEBUG )
-               Log( "AccessTools.Method: name is null" );
+               FileLog.Log( "AccessTools.Method: name is null" );
             return null;
          }
          MethodInfo result;
@@ -309,7 +309,7 @@ namespace Harmony {
 
          if ( result == null ) {
             if ( HarmonyInstance.DEBUG )
-               Log( $"AccessTools.Method: Could not find method for type {type} and name {name} and parameters {parameters}" );
+               FileLog.Log( $"AccessTools.Method: Could not find method for type {type} and name {name} and parameters {parameters}" );
             return null;
          }
 
@@ -326,7 +326,7 @@ namespace Harmony {
       public static MethodInfo Method ( string typeColonMethodname, Type[] parameters = null, Type[] generics = null ) {
          if ( typeColonMethodname == null ) {
             if ( HarmonyInstance.DEBUG )
-               Log( "AccessTools.Method: typeColonMethodname is null" );
+               FileLog.Log( "AccessTools.Method: typeColonMethodname is null" );
             return null;
          }
          var parts = typeColonMethodname.Split(':');
@@ -344,7 +344,7 @@ namespace Harmony {
       public static List<string> GetMethodNames ( Type type ) {
          if ( type == null ) {
             if ( HarmonyInstance.DEBUG )
-               Log( "AccessTools.GetMethodNames: type is null" );
+               FileLog.Log( "AccessTools.GetMethodNames: type is null" );
             return new List<string>();
          }
          return GetDeclaredMethods( type ).Select( m => m.Name ).ToList();
@@ -357,7 +357,7 @@ namespace Harmony {
       public static List<string> GetMethodNames ( object instance ) {
          if ( instance == null ) {
             if ( HarmonyInstance.DEBUG )
-               Log( "AccessTools.GetMethodNames: instance is null" );
+               FileLog.Log( "AccessTools.GetMethodNames: instance is null" );
             return new List<string>();
          }
          return GetMethodNames( instance.GetType() );
@@ -370,7 +370,7 @@ namespace Harmony {
       public static List<string> GetFieldNames ( Type type ) {
          if ( type == null ) {
             if ( HarmonyInstance.DEBUG )
-               Log( "AccessTools.GetFieldNames: type is null" );
+               FileLog.Log( "AccessTools.GetFieldNames: type is null" );
             return new List<string>();
          }
          return GetDeclaredFields( type ).Select( f => f.Name ).ToList();
@@ -383,7 +383,7 @@ namespace Harmony {
       public static List<string> GetFieldNames ( object instance ) {
          if ( instance == null ) {
             if ( HarmonyInstance.DEBUG )
-               Log( "AccessTools.GetFieldNames: instance is null" );
+               FileLog.Log( "AccessTools.GetFieldNames: instance is null" );
             return new List<string>();
          }
          return GetFieldNames( instance.GetType() );
@@ -396,7 +396,7 @@ namespace Harmony {
       public static List<string> GetPropertyNames ( Type type ) {
          if ( type == null ) {
             if ( HarmonyInstance.DEBUG )
-               Log( "AccessTools.GetPropertyNames: type is null" );
+               FileLog.Log( "AccessTools.GetPropertyNames: type is null" );
             return new List<string>();
          }
          return GetDeclaredProperties( type ).Select( f => f.Name ).ToList();
@@ -409,7 +409,7 @@ namespace Harmony {
       public static List<string> GetPropertyNames ( object instance ) {
          if ( instance == null ) {
             if ( HarmonyInstance.DEBUG )
-               Log( "AccessTools.GetPropertyNames: instance is null" );
+               FileLog.Log( "AccessTools.GetPropertyNames: instance is null" );
             return new List<string>();
          }
          return GetPropertyNames( instance.GetType() );
@@ -467,7 +467,7 @@ namespace Harmony {
       public static ConstructorInfo DeclaredConstructor ( Type type, Type[] parameters = null, bool searchForStatic = false ) {
          if ( type == null ) {
             if ( HarmonyInstance.DEBUG )
-               Log( "AccessTools.DeclaredConstructor: type is null" );
+               FileLog.Log( "AccessTools.DeclaredConstructor: type is null" );
             return null;
          }
          if ( parameters == null ) parameters = new Type[0];
@@ -484,7 +484,7 @@ namespace Harmony {
       public static ConstructorInfo Constructor ( Type type, Type[] parameters = null, bool searchForStatic = false ) {
          if ( type == null ) {
             if ( HarmonyInstance.DEBUG )
-               Log( "AccessTools.ConstructorInfo: type is null" );
+               FileLog.Log( "AccessTools.ConstructorInfo: type is null" );
             return null;
          }
          if ( parameters == null ) parameters = new Type[0];
@@ -500,7 +500,7 @@ namespace Harmony {
       public static List<ConstructorInfo> GetDeclaredConstructors ( Type type, bool? searchForStatic = null ) {
          if ( type == null ) {
             if ( HarmonyInstance.DEBUG )
-               Log( "AccessTools.GetDeclaredConstructors: type is null" );
+               FileLog.Log( "AccessTools.GetDeclaredConstructors: type is null" );
             return null;
          }
          var flags = allDeclared;
@@ -516,7 +516,7 @@ namespace Harmony {
       public static List<MethodInfo> GetDeclaredMethods ( Type type ) {
          if ( type == null ) {
             if ( HarmonyInstance.DEBUG )
-               Log( "AccessTools.GetDeclaredMethods: type is null" );
+               FileLog.Log( "AccessTools.GetDeclaredMethods: type is null" );
             return null;
          }
          return type.GetMethods( allDeclared ).ToList();
@@ -529,7 +529,7 @@ namespace Harmony {
       public static List<PropertyInfo> GetDeclaredProperties ( Type type ) {
          if ( type == null ) {
             if ( HarmonyInstance.DEBUG )
-               Log( "AccessTools.GetDeclaredProperties: type is null" );
+               FileLog.Log( "AccessTools.GetDeclaredProperties: type is null" );
             return null;
          }
          return type.GetProperties( allDeclared ).ToList();
@@ -542,7 +542,7 @@ namespace Harmony {
       public static List<FieldInfo> GetDeclaredFields ( Type type ) {
          if ( type == null ) {
             if ( HarmonyInstance.DEBUG )
-               Log( "AccessTools.GetDeclaredFields: type is null" );
+               FileLog.Log( "AccessTools.GetDeclaredFields: type is null" );
             return null;
          }
          return type.GetFields( allDeclared ).ToList();
@@ -555,7 +555,7 @@ namespace Harmony {
       public static Type GetReturnedType ( MethodBase methodOrConstructor ) {
          if ( methodOrConstructor == null ) {
             if ( HarmonyInstance.DEBUG )
-               Log( "AccessTools.GetReturnedType: methodOrConstructor is null" );
+               FileLog.Log( "AccessTools.GetReturnedType: methodOrConstructor is null" );
             return null;
          }
          var constructor = methodOrConstructor as ConstructorInfo;
@@ -571,12 +571,12 @@ namespace Harmony {
       public static Type Inner ( Type type, string name ) {
          if ( type == null ) {
             if ( HarmonyInstance.DEBUG )
-               Log( "AccessTools.Inner: type is null" );
+               FileLog.Log( "AccessTools.Inner: type is null" );
             return null;
          }
          if ( name == null ) {
             if ( HarmonyInstance.DEBUG )
-               Log( "AccessTools.Inner: name is null" );
+               FileLog.Log( "AccessTools.Inner: name is null" );
             return null;
          }
          return FindIncludingBaseTypes( type, t => t.GetNestedType( name, all ) );
@@ -590,12 +590,12 @@ namespace Harmony {
       public static Type FirstInner ( Type type, Func<Type, bool> predicate ) {
          if ( type == null ) {
             if ( HarmonyInstance.DEBUG )
-               Log( "AccessTools.FirstInner: type is null" );
+               FileLog.Log( "AccessTools.FirstInner: type is null" );
             return null;
          }
          if ( predicate == null ) {
             if ( HarmonyInstance.DEBUG )
-               Log( "AccessTools.FirstInner: predicate is null" );
+               FileLog.Log( "AccessTools.FirstInner: predicate is null" );
             return null;
          }
          return type.GetNestedTypes( all ).FirstOrDefault( subType => predicate( subType ) );
@@ -609,12 +609,12 @@ namespace Harmony {
       public static MethodInfo FirstMethod ( Type type, Func<MethodInfo, bool> predicate ) {
          if ( type == null ) {
             if ( HarmonyInstance.DEBUG )
-               Log( "AccessTools.FirstMethod: type is null" );
+               FileLog.Log( "AccessTools.FirstMethod: type is null" );
             return null;
          }
          if ( predicate == null ) {
             if ( HarmonyInstance.DEBUG )
-               Log( "AccessTools.FirstMethod: predicate is null" );
+               FileLog.Log( "AccessTools.FirstMethod: predicate is null" );
             return null;
          }
          return type.GetMethods( allDeclared ).FirstOrDefault( method => predicate( method ) );
@@ -628,12 +628,12 @@ namespace Harmony {
       public static ConstructorInfo FirstConstructor ( Type type, Func<ConstructorInfo, bool> predicate ) {
          if ( type == null ) {
             if ( HarmonyInstance.DEBUG )
-               Log( "AccessTools.FirstConstructor: type is null" );
+               FileLog.Log( "AccessTools.FirstConstructor: type is null" );
             return null;
          }
          if ( predicate == null ) {
             if ( HarmonyInstance.DEBUG )
-               Log( "AccessTools.FirstConstructor: predicate is null" );
+               FileLog.Log( "AccessTools.FirstConstructor: predicate is null" );
             return null;
          }
          return type.GetConstructors( allDeclared ).FirstOrDefault( constructor => predicate( constructor ) );
@@ -647,12 +647,12 @@ namespace Harmony {
       public static PropertyInfo FirstProperty ( Type type, Func<PropertyInfo, bool> predicate ) {
          if ( type == null ) {
             if ( HarmonyInstance.DEBUG )
-               Log( "AccessTools.FirstProperty: type is null" );
+               FileLog.Log( "AccessTools.FirstProperty: type is null" );
             return null;
          }
          if ( predicate == null ) {
             if ( HarmonyInstance.DEBUG )
-               Log( "AccessTools.FirstProperty: predicate is null" );
+               FileLog.Log( "AccessTools.FirstProperty: predicate is null" );
             return null;
          }
          return type.GetProperties( allDeclared ).FirstOrDefault( property => predicate( property ) );
@@ -723,7 +723,7 @@ namespace Harmony {
       /// <returns>A read and writable <see cref="FieldRef{T,F}"/> delegate</returns>
       ///
       public static FieldRef<T, F> FieldRefAccess<T, F> ( FieldInfo fieldInfo ) {
-         if ( HarmonyInstance.DEBUG ) Log( "FieldRefAccess not implemented" );
+         if ( HarmonyInstance.DEBUG ) FileLog.Log( "FieldRefAccess not implemented" );
          return null;
          /*
          if ( fieldInfo == null )
@@ -774,7 +774,7 @@ namespace Harmony {
       /// <returns>A read and writable <see cref="FieldRef{F}"/> delegate</returns>
       ///
       public static FieldRef<F> StaticFieldRefAccess<F> ( FieldInfo fieldInfo ) {
-         if ( HarmonyInstance.DEBUG ) Log( "StaticFieldRefAccess not implemented" );
+         if ( HarmonyInstance.DEBUG ) FileLog.Log( "StaticFieldRefAccess not implemented" );
          return null;
          /*
          if ( fieldInfo == null )
@@ -823,7 +823,7 @@ namespace Harmony {
       public static object GetDefaultValue ( Type type ) {
          if ( type == null ) {
             if ( HarmonyInstance.DEBUG )
-               Log( "AccessTools.GetDefaultValue: type is null" );
+               FileLog.Log( "AccessTools.GetDefaultValue: type is null" );
             return null;
          }
          if ( type == typeof( void ) ) return null;
@@ -875,7 +875,7 @@ namespace Harmony {
       public static object MakeDeepCopy ( object source, Type resultType, Func<string, Traverse, Traverse, object> processor = null, string pathRoot = "" ) {
          if ( source == null || resultType == null )
             return null;
-         if ( HarmonyInstance.DEBUG ) Log( "MakeDeepCopy not implemented" );
+         if ( HarmonyInstance.DEBUG ) FileLog.Log( "MakeDeepCopy not implemented" );
          return null;
          /*
          resultType = Nullable.GetUnderlyingType( resultType ) ?? resultType;
@@ -1037,10 +1037,6 @@ namespace Harmony {
             ++i;
          }
          return hash1 + ( hash2 * 1566083941 );
-      }
-
-      private static void Log ( string message ) {
-         HarmonyInstance.Log?.Invoke( message );
       }
    }
 }

@@ -5,11 +5,17 @@ using System.Reflection;
 using System.Reflection.Emit;
 
 namespace Harmony {
+
+   public static class FileLog {
+      public static void Log ( string str ) {
+         HarmonyLib.FileLog.Log( str );
+      }
+   }
+
    public class HarmonyInstance {
       public static bool DEBUG;
       public string Id => Me.Id;
       private HarmonyLib.Harmony Me;
-      public static Action<string> Log;
 
       public static HarmonyInstance Create ( string id )
          => new HarmonyInstance{ Me = new HarmonyLib.Harmony( id ) };
@@ -40,8 +46,8 @@ namespace Harmony {
 
       private void DoPatch ( Type type, HarmonyLib.HarmonyMethod info ) {
          var target = FindPatchMethod( type, typeof( HarmonyTargetMethod ), "TargetMethod" );
-         info.method = InvokeWithParam( target, this, info.method );
-         if ( info.method == null ) info.method = FindOriginalMethod( info );
+         MethodBase subject = InvokeWithParam( target, this, info.method );
+         if ( subject == null ) subject = FindOriginalMethod( info );
 
          var prepare = FindPatchMethod( type, typeof( HarmonyPrepare ), "Prepare" );
          if ( ! InvokeWithParam( prepare, info.method, true ) ) return;
@@ -49,13 +55,13 @@ namespace Harmony {
          var pre = FindPatchMethod( type, typeof( HarmonyPrefix ), "Prefix" );
          var post = FindPatchMethod( type, typeof( HarmonyPostfix ), "Postfix" );
          var trans = FindPatchMethod( type, typeof( HarmonyTranspiler ), "Transpiler" );
-         Me.Patch( info.method, new HarmonyLib.HarmonyMethod( pre ), new HarmonyLib.HarmonyMethod( post ), new HarmonyLib.HarmonyMethod( trans ) );
+         Me.Patch( subject, new HarmonyLib.HarmonyMethod( pre ), new HarmonyLib.HarmonyMethod( post ), new HarmonyLib.HarmonyMethod( trans ) );
 
          var cleanup = FindPatchMethod( type, typeof( HarmonyCleanup ), "Cleanup" );
          _ = InvokeWithParam( cleanup, info.method, true );
       }
 
-      private MethodInfo FindOriginalMethod ( HarmonyLib.HarmonyMethod info ) {
+      private MethodBase FindOriginalMethod ( HarmonyLib.HarmonyMethod info ) {
          switch ( info.methodType ) {
             case HarmonyLib.MethodType.Normal :
                return AccessTools.Method( info.declaringType, info.methodName, info.argumentTypes );
@@ -73,31 +79,22 @@ namespace Harmony {
 
       private const BindingFlags MethodFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static;
 
-      private static MethodInfo FindPatchMethod ( Type type, Type attr, string name ) { try {
+      private static MethodInfo FindPatchMethod ( Type type, Type attr, string name ) {
          var fixedName = type.GetMethod( name, MethodFlags );
          if ( fixedName != null ) return fixedName;
          foreach ( var m in type.GetMethods( MethodFlags ) )
             if ( m.GetCustomAttribute( attr ) != null )
                return m;
          return null;
-      } catch ( Exception ) { return null; } }
+      }
 
-      private static T InvokeWithParam<T> ( MethodInfo target, object param, T defVal ) { try {
+      private static T InvokeWithParam<T> ( MethodInfo target, object param, T defVal ) {
          if ( target == null ) return defVal;
          var args = target.GetParameters().Length;
          if ( args == 0 ) return (T) target.Invoke( null, new object[] { } );
          if ( args == 1 ) return (T) target.Invoke( null, new object[] { param } );
          return defVal;
-      } catch ( Exception ) { return defVal; } }
-
-      /*
-   public sealed class HarmonyTargetMethod : Attribute {}
-   public sealed class HarmonyPrepare : Attribute {}
-   public sealed class HarmonyPrefix : Attribute {}
-   public sealed class HarmonyPostfix : Attribute {}
-   public sealed class HarmonyTranspiler : Attribute {}
-   public sealed class HarmonyCleanup : Attribute {}
-   */
+      }
 
       public void Unpatch ( MethodBase original, HarmonyPatchType type, string harmonyID = null )
          => Me.Unpatch( original, type.ToV2(), harmonyID );
