@@ -154,6 +154,7 @@ namespace Sheepy.Modnix {
                Author = new TextSet{ Default = info.CompanyName },
                Dlls = new DllMeta[] { new DllMeta{ Path = file, Methods = ParseEntryPoints( file ) } },
             };
+            if ( meta.Dlls[0].Methods == null ) return null;
          } else {
             string js = File.ReadAllText( file, Encoding.UTF8 ).Trim();
             if ( js.StartsWith( "(", StringComparison.InvariantCulture ) &&
@@ -181,8 +182,11 @@ namespace Sheepy.Modnix {
             }
          }
          // Remove Init from Modnix DLLs, so that they will not be initiated twice
-         if ( result != null && result.Count > 1 )
-            result.Remove( "Init" );
+         if ( result != null )
+            if ( result.Count > 1 )
+               result.Remove( "Init" );
+            else if ( result.Count <= 0 )
+               return null;
          return result;
       }
 
