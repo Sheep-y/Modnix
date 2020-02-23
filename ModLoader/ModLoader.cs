@@ -93,7 +93,8 @@ namespace Sheepy.Modnix {
             if ( mod.Metadata.Dlls == null ) continue;
             foreach ( var dll in mod.Metadata.Dlls ) {
                if ( dll.Methods == null ) continue;
-               if ( ! dll.Methods.TryGetValue( phase, out var entries ) ) return;
+               if ( ! dll.Methods.TryGetValue( phase, out var entries ) ) continue;
+               Log.Info( "Loading {0}", dll.Path );
                foreach ( var type in entries )
                   LoadDLL( dll.Path, phase, type );
             }
