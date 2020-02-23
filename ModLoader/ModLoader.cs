@@ -11,7 +11,7 @@ using System.Text.RegularExpressions;
 using static System.Reflection.BindingFlags;
 
 namespace Sheepy.Modnix {
-   using DllEntryMeta = IDictionary< string, IList< string > >;
+   using DllEntryMeta = Dictionary< string, HashSet< string > >;
 
    using ModData = IDictionary< string,object >;
 
@@ -94,9 +94,10 @@ namespace Sheepy.Modnix {
             foreach ( var dll in mod.Metadata.Dlls ) {
                if ( dll.Methods == null ) continue;
                if ( ! dll.Methods.TryGetValue( phase, out var entries ) ) continue;
-               Log.Info( "Loading {0}", dll.Path );
+               var lib = LoadDll( dll.Path );
+               if ( lib == null ) continue;
                foreach ( var type in entries )
-                  LoadDLL( dll.Path, phase, type );
+                  CallInit( lib, type, phase );
             }
          }
          Log.Flush();
@@ -173,13 +174,20 @@ namespace Sheepy.Modnix {
                foreach ( var method in type.Methods ) {
                   string name = method.Name;
                   if ( Array.IndexOf( PHASES, name ) >= 0 ) {
-                     if ( result == null ) result = new Dictionary< string, IList< string > >();
+                     if ( result == null ) result = new DllEntryMeta();
                      if ( ! result.TryGetValue( name, out var list ) )
-                        result[ name ] = list = new List<string>();
-                     list.Add( type.FullName );
-                     Log.Info( "Found {0}.{1}", type.FullName, name );
+                        result[ name ] = list = new HashSet<string>();
+                     if ( list.Contains( type.FullName ) ) {
+                        Log.Warn( "Found overloaded {0}.{1}, removing all.", type.FullName, name );
+                        list.Remove( type.FullName );
+                        goto NextType;
+                     } else {
+                        list.Add( type.FullName );
+                        Log.Info( "Found {0}.{1}", type.FullName, name );
+                     }
                   }
                }
+               NextType:;
             }
          }
          // Remove Init from Modnix DLLs, so that they will not be initiated twice
@@ -191,67 +199,46 @@ namespace Sheepy.Modnix {
          return result;
       }
 
-      public static Assembly LoadDLL ( string path, string methodName = "Init", string typeName = null, object[] parameters = null, BindingFlags bFlags = PUBLIC_STATIC_BINDING_FLAGS ) { try {
-         Log.Info( "Loading {0} to call {1}", path, methodName );
-         if ( ! File.Exists( path ) ) throw new FileNotFoundException();
-
-         var fileName = Path.GetFileName( path );
-         var assembly = Assembly.LoadFrom(path);
-         var name = assembly.GetName();
-         var version = name.Version;
-         var types = new List<Type>();
-         if ( methodName == null ) return assembly;
-         if ( typeName == null )
-            types.AddRange( assembly.GetTypes().Where( x => x.GetMethod( methodName, bFlags ) != null ) );
-         else
-            types.Add( assembly.GetType( typeName ) );
-
-         if ( types.Count == 0 ) {
-            Log.Error( "{0} (v{1}): Failed to find entry point: {2}.{3}", fileName, version, typeName ?? "Unnamed", methodName );
-            return null;
-         }
-
-         // run each entry point
-         foreach ( var type in types ) {
-            var entryMethod = type.GetMethod(methodName, bFlags);
-            var methodParams = entryMethod?.GetParameters();
-
-            if ( methodParams == null )
-               continue;
-
-            if ( methodParams.Length == 0 ) {
-               Log.Info( "{0} (v{1}): Calling entry point \"{2}\" in type \"{3}\"", fileName, version, entryMethod, type.FullName );
-               entryMethod.Invoke( null, null );
-               continue;
-            }
-
-            // match up the passed in params with the method's params, if they match, call the method
-            if ( parameters != null && methodParams.Length == parameters.Length
-                  && !methodParams.Where( ( info, i ) => parameters[ i ]?.GetType() != info.ParameterType ).Any() ) {
-               Log.Info( "{0} (v{1}): Found and called entry point \"{2}\" in type \"{3}\"", fileName, version, entryMethod, type.FullName );
-               entryMethod.Invoke( null, parameters );
-               continue;
-            }
-
-            // failed to call entry method of parameter mismatch
-            // diagnosing problems of this type is pretty hard
-            Log.Error( "{0} (v{1}): Provided params don't match {2}.{3}", fileName, version, type.FullName, entryMethod.Name );
-            Log.Error( "\tPassed in Params:" );
-            if ( parameters != null ) {
-               foreach ( var parameter in parameters )
-                  Log.Error( "\t\t{0}", parameter.GetType() );
-            } else {
-               Log.Error( "\t\t'parameters' is null" );
-            }
-
-            if ( methodParams.Length != 0 ) {
-               Log.Error( "\tMethod Params:" );
-               foreach ( var prm in methodParams )
-                  Log.Error( "\t\t{0}", prm.ParameterType );
-            }
-         }
-         return assembly;
+      public static Assembly LoadDll ( string path ) { try {
+         Log.Info( "Loading {0}", path );
+         return Assembly.LoadFrom( path );
       } catch ( Exception ex ) { Log.Error( ex ); return null; } }
+
+      private static void LoggerA ( object msg ) => LoggerB( msg, null );
+      private static void LoggerB ( object msg, object[] augs ) =>
+         Log.Log( msg is Exception ? SourceLevels.Error : SourceLevels.Information, msg, augs );
+      private static void LoggerC ( SourceLevels lv, object msg ) => Log.Log( lv, msg );
+      private static void LoggerD ( SourceLevels lv, object msg, object[] augs ) => Log.Log( lv, msg, augs );
+
+      public static void CallInit ( Assembly dll, string typeName, string methodName ) { try {
+         Type type = dll.GetType( typeName );
+         if ( type == null ) {
+            Log.Error( "Cannot find type {1} in {0}", typeName, dll.Location );
+            return;
+         }
+
+         MethodInfo func = type.GetMethod( methodName, PUBLIC_STATIC_BINDING_FLAGS );
+         List<object> augs = new List<object>();
+         foreach ( var aug in func.GetParameters() ) {
+            var pType = aug.ParameterType;
+            // Loggers
+            if ( pType == typeof( Action<object> ) )
+               augs.Add( (Action<object>) LoggerA );
+            else if ( pType == typeof( Action<object,object[]> ) )
+               augs.Add( (Action<object,object[]>) LoggerB );
+            else if ( pType == typeof( Action<SourceLevels,object> ) )
+               augs.Add( (Action<SourceLevels,object>) LoggerC );
+            else if ( pType == typeof( Action<SourceLevels,object,object[]> ) )
+               augs.Add( (Action<SourceLevels,object,object[]>) LoggerD );
+            // Defaults
+            else if ( pType.IsValueType )
+               augs.Add( Activator.CreateInstance( pType ) );
+            else
+               augs.Add( null );
+         }
+         Log.Info( "Calling {0}.{1} with {2} parameters", typeName, methodName, augs.Count );
+         func.Invoke( null, augs.ToArray() );
+      } catch ( Exception ex ) { Log.Error( ex ); } }
    }
 
    internal static class Tools {

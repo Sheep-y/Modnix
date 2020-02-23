@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Sheepy.Modnix {
-   using DllEntryMeta = IDictionary< string, IList< string > >;
+   using DllEntryMeta = Dictionary< string, HashSet< string > >;
 
    [ JsonObject( MemberSerialization.OptIn ) ]
    public class ModEntry {
@@ -136,9 +136,9 @@ namespace Sheepy.Modnix {
                break;
             default :
                var methods = e.Methods;
-               if ( methods == null ) e.Methods = methods = new Dictionary<string,IList<string>>();
+               if ( methods == null ) e.Methods = methods = new DllEntryMeta();
                if ( ! methods.TryGetValue( prop, out var list ) )
-                  methods[ prop ] = list = new List<string>();
+                  methods[ prop ] = list = new HashSet<string>();
                list.Add( txt );
                break;
          }
