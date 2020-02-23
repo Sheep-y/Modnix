@@ -143,15 +143,24 @@ namespace Sheepy.Modnix {
 
       public static ModEntry ParseMod ( string file ) { try {
          Log.Info( $"Parsing as a mod: {file}" );
-         var info = FileVersionInfo.GetVersionInfo( file );
-         var meta = new ModMeta{
-            Id = Path.GetFullPath( file ).Replace( ModDirectory, "" ).ToLowerInvariant(),
-            Name = new TextSet{ Default = info.FileDescription },
-            Version = info.FileVersion,
-            Description = new TextSet{ Default = info.Comments },
-            Author = new TextSet{ Default = info.CompanyName },
-            Dlls = new DllMeta[] { new DllMeta{ Path = file, Methods = ParseEntryPoints( file ) } },
-         };
+         ModMeta meta;
+         if ( file.EndsWith( ".dll", StringComparison.InvariantCultureIgnoreCase ) ) {
+            var info = FileVersionInfo.GetVersionInfo( file );
+            meta = new ModMeta{
+               Id = Path.GetFullPath( file ).Replace( ModDirectory, "" ).ToLowerInvariant(),
+               Name = new TextSet{ Default = info.FileDescription },
+               Version = info.FileVersion,
+               Description = new TextSet{ Default = info.Comments },
+               Author = new TextSet{ Default = info.CompanyName },
+               Dlls = new DllMeta[] { new DllMeta{ Path = file, Methods = ParseEntryPoints( file ) } },
+            };
+         } else {
+            string js = File.ReadAllText( file, Encoding.UTF8 ).Trim();
+            if ( js.StartsWith( "(", StringComparison.InvariantCulture ) &&
+                 js.EndsWith( ")", StringComparison.InvariantCulture ) )
+               js = js.Substring( 1, js.Length - 1 );
+            meta = ModMetaJson.ParseMod( js );
+         }
          return new ModEntry{ Metadata = meta };
       } catch ( Exception ex ) { Log.Warn( ex ); return null; } }
 
