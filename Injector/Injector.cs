@@ -37,9 +37,11 @@ namespace Sheepy.Modnix {
       internal const string INJECT_METHOD = "Init";
       //internal const string INJECT_CALL   = "MenuCrt";
 
-      internal const string PPML_INJECTOR_EXE    = "PhoenixPointModLoaderInjector.exe";
-      internal const string PPML_INJECTOR_TYPE   = "PhoenixPointModLoader.PPModLoader";
-      internal const string PPML_INJECTOR_METHOD = "Init";
+      internal const string PPML_INJECTOR_EXE      = "PhoenixPointModLoaderInjector.exe";
+      internal const string PPML01_INJECTOR_TYPE   = "PhoenixPointModLoader.PPModLoader";
+      internal const string PPML01_INJECTOR_METHOD = "Init";
+      internal const string PPML02_INJECTOR_TYPE   = "PhoenixPointModLoader.PhoenixPointModLoader";
+      internal const string PPML02_INJECTOR_METHOD = "Initialize";
 
       internal const string GAME_VERSION_TYPE   = "Base.Build.RuntimeBuildInfo";
       internal const string GAME_VERSION_METHOD = "get_Version";
@@ -384,7 +386,8 @@ namespace Sheepy.Modnix {
       }
 
       private static readonly string ModnixInjectCheck = $"System.Void {Injector.INJECT_TYPE}::{Injector.INJECT_METHOD}(";
-      private static readonly string PPMLInjectCheck = $"System.Void {Injector.PPML_INJECTOR_TYPE}::{Injector.PPML_INJECTOR_METHOD}(";
+      private static readonly string PPML01InjectCheck = $"System.Void {Injector.PPML01_INJECTOR_TYPE}::{Injector.PPML01_INJECTOR_METHOD}(";
+      private static readonly string PPML02InjectCheck = $"System.Void {Injector.PPML02_INJECTOR_TYPE}::{Injector.PPML02_INJECTOR_METHOD}(";
 
       private InjectionState CheckInjection ( MethodDefinition methodDefinition ) {
          if ( methodDefinition.Body == null )
@@ -396,7 +399,7 @@ namespace Sheepy.Modnix {
                // Update check:
                // if ( methodDefinition.FullName.Contains( HOOK_TYPE ) && methodDefinition.FullName.Contains( HOOK_METHOD ) )
                return InjectionState.MODNIX;
-            else if ( op.StartsWith( PPMLInjectCheck ) )
+            else if ( op.StartsWith( PPML01InjectCheck ) || op.StartsWith( PPML02InjectCheck ) )
                return InjectionState.PPML;
          }
          return InjectionState.NONE;
