@@ -107,7 +107,7 @@ namespace Sheepy.Modnix.MainGUI {
             if ( dll.Name.StartsWith( "ModnixLoader,", StringComparison.InvariantCultureIgnoreCase ) )
                return app.Load( MainGUI.Properties.Resources.ModnixLoader );
             if ( dll.Name.StartsWith( "Mono.Cecil,", StringComparison.InvariantCultureIgnoreCase ) )
-               return app.Load( MainGUI.Properties.Resources.ModnixLoader );
+               return app.Load( MainGUI.Properties.Resources.Mono_Cecil );
             if ( dll.Name.StartsWith( "Newtonsoft.Json,", StringComparison.InvariantCultureIgnoreCase ) )
                return app.Load( MainGUI.Properties.Resources.Newtonsoft_Json );
             return null;

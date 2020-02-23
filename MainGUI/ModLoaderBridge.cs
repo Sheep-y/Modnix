@@ -37,7 +37,11 @@ namespace Sheepy.Modnix.MainGUI {
       public override string Version => Mod?.Metadata?.Version;
       public override string Author => Mod?.Metadata?.Author?.ToString();
       public override string Path => Mod?.Metadata?.Dlls?[0]?.Path;
-      public override string Type => "PPML";
+      public override string Type { get {
+         bool? hasInit = Mod?.Metadata?.Dlls?.Any( e => e?.Methods?.ContainsKey( "Init" ) ?? false );
+         if ( hasInit == null ) return "Data";
+         return hasInit.GetValueOrDefault() ? "PPML" : "DLL";
+      } }
       public override string ToString () => Mod?.ToString();
    }
 

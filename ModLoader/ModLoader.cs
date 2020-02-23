@@ -1,4 +1,5 @@
-﻿using Sheepy.Logging;
+﻿using Mono.Cecil;
+using Sheepy.Logging;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -10,6 +11,7 @@ using System.Text.RegularExpressions;
 using static System.Reflection.BindingFlags;
 
 namespace Sheepy.Modnix {
+   using DllEntryMeta = IDictionary< string, IList< string > >;
 
    using ModData = IDictionary< string,object >;
 
@@ -32,18 +34,20 @@ namespace Sheepy.Modnix {
 
       public static string ModDirectory { get; private set; }
 
+      private static readonly string[] PHASES = new string[]{ "ModSplash", "Init", "ModMainMenu" };
+
       public static void Init () { try {
          if ( Log != null ) {
             if ( Initialized ) return;
             Initialized = true;
-            LoadMods( "default" );  // Second call loads default and mainmenu mods
-            //LoadMods( "mainmenu" );
+            LoadMods( "Init" );  // Second call loads default and mainmenu mods
+            LoadMods( "ModMainMenu" );
             return;
          }
          Setup();
          //Patcher = HarmonyInstance.Create( typeof( ModLoader ).Namespace );
          BuildModList();
-         LoadMods( "splash" );
+         LoadMods( "ModSplash" );
       } catch ( Exception ex ) { Log?.Error( ex ); } }
 
       public static bool NeedSetup => Log == null;
@@ -83,13 +87,17 @@ namespace Sheepy.Modnix {
          Log.Info( "{0} v{1} {2}", typeof( ModLoader ).FullName, LoaderInfo.Version, DateTime.Now.ToString( "u" ) );
       } } catch ( Exception ex ) { Log?.Error( ex ); } }
 
-      public static void LoadMods ( string flags ) { try { lock ( AllMods ) {
-         Log.Info( "Loading {0} mods", flags );
-         if ( flags == "splash" ) return; // Not implemented
-         foreach ( var mod in AllMods )
-            foreach ( var dll in mod.Metadata.Dlls ) try {
-               LoadDLL( dll.Path, "Init" );
-            } catch ( Exception ex ) { Log.Error( ex ); }
+      public static void LoadMods ( string phase ) { try { lock ( AllMods ) {
+         Log.Info( "Calling {0} mods", phase );
+         foreach ( var mod in AllMods ) {
+            if ( mod.Metadata.Dlls == null ) continue;
+            foreach ( var dll in mod.Metadata.Dlls ) {
+               if ( dll.Methods == null ) continue;
+               if ( ! dll.Methods.TryGetValue( phase, out var entries ) ) return;
+               foreach ( var type in entries )
+                  LoadDLL( dll.Path, phase, type );
+            }
+         }
          Log.Flush();
       } } catch ( Exception ex ) { Log.Error( ex ); } }
 
@@ -101,7 +109,7 @@ namespace Sheepy.Modnix {
       } } catch ( Exception ex ) { Log.Error( ex ); } }
 
       public static void ScanFolderForMod ( string path, bool isRoot ) {
-         Log.Info( "Scanning {0} for mods", path );
+         Log.Info( "Scanning for mods: {0}", path );
          var container = Path.GetFileName( path );
          var foundMod = false;
          foreach ( var dll in Directory.EnumerateFiles( path, "*.dll" ) ) {
@@ -134,7 +142,7 @@ namespace Sheepy.Modnix {
       }
 
       public static ModEntry ParseMod ( string file ) { try {
-         Log.Info( $"Parsing {file}" );
+         Log.Info( $"Parsing as a mod: {file}" );
          var info = FileVersionInfo.GetVersionInfo( file );
          var meta = new ModMeta{
             Id = Path.GetFullPath( file ).Replace( ModDirectory, "" ).ToLowerInvariant(),
@@ -142,13 +150,35 @@ namespace Sheepy.Modnix {
             Version = info.FileVersion,
             Description = new TextSet{ Default = info.Comments },
             Author = new TextSet{ Default = info.CompanyName },
-            Dlls = new DllMeta[] { new DllMeta{ Path = file } },
+            Dlls = new DllMeta[] { new DllMeta{ Path = file, Methods = ParseEntryPoints( file ) } },
          };
          return new ModEntry{ Metadata = meta };
       } catch ( Exception ex ) { Log.Warn( ex ); return null; } }
 
-      public static Assembly LoadDLL ( string path, string methodName = "Init", string typeName = null, object[] parameters = null, BindingFlags bFlags = PUBLIC_STATIC_BINDING_FLAGS ) {
-         Log.Info( "Loading {0}", path );
+      private static DllEntryMeta ParseEntryPoints ( string file ) {
+         DllEntryMeta result = null;
+         using ( var lib = AssemblyDefinition.ReadAssembly( file ) ) {
+            foreach ( var type in lib.MainModule.GetTypes() ) {
+               foreach ( var method in type.Methods ) {
+                  string name = method.Name;
+                  if ( Array.IndexOf( PHASES, name ) >= 0 ) {
+                     if ( result == null ) result = new Dictionary< string, IList< string > >();
+                     if ( ! result.TryGetValue( name, out var list ) )
+                        result[ name ] = list = new List<string>();
+                     list.Add( type.FullName );
+                     Log.Info( "Found {0}.{1}", type.FullName, name );
+                  }
+               }
+            }
+         }
+         // Remove Init from Modnix DLLs, so that they will not be initiated twice
+         if ( result != null && result.Count > 1 )
+            result.Remove( "Init" );
+         return result;
+      }
+
+      public static Assembly LoadDLL ( string path, string methodName = "Init", string typeName = null, object[] parameters = null, BindingFlags bFlags = PUBLIC_STATIC_BINDING_FLAGS ) { try {
+         Log.Info( "Loading {0} to call {1}", path, methodName );
          if ( ! File.Exists( path ) ) throw new FileNotFoundException();
 
          var fileName = Path.GetFileName( path );
@@ -207,7 +237,7 @@ namespace Sheepy.Modnix {
             }
          }
          return assembly;
-      }
+      } catch ( Exception ex ) { Log.Error( ex ); return null; } }
    }
 
    internal static class Tools {

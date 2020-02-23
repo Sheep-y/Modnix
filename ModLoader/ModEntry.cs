@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Sheepy.Modnix {
+   using DllEntryMeta = IDictionary< string, IList< string > >;
 
    [ JsonObject( MemberSerialization.OptIn ) ]
    public class ModEntry {
@@ -67,7 +68,7 @@ namespace Sheepy.Modnix {
 
    public class DllMeta {
       public string Path;
-      public Dictionary<string,string> Methods;
+      public DllEntryMeta Methods;
    }
 
    public static class ModMetaJson {
@@ -134,8 +135,11 @@ namespace Sheepy.Modnix {
                e.Path   = txt;
                break;
             default :
-               if ( e.Methods == null ) e.Methods = new Dictionary<string,string>();
-               e.Methods.Add( prop, txt );
+               var methods = e.Methods;
+               if ( methods == null ) e.Methods = methods = new Dictionary<string,IList<string>>();
+               if ( ! methods.TryGetValue( prop, out var list ) )
+                  methods[ prop ] = list = new List<string>();
+               list.Add( txt );
                break;
          }
          return e;
