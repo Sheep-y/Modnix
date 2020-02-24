@@ -50,7 +50,17 @@ namespace Sheepy.Modnix {
          LoadMods( "SplashMod" );
       } catch ( Exception ex ) { Log?.Error( ex ); } }
 
-      public static bool NeedSetup => Log == null;
+      public static bool NeedSetup => ModDirectory == null;
+
+      public static void Setup ( AppDomain domain = null ) { try { lock ( AllMods ) {
+         if ( ModDirectory != null ) return;
+         ModDirectory = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.MyDocuments ), MOD_PATH );
+         if ( Log == null ) {
+            if ( ! Directory.Exists( ModDirectory ) )
+               Directory.CreateDirectory( ModDirectory );
+            SetLog( new FileLogger( Path.Combine( ModDirectory, Assembly.GetExecutingAssembly().GetName().Name + ".log" ) ){ TimeFormat = "HH:mm:ss.ffff " }, true );
+         }
+      } } catch ( Exception ex ) { Log?.Error( ex ); } }
 
       public static void SetLog ( Logger logger, bool clear = false ) {
          if ( logger == null ) throw new NullReferenceException( nameof( logger ) );
@@ -58,20 +68,19 @@ namespace Sheepy.Modnix {
          Log = logger;
          if ( clear ) Log.Clear();
          Log.Info( "{0} v{1} {2}", typeof( ModLoader ).FullName, Assembly.GetExecutingAssembly().GetName().Version, DateTime.Now.ToString( "u" ) );
+         LogGameVersion();
          ModMetaJson.JsonLogger.Masters.Clear();
          ModMetaJson.JsonLogger.Masters.Add( Log );
       }
 
-      public static void Setup ( AppDomain domain = null ) { try { lock ( AllMods ) {
-         if ( ModDirectory != null ) return;
-         ModDirectory = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.MyDocuments ), MOD_PATH );
-         var LoaderInfo = Assembly.GetExecutingAssembly().GetName();
-         if ( Log == null ) {
-            if ( ! Directory.Exists( ModDirectory ) )
-               Directory.CreateDirectory( ModDirectory );
-            SetLog( new FileLogger( Path.Combine( ModDirectory, LoaderInfo.Name + ".log" ) ){ TimeFormat = "HH:mm:ss.ffff " }, true );
+      public static void LogGameVersion () { try {
+         foreach ( var e in AppDomain.CurrentDomain.GetAssemblies() ) {
+            if ( ! e.FullName.StartsWith( "Assembly-CSharp, ", StringComparison.InvariantCultureIgnoreCase ) ) continue;
+            var ver = e.GetType( "Base.Build.RuntimeBuildInfo" ).GetProperty( "Version" ).GetValue( null );
+            Log.Info( "{0} v{1}", e.FullName, ver );
+            return;
          }
-      } } catch ( Exception ex ) { Log?.Error( ex ); } }
+      } catch ( Exception ex ) { Log?.Error( ex ); } }
 
       public static void LoadMods ( string phase ) { try { lock ( AllMods ) {
          Log.Info( "Calling {0} mods", phase );
