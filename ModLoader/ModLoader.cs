@@ -20,7 +20,7 @@ namespace Sheepy.Modnix {
       public readonly static List<ModEntry> AllMods = new List<ModEntry>();
       private static bool Initialized;
 
-      private static Logger Log;
+      internal static Logger Log;
       //private static HarmonyInstance Patcher;
 
       private const BindingFlags PUBLIC_STATIC_BINDING_FLAGS = Public | Static;
@@ -52,40 +52,43 @@ namespace Sheepy.Modnix {
 
       public static bool NeedSetup => Log == null;
 
-      public static void SetLog ( Logger logger ) {
+      public static void SetLog ( Logger logger, bool clear = false ) {
          if ( logger == null ) throw new NullReferenceException( nameof( logger ) );
          if ( Log != null ) throw new InvalidOperationException();
          Log = logger;
+         if ( clear ) Log.Clear();
+         Log.Info( "{0} v{1} {2}", typeof( ModLoader ).FullName, Assembly.GetExecutingAssembly().GetName().Version, DateTime.Now.ToString( "u" ) );
+         ModMetaJson.JsonLogger.Masters.Clear();
+         ModMetaJson.JsonLogger.Masters.Add( Log );
       }
 
-      public static void Setup () { try { lock ( AllMods ) {
+      public static void Setup ( AppDomain domain = null ) { try { lock ( AllMods ) {
          if ( ModDirectory != null ) return;
          ModDirectory = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.MyDocuments ), MOD_PATH );
+         var LoaderInfo = Assembly.GetExecutingAssembly().GetName();
+         if ( Log == null ) {
+            if ( ! Directory.Exists( ModDirectory ) )
+               Directory.CreateDirectory( ModDirectory );
+            SetLog( new FileLogger( Path.Combine( ModDirectory, LoaderInfo.Name + ".log" ) ){ TimeFormat = "HH:mm:ss.ffff " }, true );
+         }
+         LoadHarmony( domain );
+      } } catch ( Exception ex ) { Log?.Error( ex ); } }
 
-         // Dynamically load embedded dll
-         AppDomain.CurrentDomain.AssemblyResolve += ( domain, dll ) => {
-            Log.Info( $"Resolving {dll.Name}" );
+      public static void LoadHarmony ( AppDomain domain = null ) {
+         if ( domain == null ) domain = AppDomain.CurrentDomain;
+         domain.AssemblyResolve += ( dom, dll ) => {
+            Log.Info( $"ModLoader resolving {dll.Name}" );
             if ( dll.Name.StartsWith( "0Harmony, ", StringComparison.InvariantCultureIgnoreCase ) ) {
-               AppDomain app = domain as AppDomain ?? AppDomain.CurrentDomain;
+               AppDomain app = dom as AppDomain ?? domain;
                if ( dll.Name.Contains( ", Version=1." ) )
-                  return app.Load( Properties.Resources.HarmonyMigration );
+                  return app.Load( Properties.Resources._0Harmony_v1 );
                else if ( dll.Name.Contains( ", Version=2." ) )
-                  return app.Load( Properties.Resources._0Harmony );
+                  return app.Load( Properties.Resources._0Harmony_v2 );
             }
             return null;
          };
-
-         var LoaderInfo = Assembly.GetExecutingAssembly().GetName();
-         if ( Log == null ) {
-            Log = new FileLogger( Path.Combine( ModDirectory, LoaderInfo.Name + ".log" ) ){ TimeFormat = "HH:mm:ss.ffff " };
-            if ( ! Directory.Exists( ModDirectory ) )
-               Directory.CreateDirectory( ModDirectory );
-            else
-               Log.Clear();
-         }
-         ModMetaJson.JsonLogger.Masters.Add( Log );
-         Log.Info( "{0} v{1} {2}", typeof( ModLoader ).FullName, LoaderInfo.Version, DateTime.Now.ToString( "u" ) );
-      } } catch ( Exception ex ) { Log?.Error( ex ); } }
+         HarmonyMigration.PatchHarmony();
+      }
 
       public static void LoadMods ( string phase ) { try { lock ( AllMods ) {
          Log.Info( "Calling {0} mods", phase );

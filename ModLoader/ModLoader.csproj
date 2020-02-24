@@ -36,7 +36,7 @@
   <ItemGroup>
     <Reference Include="0Harmony, Version=2.0.0.5, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Lib.Harmony.2.0.0.5\lib\net45\0Harmony.dll</HintPath>
-      <Private>False</Private>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Mono.Cecil, Version=0.11.2.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e, processorArchitecture=MSIL">
       <HintPath>..\packages\Mono.Cecil.0.11.2\lib\net40\Mono.Cecil.dll</HintPath>
@@ -62,6 +62,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="HarmonyMigration.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="ModEntry.cs" />
     <Compile Include="ModLoader.cs" />
@@ -85,10 +86,10 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\HarmonyMigration.dll" />
+    <None Include="Resources\0Harmony_v1.dll" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\0Harmony.dll" />
+    <None Include="Resources\0Harmony_v2.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
@@ -96,7 +97,7 @@
 mkdir Resources
 cd Resources
 copy /y $(ProjectDir)$(OutDir)$(TargetFileName) .
-copy /y $(ProjectDir)$(OutDir)0Harmony.dll .
-copy /y $(ProjectDir)$(OutDir)Newtonsoft.Json.dll .</PostBuildEvent>
+copy /y $(ProjectDir)$(OutDir)Newtonsoft.Json.dll .
+copy /y $(ProjectDir)$(OutDir)0Harmony.dll $(ProjectDir)Resources\0Harmony_v2.dll</PostBuildEvent>
   </PropertyGroup>
 </Project>

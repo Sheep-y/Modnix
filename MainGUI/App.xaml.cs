@@ -102,7 +102,7 @@ namespace Sheepy.Modnix.MainGUI {
       private void Init ( string[] args ) {
          // Dynamically load embedded dll
          AppDomain.CurrentDomain.AssemblyResolve += ( domain, dll ) => {
-            Log( $"Loading {dll.Name}" );
+            Log( $"Modnix resolving {dll.Name}" );
             AppDomain app = domain as AppDomain ?? AppDomain.CurrentDomain;
             if ( dll.Name.StartsWith( "ModnixLoader,", StringComparison.InvariantCultureIgnoreCase ) )
                return app.Load( MainGUI.Properties.Resources.ModnixLoader );

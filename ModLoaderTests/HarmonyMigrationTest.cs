@@ -13,7 +13,7 @@ namespace Sheepy.Modnix.Tests {
    public class HarmonyMigrationTest {
 
       // Setup assembly to load harmony. Bridge is loaded locally.
-      [TestInitialize] public void TestInitialize () => ModLoader.Setup();
+      [TestInitialize] public void TestInitialize () => ModLoader.Setup( AppDomain.CurrentDomain );
 
       [TestMethod()] public void Assumptions () {
          Assert.AreEqual( 3, Subject.Add( 1, 2 ), "Subject.Add" );

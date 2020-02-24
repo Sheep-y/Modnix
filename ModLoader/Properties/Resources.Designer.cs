@@ -63,9 +63,9 @@ namespace Sheepy.Modnix.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
-        internal static byte[] _0Harmony {
+        internal static byte[] _0Harmony_v1 {
             get {
-                object obj = ResourceManager.GetObject("_0Harmony", resourceCulture);
+                object obj = ResourceManager.GetObject("_0Harmony_v1", resourceCulture);
                 return ((byte[])(obj));
             }
         }
@@ -73,9 +73,9 @@ namespace Sheepy.Modnix.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
-        internal static byte[] HarmonyMigration {
+        internal static byte[] _0Harmony_v2 {
             get {
-                object obj = ResourceManager.GetObject("HarmonyMigration", resourceCulture);
+                object obj = ResourceManager.GetObject("_0Harmony_v2", resourceCulture);
                 return ((byte[])(obj));
             }
         }
