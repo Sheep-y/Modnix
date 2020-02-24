@@ -87,6 +87,9 @@ namespace Sheepy.Modnix.MainGUI {
          ButtonLoaderLog.IsEnabled = AppState == "modnix";
       } catch ( Exception ex ) { Log( ex ); } }
 
+      private void ButtonGitHub_Click ( object sender, RoutedEventArgs e ) => OpenUrl( "home", e );
+      private void ButtonUserGuide_Click ( object sender, RoutedEventArgs e ) => OpenUrl( "guide", e );
+
       private void ButtonSetup_Click ( object sender, RoutedEventArgs e ) { try {
          Log( "Main action button clicked" );
          if ( e?.Source is UIElement src ) src.Focus();
@@ -254,7 +257,6 @@ namespace Sheepy.Modnix.MainGUI {
          ButtonCheckUpdate.IsEnabled = true;
       } catch ( Exception ex ) { Log( ex ); } }
 
-      private void ButtonGitHub_Click ( object sender, RoutedEventArgs e ) => OpenUrl( "home", e );
       private void ButtonCheckUpdate_Click ( object sender, RoutedEventArgs e ) => CheckUpdate( true );
 
       private void RefreshUpdateStatus () { try {
@@ -321,6 +323,7 @@ namespace Sheepy.Modnix.MainGUI {
             case "canny"  : url = "https://phoenixpoint.canny.io/feedback?sort=trending"; break;
             case "discord": url = "https://discordapp.com/invite/phoenixpoint"; break;
             case "forum"  : url = "https://forums.snapshotgames.com/c/phoenix-point"; break;
+            case "guide"  : url = "https://github.com/Sheep-y/Modnix/wiki/"; break;
             case "home"   : url = "https://github.com/Sheep-y/Modnix"; break;
             case "manual" : url = "https://drive.google.com/open?id=1n8ORQeDtBkWcnn5Es4LcWBxif7NsXqet"; break;
             case "my_doc" : url = "https://github.com/Sheep-y/Modnix/wiki/Manual-Setup#wiki-wrapper"; break;

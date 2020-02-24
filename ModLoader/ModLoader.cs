@@ -34,20 +34,20 @@ namespace Sheepy.Modnix {
 
       public static string ModDirectory { get; private set; }
 
-      private static readonly string[] PHASES = new string[]{ "ModSplash", "Init", "ModMainMenu" };
+      private static readonly string[] PHASES = new string[]{ "SplashMod", "Init", "MainMod" };
 
       public static void Init () { try {
          if ( Log != null ) {
             if ( Initialized ) return;
             Initialized = true;
             LoadMods( "Init" );  // Second call loads default and mainmenu mods
-            LoadMods( "ModMainMenu" );
+            LoadMods( "MainMod" );
             return;
          }
          Setup();
          //Patcher = HarmonyInstance.Create( typeof( ModLoader ).Namespace );
          BuildModList();
-         LoadMods( "ModSplash" );
+         LoadMods( "SplashMod" );
       } catch ( Exception ex ) { Log?.Error( ex ); } }
 
       public static bool NeedSetup => Log == null;

@@ -105,14 +105,15 @@ C# .Net DLL
 Functions:
 
 * Scan mods and parse their information.
-* Load "startup" mods as early as possible.
-* Load "main" mods before main menu, around same time as PPML.
+* Load "splash" mods as early as possible.
+* Load "mainmenu" mods before main menu, around same time as PPML.
 
 Depends on Newtonsoft JSON.Net, to parse mod information.
-Also depends on Lib.Harmony, so that the latest harmony dll will be copied to output and can then be copied to MainGUI for embedding.
-The loader itself does not need Harmony, for now.
+Also depends on Lib.Harmony, so that the harmony dll will be copied to output and can then be copied to MainGUI for embedding.
+The loader itself does not need Harmony.
+Harmony 1.2 is used to maintain backward compatibility with PPML.
 
-All Modnix files - exe, settings, logs, and mods - are placed in My Documents\My Games\Phoenix Point\Mods
+Most Modnix files - exe, settings, logs, and mods - are placed in My Documents\My Games\Phoenix Point\Mods
 This ensures that they will survive reinstall, verify, patching, moving (in the same pc), and other file operations done on the game.
 For 100% PPML compatibility, a symbolic link to this folder would be required at the games's root folder.
 
@@ -136,7 +137,7 @@ Aims:
 Steps:
 1. The root mod folder is scanned for files and folders.
 2. Files in root folder are parsed as mods.
-3. If folders, and if mod.js exists, it will be parsed as a mod. The folder will not be further processed.
+3. If folders, and if mod_info.js(on) exists, it will be parsed as a mod. The folder will not be further processed.
 4. If non-root folders, and only one .js or .json match the folder name, it will be parsed as a mod. The folder will not be further processed.
 5. Otherwise, files whose name match the containing folder's, are parsed as mods.
 6. If no file match the requirement, subfolders are scanned recursively up to a max depth.
@@ -149,7 +150,7 @@ See Mod Resolution.
 1. If file extension is .js or .json, parse as mod.js.  See example below.
     1. If success, but mod does not specify any contents (Mods, Dlls, Alters, Assets), and is non-root, adds all dlls whose name match the folder (see above).
 2. If file extension is .dll, parse mod metadata from assembly information which serve as a default.
-3. If file extension is .dll, find embedded "mod" and, if found, parse as .js, merge with replace, and set mod type to Modnix.
+3. If file extension is .dll, find embedded "mod_info" and, if found, parse as .js, merge with replace.
 4. If file extension is .dll and not Modnix, parse as PPML.  Abort if failed.
 5. Check built-in override list.  If any match, merge with replace.
 6. Check user override list.  If any match, merge with replace.
@@ -160,8 +161,8 @@ Parse failures at step 3, 5, and 6 are ignored and proceed to next step.
 Currently only dll mods are supported.
 Data mods is planned in future releases.
 
-Future releases may also change the parsing to run in parallel.
-It should be useful when mods get more complicated.
+Future releases may also change the parsing to run in parallel,
+when mods get bigger and more complicated.
 
 
 ### Mod Resolution
@@ -254,16 +255,19 @@ but most users should have only one default settings.
 
 Mods may implement multiple methods which will be called at different phases.
 
-The phases are being determined and will be documented.  These phases are planned:
+Currently, two phases are supported.
 
-1. Splash
-2. IntroCinematic
-3. MainMenuFirstLoad
-4. MainMenuLoad
-5. GeoLevelFirstLoad
-6. GeoLevelLoad
-7. TacLevelFirstLoad
-8. TacLevelLoad
+1. SplashMod
+2. MainMod (default, same as and after Init)
+
+More phases are planned, but may change:
+
+1. MainMenuFirstLoad
+2. MainMenuLoad
+3. GeoLevelFirstLoad
+4. GeoLevelLoad
+5. TacLevelFirstLoad
+6. TacLevelLoad
 
 
 

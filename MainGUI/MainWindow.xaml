@@ -27,17 +27,17 @@
                   <Grid AutomationProperties.AcceleratorKey="D">
                      <Grid.ColumnDefinitions>
                         <ColumnDefinition/>
-                        <ColumnDefinition Width="10"/>
+                        <ColumnDefinition Width="5"/>
                         <ColumnDefinition/>
-                        <ColumnDefinition Width="10"/>
+                        <ColumnDefinition Width="5"/>
                         <ColumnDefinition/>
                      </Grid.ColumnDefinitions>
                      <Button x:Name="ButtonSetup" Content="Setup" Padding="10,5" IsEnabled="False" Click="ButtonSetup_Click"/>
-                     <Button x:Name="ButtonModDir" Grid.Column="2" Padding="10,5" IsEnabled="False" Click="ButtonModDir_Click">
-                        <AccessText Text="Mod _Directory"/>
+                     <Button x:Name="ButtonGitHub" Padding="5" Grid.Column="2" Click="ButtonGitHub_Click">
+                        <AccessText Text="GitHub"/>
                      </Button>
-                     <Button x:Name="ButtonNexus" Grid.Column="4" Padding="10,5" Click="ButtonNexus_Click">
-                        <AccessText Text="_Nexus Mods"/>
+                     <Button x:Name="ButtonUserGuide" Padding="5" Grid.Column="4" Click="ButtonUserGuide_Click">
+                        <AccessText Text="User Guide"/>
                      </Button>
                   </Grid>
                   <RichTextBox x:Name="richGameInfo" Height="50" IsReadOnly="True" BorderBrush="{x:Null}" Margin="0,10,0,5">
@@ -50,16 +50,16 @@
                   <Grid>
                      <Grid.RowDefinitions>
                         <RowDefinition/>
-                        <RowDefinition Height="10"/>
+                        <RowDefinition Height="5"/>
                         <RowDefinition/>
-                        <RowDefinition Height="10"/>
+                        <RowDefinition Height="5"/>
                         <RowDefinition/>
                      </Grid.RowDefinitions>
                      <Grid.ColumnDefinitions>
                         <ColumnDefinition/>
-                        <ColumnDefinition Width="10"/>
+                        <ColumnDefinition Width="5"/>
                         <ColumnDefinition/>
-                        <ColumnDefinition Width="10"/>
+                        <ColumnDefinition Width="5"/>
                         <ColumnDefinition/>
                      </Grid.ColumnDefinitions>
                      <Button x:Name="ButtonRunOnline" Padding="10,5" Click="ButtonOnline_Click" IsEnabled="False">
@@ -122,7 +122,20 @@
                      <AccessText Text="Refresh"/>
                   </Button>
                </DockPanel>
-               <DataGrid x:Name="GridModList" VerticalScrollBarVisibility="Visible" AutoGenerateColumns="False" IsReadOnly="True" Margin="0,5,0,0" CurrentCellChanged="GridModList_CurrentCellChanged">
+               <Grid DockPanel.Dock="Bottom">
+                  <Grid.ColumnDefinitions>
+                     <ColumnDefinition/>
+                     <ColumnDefinition Width="10"/>
+                     <ColumnDefinition/>
+                  </Grid.ColumnDefinitions>
+                  <Button x:Name="ButtonModDir" Padding="10,5" IsEnabled="False" Click="ButtonModDir_Click">
+                     <AccessText Text="Mod _Directory"/>
+                  </Button>
+                  <Button x:Name="ButtonNexus" Grid.Column="2" Padding="10,5" Click="ButtonNexus_Click">
+                     <AccessText Text="_Nexus Mods"/>
+                  </Button>
+               </Grid>
+               <DataGrid x:Name="GridModList" VerticalScrollBarVisibility="Visible" AutoGenerateColumns="False" IsReadOnly="True" Margin="0,5" CurrentCellChanged="GridModList_CurrentCellChanged">
                   <DataGrid.Columns>
                      <DataGridTextColumn Header="Mod" Binding="{Binding Name}" ClipboardContentBinding="{x:Null}"/>
                      <DataGridTextColumn Header="Version" Binding="{Binding Version}" ClipboardContentBinding="{x:Null}"/>
@@ -159,12 +172,9 @@
                   <ColumnDefinition/>
                   <ColumnDefinition Width="10"/>
                   <ColumnDefinition/>
-                  <ColumnDefinition Width="10"/>
-                  <ColumnDefinition/>
                </Grid.ColumnDefinitions>
-               <Button x:Name="ButtonGitHub" Content="Homepage" Padding="5" Click="ButtonGitHub_Click"/>
-               <Button x:Name="ButtonLoaderLog" Content="Loader Log" Padding="5" Grid.Column="2" Click="ButtonLoaderLog_Click"/>
-               <Button x:Name="ButtonCheckUpdate" Content="Check Update" Padding="5" Grid.Column="4" Click="ButtonCheckUpdate_Click"/>
+               <Button x:Name="ButtonLoaderLog" Content="Loader Log" Padding="5" Click="ButtonLoaderLog_Click"/>
+               <Button x:Name="ButtonCheckUpdate" Content="Check Update" Padding="5" Grid.Column="2" Click="ButtonCheckUpdate_Click"/>
             </Grid>
             <TextBox x:Name="TextLog" Text="" VerticalScrollBarVisibility="Visible" DockPanel.Dock="Bottom" HorizontalScrollBarVisibility="Visible" IsReadOnly="True" IsReadOnlyCaretVisible="True" Margin="0,5"/>
          </DockPanel>
