@@ -8,7 +8,6 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using static System.Reflection.BindingFlags;
 
 namespace Sheepy.Modnix {
@@ -208,8 +207,11 @@ namespace Sheepy.Modnix {
          List<object> augs = new List<object>();
          foreach ( var aug in func.GetParameters() ) {
             var pType = aug.ParameterType;
+            // Mod Loaders
+            if ( pType == typeof( Assembly ) )
+               augs.Add( Assembly.GetExecutingAssembly() );
             // Loggers
-            if ( pType == typeof( Action<object> ) )
+            else if ( pType == typeof( Action<object> ) )
                augs.Add( (Action<object>) LoggerA );
             else if ( pType == typeof( Action<object,object[]> ) )
                augs.Add( (Action<object,object[]>) LoggerB );
