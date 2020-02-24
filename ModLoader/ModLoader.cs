@@ -46,7 +46,6 @@ namespace Sheepy.Modnix {
             return;
          }
          Setup();
-         LoadHarmony();
          //Patcher = HarmonyInstance.Create( typeof( ModLoader ).Namespace );
          BuildModList();
          LoadMods( "ModSplash" );
@@ -73,32 +72,7 @@ namespace Sheepy.Modnix {
                Directory.CreateDirectory( ModDirectory );
             SetLog( new FileLogger( Path.Combine( ModDirectory, LoaderInfo.Name + ".log" ) ){ TimeFormat = "HH:mm:ss.ffff " }, true );
          }
-         AppDomain.CurrentDomain.AssemblyResolve += ( dom, dll ) => {
-            Log.Info( $"ModLoader resolving {dll.Name}" );
-            if ( dll.Name.StartsWith( "0Harmony, ", StringComparison.InvariantCultureIgnoreCase ) ) {
-               AppDomain app = dom as AppDomain ?? AppDomain.CurrentDomain;
-               if ( dll.Name.Contains( ", Version=1." ) ) lock ( ModDirectory ) {
-                  HarmonyV1 = app.Load( Properties.Resources._0Harmony_v1 );
-                  Task.Run( LoadHarmony );
-                  return HarmonyV1;
-               }
-               else if ( dll.Name.Contains( ", Version=2." ) )
-                  return app.Load( Properties.Resources._0Harmony_v2 );
-            }
-            return null;
-         };
-         Assembly.Load( Properties.Resources._0Harmony_v2 );
       } } catch ( Exception ex ) { Log?.Error( ex ); } }
-
-      private static Assembly HarmonyV1;
-
-      public static void LoadHarmony () {
-         lock ( ModDirectory ) {
-            if ( HarmonyV1 == null ) return;
-            HarmonyMigration.PatchHarmony( HarmonyV1 );
-            HarmonyV1 = null;
-         }
-      }
 
       public static void LoadMods ( string phase ) { try { lock ( AllMods ) {
          Log.Info( "Calling {0} mods", phase );
@@ -250,9 +224,6 @@ namespace Sheepy.Modnix {
                augs.Add( null );
          }
          Log.Info( "Calling {0}.{1} with {2} parameters", typeName, methodName, augs.Count );
-         lock ( ModDirectory ) {
-            if ( HarmonyV1 != null ) LoadHarmony();
-         }
          func.Invoke( null, augs.ToArray() );
       } catch ( Exception ex ) { Log.Error( ex ); } }
    }

@@ -359,6 +359,7 @@ namespace Sheepy.Modnix.MainGUI {
          if ( CopySelf( MyPath, ModGuiExe ) )
             prompt += ",self_copy";
          // Copy hook files
+         currentGame.WriteCodeFile( HARM_DLL, MainGUI.Properties.Resources._0Harmony   );
          currentGame.WriteCodeFile( CECI_DLL, MainGUI.Properties.Resources.Mono_Cecil   );
          currentGame.WriteCodeFile( LOADER  , MainGUI.Properties.Resources.ModnixLoader  );
          currentGame.WriteCodeFile( INJECTOR, MainGUI.Properties.Resources.ModnixInjector );
@@ -374,8 +375,6 @@ namespace Sheepy.Modnix.MainGUI {
             // Cleanup - accident prevention. Old dlls at game base may override dlls in the managed folder.
             foreach ( var file in new string[] { PAST, PAST_DLL, INJECTOR, LOADER, HARM_DLL, CECI_DLL } )
                currentGame.DeleteGameFile( file );
-            // Also remove harmony to make sure our bridge is used.
-            currentGame.DeleteCodeFile( HARM_DLL );
             GUI.Prompt( prompt );
          } else
             GUI.Prompt( "error" );

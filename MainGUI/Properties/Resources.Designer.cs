@@ -63,6 +63,16 @@ namespace Sheepy.Modnix.MainGUI.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
+        internal static byte[] _0Harmony {
+            get {
+                object obj = ResourceManager.GetObject("_0Harmony", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
         internal static byte[] ModnixInjector {
             get {
                 object obj = ResourceManager.GetObject("ModnixInjector", resourceCulture);
