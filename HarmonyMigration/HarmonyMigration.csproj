@@ -56,10 +56,5 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>cd $(SolutionDir)ModLoader\
-mkdir Resources
-cd Resources
-copy /y $(ProjectDir)$(OutDir)$(TargetFileName) .
-copy /y $(ProjectDir)$(OutDir)0Harmony.dll .</PostBuildEvent>
   </PropertyGroup>
 </Project>

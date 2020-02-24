@@ -46,6 +46,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Lib.Harmony">
+      <Version>2.0.0.5</Version>
+    </PackageReference>
     <PackageReference Include="Mono.Cecil">
       <Version>0.11.2</Version>
     </PackageReference>
@@ -56,6 +59,8 @@
 mkdir Resources
 cd Resources
 copy /y $(ProjectDir)$(OutDir)$(TargetFileName) .
-copy /y $(ProjectDir)$(OutDir)Mono.Cecil.dll .</PostBuildEvent>
+copy /y $(ProjectDir)$(OutDir)Mono.Cecil.dll .
+
+copy /y $(ProjectDir)$(OutDir)0Harmony.dll $(SolutionDir)ModLoader\Resources\0Harmony_v2.dll</PostBuildEvent>
   </PropertyGroup>
 </Project>

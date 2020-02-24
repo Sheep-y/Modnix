@@ -17,7 +17,9 @@ namespace Sheepy.Modnix.Tests {
 
       [TestMethod()] public void Assumptions () {
          Assert.AreEqual( 3, Subject.Add( 1, 2 ), "Subject.Add" );
-         Assert.IsNotNull( HarmonyInstance.Create( "test" ), "Harmony" );
+         var harmony = HarmonyInstance.Create( "test" );
+         Assert.IsNotNull( harmony, "Harmony" );
+         //Assert.IsFalse( harmony.HasAnyPatches( harmony.Id ), "no patches" );
       }
 
       [TestMethod()] public void ManualPatch () {

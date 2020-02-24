@@ -12,10 +12,10 @@ namespace Sheepy.Modnix {
    public class HarmonyMigration {
       private readonly static Harmony Patcher = new Harmony( typeof( HarmonyMigration ).Namespace );
 
-      public static void PatchHarmony () {
+      public static void PatchHarmony ( Assembly v1 ) {
          lock ( Patcher ) {
-            if ( Harmony.HasAnyPatches( Patcher.Id ) ) return;
-            Assembly v1 = Assembly.Load( Properties.Resources._0Harmony_v1 );
+            //if ( Harmony.HasAnyPatches( Patcher.Id ) ) return;
+            //Assembly v1 = Assembly.Load( Properties.Resources._0Harmony_v1 );
             ModLoader.Log.Info( "Patching {0}", v1.GetName() );
             var type = v1.GetType( "Harmony.HarmonyInstance" );
             Apply( type.GetMethod( "Create", AnyPublic ), postfix: nameof( Create ) );
@@ -24,11 +24,14 @@ namespace Sheepy.Modnix {
             Apply( type.GetMethod( "HasAnyPatches", AnyPublic ), nameof( HasAnyPatches ) );
             Apply( type.GetMethod( "Patch", AnyPublic ), nameof( Patch ) );
             Apply( type.GetMethod( "PatchAll", AnyPublic, null, new Type[]{ typeof( Assembly ) }, null ), nameof( PatchAll ) );
+            Apply( type.GetMethod( "UnpatchAll", AnyPublic ), nameof( UnpatchAll ) );
+            Apply( type.GetMethod( "VersionInfo", AnyPublic ), nameof( VersionInfo ) );
+            //var unpatches = type.GetMethods( AnyPublic ).Where( e => e.Name == "Unpatch" )
          }
       }
 
       #region Patch helpers
-      private const BindingFlags AnyPublic     = Public | Instance | Static;
+      private const BindingFlags AnyPublic = Public | Instance | Static;
 
       private static void Apply ( MethodBase method, string prefix = null, string postfix = null ) {
          ModLoader.Log.Info( "Patching {0}.{1}", method.DeclaringType, method.Name );
@@ -39,26 +42,31 @@ namespace Sheepy.Modnix {
       #endregion
 
       #region Patch implementations
-      private static Dictionary<string, WeakReference<Harmony>> CreatedInstance;
+      private static Dictionary<string, WeakReference<Harmony>> CreatedInstance = new Dictionary<string, WeakReference<Harmony>>();
 
       private static string InstanceId ( object __instance ) {
          if ( __instance == null ) return null;
          return __instance.GetType().GetField( "id", Instance | NonPublic )?.GetValue( __instance )?.ToString();
       }
 
-      private static Harmony MapInstance ( object __instance ) {
-         string id = InstanceId( __instance );
+      private static Harmony MapInstance ( object from ) {
+         string id = InstanceId( from );
          if ( id == null ) return null;
          if ( ! CreatedInstance.TryGetValue( id, out var reference ) || ! reference.TryGetTarget( out var result ) )
             CreatedInstance[ id ] = reference = new WeakReference<Harmony>( result = new Harmony( id ) );
          return result;
       }
+
+      private static HarmonyMethod MapMethod ( object from ) {
+         if ( from == null ) return null;
+         var method = from.GetType().GetField( "method" ).GetValue( from );
+         if ( method == null ) return null;
+         return new HarmonyMethod( (MethodInfo) method );
+      }
       #endregion
 
       private static void Create ( string id ) {
-         lock ( Patcher ) {
-            if ( CreatedInstance == null ) 
-               CreatedInstance = new Dictionary<string, WeakReference<Harmony>>();
+         lock ( CreatedInstance ) {
             CreatedInstance[ id ] = new WeakReference<Harmony>( new Harmony( id ) );
          }
       }
@@ -78,8 +86,9 @@ namespace Sheepy.Modnix {
          return false;
       }
 
-      private static bool Patch ( MethodBase original, object prefix, object postfix, object transpiler, DynamicMethod __result ) {
-         __result = null;
+      private static bool Patch ( object __instance, MethodBase original, object prefix, object postfix, object transpiler, DynamicMethod __result ) {
+         ModLoader.Log.Info( "Patching {0}.{1}", original.DeclaringType, original.Name );
+         __result = MapInstance( __instance ).Patch( original, MapMethod( prefix ), MapMethod( postfix ), MapMethod( transpiler ) ) as DynamicMethod;
          return false;
       }
 
@@ -87,8 +96,8 @@ namespace Sheepy.Modnix {
          return false;
       }
 
-      private static bool Unpatch3 ( object __instance, MethodBase original, HarmonyPatchType type, string harmonyID ) {
-         MapInstance( __instance ).Unpatch( original, type, harmonyID );
+      private static bool Unpatch3 ( object __instance, MethodBase original, int type, string harmonyID ) {
+         MapInstance( __instance ).Unpatch( original, (HarmonyPatchType) type, harmonyID );
          return false;
       }
 
