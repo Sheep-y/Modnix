@@ -140,6 +140,7 @@ namespace Sheepy.Modnix {
                Version = info.FileVersion,
                Description = new TextSet{ Default = info.Comments },
                Author = new TextSet{ Default = info.CompanyName },
+               Copyright = new TextSet { Default = info.LegalCopyright },
                Dlls = new DllMeta[] { new DllMeta{ Path = file, Methods = ParseEntryPoints( file ) } },
             };
             if ( meta.Dlls[0].Methods == null ) return null;

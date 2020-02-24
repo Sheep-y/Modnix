@@ -181,7 +181,7 @@ The resolution repeats until no action is taken, or until a max depth.
 7. Expansion
     1. Mods are parsed as mod and added to resolution.
 
-### Example mod.js
+### Example mod_info.js
 
 A mod's metadata is held in mod.js, or (mod name).js,
 either as a real file or embedded in dll.
@@ -193,51 +193,52 @@ File may be wrapped by a pair of parentheses for js compatibility, not shown her
 Simple example:
 
 ```
-{
-    "Id": "info.mod.simple.demo",
-    "Name": "Simple Demo Mod",
-    "Description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit",
-    "Author": "Demonstrator",
-    "Url": "https://www.github.com/Sheep-y/Modnix",
-}
+({
+    Id: "info.mod.simple.demo",
+    Name: "Simple Demo Mod",
+    Description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit",
+    Author: "Demonstrator",
+    Url: "https://www.github.com/Sheep-y/Modnix",
+})
 ```
 
 Extended example:
 
 ```
-{
-    /** Mod Specification, affects mod loading. */
-    "Id": "info.mod.refined.demo", /* Default to GUID of assembly, and fallback to file name. Non-alphanumeric are discarded. */
-    "Version": "1.2.3.4",         /* Must be version parse-able, i.e. 1 to 4 integers. */
+({
+    /* Mod Specification, affects mod loading. */
+    Id : "info.mod.refined.demo", /* Default to GUID of assembly, and fallback to file name. Non-alphanumeric are discarded. */
+    Version : "1.2.3.4",         /* Must be version parse-able, i.e. 1 to 4 integers. */
 
-    /** Information for mod users; does not affect mod loading. */
-    "Name": { "en": "Refined Demo Mod", "zh": "外掛示範" },
-    "Langs" : [ "en", "zh" ], /* Supported game languages. "*" means all. */
-    "Description": { "en": "Lorem ipsum", "zh": "上大人" },
-    "Author": { "en": "Demonstrator", "zh": "示範者" },
-    "Url": { "GitHub": "https://...", "Nexus Mods": "https://...", "六四事件": "...", "五大訴求": "" },
-    "Contact": { "Mail": "demo@example.info", "Skype": "..." },
+    /* Information for mod users; does not affect mod loading. */
+    Name : { en: "Refined Demo Mod", zh: "外掛示範" },
+    Langs : [ "en", "zh" ], /* Supported game languages. "*" means all. */
+    Description : { en: "Lorem ipsum", zh: "上大人" },
+    Author : { en: "Demonstrator", zh: "示範者" },
+    Url : { "GitHub": "https://...", "Nexus Mods": "https://...", "六四事件": "...", "五大訴求": "" },
+    Contact : { "Email": "demo@example.info", "Skype": "..." },
+    Copyright : { en: "Public Domain" },
 
-    /** Mod Requirements */
-                /* Required mod; if requirement is not met, this mod will be disabled. Reserved: Modnix, PPML, PhoenixPoint. */
-    "Requires": [{ "Id": "info.mod.simple.demo", "Min": "1.0" }],
-                 /* Conflicting mod; mods listed here will be disabled. */
-    "Conflicts": [{ "Id": "info.mod.evil", "Max": "2.0" }],
-                   /* Try load me before these mods, no guarantee. */
-    "LoadsAfter":  [ "info.mod.early" ],
-                   /* Try load me after these mods, no guarantee. */
-    "LoadsBefore": "info.mod.late",
+    /* Mod Requirements */
+               /* Required mod; if requirement is not met, this mod will be disabled. Reserved: Modnix, PPML, PhoenixPoint. */
+    Requires : [{ Id: "info.mod.simple.demo", Min: "1.0" }],
+                /* Conflicting mod; mods listed here will be disabled. */
+    Conflicts : [{ Id: "info.mod.evil", Max: "2.0" }],
+                  /* Try load me before these mods, no guarantee. */
+    LoadsAfter :  [ "info.mod.early" ],
+                  /* Try load me after these mods, no guarantee. */
+    LoadsBefore : "info.mod.late",
 
-    /** Mod Contents */
-            /* Load these files as mods. */
-    "Mods": [ "DllMod.dll", "SimpleMod.json" ],
-            /* Override default dll scanning */
-    "Dlls": [{ "Path": "Loader.dll", "MainMenuLoad": "MyCustomMethod" }],
-              /* Reserved for future use */
-    "Alters": null,
-              /* Reserved for future use */
-    "Assets": [{ "Type": "WeaponDef", "Path": "MyWeaponDefs" }, { "Type": "Include", "Path": "MoreDefs.json" }]
-}
+    /* Mod Contents */
+           /* Load these files as mods. */
+    Mods : [ "DllMod.dll", "SimpleMod.json" ],
+           /* Override default dll scanning */
+    Dlls : [{ Path: "Loader.dll", "MainMod": "com.example.MyModClass" }],
+             /* Reserved for future use */
+    Alters : null,
+             /* Reserved for future use */
+    Assets : [{ Type: "WeaponDef", Path: "MyWeaponDefs" }, { Type: "Include", Path: "MoreDefs.json" }]
+})
 ```
 
 ### Loader Settings

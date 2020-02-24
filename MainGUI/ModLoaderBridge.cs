@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Documents;
 
 namespace Sheepy.Modnix.MainGUI {
    internal class ModLoaderBridge {
@@ -36,6 +37,12 @@ namespace Sheepy.Modnix.MainGUI {
       public override string Name => Mod?.Metadata?.Name?.ToString();
       public override string Version => Mod?.Metadata?.Version;
       public override string Author => Mod?.Metadata?.Author?.ToString();
+
+      public override void BuildDesc ( FlowDocument doc ) {
+         new TextRange( doc.ContentStart, doc.ContentEnd ).Text =
+            $"{Name}\rVersion {Version}\rType {Type}\n{Mod?.Metadata?.Description}\nAuthor\t{(Author)}";
+      }
+
       public override string Path => Mod?.Metadata?.Dlls?[0]?.Path;
       public override string Type { get {
          bool? hasInit = Mod?.Metadata?.Dlls?.Any( e => e?.Methods?.ContainsKey( "Init" ) ?? false );

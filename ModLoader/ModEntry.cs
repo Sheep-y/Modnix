@@ -36,6 +36,7 @@ namespace Sheepy.Modnix {
       public TextSet Author;
       public TextSet Url;
       public TextSet Contact;
+      public TextSet Copyright;
 
       public AppVer[] Requires;
       public AppVer[] Conflicts;

@@ -206,8 +206,7 @@ namespace Sheepy.Modnix.MainGUI {
             return;
          }
          Log( $"Refreshing mod {CurrentMod}" );
-         richModInfo.TextRange().Text = 
-            $"{CurrentMod.Name}\rVersion {CurrentMod.Version}\rType {CurrentMod.Type}\nAuthor\t{(CurrentMod.Author)}";
+         CurrentMod.BuildDesc( richModInfo.Document );
       } catch ( Exception ex ) { Log( ex ); } }
 
       private void ButtonAddMod_Click ( object sender, RoutedEventArgs e ) {
