@@ -14,6 +14,7 @@ namespace Sheepy.Modnix {
    [ JsonObject( MemberSerialization.OptIn ) ]
    public class ModEntry {
       public ModMeta Metadata;
+      internal LoggerProxy Logger;
 
       public ModEntry Parent;
       public List<ModEntry> Children;
@@ -46,29 +47,31 @@ namespace Sheepy.Modnix {
       public string[] Mods;
       public DllMeta[] Dlls;
 
-      internal ModMeta Override ( ModMeta baseline ) {
+      internal ModMeta Override ( ModMeta baseline ) { lock ( this) {
          if ( baseline == null ) return this;
-         CopyNonNull( Id, ref baseline.Id );
-         CopyNonNull( Version, ref baseline.Version );
-         CopyNonNull( Name, ref baseline.Name );
-         CopyNonNull( Langs, ref baseline.Langs );
-         CopyNonNull( Description, ref baseline.Description );
-         CopyNonNull( Author, ref baseline.Author );
-         CopyNonNull( Requires, ref baseline.Requires );
-         CopyNonNull( Conflicts, ref baseline.Conflicts );
-         CopyNonNull( LoadsAfter, ref baseline.LoadsAfter );
-         CopyNonNull( LoadsBefore, ref baseline.LoadsBefore );
-         CopyNonNull( Mods, ref baseline.Mods );
-         CopyNonNull( Dlls, ref baseline.Dlls );
+         lock ( baseline ) {
+            CopyNonNull( Id, ref baseline.Id );
+            CopyNonNull( Version, ref baseline.Version );
+            CopyNonNull( Name, ref baseline.Name );
+            CopyNonNull( Langs, ref baseline.Langs );
+            CopyNonNull( Description, ref baseline.Description );
+            CopyNonNull( Author, ref baseline.Author );
+            CopyNonNull( Requires, ref baseline.Requires );
+            CopyNonNull( Conflicts, ref baseline.Conflicts );
+            CopyNonNull( LoadsAfter, ref baseline.LoadsAfter );
+            CopyNonNull( LoadsBefore, ref baseline.LoadsBefore );
+            CopyNonNull( Mods, ref baseline.Mods );
+            CopyNonNull( Dlls, ref baseline.Dlls );
+         }
          return baseline;
-      }
+      } }
       
       private static void CopyNonNull<T> ( T from, ref T to ) {
          if ( from != null ) to = from;
       }
 
       #region Normalise
-      public ModMeta Normalise () {
+      public ModMeta Normalise () { lock ( this ) {
          Id = NormString( Id );
          Version = NormString( Version );
          NormTextSet( ref Name );
@@ -86,7 +89,7 @@ namespace Sheepy.Modnix {
          NormStringArray( ref Mods );
          NormDllMeta( ref Dlls );
          return this;
-      }
+      } }
 
       private static string NormString ( string val ) {
          if ( val == null ) return null;

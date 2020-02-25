@@ -323,8 +323,8 @@ namespace Sheepy.Logging {
 
       /// If message is not string, and there are multiple params, the message is converted to a list of params
       public static bool AutoMultiParam ( LogEntry entry ) {
-         if ( entry.Message is string txt && txt.Contains( '{' ) && txt.Contains( '}' ) ) return true;
          if ( entry.Args == null || entry.Args.Length <= 0 ) return true;
+         if ( entry.Message is string txt && txt.Contains( '{' ) && txt.Contains( '}' ) ) return true;
 
          int len = entry.Args.Length + 1;
          object[] newArg = new object[ len + 1 ];

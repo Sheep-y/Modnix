@@ -66,6 +66,9 @@ namespace Sheepy.Modnix {
          if ( logger == null ) throw new NullReferenceException( nameof( logger ) );
          if ( Log != null ) throw new InvalidOperationException();
          Log = logger;
+         logger.Filters.Clear();
+         logger.Filters.Add( LogFilters.FormatParams );
+         logger.Filters.Add( LogFilters.ResolveLazy );
          if ( clear ) Log.Clear();
          Log.Info( "{0} v{1} {2}", typeof( ModLoader ).FullName, Assembly.GetExecutingAssembly().GetName().Version, DateTime.Now.ToString( "u" ) );
          LogGameVersion();
@@ -92,7 +95,7 @@ namespace Sheepy.Modnix {
                var lib = LoadDll( dll.Path );
                if ( lib == null ) continue;
                foreach ( var type in entries )
-                  CallInit( lib, type, phase );
+                  CallInit( mod, lib, type, phase );
             }
          }
          Log.Flush();
@@ -163,7 +166,7 @@ namespace Sheepy.Modnix {
          Log.Info( $"Parsing as dll: {file}" );
          var info = FileVersionInfo.GetVersionInfo( file );
          var meta = new ModMeta{
-            Id = Path.GetFullPath( file ).Replace( ModDirectory, "" ).ToLowerInvariant().Trim(),
+            Id = Path.GetFullPath( file ).Replace( ModDirectory, "" ).Substring( 1 ).ToLowerInvariant().Replace( ".dll", "" ),
             Name = new TextSet{ Default = info.FileDescription.Trim() },
             Version = info.FileVersion.Trim(),
             Description = new TextSet{ Default = info.Comments.Trim() },
@@ -212,13 +215,14 @@ namespace Sheepy.Modnix {
          return Assembly.LoadFrom( path );
       } catch ( Exception ex ) { Log.Error( ex ); return null; } }
 
-      private static void LoggerA ( object msg ) => LoggerB( msg, null );
-      private static void LoggerB ( object msg, object[] augs ) =>
-         Log.Log( msg is Exception ? SourceLevels.Error : SourceLevels.Information, msg, augs );
-      private static void LoggerC ( SourceLevels lv, object msg ) => Log.Log( lv, msg );
-      private static void LoggerD ( SourceLevels lv, object msg, object[] augs ) => Log.Log( lv, msg, augs );
+      private static Action<object> LoggerA ( Logger log ) => ( msg ) =>
+         log.Log( msg is Exception ? SourceLevels.Error : SourceLevels.Information, msg, null );
+      private static Action<object,object[]> LoggerB ( Logger log ) => ( msg, augs ) =>
+         log.Log( msg is Exception ? SourceLevels.Error : SourceLevels.Information, msg, augs );
+      private static Action<SourceLevels,object> LoggerC ( Logger log ) => ( lv, msg ) => log.Log( lv, msg, null );
+      private static Action<SourceLevels,object,object[]> LoggerD ( Logger log ) => ( lv, msg, augs ) => log.Log( lv, msg, augs );
 
-      public static void CallInit ( Assembly dll, string typeName, string methodName ) { try {
+      public static void CallInit ( ModEntry mod, Assembly dll, string typeName, string methodName ) { try {
          Type type = dll.GetType( typeName );
          if ( type == null ) {
             Log.Error( "Cannot find type {1} in {0}", typeName, dll.Location );
@@ -234,13 +238,13 @@ namespace Sheepy.Modnix {
                augs.Add( Assembly.GetExecutingAssembly() );
             // Loggers
             else if ( pType == typeof( Action<object> ) )
-               augs.Add( (Action<object>) LoggerA );
+               augs.Add( LoggerA( CreateLogger( mod ) ) );
             else if ( pType == typeof( Action<object,object[]> ) )
-               augs.Add( (Action<object,object[]>) LoggerB );
+               augs.Add( LoggerB( CreateLogger( mod ) ) );
             else if ( pType == typeof( Action<SourceLevels,object> ) )
-               augs.Add( (Action<SourceLevels,object>) LoggerC );
+               augs.Add( LoggerC( CreateLogger( mod ) ) );
             else if ( pType == typeof( Action<SourceLevels,object,object[]> ) )
-               augs.Add( (Action<SourceLevels,object,object[]>) LoggerD );
+               augs.Add( LoggerD( CreateLogger( mod ) ) );
             // Defaults
             else if ( pType.IsValueType )
                augs.Add( Activator.CreateInstance( pType ) );
@@ -250,6 +254,17 @@ namespace Sheepy.Modnix {
          Log.Info( "Calling {0}.{1} with {2} parameters", typeName, methodName, augs.Count );
          func.Invoke( null, augs.ToArray() );
       } catch ( Exception ex ) { Log.Error( ex ); } }
+
+      private static Logger CreateLogger ( ModEntry mod ) { lock ( mod ) {
+         if ( mod.Logger == null ) {
+            var logger = mod.Logger = new LoggerProxy( Log );
+            var filters = logger.Filters;
+            filters.Add( LogFilters.IgnoreDuplicateExceptions );
+            filters.Add( LogFilters.AutoMultiParam );
+            filters.Add( LogFilters.AddPrefix( mod.Metadata.Id + "┊" ) );
+         }
+         return mod.Logger;
+      } }
    }
 
    internal static class Tools {
