@@ -272,7 +272,7 @@ namespace Sheepy.Modnix {
                      ver = PPML_COMPAT;
                      break;
                   case "non-modnix" : case "nonmodnix" :
-                     Log.Info( "Mod {0} requires non-Modnix", mod.Metadata.Id );
+                     Log.Info( "Mod [{0}] requires non-Modnix", mod.Metadata.Id );
                      mod.DisableWithCause( "non-modnix" );
                      EnabledMods.Remove( mod );
                      NeedMoreResolve = true;
@@ -294,7 +294,7 @@ namespace Sheepy.Modnix {
                   if ( max != null && max < ver ) pass = false;
                }
                if ( ! pass ) {
-                  Log.Info( "Mod {0} requirement {1} ({2},{3}) failed, found {4}", mod.Metadata.Id, req.Id, req.Min, req.Max, ver );
+                  Log.Info( "Mod [{0}] requirement {1} [{2}-{3}] failed, found {4}", mod.Metadata.Id, req.Id, req.Min, req.Max, ver );
                   mod.DisableWithCause( "requires", req.Id, req.Min, req.Max, ver );
                   EnabledMods.Remove( mod );
                   NeedMoreResolve = true;
