@@ -45,6 +45,88 @@ namespace Sheepy.Modnix {
 
       public string[] Mods;
       public DllMeta[] Dlls;
+
+      internal ModMeta Override ( ModMeta baseline ) {
+         if ( baseline == null ) return this;
+         CopyNonNull( Id, ref baseline.Id );
+         CopyNonNull( Version, ref baseline.Version );
+         CopyNonNull( Name, ref baseline.Name );
+         CopyNonNull( Langs, ref baseline.Langs );
+         CopyNonNull( Description, ref baseline.Description );
+         CopyNonNull( Author, ref baseline.Author );
+         CopyNonNull( Requires, ref baseline.Requires );
+         CopyNonNull( Conflicts, ref baseline.Conflicts );
+         CopyNonNull( LoadsAfter, ref baseline.LoadsAfter );
+         CopyNonNull( LoadsBefore, ref baseline.LoadsBefore );
+         CopyNonNull( Mods, ref baseline.Mods );
+         CopyNonNull( Dlls, ref baseline.Dlls );
+         return baseline;
+      }
+      
+      private static void CopyNonNull<T> ( T from, ref T to ) {
+         if ( from != null ) to = from;
+      }
+
+      #region Normalise
+      internal ModMeta Normalise () {
+         Id = NormString( Id );
+         Version = NormString( Version );
+         NormTextSet( ref Name );
+         NormStringArray( ref Langs );
+         NormTextSet( ref Description );
+         NormTextSet( ref Author );
+         NormTextSet( ref Url );
+         NormTextSet( ref Contact );
+         NormTextSet( ref Copyright );
+         NormAppVer( ref Requires );
+         NormAppVer( ref Conflicts );
+         NormAppVer( ref LoadsAfter );
+         NormAppVer( ref LoadsBefore );
+         NormAppVer( ref LoadsBefore );
+         NormStringArray( ref Mods );
+         NormDllMeta( ref Dlls );
+         return this;
+      }
+
+      private static string NormString ( string val ) {
+         if ( val == null ) return null;
+         val = val.Trim();
+         if ( val.Length <= 0 ) return null;
+         return val;
+      }
+
+      private static void NormStringArray ( ref string[] val ) {
+         if ( val == null ) return;
+         val = val.Select( NormString ).Where( e => e != null ).ToArray();
+         if ( val.Length <= 0 ) val = null;
+      }
+
+      private static void NormTextSet ( ref TextSet val ) {
+         if ( val == null ) return;
+         var dict = val.Dict;
+         if ( dict != null && dict.Count <= 0 )
+            val.Dict = dict = null;
+         val.Default = NormString( val.Default );
+         if ( val.Default == null ) {
+            val.Default = dict?.First().Value;
+            if ( val.Default == null ) val = null;
+         }
+      }
+
+      private static void NormAppVer ( ref AppVer[] val ) {
+         if ( val == null ) return;
+         if ( val.Any( e => e == null ) )
+            val = val.Where( e => e != null ).ToArray();
+         if ( val.Length <= 0 ) val = null;
+      }
+      
+      private void NormDllMeta ( ref DllMeta[] val ) {
+         if ( val == null ) return;
+         if ( val.Any( e => e == null || e.Path == null ) )
+            val = val.Where( e => e != null && e.Path != null ).ToArray();
+         if ( val.Length <= 0 ) val = null;
+      }
+      #endregion
    }
 
    public class TextSet {
@@ -117,7 +199,8 @@ namespace Sheepy.Modnix {
       private static AppVer   ParseAppVer ( JsonReader reader ) => ParseObject<AppVer>( reader, "id", AssignAppVerProp );
       private static AppVer[] ParseAppVerArray ( JsonReader reader ) => ParseArray<AppVer>( reader, ParseAppVer );
       private static AppVer   AssignAppVerProp ( AppVer e, string prop, object val ) {
-         string txt = val.ToString();
+         string txt = val.ToString().Trim();
+         if ( txt.Length <= 0 ) return e;
          switch ( prop ) {
             case "id"  : e.Id  = txt; break;
             case "min" : e.Min = txt; break;
@@ -130,10 +213,12 @@ namespace Sheepy.Modnix {
       private static DllMeta   ParseDllMeta ( JsonReader reader ) => ParseObject<DllMeta>( reader, "path", AssignDllMetaProp );
       private static DllMeta[] ParseDllMetaArray ( JsonReader reader ) => ParseArray<DllMeta>( reader, ParseDllMeta );
       private static DllMeta   AssignDllMetaProp ( DllMeta e, string prop, object val ) {
-         string txt = val.ToString();
+         prop = prop.Trim();
+         string txt = val.ToString().Trim();
+         if ( prop.Length <= 0 || txt.Length <= 0 ) return e;
          switch ( prop ) {
             case "path" :
-               e.Path   = txt;
+               e.Path = txt;
                break;
             default :
                var methods = e.Methods;
@@ -149,13 +234,14 @@ namespace Sheepy.Modnix {
       private static TextSet   ParseTextSet ( JsonReader reader ) => ParseObject<TextSet>( reader, "", AssignTextSetProp );
       private static TextSet[] ParseTextSetArray ( JsonReader reader ) => ParseArray<TextSet>( reader, ParseTextSet );
       private static TextSet   AssignTextSetProp ( TextSet e, string prop, object val ) {
-         string txt = val.ToString();
+         prop = prop.Trim();
+         string txt = val.ToString().Trim();
+         if ( prop.Length <= 0 || txt.Length <= 0 ) return e;
          if ( e.Default == null ) {
             e.Default = txt;
             e.Dict = new Dictionary<string, string>();
          }
-         if ( ! string.IsNullOrWhiteSpace( prop ) )
-            e.Dict.Add( prop, txt );
+         e.Dict.Add( prop, txt );
          return e;
       }
 
