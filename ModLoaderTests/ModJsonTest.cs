@@ -20,13 +20,13 @@ namespace Sheepy.Modnix.Tests {
          Assert.IsNull( appver, "empty" );
 
          appver = ModMetaJson.Parse<AppVer>( @"""text""" );
-         TestAppVer( "text", appver );
+         AssertAppVer( "text", appver );
 
          appver = ModMetaJson.Parse<AppVer>( @"{ id: ""simple"" }" );
-         TestAppVer( "simple", appver );
+         AssertAppVer( "simple", appver );
 
          appver = ModMetaJson.Parse<AppVer>( @"/*A*/ { /*B*/ Id : /*C*/ ""full"" /*D*/, /*E*/ Min: 1, Max: 2.1, NonExist: 12 /*F*/ } /*G*/" );
-         TestAppVer( "full", appver, "1", "2.1" );
+         AssertAppVer( "full", appver, "1", "2.1" );
       }
 
       [TestMethod()] public void AppVerArrayTest () {
@@ -39,29 +39,41 @@ namespace Sheepy.Modnix.Tests {
          appver = ModMetaJson.Parse<AppVer[]>( @"""text""" );
          Assert.IsNotNull( appver, "string => not null" );
          Assert.AreEqual( 1, appver.Length, "text => 1 element"  );
-         TestAppVer( "text", appver[0] );
+         AssertAppVer( "text", appver[0] );
 
          appver = ModMetaJson.Parse<AppVer[]>( @"{ id: ""simple"" }" );
          Assert.AreEqual( 1, appver.Length, "simple => 1 element"  );
-         TestAppVer( "simple", appver[0] );
+         AssertAppVer( "simple", appver[0] );
 
          appver = ModMetaJson.Parse<AppVer[]>( @"[""one"", ""two""]" );
          Assert.AreEqual( 2, appver.Length, "two_text => 2 elements"  );
-         TestAppVer( "one", appver[0] );
-         TestAppVer( "two", appver[1] );
+         AssertAppVer( "one", appver[0] );
+         AssertAppVer( "two", appver[1] );
 
          appver = ModMetaJson.Parse<AppVer[]>( @"/*A*/ [ /*B*/ ""one"" /*C*/, null, /*D*/ { /*E*/ id: ""two"", min: ""1.2.3.4"" /*F*/ } /*G*/, /*H*/ ""three"" ]" );
          Assert.AreEqual( 3, appver.Length, "three => 3 elements"  );
-         TestAppVer( "one", appver[0] );
-         TestAppVer( "two", appver[1], "1.2.3.4" );
-         TestAppVer( "three", appver[2] );
+         AssertAppVer( "one", appver[0] );
+         AssertAppVer( "two", appver[1], "1.2.3.4" );
+         AssertAppVer( "three", appver[2] );
       }
 
-      private void TestAppVer ( string id, AppVer appver, string min = null, string max = null ) {
+      private void AssertAppVer ( string id, AppVer appver, string min = null, string max = null ) {
          Assert.IsNotNull( appver, $"{id} => not null" );
          Assert.AreEqual( id, appver.Id, $"{id}.id"  );
          Assert.AreEqual( min, appver.Min, $"{id}.min"  );
          Assert.AreEqual( max, appver.Max, $"{id}.max"  );
+      }
+
+      [TestMethod()] public void ModMetaNormTest () {
+         var meta = new ModMeta(){
+            Id = "",
+            Langs = new string[ 0 ],
+            Mods = new string[]{ "" },
+         };
+         meta.Normalise();
+         Assert.IsNull( meta.Id, "Id" );
+         Assert.IsNull( meta.Langs, "Langs" );
+         Assert.IsNull( meta.Mods, "Mods" );
       }
 
       [TestMethod()] public void ModMetaTest () {

@@ -68,7 +68,7 @@ namespace Sheepy.Modnix {
       }
 
       #region Normalise
-      internal ModMeta Normalise () {
+      public ModMeta Normalise () {
          Id = NormString( Id );
          Version = NormString( Version );
          NormTextSet( ref Name );
@@ -231,7 +231,7 @@ namespace Sheepy.Modnix {
          return e;
       }
 
-      private static TextSet   ParseTextSet ( JsonReader reader ) => ParseObject<TextSet>( reader, "", AssignTextSetProp );
+      private static TextSet   ParseTextSet ( JsonReader reader ) => ParseObject<TextSet>( reader, "*", AssignTextSetProp );
       private static TextSet[] ParseTextSetArray ( JsonReader reader ) => ParseArray<TextSet>( reader, ParseTextSet );
       private static TextSet   AssignTextSetProp ( TextSet e, string prop, object val ) {
          prop = prop.Trim();

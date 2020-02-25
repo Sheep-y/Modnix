@@ -256,4 +256,3 @@ namespace Sheepy.Modnix {
       internal static string FixSlash ( this string path ) => path.Replace( '/', Path.DirectorySeparatorChar );
    }
 }
-
