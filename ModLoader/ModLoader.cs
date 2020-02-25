@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Resources;
 using System.Text;
 using System.Text.RegularExpressions;
 using static System.Reflection.BindingFlags;
@@ -145,6 +146,9 @@ namespace Sheepy.Modnix {
          ModMeta meta;
          if ( file.EndsWith( ".dll", StringComparison.InvariantCultureIgnoreCase ) ) {
             meta = ParseDllInfo( file );
+            var info = FindEmbeddedModInfo( file );
+            if ( info != null )
+               meta = ParseInfoJs( info, meta );
          } else {
             Log.Info( $"Parsing as mod_info: {file}" );
             meta = ParseInfoJs( File.ReadAllText( file, Encoding.UTF8 ).Trim() );
@@ -153,16 +157,16 @@ namespace Sheepy.Modnix {
          return new ModEntry{ Metadata = meta };
       } catch ( Exception ex ) { Log.Warn( ex ); return null; } }
 
-      private static ModMeta ParseInfoJs ( string js, ModMeta baseline = null ) {
-         js = js.Trim();
-         if ( js.Length <= 2 ) return baseline;
+      private static ModMeta ParseInfoJs ( string js, ModMeta baseline = null ) { try {
+         js = js?.Trim();
+         if ( js == null || js.Length <= 2 ) return baseline;
          // Remove ( ... ) to make parsable json
          if ( js[0] == '(' && js[js.Length-1] == ')' )
-            js = js.Substring( 1, js.Length - 1 ).Trim();
+            js = js.Substring( 1, js.Length - 2 ).Trim();
          return ModMetaJson.ParseMod( js ).Normalise().Override( baseline );
-      }
+      } catch ( Exception ex ) { Log.Warn( ex ); return baseline; } }
 
-      private static ModMeta ParseDllInfo ( string file ) {
+      private static ModMeta ParseDllInfo ( string file ) { try {
          Log.Info( $"Parsing as dll: {file}" );
          var info = FileVersionInfo.GetVersionInfo( file );
          var meta = new ModMeta{
@@ -176,6 +180,24 @@ namespace Sheepy.Modnix {
          };
          if ( meta.Dlls[0].Methods == null ) return null;
          return meta.Normalise();
+      } catch ( Exception ex ) { Log.Warn( ex ); return null; } }
+
+      private static string FindEmbeddedModInfo ( string file ) {
+         using ( var lib = AssemblyDefinition.ReadAssembly( file ) ) {
+            if ( ! lib.MainModule.HasResources ) return null;
+            var res = lib.MainModule?.Resources.FirstOrDefault() as EmbeddedResource;
+            if ( res == null || res.ResourceType != ResourceType.Embedded ) return null;
+            using ( var reader = new ResourceReader( res.GetResourceStream() ) ) {
+               var data = reader.GetEnumerator();
+               while ( data.MoveNext() ) {
+                  if ( data.Key.ToString().ToLowerInvariant() == "mod_info" ) {
+                     Log.Info( "Found embedded mod_info" );
+                     return data.Value?.ToString();
+                  }
+               }
+            }
+         }
+         return null;
       }
 
       private static DllEntryMeta ParseEntryPoints ( string file ) {
