@@ -86,6 +86,7 @@ namespace Sheepy.Modnix.MainGUI {
          ButtonLoaderLog.IsEnabled = IsInjected;
       } catch ( Exception ex ) { Log( ex ); } }
 
+      private void ButtonWiki_Click ( object sender, RoutedEventArgs e ) => OpenUrl( "wiki", e );
       private void ButtonGitHub_Click ( object sender, RoutedEventArgs e ) => OpenUrl( "home", e );
       private void ButtonUserGuide_Click ( object sender, RoutedEventArgs e ) => OpenUrl( "guide", e );
 
@@ -328,6 +329,7 @@ namespace Sheepy.Modnix.MainGUI {
             case "nexus"  : url = "https://www.nexusmods.com/phoenixpoint/mods/?BH=0"; break;
             case "reddit" : url = "https://www.reddit.com/r/PhoenixPoint/"; break;
             case "twitter": url = "https://twitter.com/Phoenix_Point"; break;
+            case "wiki"   : url = "https://phoenixpoint.fandom.com/wiki/"; break;
             case "www"    : url = "https://phoenixpoint.info/"; break;
             default       : return;
          }

@@ -33,11 +33,14 @@
                         <ColumnDefinition/>
                      </Grid.ColumnDefinitions>
                      <Button x:Name="ButtonSetup" Content="Setup" Padding="10,5" IsEnabled="False" Click="ButtonSetup_Click"/>
-                     <Button x:Name="ButtonGitHub" Padding="5" Grid.Column="2" Click="ButtonGitHub_Click">
+                     <Button x:Name="ButtonGitHub" Padding="5" Grid.Column="2" Click="ButtonGitHub_Click" Visibility="Hidden">
                         <AccessText Text="GitHub"/>
                      </Button>
-                     <Button x:Name="ButtonUserGuide" Padding="5" Grid.Column="4" Click="ButtonUserGuide_Click">
-                        <AccessText Text="User Guide"/>
+                     <Button x:Name="ButtonUserGuide" Padding="5" Grid.Column="2" Click="ButtonUserGuide_Click">
+                        <AccessText Text="Modnix Guide"/>
+                     </Button>
+                     <Button x:Name="ButtonWiki" Padding="5" Grid.Column="4" Click="ButtonWiki_Click">
+                        <AccessText Text="Game Wi_ki"/>
                      </Button>
                   </Grid>
                   <RichTextBox x:Name="richGameInfo" Height="50" IsReadOnly="True" BorderBrush="{x:Null}" Margin="0,10,0,5">
@@ -74,17 +77,17 @@
                      <Button x:Name="ButtonWebsite" Grid.Row="2" Padding="10,5" Click="ButtonWebsite_Click">
                         <AccessText Text="_Website"/>
                      </Button>
-                     <Button x:Name="ButtonTwitter" Grid.Column="2" Grid.Row="2" Padding="10,5" Click="ButtonTwitter_Click">
-                        <AccessText Text="_Twitter"/>
-                     </Button>
-                     <Button x:Name="ButtonCanny" Grid.Column="4" Grid.Row="2" Padding="10,5" Click="ButtonCanny_Click">
-                        <AccessText Text="_Canny"/>
-                     </Button>
-                     <Button x:Name="ButtonForum" Grid.Row="4" Padding="10,5" Click="ButtonForum_Click">
+                     <Button x:Name="ButtonForum" Grid.Column="2" Grid.Row="2" Padding="10,5" Click="ButtonForum_Click">
                         <AccessText Text="_Forum"/>
                      </Button>
-                     <Button x:Name="ButtonReddit" Grid.Column="2" Grid.Row="4" Padding="10,5" Click="ButtonReddit_Click">
+                     <Button x:Name="ButtonReddit" Grid.Column="4" Grid.Row="2" Padding="10,5" Click="ButtonReddit_Click">
                         <AccessText Text="_Reddit"/>
+                     </Button>
+                     <Button x:Name="ButtonTwitter" Grid.Row="4" Padding="10,5" Click="ButtonTwitter_Click">
+                        <AccessText Text="_Twitter"/>
+                     </Button>
+                     <Button x:Name="ButtonCanny" Grid.Column="2" Grid.Row="4" Padding="10,5" Click="ButtonCanny_Click">
+                        <AccessText Text="_Canny"/>
                      </Button>
                      <Button x:Name="ButtonDiscord" Grid.Column="4" Grid.Row="4" Padding="10,5" Click="ButtonDiscord_Click">
                         <AccessText Text="_Discord"/>
