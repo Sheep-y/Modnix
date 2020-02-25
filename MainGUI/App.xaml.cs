@@ -268,7 +268,6 @@ namespace Sheepy.Modnix.MainGUI {
             status = "running";
          else if ( CheckInjected() ) {
             status = currentGame.Status; // status should be either modnix or both
-            if ( status == "both" ) status = "ppml"; // Make GUI shows ppml, and thus require setup to remove ppml
             GUI.SetInfo( "game_version", CheckGameVer() );
          } else {
             status = "setup";

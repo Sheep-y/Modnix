@@ -62,7 +62,8 @@ namespace Sheepy.Modnix.MainGUI {
             txt += "Busy";
          else
             switch ( AppState ) {
-               case "ppml"   : txt += "PPML found, need update"; break;
+               case "ppml"   : txt += "PPML only, need setup"; break;
+               case "both"   : txt += "PPML found, can remove"; break;
                case "modnix" : txt += "Injected"; break;
                case "setup"  : txt += "Requires Setup"; break;
                case "running": txt += "Game is running"; break;
@@ -82,9 +83,7 @@ namespace Sheepy.Modnix.MainGUI {
             case "running" : ButtonSetup.Content = "Refresh"; break;
             default        : ButtonSetup.Content = "Setup"; break;
          }
-         ButtonModDir.IsEnabled = AppState == "modnix";
-         ButtonAddMod.IsEnabled = AppState == "modnix";
-         ButtonLoaderLog.IsEnabled = AppState == "modnix";
+         ButtonLoaderLog.IsEnabled = IsInjected;
       } catch ( Exception ex ) { Log( ex ); } }
 
       private void ButtonGitHub_Click ( object sender, RoutedEventArgs e ) => OpenUrl( "home", e );
@@ -94,7 +93,7 @@ namespace Sheepy.Modnix.MainGUI {
          Log( "Main action button clicked" );
          if ( e?.Source is UIElement src ) src.Focus();
          switch ( AppState ) {
-            case "ppml" : case "setup" :
+            case "ppml" : case "both" : case "setup" :
                DoSetup();
                break;
             case "modnix" :
@@ -170,11 +169,12 @@ namespace Sheepy.Modnix.MainGUI {
 
       #region Mod Info Area
       private ModInfo CurrentMod;
+      private bool IsInjected => AppState == "modnix" || AppState == "both";
 
       private void RefreshModList () { try {
          Log( "Refreshing mod list" );
-         bool IsInjected = AppState == "modnix";
          ButtonAddMod.IsEnabled = IsInjected;
+         ButtonModDir.IsEnabled = IsInjected;
          ButtonRefreshMod.IsEnabled = IsInjected;
          if ( ! IsInjected ) {
             LabelModList.Content = "Requires Setup";

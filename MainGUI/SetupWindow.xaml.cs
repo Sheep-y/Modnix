@@ -106,7 +106,7 @@ namespace Sheepy.Modnix.MainGUI {
       public void Prompt ( string parts, Exception ex = null ) {
          this.Dispatch( () => { try {
             Log( $"Prompt {parts}" );
-            if ( AppState == "modnix" )
+            if ( AppState == "modnix" || AppState == "both" )
                EnableLaunch();
             SharedGui.Prompt( parts, ex, () => {
                AppControl.Explore( App.ModGuiExe );
