@@ -241,14 +241,20 @@ namespace Sheepy.Modnix {
       #endregion
 
       #region Resolving
+      private static bool NeedMoreResolve;
+
       private static void ResolveMods () {
-         Log.Info( "Resolving {0} mods", AllMods.Count );
-         EnabledMods.AddRange( AllMods.Where( e => ! e.IsDisabled ) );
-         CheckModRequirements();
+         NeedMoreResolve = true;
+         for ( int i = 0 ; i < 100 && NeedMoreResolve ; i++ ) {
+            NeedMoreResolve = false;
+            EnabledMods.Clear();
+            EnabledMods.AddRange( AllMods.Where( e => ! e.IsDisabled ) );
+            Log.Info( "Resolving {0} mods, iteration {1}", EnabledMods.Count, i );
+            CheckModRequirements();
+         }
       }
 
       private static void CheckModRequirements () {
-         Log.Info( "Checking requirements of {0} mods", EnabledMods.Count );
          foreach ( var mod in EnabledMods.ToArray() ) {
             var reqs = mod.Metadata.Requires;
             if ( reqs == null ) continue;
@@ -269,6 +275,7 @@ namespace Sheepy.Modnix {
                      Log.Info( "Mod {0} requires non-Modnix", mod.Metadata.Id );
                      mod.DisableWithCause( "non-modnix" );
                      EnabledMods.Remove( mod );
+                     NeedMoreResolve = true;
                      goto NextMod;
                   default:
                      var target = EnabledMods.Find( e => e.Metadata.Id.ToLowerInvariant() == wanted );
@@ -290,6 +297,7 @@ namespace Sheepy.Modnix {
                   Log.Info( "Mod {0} requirement {1} ({2},{3}) failed, found {4}", mod.Metadata.Id, req.Id, req.Min, req.Max, ver );
                   mod.DisableWithCause( "requires", req.Id, req.Min, req.Max, ver );
                   EnabledMods.Remove( mod );
+                  NeedMoreResolve = true;
                }
             }
             NextMod:;

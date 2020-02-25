@@ -43,6 +43,8 @@ namespace Sheepy.Modnix.Tests {
          var Yes = new ModEntry { Metadata = new ModMeta{ Id = "NonModnix", Requires = new AppVer[]{ new AppVer{ Id = "ModnixOK" } } }.Normalise() };
          var No = new ModEntry { Metadata = new ModMeta{ Id = "NonModnix", Requires = new AppVer[]{ new AppVer{ Id = "ModnixOK" }, new AppVer{ Id = "ModnixMax" } } }.Normalise() };
 
+         ModLoader.AllMods.Add( Yes );
+         ModLoader.AllMods.Add( No );
          ModLoader.AllMods.Add( ModnixMin );
          ModLoader.AllMods.Add( ModnixOk );
          ModLoader.AllMods.Add( ModnixMax );
@@ -53,8 +55,6 @@ namespace Sheepy.Modnix.Tests {
          ModLoader.AllMods.Add( PPMLOk );
          ModLoader.AllMods.Add( PPMLMax );
          ModLoader.AllMods.Add( NonModnix );
-         ModLoader.AllMods.Add( Yes );
-         ModLoader.AllMods.Add( No );
 
          ModLoader.GameVersion = new Version( "1.0.12345" );
          ResolveMods();
