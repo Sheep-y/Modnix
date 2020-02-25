@@ -17,10 +17,11 @@ namespace Sheepy.Modnix {
    public static class ModLoader {
       private readonly static string MOD_PATH  = "My Games/Phoenix Point/Mods".FixSlash();
       public readonly static List<ModEntry> AllMods = new List<ModEntry>();
-      private static bool Initialized;
 
-      internal static Logger Log;
+      private static Logger Log;
       //private static HarmonyInstance Patcher;
+      private static bool Initialized;
+      private static Version LoaderVersion, GameVersion;
 
       private const BindingFlags PUBLIC_STATIC_BINDING_FLAGS = Public | Static;
       private static readonly List<string> IGNORE_FILE_NAMES = new List<string> {
@@ -58,19 +59,20 @@ namespace Sheepy.Modnix {
             if ( ! Directory.Exists( ModDirectory ) )
                Directory.CreateDirectory( ModDirectory );
             SetLog( new FileLogger( Path.Combine( ModDirectory, Assembly.GetExecutingAssembly().GetName().Name + ".log" ) ){ TimeFormat = "HH:mm:ss.ffff " }, true );
+            LogGameVersion();
          }
       } } catch ( Exception ex ) { Log?.Error( ex ); } }
 
       public static void SetLog ( Logger logger, bool clear = false ) {
          if ( logger == null ) throw new NullReferenceException( nameof( logger ) );
          if ( Log != null ) throw new InvalidOperationException();
+         LoaderVersion = Assembly.GetExecutingAssembly().GetName().Version;
          Log = logger;
          logger.Filters.Clear();
          logger.Filters.Add( LogFilters.FormatParams );
          logger.Filters.Add( LogFilters.ResolveLazy );
          if ( clear ) Log.Clear();
-         Log.Info( "{0} v{1} {2}", typeof( ModLoader ).FullName, Assembly.GetExecutingAssembly().GetName().Version, DateTime.Now.ToString( "u" ) );
-         LogGameVersion();
+         Log.Info( "{0} v{1} {2}", typeof( ModLoader ).FullName, LoaderVersion, DateTime.Now.ToString( "u" ) );
          ModMetaJson.JsonLogger.Masters.Clear();
          ModMetaJson.JsonLogger.Masters.Add( Log );
       }
@@ -80,6 +82,7 @@ namespace Sheepy.Modnix {
             if ( ! e.FullName.StartsWith( "Assembly-CSharp, ", StringComparison.InvariantCultureIgnoreCase ) ) continue;
             var ver = e.GetType( "Base.Build.RuntimeBuildInfo" ).GetProperty( "Version" ).GetValue( null );
             Log.Info( "{0} v{1}", e.FullName, ver );
+            GameVersion = Version.Parse( e.FullName );
             return;
          }
       } catch ( Exception ex ) { Log?.Error( ex ); } }
@@ -100,6 +103,7 @@ namespace Sheepy.Modnix {
          Log.Flush();
       } } catch ( Exception ex ) { Log.Error( ex ); } }
 
+      #region Parsing
       public static void BuildModList () { try { lock ( AllMods ) {
          AllMods.Clear();
          if ( Directory.Exists( ModDirectory ) )
@@ -229,7 +233,9 @@ namespace Sheepy.Modnix {
                return null;
          return result;
       }
+      #endregion
 
+      #region Loading
       public static Assembly LoadDll ( string path ) { try {
          Log.Info( "Loading {0}", path );
          return Assembly.LoadFrom( path );
@@ -285,6 +291,7 @@ namespace Sheepy.Modnix {
          }
          return mod.Logger;
       } }
+      #endregion
    }
 
    internal static class Tools {

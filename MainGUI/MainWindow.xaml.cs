@@ -184,7 +184,7 @@ namespace Sheepy.Modnix.MainGUI {
             RefreshModInfo( null );
          }
          if ( IsInjected || AppState == null ) {
-            LabelModList.Content = AppState == null ? "Checking..." : $"{ModList.Count()} Mods";
+            LabelModList.Content = AppState == null || ModList == null ? "Checking..." : $"{ModList.Count()} Mods";
             LabelModList.Foreground = Brushes.Black;
          } else {
             LabelModList.Content = $"NOT INSTALLED";
