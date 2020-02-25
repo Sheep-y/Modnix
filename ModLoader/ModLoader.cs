@@ -22,7 +22,7 @@ namespace Sheepy.Modnix {
       private static Logger Log;
       //private static HarmonyInstance Patcher;
       private static bool Initialized;
-      private static Version LoaderVersion, GameVersion;
+      public static Version LoaderVersion, GameVersion;
 
       private const BindingFlags PUBLIC_STATIC_BINDING_FLAGS = Public | Static;
       private static readonly List<string> IGNORE_FILE_NAMES = new List<string> {
@@ -54,7 +54,7 @@ namespace Sheepy.Modnix {
 
       public static bool NeedSetup => ModDirectory == null;
 
-      public static void Setup ( AppDomain domain = null ) { try { lock ( AllMods ) {
+      public static void Setup () { try { lock ( AllMods ) {
          if ( ModDirectory != null ) return;
          ModDirectory = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.MyDocuments ), MOD_PATH );
          if ( Log == null ) {
@@ -265,15 +265,16 @@ namespace Sheepy.Modnix {
                   case "ppml" : case "phoenixpointmodloader" : case "phoenix point mod loader" :
                      ver = PPML_COMPAT;
                      break;
-                  case "non-modnix":
+                  case "non-modnix" : case "nonmodnix" :
                      Log.Info( "Mod {0} requires non-Modnix", mod.Metadata.Id );
                      mod.DisableWithCause( "non-modnix" );
                      EnabledMods.Remove( mod );
                      goto NextMod;
                   default:
-                     Version.TryParse( 
-                        EnabledMods.Find( e => e.Metadata.Id == wanted )?.Metadata.Version,
-                        out ver );
+                     var target = EnabledMods.Find( e => e.Metadata.Id.ToLowerInvariant() == wanted );
+                     if ( target != null )
+                        if ( ! Version.TryParse( target.Metadata.Version, out ver ) )
+                           ver = new Version( 0, 0, 0, 0 );
                      break;
                }
                var pass = ver != null;
