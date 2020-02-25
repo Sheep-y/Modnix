@@ -6,25 +6,29 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Sheepy.Modnix {
    using DllEntryMeta = Dictionary< string, HashSet< string > >;
 
    [ JsonObject( MemberSerialization.OptIn ) ]
    public class ModEntry {
+      public string Path;
       public ModMeta Metadata;
-      internal LoggerProxy Logger;
+      internal LoggerProxy Logger; // Created when and only when an initialiser accepts a logging function
 
       public ModEntry Parent;
       public List<ModEntry> Children;
+      public LogEntry DisabledReason;
+      public bool IsDisabled => ManualDisabled || DisabledReason != null;
 
       [ JsonProperty ]
-      public bool Disabled;
+      public bool ManualDisabled;
       [ JsonProperty ]
       public SourceLevels LogLevel;
 
-      public override string ToString () => $"Mod {Metadata?.Name}{(Disabled?" (Disabled)":"")}";
+      internal void DisableWithCause ( string reason, params object[] augs ) =>
+         DisabledReason = new LogEntry{ Message = reason, Args = augs };
+      public override string ToString () => $"Mod {Metadata?.Name}{(IsDisabled?" (Disabled)":"")}";
    }
 
    public class ModMeta {
@@ -78,7 +82,7 @@ namespace Sheepy.Modnix {
 
       #region Normalise
       public ModMeta Normalise () { lock ( this ) {
-         Id = NormString( Id );
+         Id = NormString( Id )?.ToLowerInvariant();
          Version = NormString( Version );
          NormTextSet( ref Name );
          NormStringArray( ref Langs );

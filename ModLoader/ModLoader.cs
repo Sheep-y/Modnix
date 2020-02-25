@@ -17,6 +17,7 @@ namespace Sheepy.Modnix {
    public static class ModLoader {
       private readonly static string MOD_PATH  = "My Games/Phoenix Point/Mods".FixSlash();
       public readonly static List<ModEntry> AllMods = new List<ModEntry>();
+      public readonly static List<ModEntry> EnabledMods = new List<ModEntry>();
 
       private static Logger Log;
       //private static HarmonyInstance Patcher;
@@ -31,6 +32,7 @@ namespace Sheepy.Modnix {
          "ModnixLoader",
          "Mono.Cecil",
       };
+      private readonly static Version PPML_COMPAT = new Version( 0, 1 );
 
       public static string ModDirectory { get; private set; }
 
@@ -87,9 +89,9 @@ namespace Sheepy.Modnix {
          }
       } catch ( Exception ex ) { Log?.Error( ex ); } }
 
-      public static void LoadMods ( string phase ) { try { lock ( AllMods ) {
+      public static void LoadMods ( string phase ) { try {
          Log.Info( "Calling {0} mods", phase );
-         foreach ( var mod in AllMods ) {
+         foreach ( var mod in EnabledMods ) {
             if ( mod.Metadata.Dlls == null ) continue;
             foreach ( var dll in mod.Metadata.Dlls ) {
                if ( dll.Methods == null ) continue;
@@ -101,17 +103,20 @@ namespace Sheepy.Modnix {
             }
          }
          Log.Flush();
-      } } catch ( Exception ex ) { Log.Error( ex ); } }
+      } catch ( Exception ex ) { Log.Error( ex ); } }
 
       #region Parsing
       public static void BuildModList () { try { lock ( AllMods ) {
          AllMods.Clear();
-         if ( Directory.Exists( ModDirectory ) )
-            ScanFolderForMod( ModDirectory, true );
-         Log.Info( "{0} mods found.", AllMods.Count );
+         EnabledMods.Clear();
+         if ( Directory.Exists( ModDirectory ) ) {
+            ScanFolderForMods( ModDirectory, true );
+            ResolveMods();
+         }
+         Log.Info( "{0} mods found, {1} enabled.", AllMods.Count, EnabledMods.Count );
       } } catch ( Exception ex ) { Log.Error( ex ); } }
 
-      public static void ScanFolderForMod ( string path, bool isRoot ) {
+      public static void ScanFolderForMods ( string path, bool isRoot ) {
          Log.Info( "Scanning for mods: {0}", path );
          var container = Path.GetFileName( path );
          var foundMod = false;
@@ -129,7 +134,7 @@ namespace Sheepy.Modnix {
          if ( ! isRoot && foundMod ) return;
          foreach ( var dir in Directory.EnumerateDirectories( path ) ) {
             if ( isRoot || NameMatch( container, Path.GetFileName( dir ) ) )
-               ScanFolderForMod( dir, false );
+               ScanFolderForMods( dir, false );
          }
       }
 
@@ -156,7 +161,7 @@ namespace Sheepy.Modnix {
             meta = ParseInfoJs( File.ReadAllText( file, Encoding.UTF8 ).Trim() );
          }
          if ( meta == null ) return null;
-         return new ModEntry{ Metadata = meta };
+         return new ModEntry{ Path = file, Metadata = meta };
       } catch ( Exception ex ) { Log.Warn( ex ); return null; } }
 
       private static ModMeta ParseInfoJs ( string js ) { try {
@@ -172,7 +177,7 @@ namespace Sheepy.Modnix {
          Log.Info( $"Parsing as dll: {file}" );
          var info = FileVersionInfo.GetVersionInfo( file );
          var meta = new ModMeta{
-            Id = Path.GetFullPath( file ).Replace( ModDirectory, "" ).Substring( 1 ).ToLowerInvariant().Replace( ".dll", "" ),
+            Id = Path.GetFileNameWithoutExtension( file ).ToLowerInvariant().Trim(),
             Name = new TextSet{ Default = info.FileDescription.Trim() },
             Version = info.FileVersion.Trim(),
             Description = new TextSet{ Default = info.Comments.Trim() },
@@ -232,6 +237,62 @@ namespace Sheepy.Modnix {
             else if ( result.Count <= 0 )
                return null;
          return result;
+      }
+      #endregion
+
+      #region Resolving
+      private static void ResolveMods () {
+         Log.Info( "Resolving {0} mods", AllMods.Count );
+         EnabledMods.AddRange( AllMods.Where( e => ! e.IsDisabled ) );
+         CheckModRequirements();
+      }
+
+      private static void CheckModRequirements () {
+         Log.Info( "Checking requirements of {0} mods", EnabledMods.Count );
+         foreach ( var mod in EnabledMods.ToArray() ) {
+            var reqs = mod.Metadata.Requires;
+            if ( reqs == null ) continue;
+            foreach ( var req in reqs ) {
+               var wanted = req.Id.ToLowerInvariant();
+               Version ver = null;
+               switch ( wanted ) {
+                  case "modnix" :
+                     ver = LoaderVersion;
+                     break;
+                  case "phoenixpoint" : case "phoenix point" :
+                     ver = GameVersion;
+                     break;
+                  case "ppml" : case "phoenixpointmodloader" : case "phoenix point mod loader" :
+                     ver = PPML_COMPAT;
+                     break;
+                  case "non-modnix":
+                     Log.Info( "Mod {0} requires non-Modnix", mod.Metadata.Id );
+                     mod.DisableWithCause( "non-modnix" );
+                     EnabledMods.Remove( mod );
+                     goto NextMod;
+                  default:
+                     Version.TryParse( 
+                        EnabledMods.Find( e => e.Metadata.Id == wanted )?.Metadata.Version,
+                        out ver );
+                     break;
+               }
+               var pass = ver != null;
+               if ( pass && req.Min != null ) {
+                  Version.TryParse( req.Min, out Version min );
+                  if ( min != null && min > ver ) pass = false;
+               }
+               if ( pass && req.Max != null ) {
+                  Version.TryParse( req.Max, out Version max );
+                  if ( max != null && max < ver ) pass = false;
+               }
+               if ( ! pass ) {
+                  Log.Info( "Mod {0} requirement {1} ({2},{3}) failed, found {4}", mod.Metadata.Id, req.Id, req.Min, req.Max, ver );
+                  mod.DisableWithCause( "requires", req.Id, req.Min, req.Max, ver );
+                  EnabledMods.Remove( mod );
+               }
+            }
+            NextMod:;
+         }
       }
       #endregion
 
