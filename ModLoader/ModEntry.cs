@@ -47,25 +47,31 @@ namespace Sheepy.Modnix {
       public string[] Mods;
       public DllMeta[] Dlls;
 
-      internal ModMeta Override ( ModMeta baseline ) { lock ( this) {
-         if ( baseline == null ) return this;
-         lock ( baseline ) {
-            CopyNonNull( Id, ref baseline.Id );
-            CopyNonNull( Version, ref baseline.Version );
-            CopyNonNull( Name, ref baseline.Name );
-            CopyNonNull( Langs, ref baseline.Langs );
-            CopyNonNull( Description, ref baseline.Description );
-            CopyNonNull( Author, ref baseline.Author );
-            CopyNonNull( Requires, ref baseline.Requires );
-            CopyNonNull( Conflicts, ref baseline.Conflicts );
-            CopyNonNull( LoadsAfter, ref baseline.LoadsAfter );
-            CopyNonNull( LoadsBefore, ref baseline.LoadsBefore );
-            CopyNonNull( Mods, ref baseline.Mods );
-            CopyNonNull( Dlls, ref baseline.Dlls );
-         }
-         return baseline;
-      } }
-      
+      internal ModMeta ImportFrom ( ModMeta overrider ) {
+         if ( overrider == null ) return this;
+         lock ( this ) { lock ( overrider ) {
+            CopyNonNull( overrider.Id, ref Id );
+            CopyNonNull( overrider.Version, ref Version );
+            CopyNonNull( overrider.Name, ref Name );
+            CopyNonNull( overrider.Langs, ref Langs );
+            CopyNonNull( overrider.Description, ref Description );
+            CopyNonNull( overrider.Author, ref Author );
+            CopyNonNull( overrider.Requires, ref Requires );
+            CopyNonNull( overrider.Conflicts, ref Conflicts );
+            CopyNonNull( overrider.LoadsAfter, ref LoadsAfter );
+            CopyNonNull( overrider.LoadsBefore, ref LoadsBefore );
+            CopyNonNull( overrider.Mods, ref Mods );
+            CopyNonNull( overrider.Dlls, ref Dlls );
+         } }
+         return overrider;
+      }
+
+      internal ModMeta EraseModsAndDlls () {
+         Mods = null;
+         Dlls = null;
+         return this;
+      }
+
       private static void CopyNonNull<T> ( T from, ref T to ) {
          if ( from != null ) to = from;
       }

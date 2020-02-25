@@ -148,7 +148,7 @@ namespace Sheepy.Modnix {
             meta = ParseDllInfo( file );
             var info = FindEmbeddedModInfo( file );
             if ( info != null )
-               meta = ParseInfoJs( info, meta );
+               meta.ImportFrom( ParseInfoJs( info )?.EraseModsAndDlls().Normalise() );
          } else {
             Log.Info( $"Parsing as mod_info: {file}" );
             meta = ParseInfoJs( File.ReadAllText( file, Encoding.UTF8 ).Trim() );
@@ -157,14 +157,14 @@ namespace Sheepy.Modnix {
          return new ModEntry{ Metadata = meta };
       } catch ( Exception ex ) { Log.Warn( ex ); return null; } }
 
-      private static ModMeta ParseInfoJs ( string js, ModMeta baseline = null ) { try {
+      private static ModMeta ParseInfoJs ( string js ) { try {
          js = js?.Trim();
-         if ( js == null || js.Length <= 2 ) return baseline;
+         if ( js == null || js.Length <= 2 ) return null;
          // Remove ( ... ) to make parsable json
          if ( js[0] == '(' && js[js.Length-1] == ')' )
             js = js.Substring( 1, js.Length - 2 ).Trim();
-         return ModMetaJson.ParseMod( js ).Normalise().Override( baseline );
-      } catch ( Exception ex ) { Log.Warn( ex ); return baseline; } }
+         return ModMetaJson.ParseMod( js ).Normalise();
+      } catch ( Exception ex ) { Log.Warn( ex ); return null; } }
 
       private static ModMeta ParseDllInfo ( string file ) { try {
          Log.Info( $"Parsing as dll: {file}" );
