@@ -132,7 +132,7 @@
                      <ColumnDefinition/>
                   </Grid.ColumnDefinitions>
                   <Button x:Name="ButtonModDir" Padding="10,5" IsEnabled="False" Click="ButtonModDir_Click">
-                     <AccessText Text="Mod _Directory"/>
+                     <AccessText Text="Mod Directory"/>
                   </Button>
                   <Button x:Name="ButtonNexus" Grid.Column="2" Padding="10,5" Click="ButtonNexus_Click">
                      <AccessText Text="_Nexus Mods"/>

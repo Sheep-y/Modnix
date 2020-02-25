@@ -84,7 +84,7 @@ namespace Sheepy.Modnix.MainGUI {
             case "running" : ButtonSetup.Content = "Refresh"; break;
             default        : ButtonSetup.Content = "Setup"; break;
          }
-         ButtonLoaderLog.IsEnabled = IsInjected;
+         ButtonLoaderLog.IsEnabled = File.Exists( LoaderLog );
       } catch ( Exception ex ) { Log( ex ); } }
 
       private void ButtonWiki_Click ( object sender, RoutedEventArgs e ) => OpenUrl( "wiki", e );
@@ -175,9 +175,9 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void RefreshModList () { try {
          Log( "Refreshing mod list" );
-         ButtonAddMod.IsEnabled = true;
+         ButtonAddMod.IsEnabled = Directory.Exists( App.ModFolder );
          ButtonModDir.IsEnabled = Directory.Exists( App.ModFolder );
-         ButtonRefreshMod.IsEnabled = true;
+         ButtonRefreshMod.IsEnabled = AppState != null;
          if ( GridModList.ItemsSource != ModList ) {
             Log( "New list of mods" );
             GridModList.ItemsSource = ModList;
@@ -301,12 +301,13 @@ namespace Sheepy.Modnix.MainGUI {
          }
       } catch ( Exception ex ) { Log( ex ); } }
 
+      private string LoaderLog => Path.Combine( App.ModFolder, "ModnixLoader.log" );
+
       private void ButtonLoaderLog_Click ( object sender, RoutedEventArgs e ) {
-         string path = Path.Combine( App.ModFolder, "ModnixLoader.log" );
-         if ( ! File.Exists( path ) )
+         if ( ! File.Exists( LoaderLog ) )
             MessageBox.Show( "Launch the game at least once to create loader log." );
          else
-            AppControl.Explore( path );
+            AppControl.Explore( LoaderLog );
       }
 
       private void ButtonLogClear_Click ( object sender, RoutedEventArgs e ) {
