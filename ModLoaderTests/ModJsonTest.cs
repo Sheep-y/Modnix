@@ -2,6 +2,7 @@
 using Sheepy.Logging;
 using Sheepy.Modnix;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -65,15 +66,29 @@ namespace Sheepy.Modnix.Tests {
       }
 
       [TestMethod()] public void ModMetaNormTest () {
+         var dict = new Dictionary<string, string>();
+         dict.Add( "*", "def" );
          var meta = new ModMeta(){
             Id = "",
             Langs = new string[ 0 ],
             Mods = new string[]{ "" },
+            Name = new TextSet{ Default = " " },
+            Description = new TextSet{ Default = "a", Dict = new Dictionary<string, string>() },
+            Author = new TextSet{ Default = " ", Dict = dict },
+            Requires = new AppVer[0],
+            Conflicts = new AppVer[]{ new AppVer{ Id = "" } },
+            Dlls = new DllMeta[]{ new DllMeta{ Path = "" } },
          };
          meta.Normalise();
          Assert.IsNull( meta.Id, "Id" );
          Assert.IsNull( meta.Langs, "Langs" );
          Assert.IsNull( meta.Mods, "Mods" );
+         Assert.IsNull( meta.Name, "Name" );
+         Assert.IsNull( meta.Description.Dict, "Description" );
+         Assert.AreEqual( "def", meta.Author.Default, "Author.Default" );
+         Assert.IsNull( meta.Requires, "Requires" );
+         Assert.IsNull( meta.Conflicts, "Conflicts" );
+         Assert.IsNull( meta.Dlls, "Dlls" );
       }
 
       [TestMethod()] public void ModMetaTest () {

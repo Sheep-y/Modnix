@@ -115,6 +115,12 @@ namespace Sheepy.Modnix {
 
       private static void NormAppVer ( ref AppVer[] val ) {
          if ( val == null ) return;
+         for ( int i = val.Length - 1 ; i >= 0 ; i-- ) {
+            val[i].Id = NormString( val[i].Id );
+            val[i].Min = NormString( val[i].Min );
+            val[i].Max = NormString( val[i].Max );
+            if ( val[i].Id == null ) val[i] = null;
+         }
          if ( val.Any( e => e == null ) )
             val = val.Where( e => e != null ).ToArray();
          if ( val.Length <= 0 ) val = null;
@@ -122,6 +128,10 @@ namespace Sheepy.Modnix {
       
       private void NormDllMeta ( ref DllMeta[] val ) {
          if ( val == null ) return;
+         for ( int i = val.Length - 1 ; i >= 0 ; i-- ) {
+            val[i].Path = NormString( val[i].Path );
+            if ( val[i].Path == null ) val[i] = null;
+         }
          if ( val.Any( e => e == null || e.Path == null ) )
             val = val.Where( e => e != null && e.Path != null ).ToArray();
          if ( val.Length <= 0 ) val = null;
