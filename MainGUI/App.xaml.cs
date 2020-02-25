@@ -533,6 +533,10 @@ namespace Sheepy.Modnix.MainGUI {
       #endregion
 
       #region Helpers
+      internal static void Explore ( string filename ) {
+         Process.Start( "explorer.exe", $"/select, \"{filename}\"" );
+      }
+
       internal string RunAndWait ( string path, string exe, string param = null, bool asAdmin = false ) {
          Log( $"Running{( asAdmin ? " as admin" : "" )} at {path} : {exe} {param}" );
          try {

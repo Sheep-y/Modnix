@@ -135,8 +135,7 @@ namespace Sheepy.Modnix.MainGUI {
       public void Prompt ( string parts, Exception ex = null ) { this.Dispatch( () => { try {
          Log( $"Prompt {parts}" );
          SharedGui.Prompt( parts, ex, () => {
-            App.LaunchInstalledModnix();
-            Close();
+            AppControl.Explore( App.ModGuiExe );
          } );
       } catch ( Exception err ) { Log( err ); } } ); }
 
@@ -217,7 +216,7 @@ namespace Sheepy.Modnix.MainGUI {
       private void ButtonModOpenModDir_Click ( object sender, RoutedEventArgs e ) {
          string path = CurrentMod?.Path;
          if ( string.IsNullOrWhiteSpace( path ) ) return;
-         Explore( path );
+         AppControl.Explore( path );
       }
 
       private void ButtonModDelete_Click ( object sender, RoutedEventArgs e ) {
@@ -295,7 +294,7 @@ namespace Sheepy.Modnix.MainGUI {
          };
          if ( dialog.ShowDialog().GetValueOrDefault() ) {
             File.WriteAllText( dialog.FileName, TextLog.Text );
-            Explore( dialog.FileName );
+            AppControl.Explore( dialog.FileName );
          }
       } catch ( Exception ex ) { Log( ex ); } }
 
@@ -304,7 +303,7 @@ namespace Sheepy.Modnix.MainGUI {
          if ( ! File.Exists( path ) )
             MessageBox.Show( "Launch the game at least once to create loader log." );
          else
-            Explore( path );
+            AppControl.Explore( path );
       }
 
       private void ButtonLogClear_Click ( object sender, RoutedEventArgs e ) {
@@ -334,10 +333,6 @@ namespace Sheepy.Modnix.MainGUI {
          }
          Log( $"Opening {url}" );
          Process.Start( url );
-      }
-
-      private void Explore ( string filename ) {
-         Process.Start( "explorer.exe", $"/select, \"{filename}\"" );
       }
       #endregion
    }

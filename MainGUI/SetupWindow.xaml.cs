@@ -109,7 +109,7 @@ namespace Sheepy.Modnix.MainGUI {
             if ( AppState == "modnix" )
                EnableLaunch();
             SharedGui.Prompt( parts, ex, () => {
-               App.LaunchInstalledModnix();
+               AppControl.Explore( App.ModGuiExe );
                Close();
             } );
          } catch ( Exception err ) { Log( err ); } } );
