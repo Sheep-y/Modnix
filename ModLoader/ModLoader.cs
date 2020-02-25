@@ -14,8 +14,6 @@ using static System.Reflection.BindingFlags;
 namespace Sheepy.Modnix {
    using DllEntryMeta = Dictionary< string, HashSet< string > >;
 
-   using ModData = IDictionary< string,object >;
-
    public static class ModLoader {
       private readonly static string MOD_PATH  = "My Games/Phoenix Point/Mods".FixSlash();
       public readonly static List<ModEntry> AllMods = new List<ModEntry>();

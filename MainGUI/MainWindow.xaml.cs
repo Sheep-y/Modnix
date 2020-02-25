@@ -11,6 +11,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
+using System.Windows.Media;
 using static System.Globalization.CultureInfo;
 
 namespace Sheepy.Modnix.MainGUI {
@@ -18,7 +19,7 @@ namespace Sheepy.Modnix.MainGUI {
    public partial class MainWindow : Window, IAppGui {
       private readonly AppControl App;
       private string AppVer, AppState, GamePath, GameVer;
-      private System.Collections.IEnumerable ModList;
+      private IEnumerable<ModInfo> ModList;
 
       public MainWindow ( AppControl app ) { try {
          Contract.Requires( app != null );
@@ -49,7 +50,7 @@ namespace Sheepy.Modnix.MainGUI {
             case "game_path"    : GamePath = txt; RefreshGameInfo(); break;
             case "game_version" : GameVer  = txt; RefreshGameInfo(); break;
             case "update"  : Update = value; UpdateChecked(); RefreshUpdateStatus(); break;
-            case "mod_list" : ModList = value as System.Collections.IEnumerable; RefreshModList(); break;
+            case "mod_list" : ModList = value as IEnumerable<ModInfo>; RefreshModList(); break;
             default : Log( $"Unknown info {info}" ); break;
          }
       } catch ( Exception ex ) { Log( ex ); } } ); }
@@ -174,19 +175,20 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void RefreshModList () { try {
          Log( "Refreshing mod list" );
-         ButtonAddMod.IsEnabled = IsInjected;
-         ButtonModDir.IsEnabled = IsInjected;
-         ButtonRefreshMod.IsEnabled = IsInjected;
-         if ( ! IsInjected ) {
-            LabelModList.Content = "Requires Setup";
-            RefreshModInfo( null );
-            GridModList.ItemsSource = null;
-            return;
-         }
+         ButtonAddMod.IsEnabled = true;
+         ButtonModDir.IsEnabled = Directory.Exists( App.ModFolder );
+         ButtonRefreshMod.IsEnabled = true;
          if ( GridModList.ItemsSource != ModList ) {
             Log( "New list of mods" );
             GridModList.ItemsSource = ModList;
             RefreshModInfo( null );
+         }
+         if ( IsInjected || AppState == null ) {
+            LabelModList.Content = AppState == null ? "Checking..." : $"{ModList.Count()} Mods";
+            LabelModList.Foreground = Brushes.Black;
+         } else {
+            LabelModList.Content = $"NOT INSTALLED";
+            LabelModList.Foreground = Brushes.Red;
          }
          GridModList.Items?.Refresh();
       } catch ( Exception ex ) { Log( ex ); } }

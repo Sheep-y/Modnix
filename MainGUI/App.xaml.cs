@@ -251,8 +251,7 @@ namespace Sheepy.Modnix.MainGUI {
             currentGame = new GameInstallation( this, gamePath );
             GUI.SetInfo( "game_path", gamePath );
             CheckInjectionStatus();
-            if ( currentGame.Status == "modnix" )
-               GetModList();
+            GetModList();
          } else {
             GUI.SetInfo( "state", "no_game" );
          }

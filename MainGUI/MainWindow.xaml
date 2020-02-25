@@ -120,7 +120,7 @@
                   <Button x:Name="ButtonAddMod" HorizontalAlignment="Right" DockPanel.Dock="Left" Padding="10,5" IsEnabled="False" Click="ButtonAddMod_Click">
                      <AccessText Text="_Add Mod"/>
                   </Button>
-                  <Label x:Name="LabelModList" Content="Requires Setup" Grid.Column="2" VerticalAlignment="Center"/>
+                  <Label x:Name="LabelModList" Grid.Column="2" VerticalAlignment="Center"/>
                   <Button x:Name="ButtonRefreshMod" HorizontalAlignment="Right" DockPanel.Dock="Right" Padding="10,5" IsEnabled="False" Click="ButtonAddMod_Click">
                      <AccessText Text="Refresh"/>
                   </Button>
