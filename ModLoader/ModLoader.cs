@@ -73,6 +73,8 @@ namespace Sheepy.Modnix {
             SetLog( new FileLogger( Path.Combine( ModDirectory, Assembly.GetExecutingAssembly().GetName().Name + ".log" ) ){ TimeFormat = "HH:mm:ss.ffff " }, true );
             LogGameVersion();
          }
+         string corlib = new Uri( typeof( string ).Assembly.CodeBase ).LocalPath;
+         Log.Verbo( ".Net/{0}; mscorlib/{1} {2}", Environment.Version, FileVersionInfo.GetVersionInfo( corlib ).FileVersion, corlib );
       } } catch ( Exception ex ) { Log?.Error( ex ); } }
 
       public static void SetLog ( Logger logger, bool clear = false ) {
@@ -85,7 +87,7 @@ namespace Sheepy.Modnix {
          logger.Filters.Add( LogFilters.ResolveLazy );
          logger.Level = SourceLevels.All;
          if ( clear ) Log.Clear();
-         Log.Info( "{0} v{1} on .Net {3}, {2}", typeof( ModLoader ).FullName, LoaderVersion, DateTime.Now.ToString( "u" ), Environment.Version );
+         Log.Info( "{0}/{1}; {2}", typeof( ModLoader ).FullName, LoaderVersion, DateTime.Now.ToString( "u" ) );
          ModMetaJson.JsonLogger.Masters.Clear();
          ModMetaJson.JsonLogger.Masters.Add( Log );
       }
@@ -94,7 +96,7 @@ namespace Sheepy.Modnix {
          foreach ( var e in AppDomain.CurrentDomain.GetAssemblies() ) {
             if ( ! e.FullName.StartsWith( "Assembly-CSharp, ", StringComparison.InvariantCultureIgnoreCase ) ) continue;
             var ver = e.GetType( "Base.Build.RuntimeBuildInfo" ).GetProperty( "Version" ).GetValue( null )?.ToString();
-            Log.Info( "{0} v{1}", e.FullName, ver );
+            Log.Info( "{0}/{1}", Path.GetFileNameWithoutExtension( e.CodeBase ), ver );
             GameVersion = Version.Parse( ver );
             return;
          }
@@ -125,6 +127,10 @@ namespace Sheepy.Modnix {
             ResolveMods();
          }
          Log.Info( "{0} mods found, {1} enabled.", AllMods.Count, EnabledMods.Count );
+         try {
+            foreach ( var e in AppDomain.CurrentDomain.GetAssemblies() )
+               Log.Info( e.ToString() );
+         } catch ( Exception ex ) { Log.Error( ex ); }
       } } catch ( Exception ex ) { Log.Error( ex ); } }
 
       public static void ScanFolderForMods ( string path, bool isRoot ) {
