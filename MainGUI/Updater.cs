@@ -9,7 +9,6 @@ using System.Text;
 
 namespace Sheepy.Modnix.MainGUI {
 
-   #pragma warning disable CA1051 // Do not declare visible instance fields
    public class GithubRelease {
       public string Tag_Name;
       public string Html_Url;
@@ -23,7 +22,6 @@ namespace Sheepy.Modnix.MainGUI {
       public long   Size;
       public string Browser_Download_Url;
    }
-   #pragma warning restore CA1051 // Do not declare visible instance fields
 
    internal class Updater {
       private const string RELEASE  = "https://api.github.com/repos/Sheep-y/Modnix/releases";
