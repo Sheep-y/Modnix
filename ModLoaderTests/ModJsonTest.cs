@@ -65,6 +65,20 @@ namespace Sheepy.Modnix.Tests {
          Assert.AreEqual( max, appver.Max, $"{id}.max"  );
       }
 
+      [TestMethod()] public void VersionTest () {
+         var appver = ModMetaJson.Parse<Version>( "null" );
+         Assert.IsNull( appver, "null" );
+
+         appver = ModMetaJson.Parse<Version>( @"""1.2.3.4""" );
+         Assert.AreEqual( new Version( 1,2,3,4 ), appver, "1.2.3.4" );
+
+         appver = ModMetaJson.Parse<Version>( @"1" );
+         Assert.AreEqual( new Version( 1, 0 ), appver, "1" );
+
+         appver = ModMetaJson.Parse<Version>( @"1234.5678" );
+         Assert.AreEqual( new Version( 1234, 5678 ), appver, "1" );
+      }
+
       [TestMethod()] public void ModMetaNormTest () {
          var dict = new Dictionary<string, string>();
          dict.Add( "*", "def" );

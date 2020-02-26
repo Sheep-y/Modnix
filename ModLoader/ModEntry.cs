@@ -206,6 +206,7 @@ namespace Sheepy.Modnix {
          if ( objectType == typeof( DllMeta[] ) ) return true;
          if ( objectType == typeof( TextSet   ) ) return true;
          if ( objectType == typeof( TextSet[] ) ) return true;
+         if ( objectType == typeof( Version   ) ) return true;
          return false;
       }
 
@@ -216,6 +217,7 @@ namespace Sheepy.Modnix {
          if ( objectType == typeof( DllMeta[] ) ) return ParseDllMetaArray( reader );
          if ( objectType == typeof( TextSet   ) ) return ParseTextSet( reader );
          if ( objectType == typeof( TextSet[] ) ) return ParseTextSetArray( reader );
+         if ( objectType == typeof( Version   ) ) return ParseVersion( reader );
          throw new InvalidOperationException();
       }
 
@@ -308,6 +310,26 @@ namespace Sheepy.Modnix {
             }
          }
          throw new JsonException( $"String or object expected for {typeof(T)}" );
+      }
+
+      private static Version ParseVersion ( JsonReader r ) {
+         Version result;
+         var token = r.SkipComment();
+         if ( token == JsonToken.Null || token == JsonToken.Undefined )
+            result = null;
+         else if ( token == JsonToken.String ) {
+            if ( ! Version.TryParse( r.Value.ToString(), out result ) )
+               result = null;
+         } else if ( token == JsonToken.Integer ) {
+            result = new Version( (int) ( (long) r.Value ), 0 );
+         } else if ( token == JsonToken.Float ) {
+            var txt = string.Format( "{0:F18}", r.Value ).TrimEnd( new char[]{ '0' });
+            if ( ! Version.TryParse( txt, out result ) )
+               result = null;
+         } else
+            throw new JsonException( $"String or number expected for Version" );
+         r.ReadAndSkipComment();
+         return result;
       }
 
       public override void WriteJson ( JsonWriter writer, object value, JsonSerializer serializer ) {
