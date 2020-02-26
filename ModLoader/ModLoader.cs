@@ -24,26 +24,27 @@ namespace Sheepy.Modnix {
       private static bool Initialized;
       public static Version LoaderVersion, GameVersion;
 
-      private const BindingFlags PUBLIC_STATIC_BINDING_FLAGS = Public | Static;
+      private const BindingFlags ALL_BINDING_FLAGS = Public | NonPublic | Static | Instance;
       private static readonly List<string> IGNORE_FILE_NAMES = new List<string> {
-         "0Harmony",
-         "PhoenixPointModLoader",
-         "PPModLoader",
-         "ModnixLoader",
-         "Mono.Cecil",
+         "0harmony",
+         "phoenixpointmodloader",
+         "ppmodloader",
+         "modnixloader",
+         "mono.cecil",
       };
       private readonly static Version PPML_COMPAT = new Version( 0, 1 );
 
       public static string ModDirectory { get; private set; }
 
-      private static readonly string[] PHASES = new string[]{ "SplashMod", "Init", "MainMod" };
+      private static readonly string[] PHASES = new string[]{ "SplashMod", "Init", "Initialize", "MainMod" };
 
       public static void Init () { try {
          if ( Log != null ) {
             if ( Initialized ) return;
             Initialized = true;
-            LoadMods( "Init" );  // Second call loads default and mainmenu mods
-            LoadMods( "MainMod" );
+            LoadMods( "Init" ); // PPML v0.1
+            LoadMods( "Initialize" ); // PPML v0.2
+            LoadMods( "MainMod" ); // Modnix
             return;
          }
          Setup();
@@ -56,6 +57,15 @@ namespace Sheepy.Modnix {
 
       public static void Setup () { try { lock ( AllMods ) {
          if ( ModDirectory != null ) return;
+         // Dynamically load embedded dll
+         AppDomain.CurrentDomain.AssemblyResolve += ( domain, dll ) => {
+            AppDomain app = domain as AppDomain ?? AppDomain.CurrentDomain;
+            if ( dll.Name.StartsWith( "PhoenixPointModLoader, Version=0.2.0.0", StringComparison.InvariantCultureIgnoreCase ) ) {
+               Log.Verbo( "Loading embedded PPML v0.2" );
+               return app.Load( Properties.Resources.PPML_0_2 );
+            }
+            return null;
+         };
          ModDirectory = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.MyDocuments ), MOD_PATH );
          if ( Log == null ) {
             if ( ! Directory.Exists( ModDirectory ) )
@@ -73,6 +83,7 @@ namespace Sheepy.Modnix {
          logger.Filters.Clear();
          logger.Filters.Add( LogFilters.FormatParams );
          logger.Filters.Add( LogFilters.ResolveLazy );
+         logger.Level = SourceLevels.All;
          if ( clear ) Log.Clear();
          Log.Info( "{0} v{1} on .Net {3}, {2}", typeof( ModLoader ).FullName, LoaderVersion, DateTime.Now.ToString( "u" ), Environment.Version );
          ModMetaJson.JsonLogger.Masters.Clear();
@@ -121,7 +132,7 @@ namespace Sheepy.Modnix {
          var container = Path.GetFileName( path );
          var foundMod = false;
          foreach ( var dll in Directory.EnumerateFiles( path, "*.dll" ) ) {
-            var name = Path.GetFileNameWithoutExtension( dll );
+            var name = Path.GetFileNameWithoutExtension( dll ).ToLowerInvariant();
             if ( IGNORE_FILE_NAMES.Contains( name ) ) continue;
             if ( isRoot || NameMatch( container, name ) ) {
                var info = ParseMod( dll, container );
@@ -171,6 +182,7 @@ namespace Sheepy.Modnix {
                }
             }
          }
+         meta = ValidateMod( meta );
          if ( meta == null ) {
             Log.Warn( "Not a mod: {0}", file );
             return null;
@@ -178,6 +190,19 @@ namespace Sheepy.Modnix {
          Log.Info( "Found mod {0} at {1} ({2} dlls)", meta.Id, file, meta.Dlls?.Length ?? 0 );
          return new ModEntry{ Path = file, Metadata = meta };
       } catch ( Exception ex ) { Log.Warn( ex ); return null; } }
+
+      private static ModMeta ValidateMod ( ModMeta meta ) {
+         if ( meta == null ) return null;
+         switch ( meta.Id ) {
+            case "modnix" : case "":
+            case "phoenixpoint" : case "phoenix point" :
+            case "ppml" : case "phoenixpointmodloader" : case "phoenix point mod loader" :
+            case "non-modnix" : case "nonmodnix" :
+               Log.Warn( "{0} is a reserved mod id.", meta.Id );
+               return null;
+         }
+         return meta;
+      }
 
       private static ModMeta ParseInfoJs ( string js ) { try {
          js = js?.Trim();
@@ -226,18 +251,21 @@ namespace Sheepy.Modnix {
             foreach ( var type in lib.MainModule.GetTypes() ) {
                foreach ( var method in type.Methods ) {
                   string name = method.Name;
-                  if ( Array.IndexOf( PHASES, name ) >= 0 ) {
-                     if ( result == null ) result = new DllEntryMeta();
-                     if ( ! result.TryGetValue( name, out var list ) )
-                        result[ name ] = list = new HashSet<string>();
-                     if ( list.Contains( type.FullName ) ) {
-                        Log.Warn( "Found overloaded {0}.{1}, removing all.", type.FullName, name );
-                        list.Remove( type.FullName );
-                        goto NextType;
-                     } else {
-                        list.Add( type.FullName );
-                        Log.Verbo( "Found {0}.{1}", type.FullName, name );
-                     }
+                  if ( Array.IndexOf( PHASES, name ) < 0 ) continue;
+                  if ( name == "Initialize" && ! type.Interfaces.Any( e => e.InterfaceType.FullName == "PhoenixPointModLoader.IPhoenixPointMod" ) ) {
+                     Log.Warn( "Ignoring {0}.Initialize because not IPhoenixPointMod", type.FullName );
+                     continue;
+                  }
+                  if ( result == null ) result = new DllEntryMeta();
+                  if ( ! result.TryGetValue( name, out var list ) )
+                     result[ name ] = list = new HashSet<string>();
+                  if ( list.Contains( type.FullName ) ) {
+                     Log.Warn( "Found overloaded {0}.{1}, removing all.", type.FullName, name );
+                     list.Remove( type.FullName );
+                     goto NextType;
+                  } else {
+                     list.Add( type.FullName );
+                     Log.Verbo( "Found {0}.{1}", type.FullName, name );
                   }
                }
                NextType:;
@@ -322,17 +350,23 @@ namespace Sheepy.Modnix {
       public static void CallInit ( ModEntry mod, Assembly dll, string typeName, string methodName ) { try {
          Type type = dll.GetType( typeName );
          if ( type == null ) {
-            Log.Error( "Cannot find type {1} in {0}", typeName, dll.Location );
+            Log.Error( "Cannot find type {1} in {0}", dll.Location, typeName );
             return;
          }
 
-         MethodInfo func = type.GetMethod( methodName, PUBLIC_STATIC_BINDING_FLAGS );
+         MethodInfo func = type.GetMethod( methodName, ALL_BINDING_FLAGS );
+         if ( func == null ) {
+            Log.Error( "Cannot find {1}.{2} in {0}", dll.Location, typeName, methodName );
+            return;
+         }
          List<object> augs = new List<object>();
          foreach ( var aug in func.GetParameters() ) {
             var pType = aug.ParameterType;
             // Version checkers
             if ( pType == typeof( Func<string,Version> ) )
                augs.Add( (Func<string,Version>) GetVersionById );
+            else if ( pType == typeof( Assembly ) )
+               augs.Add( Assembly.GetExecutingAssembly() );
             // Loggers
             else if ( pType == typeof( Action<object> ) )
                augs.Add( LoggerA( CreateLogger( mod ) ) );
@@ -355,7 +389,8 @@ namespace Sheepy.Modnix {
          }
          Func<string> augTxt = () => string.Join( ", ", augs.Select( e => e?.GetType()?.Name ?? "null" ) );
          Log.Info( "Calling {1}.{2}({3}) in {0}", mod.Path, typeName, methodName, augTxt );
-         func.Invoke( null, augs.ToArray() );
+         var target = func.IsStatic ? null : Activator.CreateInstance( type );
+         func.Invoke( target, augs.ToArray() );
       } catch ( Exception ex ) { Log.Error( ex ); } }
 
       private static Logger CreateLogger ( ModEntry mod ) { lock ( mod ) {
