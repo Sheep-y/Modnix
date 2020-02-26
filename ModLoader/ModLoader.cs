@@ -74,7 +74,7 @@ namespace Sheepy.Modnix {
          logger.Filters.Add( LogFilters.FormatParams );
          logger.Filters.Add( LogFilters.ResolveLazy );
          if ( clear ) Log.Clear();
-         Log.Info( "{0} v{1} {2}", typeof( ModLoader ).FullName, LoaderVersion, DateTime.Now.ToString( "u" ) );
+         Log.Info( "{0} v{1} on .Net {3}, {2}", typeof( ModLoader ).FullName, LoaderVersion, DateTime.Now.ToString( "u" ), Environment.Version );
          ModMetaJson.JsonLogger.Masters.Clear();
          ModMetaJson.JsonLogger.Masters.Add( Log );
       }
@@ -82,9 +82,9 @@ namespace Sheepy.Modnix {
       public static void LogGameVersion () { try {
          foreach ( var e in AppDomain.CurrentDomain.GetAssemblies() ) {
             if ( ! e.FullName.StartsWith( "Assembly-CSharp, ", StringComparison.InvariantCultureIgnoreCase ) ) continue;
-            var ver = e.GetType( "Base.Build.RuntimeBuildInfo" ).GetProperty( "Version" ).GetValue( null );
+            var ver = e.GetType( "Base.Build.RuntimeBuildInfo" ).GetProperty( "Version" ).GetValue( null )?.ToString();
             Log.Info( "{0} v{1}", e.FullName, ver );
-            GameVersion = Version.Parse( e.FullName );
+            GameVersion = Version.Parse( ver );
             return;
          }
       } catch ( Exception ex ) { Log?.Error( ex ); } }
