@@ -124,7 +124,7 @@ namespace Sheepy.Modnix {
             var name = Path.GetFileNameWithoutExtension( dll );
             if ( IGNORE_FILE_NAMES.Contains( name ) ) continue;
             if ( isRoot || NameMatch( container, name ) ) {
-               var info = ParseMod( dll );
+               var info = ParseMod( dll, container );
                if ( info != null ) {
                   AllMods.Add( info );
                   foundMod = true;
@@ -142,23 +142,34 @@ namespace Sheepy.Modnix {
 
       private static bool NameMatch ( string container, string subject ) {
          if ( container == null || subject == null ) return false;
-         container = DropFromName.Replace( container, "" );
-         subject = DropFromName.Replace( subject, "" );
+         container = DropFromName.Replace( container, "" ).ToLowerInvariant();
+         subject = DropFromName.Replace( subject, "" ).ToLowerInvariant();
          if ( container.Length < 3 || subject.Length < 3 ) return false;
          int len = Math.Max( 3, (int) Math.Round( Math.Min( container.Length, subject.Length ) * 2.0 / 3.0 ) );
          return container.Substring( 0, len ) == subject.Substring( 0, len );
       }
 
-      public static ModEntry ParseMod ( string file ) { try {
+      public static ModEntry ParseMod ( string file, string container ) { try {
          ModMeta meta;
          if ( file.EndsWith( ".dll", StringComparison.InvariantCultureIgnoreCase ) ) {
             meta = ParseDllInfo( file );
             var info = FindEmbeddedModInfo( file );
-            if ( info != null )
-               meta.ImportFrom( ParseInfoJs( info )?.EraseModsAndDlls().Normalise() );
+            if ( info != null ) {
+               Log.Info( "Parsing embedded mod_info" );
+               meta.ImportFrom( ParseInfoJs( info )?.EraseModsAndDlls() );
+            }
          } else {
             Log.Info( $"Parsing as mod_info: {file}" );
             meta = ParseInfoJs( File.ReadAllText( file, Encoding.UTF8 ).Trim() );
+            if ( ! meta.HasContent ) {
+               var dlls = Directory.EnumerateFiles( Path.GetDirectoryName( file ), "*.dll" );
+               if ( dlls.Count() > 1 ) dlls = dlls.Where( e => NameMatch( container, Path.GetFileNameWithoutExtension( e ) ) ).ToArray();
+               if ( dlls.Count() == 1 ) {
+                  var autodll = dlls.First();
+                  Log.Info( "Dll not specified; automatically using {0}", autodll );
+                  meta.Dlls = new DllMeta[] { new DllMeta{ Path = autodll, Methods = ParseEntryPoints( autodll ) } };
+               }
+            }
          }
          if ( meta == null ) return null;
          return new ModEntry{ Path = file, Metadata = meta };
@@ -197,10 +208,8 @@ namespace Sheepy.Modnix {
             using ( var reader = new ResourceReader( res.GetResourceStream() ) ) {
                var data = reader.GetEnumerator();
                while ( data.MoveNext() ) {
-                  if ( data.Key.ToString().ToLowerInvariant() == "mod_info" ) {
-                     Log.Info( "Found embedded mod_info" );
+                  if ( data.Key.ToString().ToLowerInvariant() == "mod_info" )
                      return data.Value?.ToString();
-                  }
                }
             }
          }

@@ -35,7 +35,7 @@ namespace Sheepy.Modnix.MainGUI {
    internal class GridModItem : ModInfo {
       internal ModEntry Mod;
       public override string Name => Mod?.Metadata?.Name?.ToString();
-      public override string Version => Mod?.Metadata?.Version;
+      public override string Version => Mod?.Metadata?.Version?.ToString();
       public override string Author => Mod?.Metadata?.Author?.ToString();
 
       public override void BuildDesc ( FlowDocument doc ) {

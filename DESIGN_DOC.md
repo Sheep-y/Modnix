@@ -147,16 +147,15 @@ See Mod Resolution.
 
 ### Mod Parsing
 
-1. If file extension is .js or .json, parse as mod.js.  See example below.
+1. If file extension is .dll, parse mod metadata from assembly information which serve as a default.
+2. If file extension is .dll, find embedded "mod_info" and, if found, parse as .js, merge with replace.
+3. If file extension is not .dll, parse as mod.js.  See format below.
     1. If success, but mod does not specify any contents (Mods, Dlls, Alters, Assets), and is non-root, adds all dlls whose name match the folder (see above).
-2. If file extension is .dll, parse mod metadata from assembly information which serve as a default.
-3. If file extension is .dll, find embedded "mod_info" and, if found, parse as .js, merge with replace.
-4. If file extension is .dll and not Modnix, parse as PPML.  Abort if failed.
-5. Check built-in override list.  If any match, merge with replace.
-6. Check user override list.  If any match, merge with replace.
+4. Check built-in override list.  If any match, merge with replace.
+5. Check user override list.  If any match, merge with replace.
 
-Mods that fail to parse at step 1, 2, and 4 will not be loaded.
-Parse failures at step 3, 5, and 6 are ignored and proceed to next step.
+Mods that fail to parse at step 1 and 3 will not be loaded.
+Parse failures at step 2, 4, and 5 are ignored and proceed to next step.
 
 Currently only dll mods are supported.
 Data mods is planned in future releases.
@@ -179,7 +178,7 @@ The resolution repeats until no action is taken, or until a max depth.
 5. Conflicts are checked for each mod.  Targetted mods are disabled and removed from resolution.
 6. Mods are ordered by LoadsAfter and LoadsBefore. Conflicts cause the rule to be ignored.
 7. Expansion
-    1. Mods are parsed as mod and added to resolution.
+    1. Mods are parsed and added to resolution.
 
 ### Example mod_info.js
 

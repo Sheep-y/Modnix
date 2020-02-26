@@ -51,6 +51,8 @@ namespace Sheepy.Modnix {
       public string[] Mods;
       public DllMeta[] Dlls;
 
+      public bool HasContent => Mods == null && Dlls == null;
+
       internal ModMeta ImportFrom ( ModMeta overrider ) {
          if ( overrider == null ) return this;
          lock ( this ) { lock ( overrider ) {
