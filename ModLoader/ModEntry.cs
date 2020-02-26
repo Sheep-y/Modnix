@@ -18,17 +18,16 @@ namespace Sheepy.Modnix {
 
       public ModEntry Parent;
       public List<ModEntry> Children;
-      public LogEntry DisabledReason;
-      public bool IsDisabled => ManualDisabled || DisabledReason != null;
+      public LogEntry Notices;
 
       [ JsonProperty ]
-      public bool ManualDisabled;
+      public bool Disabled;
       [ JsonProperty ]
       public SourceLevels LogLevel;
 
-      internal void DisableWithCause ( string reason, params object[] augs ) =>
-         DisabledReason = new LogEntry{ Message = reason, Args = augs };
-      public override string ToString () => $"Mod {Metadata?.Name}{(IsDisabled?" (Disabled)":"")}";
+      internal void AddNotice ( SourceLevels lv, string reason, params object[] augs ) =>
+         Notices = new LogEntry{ Level = lv, Message = reason, Args = augs };
+      public override string ToString () => $"Mod {Metadata?.Name}{(Disabled?" (Disabled)":"")}";
    }
 
    public class ModMeta {

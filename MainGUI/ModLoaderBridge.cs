@@ -43,7 +43,7 @@ namespace Sheepy.Modnix.MainGUI {
             $"{Name}\rVersion {Version}\rType {Type}\n{Mod?.Metadata?.Description}\nAuthor\t{(Author)}";
       }
 
-      public override string Path => Mod?.Metadata?.Dlls?[0]?.Path;
+      public override string Path => Mod.Path;
       public override string Type { get {
          bool? hasInit = Mod?.Metadata?.Dlls?.Any( e => e?.Methods?.ContainsKey( "Init" ) ?? false );
          if ( hasInit == null ) return "Data";

@@ -257,7 +257,7 @@ namespace Sheepy.Modnix {
          for ( int i = 0 ; i < 100 && NeedMoreResolve ; i++ ) {
             NeedMoreResolve = false;
             EnabledMods.Clear();
-            EnabledMods.AddRange( AllMods.Where( e => ! e.IsDisabled ) );
+            EnabledMods.AddRange( AllMods.Where( e => ! e.Disabled ) );
             Log.Info( "Resolving {0} mods, iteration {1}", EnabledMods.Count, i );
             CheckModRequirements();
          }
@@ -292,7 +292,8 @@ namespace Sheepy.Modnix {
                if ( pass && req.Max != null && req.Max < ver ) pass = false;
                if ( ! pass ) {
                   Log.Info( "Mod [{0}] requirement {1} [{2}-{3}] failed, found {4}", mod.Metadata.Id, req.Id, req.Min, req.Max, ver );
-                  mod.DisableWithCause( "requires", req.Id, req.Min, req.Max, ver );
+                  mod.Disabled = true;
+                  mod.AddNotice( SourceLevels.Error, "requires", req.Id, req.Min, req.Max, ver );
                   EnabledMods.Remove( mod );
                   NeedMoreResolve = true;
                }

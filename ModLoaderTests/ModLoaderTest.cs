@@ -22,11 +22,11 @@ namespace Sheepy.Modnix.Tests {
          typeof( ModLoader ).GetMethod( "ResolveMods", NonPublic | Static ).Invoke( null, new object[0] );
 
       [TestMethod()] public void DisabledModTest () {
-         ModLoader.AllMods.Add( new ModEntry { ManualDisabled = true, Metadata = new ModMeta() } );
-         ModLoader.AllMods.Add( new ModEntry { DisabledReason = new Logging.LogEntry(), Metadata = new ModMeta() } );
+         ModLoader.AllMods.Add( new ModEntry { Metadata = new ModMeta{ Id = "A" } } );
+         ModLoader.AllMods.Add( new ModEntry { Disabled = true, Metadata = new ModMeta{ Id = "B" } } );
          ResolveMods();
          Assert.AreEqual( 2, ModLoader.AllMods.Count );
-         Assert.AreEqual( 0, ModLoader.EnabledMods.Count );
+         Assert.AreEqual( 1, ModLoader.EnabledMods.Count );
       }
 
       private static Version Ver ( string val ) => Version.Parse( val );
@@ -62,18 +62,18 @@ namespace Sheepy.Modnix.Tests {
          ResolveMods();
 
          Assert.AreEqual( 12, ModLoader.AllMods.Count );
-         Assert.IsNotNull( ModnixMin.DisabledReason, "ModnixMin" );
-         Assert.IsFalse( ModnixOk.IsDisabled, "ModnixOk" );
-         Assert.IsNotNull( ModnixMax.DisabledReason, "ModnixMax" );
-         Assert.IsNotNull( PPMin.DisabledReason, "PPMin" );
-         Assert.IsFalse( PPOk.IsDisabled, "PPOk" );
-         Assert.IsNotNull( PPMax.DisabledReason, "PPMax" );
-         Assert.IsNotNull( PPMLMin.DisabledReason, "PPMLMin" );
-         Assert.IsFalse( PPMLOk.IsDisabled, "PPMLOk" );
-         Assert.IsNotNull( PPMLMax.DisabledReason, "PPMLMax" );
-         Assert.IsNotNull( NonModnix.DisabledReason, "NonModnix" );
-         Assert.IsFalse( Yes.IsDisabled, "Yes" );
-         Assert.IsNotNull( No.DisabledReason, "No" );
+         Assert.IsNotNull( ModnixMin.Notices, "ModnixMin" );
+         Assert.IsFalse( ModnixOk.Disabled, "ModnixOk" );
+         Assert.IsNotNull( ModnixMax.Notices, "ModnixMax" );
+         Assert.IsNotNull( PPMin.Notices, "PPMin" );
+         Assert.IsFalse( PPOk.Disabled, "PPOk" );
+         Assert.IsNotNull( PPMax.Notices, "PPMax" );
+         Assert.IsNotNull( PPMLMin.Notices, "PPMLMin" );
+         Assert.IsFalse( PPMLOk.Disabled, "PPMLOk" );
+         Assert.IsNotNull( PPMLMax.Notices, "PPMLMax" );
+         Assert.IsNotNull( NonModnix.Notices, "NonModnix" );
+         Assert.IsFalse( Yes.Disabled, "Yes" );
+         Assert.IsNotNull( No.Notices, "No" );
          Assert.AreEqual( 4, ModLoader.EnabledMods.Count );
       }
    }
