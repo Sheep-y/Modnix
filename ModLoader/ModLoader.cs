@@ -24,7 +24,7 @@ namespace Sheepy.Modnix {
       private static bool Initialized;
       public static Version LoaderVersion, GameVersion;
 
-      private const BindingFlags ALL_BINDING_FLAGS = Public | NonPublic | Static | Instance;
+      private const BindingFlags INIT_METHOD_FLAGS = Public | Static | Instance;
       private static readonly List<string> IGNORE_FILE_NAMES = new List<string> {
          "0harmony",
          "phoenixpointmodloader",
@@ -94,7 +94,7 @@ namespace Sheepy.Modnix {
          logger.Filters.Clear();
          logger.Filters.Add( LogFilters.FormatParams );
          logger.Filters.Add( LogFilters.ResolveLazy );
-         logger.Level = SourceLevels.All;
+         //logger.Level = SourceLevels.All;
          if ( clear ) Log.Clear();
          Log.Info( "{0}/{1}; {2}", typeof( ModLoader ).FullName, LoaderVersion, DateTime.Now.ToString( "u" ) );
          ModMetaJson.JsonLogger.Masters.Clear();
@@ -365,7 +365,7 @@ namespace Sheepy.Modnix {
             return;
          }
 
-         MethodInfo func = type.GetMethod( methodName, ALL_BINDING_FLAGS );
+         MethodInfo func = type.GetMethod( methodName, INIT_METHOD_FLAGS );
          if ( func == null ) {
             Log.Error( "Cannot find {1}.{2} in {0}", dll.Location, typeName, methodName );
             return;
