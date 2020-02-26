@@ -9,9 +9,7 @@ using System.Windows.Documents;
 
 namespace Sheepy.Modnix.MainGUI {
    internal class ModLoaderBridge {
-      private AppControl App;
-
-      public ModLoaderBridge ( AppControl app ) => App = app;
+      private AppControl App = AppControl.Instance;
 
       internal object LoadModList () {
          if ( ModLoader.NeedSetup ) {

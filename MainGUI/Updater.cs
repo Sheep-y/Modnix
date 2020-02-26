@@ -26,18 +26,17 @@ namespace Sheepy.Modnix.MainGUI {
    internal class Updater {
       private const string RELEASE  = "https://api.github.com/repos/Sheep-y/Modnix/releases";
 
-      private readonly AppControl App;
+      private readonly AppControl App = AppControl.Instance;
       private JsonSerializerSettings jsonOptions;
 
-      internal Updater ( AppControl app ) {
-         App = app;
+      internal Updater () {
          ServicePointManager.Expect100Continue = true;
          ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
          jsonOptions = new JsonSerializerSettings() {
             DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate,
             Error = ( sender, err ) => App.Log( err ),
             MissingMemberHandling = MissingMemberHandling.Ignore,
-            TraceWriter = new JsonLogger() { App = App, LevelFilter = TraceLevel.Info }
+            TraceWriter = new JsonLogger() { LevelFilter = TraceLevel.Info }
          };
       }
 
@@ -90,7 +89,7 @@ namespace Sheepy.Modnix.MainGUI {
    }
 
    internal class JsonLogger : ITraceWriter {
-      internal AppControl App;
+      internal AppControl App = AppControl.Instance;
       public TraceLevel LevelFilter { get; set; }
       public void Trace ( TraceLevel level, string message, Exception ex ) {
          if ( level > LevelFilter ) return;

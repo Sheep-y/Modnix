@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -16,14 +15,12 @@ namespace Sheepy.Modnix.MainGUI {
 
    public partial class SetupWindow : Window, IAppGui {
 
-      private readonly AppControl App;
+      private readonly AppControl App = AppControl.Instance;
       private string AppVer, AppState, GamePath = null;
       private string Mode = "log"; // launch, setup, log
       private string LogContent;
 
-      public SetupWindow ( AppControl app, string mode ) { try {
-         Contract.Requires( app != null );
-         App = app;
+      public SetupWindow ( string mode ) { try {
          Mode = mode;
          InitializeComponent();
          RefreshInfo();

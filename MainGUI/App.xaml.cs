@@ -8,7 +8,6 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
-using static Sheepy.Modnix.MainGUI.SharedGui;
 using static System.Globalization.CultureInfo;
 
 namespace Sheepy.Modnix.MainGUI {
@@ -20,6 +19,7 @@ namespace Sheepy.Modnix.MainGUI {
    }
 
    public partial class AppControl : Application {
+      public static AppControl Instance { get; private set; }
 
       // Use slash for all paths, and use .FixSlash() to correct to platform slash.
       internal readonly static string MOD_PATH = "My Games/Phoenix Point/Mods".FixSlash();
@@ -65,6 +65,7 @@ namespace Sheepy.Modnix.MainGUI {
       private int  paramIgnorePid;
 
       internal void ApplicationStartup ( object sender, StartupEventArgs e ) { try { lock ( SynRoot ) {
+         Instance = this;
          Log( $"Startup time {DateTime.Now.ToString( "yyyy-MM-dd HH:mm:ss.ffff", InvariantCulture )}" );
          Init( e?.Args );
          if ( ! paramSkipProcessCheck ) {
@@ -76,15 +77,15 @@ namespace Sheepy.Modnix.MainGUI {
             }
             if ( ! IsSelfInstalled() ) {
                if ( FoundInstalledModnix() ) {
-                  GUI = new SetupWindow( this, "launch" );
+                  GUI = new SetupWindow( "launch" );
                } else if ( ShouldRunSetup() ) {
-                  GUI = new SetupWindow( this, "setup" );
+                  GUI = new SetupWindow( "setup" );
                }
             }
          }
          Log( $"Launching main window" );
          if ( GUI == null )
-            GUI = new MainWindow( this );
+            GUI = new MainWindow();
          Log( null ); // Send startup log to GUI
          GUI.SetInfo( "visible", "true" );
       } } catch ( Exception ex ) {
@@ -249,7 +250,7 @@ namespace Sheepy.Modnix.MainGUI {
          Log( "Checking status" );
          GUI.SetInfo( "version", CheckAppVer() );
          if ( FoundGame( out string gamePath ) ) {
-            currentGame = new GameInstallation( this, gamePath );
+            currentGame = new GameInstallation( gamePath );
             GUI.SetInfo( "game_path", gamePath );
             CheckInjectionStatus();
             GetModList();
@@ -413,7 +414,7 @@ namespace Sheepy.Modnix.MainGUI {
             return false;
          }
          // Delete a few files that should not be in the mods folder, or will be replaced
-         var dllCheck = new GameInstallation( this, OldPath );
+         var dllCheck = new GameInstallation( OldPath );
          dllCheck.DeleteGameFile( LIVE_NAME + APP_EXT );
          dllCheck.DeleteGameFile( LOADER );
          dllCheck.DeleteGameFile( INJECTOR );
@@ -507,7 +508,7 @@ namespace Sheepy.Modnix.MainGUI {
       private void CheckUpdate () { try {
          lock( SynRoot ) {
             if ( updater == null )
-               updater = new Updater( this );
+               updater = new Updater();
          }
          GUI.SetInfo( "update", updater.FindUpdate( Myself.Version ) );
       } catch ( Exception ex ) { Log( ex ); } }
@@ -515,7 +516,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       #region mods
       private void GetModList () { try {
-         if ( bridge == null ) bridge = new ModLoaderBridge( this );
+         if ( bridge == null ) bridge = new ModLoaderBridge();
          GUI.SetInfo( "mod_list", bridge.LoadModList() );
       } catch ( IOException ex ) { Log( ex ); } }
 
@@ -598,15 +599,14 @@ namespace Sheepy.Modnix.MainGUI {
    }
 
    internal class GameInstallation {
-      internal GameInstallation ( AppControl app, string gameDir ) {
-         App = app;
+      internal GameInstallation ( string gameDir ) {
          GameDir  = gameDir;
          CodeDir  = Path.Combine( gameDir, AppControl.DLL_PATH );
          Injector = Path.Combine( CodeDir, AppControl.INJECTOR );
          Loader   = Path.Combine( CodeDir, AppControl.LOADER   );
       }
 
-      internal readonly AppControl App;
+      internal readonly AppControl App = AppControl.Instance;
       internal readonly string GameDir;
       internal readonly string CodeDir;
       internal readonly string Injector;

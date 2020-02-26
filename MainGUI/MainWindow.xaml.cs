@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -17,13 +16,11 @@ using static System.Globalization.CultureInfo;
 namespace Sheepy.Modnix.MainGUI {
 
    public partial class MainWindow : Window, IAppGui {
-      private readonly AppControl App;
+      private readonly AppControl App = AppControl.Instance;
       private string AppVer, AppState, GamePath, GameVer;
       private IEnumerable<ModInfo> ModList;
 
-      public MainWindow ( AppControl app ) { try {
-         Contract.Requires( app != null );
-         App = app;
+      public MainWindow () { try {
          InitializeComponent();
          RefreshGUI();
       } catch ( Exception ex ) { Console.WriteLine( ex ); } }
@@ -344,7 +341,6 @@ namespace Sheepy.Modnix.MainGUI {
 
    public static class WpfHelper {
       public static TextRange TextRange ( this RichTextBox box ) {
-         Contract.Requires( box != null );
          return new TextRange( box.Document.ContentStart, box.Document.ContentEnd );
       }
    }
