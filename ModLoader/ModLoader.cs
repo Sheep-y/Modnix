@@ -263,35 +263,30 @@ namespace Sheepy.Modnix {
          }
       }
 
+      private static Version GetVersionById ( string id ) {
+         if ( string.IsNullOrEmpty( id ) ) return LoaderVersion;
+         id = id.Trim().ToLowerInvariant();
+         switch ( id ) {
+            case "modnix" : case "":
+               return LoaderVersion;
+            case "phoenixpoint" : case "phoenix point" :
+               return GameVersion;
+            case "ppml" : case "phoenixpointmodloader" : case "phoenix point mod loader" :
+               return PPML_COMPAT;
+            case "non-modnix" : case "nonmodnix" :
+               return null;
+         }
+         var target = EnabledMods.Find( e => e.Metadata.Id.ToLowerInvariant() == id );
+         if ( target != null ) return target.Metadata.Version ?? new Version( 0, 0 );
+         return null;
+      }
+
       private static void CheckModRequirements () {
          foreach ( var mod in EnabledMods.ToArray() ) {
             var reqs = mod.Metadata.Requires;
             if ( reqs == null ) continue;
             foreach ( var req in reqs ) {
-               var wanted = req.Id.ToLowerInvariant();
-               Version ver = null;
-               switch ( wanted ) {
-                  case "modnix" :
-                     ver = LoaderVersion;
-                     break;
-                  case "phoenixpoint" : case "phoenix point" :
-                     ver = GameVersion;
-                     break;
-                  case "ppml" : case "phoenixpointmodloader" : case "phoenix point mod loader" :
-                     ver = PPML_COMPAT;
-                     break;
-                  case "non-modnix" : case "nonmodnix" :
-                     Log.Info( "Mod [{0}] requires non-Modnix", mod.Metadata.Id );
-                     mod.DisableWithCause( "non-modnix" );
-                     EnabledMods.Remove( mod );
-                     NeedMoreResolve = true;
-                     goto NextMod;
-                  default:
-                     var target = EnabledMods.Find( e => e.Metadata.Id.ToLowerInvariant() == wanted );
-                     if ( target != null )
-                        ver = target.Metadata.Version ?? new Version( 0, 0 );
-                     break;
-               }
+               Version ver = GetVersionById( req.Id );
                var pass = ver != null;
                if ( pass && req.Min != null && req.Min > ver ) pass = false;
                if ( pass && req.Max != null && req.Max < ver ) pass = false;
@@ -302,7 +297,6 @@ namespace Sheepy.Modnix {
                   NeedMoreResolve = true;
                }
             }
-            NextMod:;
          }
       }
       #endregion
@@ -331,9 +325,9 @@ namespace Sheepy.Modnix {
          List<object> augs = new List<object>();
          foreach ( var aug in func.GetParameters() ) {
             var pType = aug.ParameterType;
-            // Mod Loaders
-            if ( pType == typeof( Assembly ) )
-               augs.Add( Assembly.GetExecutingAssembly() );
+            // Version checkers
+            if ( pType == typeof( Func<string,Version> ) )
+               augs.Add( (Func<string,Version>) GetVersionById );
             // Loggers
             else if ( pType == typeof( Action<object> ) )
                augs.Add( LoggerA( CreateLogger( mod ) ) );
@@ -343,6 +337,11 @@ namespace Sheepy.Modnix {
                augs.Add( LoggerC( CreateLogger( mod ) ) );
             else if ( pType == typeof( Action<SourceLevels,object,object[]> ) )
                augs.Add( LoggerD( CreateLogger( mod ) ) );
+            // Mod info
+            else if ( pType == typeof( ModMeta ) )
+               augs.Add( mod.Metadata );
+            else if ( pType == typeof( ModEntry ) )
+               augs.Add( mod );
             // Defaults
             else if ( pType.IsValueType )
                augs.Add( Activator.CreateInstance( pType ) );

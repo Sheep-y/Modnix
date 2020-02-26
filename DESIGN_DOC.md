@@ -320,6 +320,13 @@ Post-build scripts in Injector and Loader will copy their assemblies and librari
 10. Prompt for Desktop shortcut, if not exists.
 11. Report to user and, if step 1-5 success, prompt for launch or restart.
 
+### Add New Mods
+
+Support .js, .json, .dll, .zip, and .7z
+
+- If single file, or archive has one file and no folder, create a folder from filename and put it there.
+- If archive has no file and one folder, extract to root.
+- All other cases, create a folder from archive name and extract there.
 
 
 ## Vision
@@ -329,5 +336,5 @@ For future versions
 - Disable mods without deleting them.
 - Mod settings, in a different file from mod info, so that mod info can be updated without changing settings.
 - Replace ppdefmodifier with something more powerful.
-- Supply, on run time, a list of mods, plus Logger, Reflection, and Patching Helper.
+- Reflection and Patching Helper.
 - Asset loader and overrider, like texture, music, sound etc.
