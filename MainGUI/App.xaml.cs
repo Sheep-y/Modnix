@@ -37,6 +37,7 @@ namespace Sheepy.Modnix.MainGUI {
       internal const string PAST_MOD = "Mods";
       internal const string HARM_DLL = "0Harmony.dll";
       internal const string CECI_DLL = "Mono.Cecil.dll";
+      internal const string MOD_LOG  = "ModnixLoader.log";
 
       internal const string EPIC_DIR = ".egstore";
 
@@ -304,9 +305,20 @@ namespace Sheepy.Modnix.MainGUI {
 
       internal string CheckGameVer () { try {
          Log( "Detecting game version." );
-         string ver = currentGame.RunInjector( "/g" );
-         Log( "Game Version: " + ver );
-         return ver;
+
+         try {
+            string logFile = Path.Combine( ModFolder, MOD_LOG );
+            if ( File.Exists( logFile ) && 
+                 File.GetLastWriteTime( logFile ) > File.GetLastWriteTime( Path.Combine( currentGame.CodeDir, GAME_DLL ) ) ) {
+               Log( $"Parsing {logFile}" );
+               var line = File.ReadLines( logFile ).ElementAtOrDefault( 1 );
+               var match = Regex.Match( line ?? "", "Assembly-CSharp/([^ ;]+)", RegexOptions.IgnoreCase );
+               if ( match.Success )
+                  return match.Value.Substring( 16 );
+            }
+         } catch ( Exception ex ) { Log( ex ); }
+
+         return currentGame.RunInjector( "/g" );
       } catch ( Exception ex ) { return Log( ex, "error" ); } }
 
       /// Try to detect game path
