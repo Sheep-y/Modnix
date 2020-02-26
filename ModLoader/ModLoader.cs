@@ -65,11 +65,11 @@ namespace Sheepy.Modnix {
                Log.Verbo( "Loading embedded PPML v0.2" );
                return app.Load( Properties.Resources.PPML_0_2 );
             }
-            if ( dll.Name.StartsWith( "System.Numerics, Version=4.0.0.0, " ) ) {
-               string path = Path.GetDirectoryName( new Uri( Assembly.GetExecutingAssembly().CodeBase ).LocalPath );
-               string target = Path.Combine( path, "System.Numerics.dll" );
+            if ( dll.Name.StartsWith( "System." ) && dll.Name.Contains( ',' ) ) { // Generic system library lookup
+               string file = dll.Name.Substring( 0, dll.Name.IndexOf( ',' ) ) + ".dll";
+               string target = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.Windows ), "Microsoft.NET/Framework/v4.0.30319", file );
                if ( File.Exists( target ) ) {
-                  Log.Trace( "Loading {0}", target );
+                  Log.Info( "Loading {0}", target );
                   return Assembly.LoadFrom( target );
                }
             }
