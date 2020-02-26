@@ -117,7 +117,7 @@ namespace Sheepy.Modnix {
       } } catch ( Exception ex ) { Log.Error( ex ); } }
 
       public static void ScanFolderForMods ( string path, bool isRoot ) {
-         Log.Info( "Scanning for mods: {0}", path );
+         Log.Log( isRoot ? SourceLevels.Information : SourceLevels.Verbose, "Scanning for mods: {0}", path );
          var container = Path.GetFileName( path );
          var foundMod = false;
          foreach ( var dll in Directory.EnumerateFiles( path, "*.dll" ) ) {
@@ -155,23 +155,27 @@ namespace Sheepy.Modnix {
             meta = ParseDllInfo( file );
             var info = FindEmbeddedModInfo( file );
             if ( info != null ) {
-               Log.Info( "Parsing embedded mod_info" );
+               Log.Verbo( "Parsing embedded mod_info" );
                meta.ImportFrom( ParseInfoJs( info )?.EraseModsAndDlls() );
             }
          } else {
-            Log.Info( $"Parsing as mod_info: {file}" );
+            Log.Verbo( $"Parsing as mod_info: {file}" );
             meta = ParseInfoJs( File.ReadAllText( file, Encoding.UTF8 ).Trim() );
             if ( ! meta.HasContent ) {
                var dlls = Directory.EnumerateFiles( Path.GetDirectoryName( file ), "*.dll" );
                if ( dlls.Count() > 1 ) dlls = dlls.Where( e => NameMatch( container, Path.GetFileNameWithoutExtension( e ) ) ).ToArray();
                if ( dlls.Count() == 1 ) {
                   var autodll = dlls.First();
-                  Log.Info( "Dll not specified; automatically using {0}", autodll );
+                  Log.Verbo( "Dll not specified; automatically using {0}", autodll );
                   meta.Dlls = new DllMeta[] { new DllMeta{ Path = autodll, Methods = ParseEntryPoints( autodll ) } };
                }
             }
          }
-         if ( meta == null ) return null;
+         if ( meta == null ) {
+            Log.Warn( "Not a mod: {0}", file );
+            return null;
+         }
+         Log.Info( "Found mod {0} at {1} ({2} dlls)", meta.Id, file, meta.Dlls?.Length ?? 0 );
          return new ModEntry{ Path = file, Metadata = meta };
       } catch ( Exception ex ) { Log.Warn( ex ); return null; } }
 
@@ -185,7 +189,7 @@ namespace Sheepy.Modnix {
       } catch ( Exception ex ) { Log.Warn( ex ); return null; } }
 
       private static ModMeta ParseDllInfo ( string file ) { try {
-         Log.Info( $"Parsing as dll: {file}" );
+         Log.Verbo( $"Parsing as dll: {file}" );
          var info = FileVersionInfo.GetVersionInfo( file );
          var meta = new ModMeta{
             Id = Path.GetFileNameWithoutExtension( file ).ToLowerInvariant().Trim(),
@@ -232,7 +236,7 @@ namespace Sheepy.Modnix {
                         goto NextType;
                      } else {
                         list.Add( type.FullName );
-                        Log.Info( "Found {0}.{1}", type.FullName, name );
+                        Log.Verbo( "Found {0}.{1}", type.FullName, name );
                      }
                   }
                }
@@ -349,7 +353,8 @@ namespace Sheepy.Modnix {
             else
                augs.Add( null );
          }
-         Log.Info( "Calling {0}.{1} with {2} parameters", typeName, methodName, augs.Count );
+         Func<string> augTxt = () => string.Join( ", ", augs.Select( e => e?.GetType()?.Name ?? "null" ) );
+         Log.Info( "Calling {1}.{2}({3}) in {0}", mod.Path, typeName, methodName, augTxt );
          func.Invoke( null, augs.ToArray() );
       } catch ( Exception ex ) { Log.Error( ex ); } }
 
