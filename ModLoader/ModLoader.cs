@@ -58,14 +58,23 @@ namespace Sheepy.Modnix {
       public static void Setup () { try { lock ( AllMods ) {
          if ( ModDirectory != null ) return;
          // Dynamically load embedded dll
-         AppDomain.CurrentDomain.AssemblyResolve += ( domain, dll ) => {
+         AppDomain.CurrentDomain.AssemblyResolve += ( domain, dll ) => { try {
+            Log.Trace( "Resolving {0}", dll.Name );
             AppDomain app = domain as AppDomain ?? AppDomain.CurrentDomain;
-            if ( dll.Name.StartsWith( "PhoenixPointModLoader, Version=0.2.0.0", StringComparison.InvariantCultureIgnoreCase ) ) {
+            if ( dll.Name.StartsWith( "PhoenixPointModLoader, Version=0.2.0.0, ", StringComparison.InvariantCultureIgnoreCase ) ) {
                Log.Verbo( "Loading embedded PPML v0.2" );
                return app.Load( Properties.Resources.PPML_0_2 );
             }
+            if ( dll.Name.StartsWith( "System.Numerics, Version=4.0.0.0, " ) ) {
+               string path = Path.GetDirectoryName( new Uri( Assembly.GetExecutingAssembly().CodeBase ).LocalPath );
+               string target = Path.Combine( path, "System.Numerics.dll" );
+               if ( File.Exists( target ) ) {
+                  Log.Trace( "Loading {0}", target );
+                  return Assembly.LoadFrom( target );
+               }
+            }
             return null;
-         };
+         } catch ( Exception ) { return null; } };
          ModDirectory = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.MyDocuments ), MOD_PATH );
          if ( Log == null ) {
             if ( ! Directory.Exists( ModDirectory ) )
@@ -127,10 +136,6 @@ namespace Sheepy.Modnix {
             ResolveMods();
          }
          Log.Info( "{0} mods found, {1} enabled.", AllMods.Count, EnabledMods.Count );
-         try {
-            foreach ( var e in AppDomain.CurrentDomain.GetAssemblies() )
-               Log.Info( e.ToString() );
-         } catch ( Exception ex ) { Log.Error( ex ); }
       } } catch ( Exception ex ) { Log.Error( ex ); } }
 
       public static void ScanFolderForMods ( string path, bool isRoot ) {
