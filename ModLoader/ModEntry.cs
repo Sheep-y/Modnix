@@ -32,16 +32,16 @@ namespace Sheepy.Modnix {
    }
 
    public class ModMeta {
-      public string Id;
-      public string Version;
+      public string   Id;
+      public Version  Version;
 
-      public TextSet Name;
+      public TextSet  Name;
       public string[] Langs;
-      public TextSet Description;
-      public TextSet Author;
-      public TextSet Url;
-      public TextSet Contact;
-      public TextSet Copyright;
+      public TextSet  Description;
+      public TextSet  Author;
+      public TextSet  Url;
+      public TextSet  Contact;
+      public TextSet  Copyright;
 
       public AppVer[] Requires;
       public AppVer[] Conflicts;
@@ -83,7 +83,6 @@ namespace Sheepy.Modnix {
       #region Normalise
       public ModMeta Normalise () { lock ( this ) {
          Id = NormString( Id )?.ToLowerInvariant();
-         Version = NormString( Version );
          NormTextSet( ref Name );
          NormStringArray( ref Langs );
          NormTextSet( ref Description );
@@ -130,8 +129,6 @@ namespace Sheepy.Modnix {
          if ( val == null ) return;
          for ( int i = val.Length - 1 ; i >= 0 ; i-- ) {
             val[i].Id = NormString( val[i].Id );
-            val[i].Min = NormString( val[i].Min );
-            val[i].Max = NormString( val[i].Max );
             if ( val[i].Id == null ) val[i] = null;
          }
          if ( val.Any( e => e == null ) )
@@ -168,8 +165,8 @@ namespace Sheepy.Modnix {
 
    public class AppVer {
       public string Id;
-      public string Min;
-      public string Max;
+      public Version Min;
+      public Version Max;
    }
 
    public class DllMeta {
@@ -228,8 +225,14 @@ namespace Sheepy.Modnix {
          if ( txt.Length <= 0 ) return e;
          switch ( prop ) {
             case "id"  : e.Id  = txt; break;
-            case "min" : e.Min = txt; break;
-            case "max" : e.Max = txt; break;
+            case "min" : 
+               if ( ! txt.Contains( '.' ) ) txt += ".0";
+               Version.TryParse( txt, out e.Min );
+               break;
+            case "max" :
+               if ( ! txt.Contains( '.' ) ) txt += ".0";
+               Version.TryParse( txt, out e.Max );
+               break;
             default: break;
          }
          return e;
@@ -301,8 +304,10 @@ namespace Sheepy.Modnix {
                   if ( r.TokenType == JsonToken.PropertyName ) {
                      var prop = r.Value?.ToString()?.ToLowerInvariant();
                      token = r.ReadAndSkipComment();
-                     if ( token == JsonToken.String || token == JsonToken.Integer || token == JsonToken.Float )
+                     if ( token == JsonToken.String || token == JsonToken.Integer )
                         assignProp( result, prop, r.Value );
+                     else if ( token == JsonToken.Float )
+                        assignProp( result, prop, FloatToString( r.Value ) );
                      if ( r.ReadAndSkipComment() == JsonToken.EndObject ) return result;
                   } else
                      throw new JsonException( $"Unexpected TokenType.{r.TokenType} when parsing {typeof(T)}" );
@@ -311,6 +316,9 @@ namespace Sheepy.Modnix {
          }
          throw new JsonException( $"String or object expected for {typeof(T)}" );
       }
+
+      private static string FloatToString ( object val ) =>
+         string.Format( string.Format( "{0:F18}", val ).TrimEnd( new char[]{ '0' }) );
 
       private static Version ParseVersion ( JsonReader r ) {
          Version result;
@@ -321,10 +329,9 @@ namespace Sheepy.Modnix {
             if ( ! Version.TryParse( r.Value.ToString(), out result ) )
                result = null;
          } else if ( token == JsonToken.Integer ) {
-            result = new Version( (int) ( (long) r.Value ), 0 );
+            result = new Version( (int) (long) r.Value, 0 );
          } else if ( token == JsonToken.Float ) {
-            var txt = string.Format( "{0:F18}", r.Value ).TrimEnd( new char[]{ '0' });
-            if ( ! Version.TryParse( txt, out result ) )
+            if ( ! Version.TryParse( FloatToString( r.Value ), out result ) )
                result = null;
          } else
             throw new JsonException( $"String or number expected for Version" );

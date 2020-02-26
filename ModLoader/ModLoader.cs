@@ -179,7 +179,7 @@ namespace Sheepy.Modnix {
          var meta = new ModMeta{
             Id = Path.GetFileNameWithoutExtension( file ).ToLowerInvariant().Trim(),
             Name = new TextSet{ Default = info.FileDescription.Trim() },
-            Version = info.FileVersion.Trim(),
+            Version = Version.Parse( info.FileVersion ),
             Description = new TextSet{ Default = info.Comments.Trim() },
             Author = new TextSet{ Default = info.CompanyName.Trim() },
             Copyright = new TextSet { Default = info.LegalCopyright.Trim() },
@@ -280,19 +280,12 @@ namespace Sheepy.Modnix {
                   default:
                      var target = EnabledMods.Find( e => e.Metadata.Id.ToLowerInvariant() == wanted );
                      if ( target != null )
-                        if ( ! Version.TryParse( target.Metadata.Version, out ver ) )
-                           ver = new Version( 0, 0, 0, 0 );
+                        ver = target.Metadata.Version ?? new Version( 0, 0 );
                      break;
                }
                var pass = ver != null;
-               if ( pass && req.Min != null ) {
-                  Version.TryParse( req.Min, out Version min );
-                  if ( min != null && min > ver ) pass = false;
-               }
-               if ( pass && req.Max != null ) {
-                  Version.TryParse( req.Max, out Version max );
-                  if ( max != null && max < ver ) pass = false;
-               }
+               if ( pass && req.Min != null && req.Min > ver ) pass = false;
+               if ( pass && req.Max != null && req.Max < ver ) pass = false;
                if ( ! pass ) {
                   Log.Info( "Mod [{0}] requirement {1} [{2}-{3}] failed, found {4}", mod.Metadata.Id, req.Id, req.Min, req.Max, ver );
                   mod.DisableWithCause( "requires", req.Id, req.Min, req.Max, ver );

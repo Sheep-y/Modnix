@@ -27,7 +27,7 @@ namespace Sheepy.Modnix.Tests {
          AssertAppVer( "simple", appver );
 
          appver = ModMetaJson.Parse<AppVer>( @"/*A*/ { /*B*/ Id : /*C*/ ""full"" /*D*/, /*E*/ Min: 1, Max: 2.1, NonExist: 12 /*F*/ } /*G*/" );
-         AssertAppVer( "full", appver, "1", "2.1" );
+         AssertAppVer( "full", appver, new Version( 1, 0 ), new Version( 2, 1 ) );
       }
 
       [TestMethod()] public void AppVerArrayTest () {
@@ -54,11 +54,11 @@ namespace Sheepy.Modnix.Tests {
          appver = ModMetaJson.Parse<AppVer[]>( @"/*A*/ [ /*B*/ ""one"" /*C*/, null, /*D*/ { /*E*/ id: ""two"", min: ""1.2.3.4"" /*F*/ } /*G*/, /*H*/ ""three"" ]" );
          Assert.AreEqual( 3, appver.Length, "three => 3 elements"  );
          AssertAppVer( "one", appver[0] );
-         AssertAppVer( "two", appver[1], "1.2.3.4" );
+         AssertAppVer( "two", appver[1], new Version( 1, 2, 3, 4 ) );
          AssertAppVer( "three", appver[2] );
       }
 
-      private void AssertAppVer ( string id, AppVer appver, string min = null, string max = null ) {
+      private void AssertAppVer ( string id, AppVer appver, Version min = null, Version max = null ) {
          Assert.IsNotNull( appver, $"{id} => not null" );
          Assert.AreEqual( id, appver.Id, $"{id}.id"  );
          Assert.AreEqual( min, appver.Min, $"{id}.min"  );
