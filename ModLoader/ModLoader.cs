@@ -362,18 +362,18 @@ namespace Sheepy.Modnix {
       private static Action<SourceLevels,object,object[]> LoggerD ( Logger log ) => ( lv, msg, augs ) => log.Log( lv, msg, augs );
 
       public static void CallInit ( ModEntry mod, Assembly dll, string typeName, string methodName ) { try {
-         Type type = dll.GetType( typeName );
+         var type = dll.GetType( typeName );
          if ( type == null ) {
             Log.Error( "Cannot find type {1} in {0}", dll.Location, typeName );
             return;
          }
 
-         MethodInfo func = type.GetMethod( methodName, INIT_METHOD_FLAGS );
+         var func = type.GetMethod( methodName, INIT_METHOD_FLAGS );
          if ( func == null ) {
             Log.Error( "Cannot find {1}.{2} in {0}", dll.Location, typeName, methodName );
             return;
          }
-         List<object> augs = new List<object>();
+         var augs = new List<object>();
          foreach ( var aug in func.GetParameters() ) {
             var pType = aug.ParameterType;
             // Version checkers
@@ -382,13 +382,13 @@ namespace Sheepy.Modnix {
             else if ( pType == typeof( Assembly ) )
                augs.Add( Assembly.GetExecutingAssembly() );
             // Loggers
-            else if ( pType == typeof( Action<object> ) )
+            else if ( pType == typeof( Action<object> ) && aug.Name.ToLowerInvariant().Contains( "log" ) )
                augs.Add( LoggerA( CreateLogger( mod ) ) );
-            else if ( pType == typeof( Action<object,object[]> ) )
+            else if ( pType == typeof( Action<object,object[]> ) && aug.Name.ToLowerInvariant().Contains( "log" ) )
                augs.Add( LoggerB( CreateLogger( mod ) ) );
-            else if ( pType == typeof( Action<SourceLevels,object> ) )
+            else if ( pType == typeof( Action<SourceLevels,object> ) && aug.Name.ToLowerInvariant().Contains( "log" ) )
                augs.Add( LoggerC( CreateLogger( mod ) ) );
-            else if ( pType == typeof( Action<SourceLevels,object,object[]> ) )
+            else if ( pType == typeof( Action<SourceLevels,object,object[]> ) && aug.Name.ToLowerInvariant().Contains( "log" ) )
                augs.Add( LoggerD( CreateLogger( mod ) ) );
             // Mod info
             else if ( pType == typeof( ModMeta ) )
@@ -403,7 +403,12 @@ namespace Sheepy.Modnix {
          }
          Func<string> augTxt = () => string.Join( ", ", augs.Select( e => e?.GetType()?.Name ?? "null" ) );
          Log.Info( "Calling {1}.{2}({3}) in {0}", mod.Path, typeName, methodName, augTxt );
-         var target = func.IsStatic ? null : Activator.CreateInstance( type );
+         object target = null;
+         if ( ! func.IsStatic ) {
+            if ( mod.Instance == null )
+               mod.Instance = Activator.CreateInstance( type );
+            target = mod.Instance;
+         }
          func.Invoke( target, augs.ToArray() );
       } catch ( Exception ex ) { Log.Error( ex ); } }
 

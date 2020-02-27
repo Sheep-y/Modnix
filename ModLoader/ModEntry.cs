@@ -14,7 +14,9 @@ namespace Sheepy.Modnix {
    public class ModEntry {
       public string Path;
       public ModMeta Metadata;
+
       internal LoggerProxy Logger; // Created when and only when an initialiser accepts a logging function
+      internal object Instance; // Created when and only when a non-static initialiser is called
 
       public ModEntry Parent;
       public List<ModEntry> Children;
