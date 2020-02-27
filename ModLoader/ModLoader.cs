@@ -125,23 +125,32 @@ namespace Sheepy.Modnix {
       public static void ScanFolderForMods ( string path, bool isRoot ) {
          Log.Log( isRoot ? SourceLevels.Information : SourceLevels.Verbose, "Scanning for mods: {0}", path );
          var container = Path.GetFileName( path );
-         var foundMod = false;
-         foreach ( var dll in Directory.EnumerateFiles( path, "*.dll" ) ) {
-            var name = Path.GetFileNameWithoutExtension( dll ).ToLowerInvariant();
-            if ( IGNORE_FILE_NAMES.Contains( name ) ) continue;
-            if ( isRoot || NameMatch( container, name ) ) {
-               var info = ParseMod( dll, container );
-               if ( info != null ) {
-                  AllMods.Add( info );
-                  foundMod = true;
-               }
-            }
+         if ( ! isRoot ) {
+            var file = Path.Combine( path, "mod_info.js" );
+            if ( File.Exists( file ) && AddMod( ParseMod( file, container ) ) ) return;
+            file = Path.Combine( path, "mod_info.json" );
+            if ( File.Exists( file ) && AddMod( ParseMod( file, container ) ) ) return;
          }
-         if ( ! isRoot && foundMod ) return;
+         var foundMod = false;
+         foreach ( var target in new string[] { "*.js", "*.json", "*.dll" } ) {
+            foreach ( var file in Directory.EnumerateFiles( path, target ) ) {
+               var name = Path.GetFileNameWithoutExtension( file ).ToLowerInvariant();
+               if ( IGNORE_FILE_NAMES.Contains( name ) ) continue;
+               if ( ( isRoot || NameMatch( container, name ) ) && AddMod( ParseMod( file, container ) ) )
+                  foundMod = true;
+            }
+            if ( ! isRoot && foundMod ) return;
+         }
          foreach ( var dir in Directory.EnumerateDirectories( path ) ) {
             if ( isRoot || NameMatch( container, Path.GetFileName( dir ) ) )
                ScanFolderForMods( dir, false );
          }
+      }
+
+      private static bool AddMod ( ModEntry mod ) {
+         if ( mod == null ) return false;
+         AllMods.Add( mod );
+         return true;
       }
 
       private static readonly Regex DropFromName = new Regex( "\\W+", RegexOptions.Compiled );
@@ -185,19 +194,6 @@ namespace Sheepy.Modnix {
          Log.Info( "Found mod {0} at {1} ({2} dlls)", meta.Id, file, meta.Dlls?.Length ?? 0 );
          return new ModEntry{ Path = file, Metadata = meta };
       } catch ( Exception ex ) { Log.Warn( ex ); return null; } }
-
-      private static ModMeta ValidateMod ( ModMeta meta ) {
-         if ( meta == null ) return null;
-         switch ( meta.Id ) {
-            case "modnix" : case "":
-            case "phoenixpoint" : case "phoenix point" :
-            case "ppml" : case "phoenixpointmodloader" : case "phoenix point mod loader" :
-            case "non-modnix" : case "nonmodnix" :
-               Log.Warn( "{0} is a reserved mod id.", meta.Id );
-               return null;
-         }
-         return meta;
-      }
 
       private static ModMeta ParseInfoJs ( string js ) { try {
          js = js?.Trim();
@@ -276,6 +272,20 @@ namespace Sheepy.Modnix {
                return null;
          }
          return result;
+      }
+
+      private static ModMeta ValidateMod ( ModMeta meta ) {
+         if ( meta == null ) return null;
+         switch ( meta.Id ) {
+            case "modnix" : case "":
+            case "phoenixpoint" : case "phoenix point" :
+            case "ppml" : case "phoenixpointmodloader" : case "phoenix point mod loader" :
+            case "non-modnix" : case "nonmodnix" :
+               Log.Warn( "{0} is a reserved mod id.", meta.Id );
+               return null;
+            default:
+               return meta;
+         }
       }
       #endregion
 
