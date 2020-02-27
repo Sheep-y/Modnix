@@ -215,18 +215,18 @@ namespace Sheepy.Modnix {
 
       private static ModMeta ParseDllInfo ( string file ) { try {
          Log.Verbo( $"Parsing as dll: {file}" );
+         var methods = ParseEntryPoints( file );
+         if ( methods == null ) return null;
          var info = FileVersionInfo.GetVersionInfo( file );
-         var meta = new ModMeta{
+         return new ModMeta{
             Id = Path.GetFileNameWithoutExtension( file ).Trim(),
             Name = new TextSet{ Default = info.FileDescription.Trim() },
             Version = Version.Parse( info.FileVersion ),
             Description = new TextSet{ Default = info.Comments.Trim() },
             Author = new TextSet{ Default = info.CompanyName.Trim() },
             Copyright = new TextSet { Default = info.LegalCopyright.Trim() },
-            Dlls = new DllMeta[] { new DllMeta{ Path = file, Methods = ParseEntryPoints( file ) } },
-         };
-         if ( meta.Dlls[0].Methods == null ) return null;
-         return meta.Normalise();
+            Dlls = new DllMeta[] { new DllMeta{ Path = file, Methods = methods } },
+         }.Normalise();
       } catch ( Exception ex ) { Log.Warn( ex ); return null; } }
 
       private static string FindEmbeddedModInfo ( string file ) {
@@ -249,9 +249,11 @@ namespace Sheepy.Modnix {
          DllEntryMeta result = null;
          using ( var lib = AssemblyDefinition.ReadAssembly( file ) ) {
             foreach ( var type in lib.MainModule.GetTypes() ) {
+               HashSet<string> ignored = null;
                foreach ( var method in type.Methods ) {
                   var name = method.Name;
                   if ( Array.IndexOf( PHASES, name ) < 0 ) continue;
+                  if ( ignored != null && ignored.Contains( name ) ) continue;
                   if ( name == "Initialize" && ! type.Interfaces.Any( e => e.InterfaceType.FullName == "PhoenixPointModLoader.IPhoenixPointMod" ) ) {
                      Log.Verbo( "Ignoring {0}.Initialize because not IPhoenixPointMod", type.FullName );
                      continue;
@@ -260,7 +262,9 @@ namespace Sheepy.Modnix {
                   if ( ! result.TryGetValue( name, out var list ) )
                      result[ name ] = list = new HashSet<string>();
                   if ( list.Contains( type.FullName ) ) {
-                     Log.Warn( "Removing all overloaded {0}.{1}", type.FullName, name );
+                     Log.Warn( "Ignoring all overloaded {0}.{1}", type.FullName, name );
+                     if ( ignored == null ) ignored = new HashSet<string>();
+                     ignored.Add( name );
                      list.Remove( type.FullName );
                      goto NextType;
                   } else {
