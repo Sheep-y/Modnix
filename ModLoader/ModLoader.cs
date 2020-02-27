@@ -179,17 +179,20 @@ namespace Sheepy.Modnix {
             var default_id = Path.GetFileNameWithoutExtension( file );
             if ( default_id.ToLowerInvariant() == "mod_info" ) default_id = container;
             meta = ParseInfoJs( File.ReadAllText( file, Encoding.UTF8 ).Trim(), default_id );
-            if ( ! meta.HasContent ) {
-               foreach ( var dll in Directory.EnumerateFiles( Path.GetDirectoryName( file ), "*.dll" ) ) {
-                  if ( ! NameMatch( container, Path.GetFileNameWithoutExtension( dll ) ) ) continue;
-                  Log.Verbo( "Dll not specified; auto-parsing {0}", dll );
-                  meta.Dlls = new DllMeta[] { new DllMeta{ Path = dll, Methods = ParseEntryPoints( dll ) } };
+            if ( ! meta.HasContent )
+               meta.Dlls = Directory.EnumerateFiles( Path.GetDirectoryName( file ), "*.dll" )
+                  .Where( e => NameMatch( container, Path.GetFileNameWithoutExtension( e ) ) )
+                  .Select( e => new DllMeta { Path = e } ).ToArray();
+            if ( meta.Dlls != null ) {
+               foreach ( var dll in meta.Dlls ) {
+                  if ( dll.Methods == null || dll.Methods.Count == 0 )
+                     dll.Methods = ParseEntryPoints( dll.Path );
                }
             }
          }
          meta = ValidateMod( meta );
          if ( meta == null ) {
-            Log.Warn( "Not a mod: {0}", file );
+            Log.Info( "Not a mod: {0}", file );
             return null;
          }
          Log.Info( "Found mod {0} at {1} ({2} dlls)", meta.Id, file, meta.Dlls?.Length ?? 0 );
@@ -247,7 +250,7 @@ namespace Sheepy.Modnix {
          using ( var lib = AssemblyDefinition.ReadAssembly( file ) ) {
             foreach ( var type in lib.MainModule.GetTypes() ) {
                foreach ( var method in type.Methods ) {
-                  string name = method.Name;
+                  var name = method.Name;
                   if ( Array.IndexOf( PHASES, name ) < 0 ) continue;
                   if ( name == "Initialize" && ! type.Interfaces.Any( e => e.InterfaceType.FullName == "PhoenixPointModLoader.IPhoenixPointMod" ) ) {
                      Log.Verbo( "Ignoring {0}.Initialize because not IPhoenixPointMod", type.FullName );
