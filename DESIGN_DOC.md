@@ -108,10 +108,13 @@ Functions:
 * Load "splash" mods as early as possible.
 * Load "mainmenu" mods before main menu, around same time as PPML.
 
-Depends on Newtonsoft JSON.Net, to parse mod information.
-Also depends on Lib.Harmony, so that the harmony dll will be copied to output and can then be copied to MainGUI for embedding.
-The loader itself does not need Harmony.
+Depends on Newtonsoft JSON.Net, to parse mod information,
+and Lib.Harmony to patch main menu.
+Harmony dll will be copied to MainGUI for embedding.
+
 Harmony 1.2 is used to maintain backward compatibility with PPML.
+All attempts to bring Harmony 1.2 mods to 2.0 has failed,
+rewriting them with Mono.Cecil may be the only option left.
 
 Most Modnix files - exe, settings, logs, and mods - are placed in My Documents\My Games\Phoenix Point\Mods
 This ensures that they will survive reinstall, verify, patching, moving (in the same pc), and other file operations done on the game.
@@ -121,7 +124,8 @@ For compatibility, mods must be loaded on or around the same time as PPML's inje
 
 Most early loadings are done through async functions, which are difficult to patch with Harmony.
 To keep things simple, Cinemabrain.OnEnable is chosen.
-The first call comes before first logo, and the second call is before the Hottest Year opening, roughly the same stage with PPML.
+The first call comes before first logo, when splash mods are loaded and the main menu patched for default mods.
+The second call is before the Hottest Year opening, again roughly same time as PPML, serving as a fallback for default mods.
 Subsequence calls are ignored.
 
 Also, Cinemachine may be updated less frequently than main assembly.
@@ -148,11 +152,11 @@ See Mod Resolution.
 ### Mod Parsing
 
 1. If file extension is .dll, parse mod metadata from assembly information which serve as a default.
-2. If file extension is .dll, find embedded "mod_info" and, if found, parse as .js, merge with replace.
+2. If file extension is .dll, find embedded "mod_info" and, if found, parse as .js and merge.
 3. If file extension is not .dll, parse as mod.js.  See format below.
     1. If success, but mod does not specify any contents (Mods, Dlls, Alters, Assets), and is non-root, adds all dlls whose name match the folder (see above).
-4. Check built-in override list.  If any match, merge with replace.
-5. Check user override list.  If any match, merge with replace.
+4. Check built-in override list.  If any match, parse and merge.
+5. Check user override list.  If any match, parse and merge.
 
 Mods that fail to parse at step 1 and 3 will not be loaded.
 Parse failures at step 2, 4, and 5 are ignored and proceed to next step.
