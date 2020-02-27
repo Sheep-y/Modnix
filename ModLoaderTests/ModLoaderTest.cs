@@ -14,19 +14,19 @@ namespace Sheepy.Modnix.Tests {
       [ClassInitializeAttribute] public static void TestInitialize ( TestContext _ ) => ModLoader.Setup();
 
       [TestCleanup] public void TestCleanup () {
-         ModLoader.AllMods.Clear();
-         ModLoader.EnabledMods.Clear();
+         ModScanner.AllMods.Clear();
+         ModScanner.EnabledMods.Clear();
       }
 
       private static void ResolveMods () => 
          typeof( ModLoader ).GetMethod( "ResolveMods", NonPublic | Static ).Invoke( null, new object[0] );
 
       [TestMethod()] public void DisabledModTest () {
-         ModLoader.AllMods.Add( new ModEntry { Metadata = new ModMeta{ Id = "A" } } );
-         ModLoader.AllMods.Add( new ModEntry { Disabled = true, Metadata = new ModMeta{ Id = "B" } } );
+         ModScanner.AllMods.Add( new ModEntry { Metadata = new ModMeta{ Id = "A" } } );
+         ModScanner.AllMods.Add( new ModEntry { Disabled = true, Metadata = new ModMeta{ Id = "B" } } );
          ResolveMods();
-         Assert.AreEqual( 2, ModLoader.AllMods.Count );
-         Assert.AreEqual( 1, ModLoader.EnabledMods.Count );
+         Assert.AreEqual( 2, ModScanner.AllMods.Count );
+         Assert.AreEqual( 1, ModScanner.EnabledMods.Count );
       }
 
       private static Version Ver ( string val ) => Version.Parse( val );
@@ -45,23 +45,24 @@ namespace Sheepy.Modnix.Tests {
          var Yes = new ModEntry { Metadata = new ModMeta{ Id = "NonModnix", Requires = new AppVer[]{ new AppVer{ Id = "ModnixOK" } } }.Normalise() };
          var No = new ModEntry { Metadata = new ModMeta{ Id = "NonModnix", Requires = new AppVer[]{ new AppVer{ Id = "ModnixOK" }, new AppVer{ Id = "ModnixMax" } } }.Normalise() };
 
-         ModLoader.AllMods.Add( Yes );
-         ModLoader.AllMods.Add( No );
-         ModLoader.AllMods.Add( ModnixMin );
-         ModLoader.AllMods.Add( ModnixOk );
-         ModLoader.AllMods.Add( ModnixMax );
-         ModLoader.AllMods.Add( PPMin );
-         ModLoader.AllMods.Add( PPOk );
-         ModLoader.AllMods.Add( PPMax );
-         ModLoader.AllMods.Add( PPMLMin );
-         ModLoader.AllMods.Add( PPMLOk );
-         ModLoader.AllMods.Add( PPMLMax );
-         ModLoader.AllMods.Add( NonModnix );
+         var AllMods = ModScanner.AllMods;
+         AllMods.Add( Yes );
+         AllMods.Add( No );
+         AllMods.Add( ModnixMin );
+         AllMods.Add( ModnixOk );
+         AllMods.Add( ModnixMax );
+         AllMods.Add( PPMin );
+         AllMods.Add( PPOk );
+         AllMods.Add( PPMax );
+         AllMods.Add( PPMLMin );
+         AllMods.Add( PPMLOk );
+         AllMods.Add( PPMLMax );
+         AllMods.Add( NonModnix );
 
          ModLoader.GameVersion = new Version( "1.0.12345" );
          ResolveMods();
 
-         Assert.AreEqual( 12, ModLoader.AllMods.Count );
+         Assert.AreEqual( 12, AllMods.Count );
          Assert.IsNotNull( ModnixMin.Notices, "ModnixMin" );
          Assert.IsFalse( ModnixOk.Disabled, "ModnixOk" );
          Assert.IsNotNull( ModnixMax.Notices, "ModnixMax" );
@@ -74,7 +75,7 @@ namespace Sheepy.Modnix.Tests {
          Assert.IsNotNull( NonModnix.Notices, "NonModnix" );
          Assert.IsFalse( Yes.Disabled, "Yes" );
          Assert.IsNotNull( No.Notices, "No" );
-         Assert.AreEqual( 4, ModLoader.EnabledMods.Count );
+         Assert.AreEqual( 4, ModScanner.EnabledMods.Count );
       }
    }
 }

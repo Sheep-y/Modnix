@@ -17,8 +17,8 @@ namespace Sheepy.Modnix.MainGUI {
             ModLoader.Setup();
          }
          App.Log( "Building mod list" );
-         ModLoader.BuildModList();
-         return ModLoader.AllMods.Select( e => new GridModItem(){ Mod = e } );
+         ModScanner.BuildModList();
+         return ModScanner.AllMods.Select( e => new GridModItem(){ Mod = e } );
       }
 
       internal void Delete ( ModInfo mod ) {
