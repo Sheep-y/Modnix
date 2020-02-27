@@ -1,4 +1,5 @@
-﻿using Mono.Cecil;
+﻿using Harmony;
+using Mono.Cecil;
 using Sheepy.Logging;
 using System;
 using System.Collections.Generic;
@@ -20,8 +21,6 @@ namespace Sheepy.Modnix {
       public readonly static List<ModEntry> EnabledMods = new List<ModEntry>();
 
       private static Logger Log;
-      //private static HarmonyInstance Patcher;
-      private static bool Initialized;
       public static Version LoaderVersion, GameVersion;
 
       private const BindingFlags INIT_METHOD_FLAGS = Public | Static | Instance;
@@ -39,20 +38,58 @@ namespace Sheepy.Modnix {
 
       private static readonly string[] PHASES = new string[]{ "SplashMod", "Init", "Initialize", "MainMod" };
 
+      private static bool RunMainPhaseOnInit;
+      private static object harmony;
+      private static Assembly GameAssembly;
+
       public static void Init () { try {
-         if ( Log != null ) {
-            if ( Initialized ) return;
-            Initialized = true;
-            LoadMods( "Init" ); // PPML v0.1
-            LoadMods( "Initialize" ); // PPML v0.2
-            LoadMods( "MainMod" ); // Modnix
+         if ( Log == null ) { // First run
+            RunMainPhaseOnInit = true;
+            Setup();
+            BuildModList();
+            LoadMods( "SplashMod" );
+            PatchMenuCrt();
+         } else if ( RunMainPhaseOnInit ) { // Subsequence runs
+            MainPhase();
             return;
          }
-         Setup();
-         //Patcher = HarmonyInstance.Create( typeof( ModLoader ).Namespace );
-         BuildModList();
-         LoadMods( "SplashMod" );
-      } catch ( Exception ex ) { Log?.Error( ex ); } }
+      } catch ( Exception ex ) { 
+         if ( Log == null )
+            Console.WriteLine( ex );
+         else
+            Log.Error( ex );
+      } }
+
+      private static void PatchMenuCrt () { try {
+         var patcher = HarmonyInstance.Create( typeof( ModLoader ).Namespace );
+         patcher.Patch( 
+            GetGameAssembly().GetType( "PhoenixPoint.Common.Game.PhoenixGame" ).GetMethod( "MenuCrt", NonPublic | Instance ),
+            postfix: new HarmonyMethod( typeof( ModLoader ).GetMethod( nameof( MainPhase ), NonPublic | Static ) )
+         );
+         harmony = patcher;
+         RunMainPhaseOnInit = false;
+      } catch ( Exception ex ) { Log.Error( ex ); } }
+
+      private static void UnpatchMenuCrt () { try {
+         (harmony as HarmonyInstance)?.UnpatchAll( typeof( ModLoader ).Namespace );
+         harmony = null;
+      } catch ( Exception ex ) { Log.Error( ex ); } }
+
+      private static void MainPhase () {
+         RunMainPhaseOnInit = false;
+         LoadMods( "Init" ); // PPML v0.1
+         LoadMods( "Initialize" ); // PPML v0.2
+         LoadMods( "MainMod" ); // Modnix
+         if ( harmony != null ) UnpatchMenuCrt();
+      }
+
+      private static Assembly GetGameAssembly () {
+         if ( GameAssembly != null ) return GameAssembly;
+         foreach ( var e in AppDomain.CurrentDomain.GetAssemblies() )
+            if ( e.FullName.StartsWith( "Assembly-CSharp, ", StringComparison.InvariantCultureIgnoreCase ) )
+               return GameAssembly = e;
+         return null;
+      }
 
       public static bool NeedSetup => ModDirectory == null;
 
@@ -103,13 +140,11 @@ namespace Sheepy.Modnix {
       }
 
       public static void LogGameVersion () { try {
-         foreach ( var e in AppDomain.CurrentDomain.GetAssemblies() ) {
-            if ( ! e.FullName.StartsWith( "Assembly-CSharp, ", StringComparison.InvariantCultureIgnoreCase ) ) continue;
-            var ver = e.GetType( "Base.Build.RuntimeBuildInfo" ).GetProperty( "Version" ).GetValue( null )?.ToString();
-            Log.Info( "{0}/{1}", Path.GetFileNameWithoutExtension( e.CodeBase ), ver );
-            GameVersion = Version.Parse( ver );
-            return;
-         }
+         var game = GetGameAssembly();
+         if ( game == null ) return;
+         var ver = game.GetType( "Base.Build.RuntimeBuildInfo" ).GetProperty( "Version" ).GetValue( null )?.ToString();
+         Log.Info( "{0}/{1}", Path.GetFileNameWithoutExtension( game.CodeBase ), ver );
+         GameVersion = Version.Parse( ver );
       } catch ( Exception ex ) { Log?.Error( ex ); } }
 
       #region Scanning
