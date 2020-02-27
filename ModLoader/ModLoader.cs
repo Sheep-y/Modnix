@@ -111,23 +111,7 @@ namespace Sheepy.Modnix {
          }
       } catch ( Exception ex ) { Log?.Error( ex ); } }
 
-      public static void LoadMods ( string phase ) { try {
-         Log.Info( "Calling {0} mods", phase );
-         foreach ( var mod in EnabledMods ) {
-            if ( mod.Metadata.Dlls == null ) continue;
-            foreach ( var dll in mod.Metadata.Dlls ) {
-               if ( dll.Methods == null ) continue;
-               if ( ! dll.Methods.TryGetValue( phase, out var entries ) ) continue;
-               var lib = LoadDll( dll.Path );
-               if ( lib == null ) continue;
-               foreach ( var type in entries )
-                  CallInit( mod, lib, type, phase );
-            }
-         }
-         Log.Flush();
-      } catch ( Exception ex ) { Log.Error( ex ); } }
-
-      #region Parsing
+      #region Scanning
       public static void BuildModList () { try { lock ( AllMods ) {
          AllMods.Clear();
          EnabledMods.Clear();
@@ -349,6 +333,22 @@ namespace Sheepy.Modnix {
       #endregion
 
       #region Loading
+      public static void LoadMods ( string phase ) { try {
+         Log.Info( "Calling {0} mods", phase );
+         foreach ( var mod in EnabledMods ) {
+            if ( mod.Metadata.Dlls == null ) continue;
+            foreach ( var dll in mod.Metadata.Dlls ) {
+               if ( dll.Methods == null ) continue;
+               if ( ! dll.Methods.TryGetValue( phase, out var entries ) ) continue;
+               var lib = LoadDll( dll.Path );
+               if ( lib == null ) continue;
+               foreach ( var type in entries )
+                  CallInit( mod, lib, type, phase );
+            }
+         }
+         Log.Flush();
+      } catch ( Exception ex ) { Log.Error( ex ); } }
+
       public static Assembly LoadDll ( string path ) { try {
          Log.Info( "Loading {0}", path );
          return Assembly.LoadFrom( path );
