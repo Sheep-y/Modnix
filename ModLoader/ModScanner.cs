@@ -222,17 +222,10 @@ namespace Sheepy.Modnix {
       #endregion
 
       #region Resolving
-      private static bool NeedMoreResolve;
-
       private static void ResolveMods () {
-         NeedMoreResolve = true;
-         for ( int i = 0 ; i < 100 && NeedMoreResolve ; i++ ) {
-            NeedMoreResolve = false;
-            EnabledMods.Clear();
-            EnabledMods.AddRange( AllMods.Where( e => ! e.Disabled ) );
-            Log.Info( "Resolving {0} mods, iteration {1}", EnabledMods.Count, i );
-            CheckModRequirements();
-         }
+         EnabledMods.Clear();
+         EnabledMods.AddRange( AllMods.Where( e => ! e.Disabled ) );
+         CheckModRequirements();
       }
 
       internal static Version GetVersionById ( string id ) {
@@ -255,23 +248,29 @@ namespace Sheepy.Modnix {
       }
 
       private static void CheckModRequirements () {
-         foreach ( var mod in EnabledMods.ToArray() ) {
-            var reqs = mod.Metadata.Requires;
-            if ( reqs == null ) continue;
-            foreach ( var req in reqs ) {
-               var ver = GetVersionById( req.Id );
-               var pass = ver != null;
-               if ( pass && req.Min != null && req.Min > ver ) pass = false;
-               if ( pass && req.Max != null && req.Max < ver ) pass = false;
-               if ( ! pass ) {
-                  Log.Info( "Mod [{0}] requirement {1} [{2}-{3}] failed, found {4}", mod.Metadata.Id, req.Id, req.Min, req.Max, ver );
-                  mod.Disabled = true;
-                  mod.AddNotice( SourceLevels.Error, "requires", req.Id, req.Min, req.Max, ver );
-                  EnabledMods.Remove( mod );
-                  NeedMoreResolve = true;
+         int loopIndex = 1;
+         bool NeedAnotherLoop;
+         do {
+            NeedAnotherLoop = false;
+            Log.Info( "Resolving {0} mods, loop {1}", EnabledMods.Count, loopIndex );
+            foreach ( var mod in EnabledMods.ToArray() ) {
+               var reqs = mod.Metadata.Requires;
+               if ( reqs == null ) continue;
+               foreach ( var req in reqs ) {
+                  var ver = GetVersionById( req.Id );
+                  var pass = ver != null;
+                  if ( pass && req.Min != null && req.Min > ver ) pass = false;
+                  if ( pass && req.Max != null && req.Max < ver ) pass = false;
+                  if ( ! pass ) {
+                     Log.Info( "Mod [{0}] requirement {1} [{2}-{3}] failed, found {4}", mod.Metadata.Id, req.Id, req.Min, req.Max, ver );
+                     mod.Disabled = true;
+                     mod.AddNotice( SourceLevels.Error, "requires", req.Id, req.Min, req.Max, ver );
+                     EnabledMods.Remove( mod );
+                     NeedAnotherLoop = true;
+                  }
                }
             }
-         }
+         } while ( NeedAnotherLoop && loopIndex++ <= 20 );
       }
       #endregion
    }
