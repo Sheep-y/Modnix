@@ -40,7 +40,7 @@ namespace Sheepy.Modnix {
       public string[] Langs;
       public TextSet  Description;
       public TextSet  Author;
-      public TextSet  Url;
+      public TextSet  Urls;
       public TextSet  Contact;
       public TextSet  Copyright;
 
@@ -87,10 +87,11 @@ namespace Sheepy.Modnix {
       public ModMeta Normalise () { lock ( this ) {
          Id = NormString( Id )?.ToLowerInvariant();
          NormTextSet( ref Name );
+         if ( Name == null ) Name = new TextSet{ Default = Id };
          NormStringArray( ref Langs );
          NormTextSet( ref Description );
          NormTextSet( ref Author );
-         NormTextSet( ref Url );
+         NormTextSet( ref Urls );
          NormTextSet( ref Contact );
          NormTextSet( ref Copyright );
          NormAppVer( ref Requires );

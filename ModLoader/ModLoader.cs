@@ -27,10 +27,11 @@ namespace Sheepy.Modnix {
       private const BindingFlags INIT_METHOD_FLAGS = Public | Static | Instance;
       private static readonly List<string> IGNORE_FILE_NAMES = new List<string> {
          "0harmony",
-         "phoenixpointmodloader",
-         "ppmodloader",
+         "mod_info",
          "modnixloader",
          "mono.cecil",
+         "phoenixpointmodloader",
+         "ppmodloader",
       };
       private readonly static Version PPML_COMPAT = new Version( 0, 1 );
 
@@ -82,7 +83,7 @@ namespace Sheepy.Modnix {
             SetLog( new FileLogger( Path.Combine( ModDirectory, Assembly.GetExecutingAssembly().GetName().Name + ".log" ) ){ TimeFormat = "HH:mm:ss.ffff " }, true );
             LogGameVersion();
          }
-         string corlib = new Uri( typeof( string ).Assembly.CodeBase ).LocalPath;
+         var corlib = new Uri( typeof( string ).Assembly.CodeBase ).LocalPath;
          Log.Verbo( ".Net/{0}; mscorlib/{1} {2}", Environment.Version, FileVersionInfo.GetVersionInfo( corlib ).FileVersion, corlib );
       } } catch ( Exception ex ) { Log?.Error( ex ); } }
 
@@ -160,7 +161,7 @@ namespace Sheepy.Modnix {
          container = DropFromName.Replace( container, "" ).ToLowerInvariant();
          subject = DropFromName.Replace( subject, "" ).ToLowerInvariant();
          if ( container.Length < 3 || subject.Length < 3 ) return false;
-         int len = Math.Max( 3, (int) Math.Round( Math.Min( container.Length, subject.Length ) * 2.0 / 3.0 ) );
+         var len = Math.Max( 3, (int) Math.Round( Math.Min( container.Length, subject.Length ) * 2.0 / 3.0 ) );
          return container.Substring( 0, len ) == subject.Substring( 0, len );
       }
 
@@ -171,18 +172,18 @@ namespace Sheepy.Modnix {
             var info = FindEmbeddedModInfo( file );
             if ( info != null ) {
                Log.Verbo( "Parsing embedded mod_info" );
-               meta.ImportFrom( ParseInfoJs( info )?.EraseModsAndDlls() );
+               meta.ImportFrom( ParseInfoJs( info, meta.Id )?.EraseModsAndDlls() );
             }
          } else {
             Log.Verbo( $"Parsing as mod_info: {file}" );
-            meta = ParseInfoJs( File.ReadAllText( file, Encoding.UTF8 ).Trim() );
+            var default_id = Path.GetFileNameWithoutExtension( file );
+            if ( default_id.ToLowerInvariant() == "mod_info" ) default_id = container;
+            meta = ParseInfoJs( File.ReadAllText( file, Encoding.UTF8 ).Trim(), default_id );
             if ( ! meta.HasContent ) {
-               var dlls = Directory.EnumerateFiles( Path.GetDirectoryName( file ), "*.dll" );
-               if ( dlls.Count() > 1 ) dlls = dlls.Where( e => NameMatch( container, Path.GetFileNameWithoutExtension( e ) ) ).ToArray();
-               if ( dlls.Count() == 1 ) {
-                  var autodll = dlls.First();
-                  Log.Verbo( "Dll not specified; automatically using {0}", autodll );
-                  meta.Dlls = new DllMeta[] { new DllMeta{ Path = autodll, Methods = ParseEntryPoints( autodll ) } };
+               foreach ( var dll in Directory.EnumerateFiles( Path.GetDirectoryName( file ), "*.dll" ) ) {
+                  if ( ! NameMatch( container, Path.GetFileNameWithoutExtension( dll ) ) ) continue;
+                  Log.Verbo( "Dll not specified; auto-parsing {0}", dll );
+                  meta.Dlls = new DllMeta[] { new DllMeta{ Path = dll, Methods = ParseEntryPoints( dll ) } };
                }
             }
          }
@@ -195,20 +196,25 @@ namespace Sheepy.Modnix {
          return new ModEntry{ Path = file, Metadata = meta };
       } catch ( Exception ex ) { Log.Warn( ex ); return null; } }
 
-      private static ModMeta ParseInfoJs ( string js ) { try {
+      private static ModMeta ParseInfoJs ( string js, string default_id ) { try {
          js = js?.Trim();
          if ( js == null || js.Length <= 2 ) return null;
          // Remove ( ... ) to make parsable json
          if ( js[0] == '(' && js[js.Length-1] == ')' )
             js = js.Substring( 1, js.Length - 2 ).Trim();
-         return ModMetaJson.ParseMod( js ).Normalise();
+         var meta = ModMetaJson.ParseMod( js ).Normalise();
+         if ( meta.Id == null ) {
+            meta.Id = default_id;
+            meta.Normalise(); // Fill in Name if null
+         }
+         return meta;
       } catch ( Exception ex ) { Log.Warn( ex ); return null; } }
 
       private static ModMeta ParseDllInfo ( string file ) { try {
          Log.Verbo( $"Parsing as dll: {file}" );
          var info = FileVersionInfo.GetVersionInfo( file );
          var meta = new ModMeta{
-            Id = Path.GetFileNameWithoutExtension( file ).ToLowerInvariant().Trim(),
+            Id = Path.GetFileNameWithoutExtension( file ).Trim(),
             Name = new TextSet{ Default = info.FileDescription.Trim() },
             Version = Version.Parse( info.FileVersion ),
             Description = new TextSet{ Default = info.Comments.Trim() },
@@ -244,14 +250,14 @@ namespace Sheepy.Modnix {
                   string name = method.Name;
                   if ( Array.IndexOf( PHASES, name ) < 0 ) continue;
                   if ( name == "Initialize" && ! type.Interfaces.Any( e => e.InterfaceType.FullName == "PhoenixPointModLoader.IPhoenixPointMod" ) ) {
-                     Log.Warn( "Ignoring {0}.Initialize because not IPhoenixPointMod", type.FullName );
+                     Log.Verbo( "Ignoring {0}.Initialize because not IPhoenixPointMod", type.FullName );
                      continue;
                   }
                   if ( result == null ) result = new DllEntryMeta();
                   if ( ! result.TryGetValue( name, out var list ) )
                      result[ name ] = list = new HashSet<string>();
                   if ( list.Contains( type.FullName ) ) {
-                     Log.Warn( "Found overloaded {0}.{1}, removing all.", type.FullName, name );
+                     Log.Warn( "Removing all overloaded {0}.{1}", type.FullName, name );
                      list.Remove( type.FullName );
                      goto NextType;
                   } else {
@@ -268,8 +274,10 @@ namespace Sheepy.Modnix {
                result.Remove( "Initialize" );
             if ( result.Count > 1 )
                result.Remove( "Init" );
-            else if ( result.Count <= 0 )
+            else if ( result.Count <= 0 ) {
+               Log.Warn( "Mod initialisers not found in {0}", file );
                return null;
+            }
          }
          return result;
       }
@@ -277,9 +285,9 @@ namespace Sheepy.Modnix {
       private static ModMeta ValidateMod ( ModMeta meta ) {
          if ( meta == null ) return null;
          switch ( meta.Id ) {
-            case "modnix" : case "":
+            case "modnix" :
             case "phoenixpoint" : case "phoenix point" :
-            case "ppml" : case "phoenixpointmodloader" : case "phoenix point mod loader" :
+            case "ppml" : case "ppml+" : case "phoenixpointmodloader" : case "phoenix point mod loader" :
             case "non-modnix" : case "nonmodnix" :
                Log.Warn( "{0} is a reserved mod id.", meta.Id );
                return null;
@@ -311,14 +319,15 @@ namespace Sheepy.Modnix {
                return LoaderVersion;
             case "phoenixpoint" : case "phoenix point" :
                return GameVersion;
-            case "ppml" : case "phoenixpointmodloader" : case "phoenix point mod loader" :
+            case "ppml" : case "ppml+" : case "phoenixpointmodloader" : case "phoenix point mod loader" :
                return PPML_COMPAT;
             case "non-modnix" : case "nonmodnix" :
                return null;
+            default:
+               var target = EnabledMods.Find( e => e.Metadata.Id.ToLowerInvariant() == id );
+               if ( target != null ) return target.Metadata.Version ?? new Version( 0, 0 );
+               return null;
          }
-         var target = EnabledMods.Find( e => e.Metadata.Id.ToLowerInvariant() == id );
-         if ( target != null ) return target.Metadata.Version ?? new Version( 0, 0 );
-         return null;
       }
 
       private static void CheckModRequirements () {
@@ -326,7 +335,7 @@ namespace Sheepy.Modnix {
             var reqs = mod.Metadata.Requires;
             if ( reqs == null ) continue;
             foreach ( var req in reqs ) {
-               Version ver = GetVersionById( req.Id );
+               var ver = GetVersionById( req.Id );
                var pass = ver != null;
                if ( pass && req.Min != null && req.Min > ver ) pass = false;
                if ( pass && req.Max != null && req.Max < ver ) pass = false;
