@@ -283,11 +283,14 @@ namespace Sheepy.Modnix {
             }
          }
          // Remove Init from Modnix DLLs, so that they will not be initiated twice
-         if ( result != null )
+         if ( result != null ) {
+            if ( result.Count > 1 )
+               result.Remove( "Initialize" );
             if ( result.Count > 1 )
                result.Remove( "Init" );
             else if ( result.Count <= 0 )
                return null;
+         }
          return result;
       }
       #endregion
