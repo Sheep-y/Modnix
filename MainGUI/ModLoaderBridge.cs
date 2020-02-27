@@ -35,6 +35,10 @@ namespace Sheepy.Modnix.MainGUI {
       public override string Name => Mod?.Metadata?.Name?.ToString();
       public override string Version => Mod?.Metadata?.Version?.ToString();
       public override string Author => Mod?.Metadata?.Author?.ToString();
+      public override string Status { get {
+         if ( Mod == null ) return "Null";
+         return Mod.Disabled ? "Disabled" : "Enabled";
+      }
 
       public override void BuildDesc ( FlowDocument doc ) {
          new TextRange( doc.ContentStart, doc.ContentEnd ).Text =

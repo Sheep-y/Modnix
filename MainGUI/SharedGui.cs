@@ -14,6 +14,7 @@ namespace Sheepy.Modnix.MainGUI {
       public abstract string Name { get; }
       public abstract string Version { get; }
       public abstract string Author { get; }
+      public abstract string Status { get; }
       public abstract void BuildDesc ( FlowDocument doc );
       public abstract string Path { get; }
       public abstract string Type { get; }
