@@ -135,7 +135,7 @@ namespace Sheepy.Modnix {
 
       #region Loading Mods
       public static void LoadMods ( string phase ) { try {
-         Log.Info( "Calling {0} mods", phase );
+         Log.Info( "PHASE {0}", phase );
          foreach ( var mod in ModScanner.EnabledMods ) {
             if ( mod.Metadata.Dlls == null ) continue;
             foreach ( var dll in mod.Metadata.Dlls ) {

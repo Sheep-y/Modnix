@@ -7,7 +7,8 @@ Modnix is a mod loader for [Phoenix Point](https://phoenixpoint.info/), [Snapsho
 Featuring a GUI, supporting advanced mods,
 it is designed to succeed (replace) [Phoenix Point](https://github.com/RealityMachina/PhoenixPointModInjector/#readme) [Mod Loader](https://github.com/Ijwu/PhoenixPointModLoader/)s.
 
-Modnix is under development, but mature enough to be tested by developers and power users.
+Modnix is open source and under development,
+but should be mature enough to be tested by developers and power users.
 
 ## User Features
 
@@ -25,7 +26,10 @@ and [Troubleshooting](https://github.com/Sheep-y/Modnix/wiki/Troubleshooting-Mod
 2. Each mod can have their own folder, not necessary at the root.
 3. Display mod information to users, such as author and links, with embedded or standalone info file.
 4. Declarative mod dependencies and conflicts.  Opt-in pre-splash loading.
-5. Unified background logger. Querier for game, loader, and mod versions.
+5. Unified background logger. Query function for game version, loader version, and mod versions.
+
+See my [Skip Intro](https://github.com/Sheep-y/PhoenixPt-Mods) mod for an example of
+dual PPML/Modnix support and embedded mod info.
 
 See the [Wiki](https://github.com/Sheep-y/Modnix/wiki#wiki-wrapper) for mod specs.
 
