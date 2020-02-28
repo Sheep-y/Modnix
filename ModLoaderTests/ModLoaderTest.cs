@@ -19,7 +19,7 @@ namespace Sheepy.Modnix.Tests {
       }
 
       private static void ResolveMods () => 
-         typeof( ModLoader ).GetMethod( "ResolveMods", NonPublic | Static ).Invoke( null, new object[0] );
+         typeof( ModScanner ).GetMethod( "ResolveMods", NonPublic | Static ).Invoke( null, new object[0] );
 
       [TestMethod()] public void DisabledModTest () {
          ModScanner.AllMods.Add( new ModEntry { Metadata = new ModMeta{ Id = "A" } } );
@@ -30,6 +30,27 @@ namespace Sheepy.Modnix.Tests {
       }
 
       private static Version Ver ( string val ) => Version.Parse( val );
+
+      [TestMethod()] public void DuplicateTest () {
+         var AlphaMod = new ModEntry{ Metadata = new ModMeta{ Id = "dup", Version = Ver( "1.2" ) } };
+         var BetaMod = new ModEntry{ Metadata = new ModMeta{ Id = "dup", Version = Ver( "2.3" ) } };
+         var GoldMod = new ModEntry{ Metadata = new ModMeta{ Id = "dup", Version = Ver( "4.5" ) } };
+         var SilverMod = new ModEntry{ Metadata = new ModMeta{ Id = "dup", Version = Ver( "3.4" ) } };
+
+         var AllMods = ModScanner.AllMods;
+         AllMods.Add( AlphaMod );
+         AllMods.Add( BetaMod );
+         AllMods.Add( GoldMod );
+         AllMods.Add( SilverMod );
+         ResolveMods();
+
+         Assert.AreEqual( 4, AllMods.Count );
+         Assert.IsTrue( AlphaMod.Disabled, "Alpha" );
+         Assert.IsTrue( BetaMod.Disabled, "Beta" );
+         Assert.IsTrue( SilverMod.Disabled, "Silver" );
+         Assert.IsFalse( GoldMod.Disabled, "Gold" );
+         Assert.AreEqual( 1, ModScanner.EnabledMods.Count );
+      }
 
       [TestMethod()] public void RequirementTest () {
          var ModnixMin = new ModEntry { Metadata = new ModMeta{ Id = "ModnixMin", Requires = new AppVer[]{ new AppVer{ Id = "Modnix", Min = Ver( "99.99" ) } } }.Normalise() };
@@ -63,18 +84,18 @@ namespace Sheepy.Modnix.Tests {
          ResolveMods();
 
          Assert.AreEqual( 12, AllMods.Count );
-         Assert.IsNotNull( ModnixMin.Notices, "ModnixMin" );
+         Assert.IsTrue( ModnixMin.Disabled, "ModnixMin" );
          Assert.IsFalse( ModnixOk.Disabled, "ModnixOk" );
-         Assert.IsNotNull( ModnixMax.Notices, "ModnixMax" );
-         Assert.IsNotNull( PPMin.Notices, "PPMin" );
+         Assert.IsTrue( ModnixMax.Disabled, "ModnixMax" );
+         Assert.IsTrue( PPMin.Disabled, "PPMin" );
          Assert.IsFalse( PPOk.Disabled, "PPOk" );
-         Assert.IsNotNull( PPMax.Notices, "PPMax" );
-         Assert.IsNotNull( PPMLMin.Notices, "PPMLMin" );
+         Assert.IsTrue( PPMax.Disabled, "PPMax" );
+         Assert.IsTrue( PPMLMin.Disabled, "PPMLMin" );
          Assert.IsFalse( PPMLOk.Disabled, "PPMLOk" );
-         Assert.IsNotNull( PPMLMax.Notices, "PPMLMax" );
-         Assert.IsNotNull( NonModnix.Notices, "NonModnix" );
+         Assert.IsTrue( PPMLMax.Disabled, "PPMLMax" );
+         Assert.IsTrue( NonModnix.Disabled, "NonModnix" );
          Assert.IsFalse( Yes.Disabled, "Yes" );
-         Assert.IsNotNull( No.Notices, "No" );
+         Assert.IsTrue( No.Disabled, "No" );
          Assert.AreEqual( 4, ModScanner.EnabledMods.Count );
       }
    }

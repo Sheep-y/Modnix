@@ -264,10 +264,14 @@ namespace Sheepy.Modnix {
          return best;
       }
 
-      private static bool TestAndSwap < T > ( T mine, T their, ModEntry me, ref ModEntry best ) where T : IComparable {
-         var compare = mine.CompareTo( their );
-         if ( compare == 0 ) return false; // We are same
-         if ( compare < 0 ) return true; // We are smaller
+      private static bool TestAndSwap < T > ( T our, T their, ModEntry me, ref ModEntry best ) where T : IComparable {
+         if ( our == null && me == null ) return false;
+         if ( our == null ) return true; // We are null while they are not
+         if ( their != null ) {
+            var compare = our.CompareTo( their );
+            if ( compare == 0 ) return false; // We are same
+            if ( compare < 0 ) return true; // We are smaller
+         } // Either we are bigger, or we are non-null while they are
          best = me;
          return true;
       }
