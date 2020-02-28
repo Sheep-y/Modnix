@@ -1,12 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Sheepy.Logging;
-using Sheepy.Modnix;
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading;
 
 namespace Sheepy.Modnix.Tests {
 
@@ -103,6 +97,11 @@ namespace Sheepy.Modnix.Tests {
          Assert.IsNull( meta.Requires, "Requires" );
          Assert.IsNull( meta.Conflicts, "Conflicts" );
          Assert.IsNull( meta.Dlls, "Dlls" );
+
+         meta.Id = "Abc";
+         meta.Normalise();
+         Assert.AreEqual( "Abc", meta.Id, "Id 2" );
+         Assert.AreEqual( "Abc", meta.Name.ToString(), "Name 2" );
       }
 
       [TestMethod()] public void ModMetaTest () {

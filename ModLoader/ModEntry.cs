@@ -88,7 +88,8 @@ namespace Sheepy.Modnix {
       public ModMeta Normalise () { lock ( this ) {
          Id = NormString( Id );
          NormTextSet( ref Name );
-         if ( Name == null ) Name = new TextSet{ Default = Id };
+         if ( Name == null && Id != null )
+            Name = new TextSet{ Default = Id };
          NormStringArray( ref Langs );
          NormTextSet( ref Description );
          NormTextSet( ref Author );
