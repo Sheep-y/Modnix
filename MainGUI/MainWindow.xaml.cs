@@ -22,6 +22,10 @@ namespace Sheepy.Modnix.MainGUI {
 
       public MainWindow () { try {
          InitializeComponent();
+         Log( "Disclaimer:\nModnix icon made from Phoenix Point's Technicial icon\n" +
+              "Book, Folder, Offline, and Reload icons from https://icons8.com/ under its Linkware License\n" +
+              "Info and Red Cross icons from https://en.wikipedia.org/ under Public Domain\n" +
+              "Remaining icons belong to relevant sites." );
          RefreshGUI();
       } catch ( Exception ex ) { Console.WriteLine( ex ); } }
 
