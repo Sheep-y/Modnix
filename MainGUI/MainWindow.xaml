@@ -17,7 +17,7 @@
                 </Grid.ColumnDefinitions>
                 <DockPanel Margin="0,0,5,0">
                     <StackPanel DockPanel.Dock="Top" VerticalAlignment="Top">
-                        <RichTextBox x:Name="richAppInfo" Height="50" IsReadOnly="True" BorderBrush="{x:Null}" Margin="0,0,0,5">
+                        <RichTextBox x:Name="richAppInfo" Height="50" IsReadOnly="True" BorderBrush="{x:Null}" Margin="0,0,0,5" IsTabStop="False" TabIndex="100">
                             <FlowDocument>
                                 <Paragraph>
                                     <Run Text="Modder&#xA;Ver 1.0&#xA;Status: Requires Setup"/>
@@ -32,7 +32,7 @@
                                 <ColumnDefinition Width="5"/>
                                 <ColumnDefinition/>
                             </Grid.ColumnDefinitions>
-                            <Button x:Name="ButtonSetup" Padding="10,5" IsEnabled="False" Click="ButtonSetup_Click">
+                            <Button x:Name="ButtonSetup" Padding="10,5" IsEnabled="False" Click="ButtonSetup_Click" TabIndex="200">
                                 <StackPanel Orientation="Horizontal">
                                     <Image Source="Resources/img/modnix.ico" Width="16" Margin="0,0,5,0"/>
                                     <AccessText x:Name="BtnTxtSetup" Text="Setup"/>
@@ -41,20 +41,20 @@
                             <Button x:Name="ButtonGitHub" Padding="5" Grid.Column="2" Click="ButtonGitHub_Click" Visibility="Hidden">
                                 <AccessText Text="GitHub"/>
                             </Button>
-                            <Button x:Name="ButtonUserGuide" Padding="5" Grid.Column="2" Click="ButtonUserGuide_Click">
+                            <Button x:Name="ButtonUserGuide" Padding="5" Grid.Column="2" Click="ButtonUserGuide_Click" TabIndex="200">
                                 <StackPanel Orientation="Horizontal">
                                     <Image Source="Resources/img/info.png" Width="16" Margin="0,0,5,0"/>
                                     <AccessText Text="_Help"/>
                                 </StackPanel>
                             </Button>
-                            <Button x:Name="ButtonWiki" Padding="5" Grid.Column="4" Click="ButtonWiki_Click">
+                            <Button x:Name="ButtonWiki" Padding="5" Grid.Column="4" Click="ButtonWiki_Click" TabIndex="200">
                                 <StackPanel Orientation="Horizontal">
                                     <Image Source="Resources/img/fandom.png" Width="16" Margin="0,0,5,0"/>
                                     <AccessText Text="Game Wi_ki"/>
                                 </StackPanel>
                             </Button>
                         </Grid>
-                        <RichTextBox x:Name="richGameInfo" Height="50" IsReadOnly="True" BorderBrush="{x:Null}" Margin="0,10,0,5">
+                        <RichTextBox x:Name="richGameInfo" Height="50" IsReadOnly="True" BorderBrush="{x:Null}" Margin="0,10,0,5" IsTabStop="False" TabIndex="300">
                             <FlowDocument>
                                 <Paragraph>
                                     <Run Text="Phoenix Point&#xA;Ver 1.0"/>
@@ -76,55 +76,55 @@
                                 <ColumnDefinition Width="5"/>
                                 <ColumnDefinition/>
                             </Grid.ColumnDefinitions>
-                            <Button x:Name="ButtonRunOnline" Padding="10,5" Click="ButtonOnline_Click" IsEnabled="False">
+                            <Button x:Name="ButtonRunOnline" Padding="10,5" Click="ButtonOnline_Click" IsEnabled="False" TabIndex="400">
                                 <StackPanel Orientation="Horizontal">
                                     <Image Source="Resources/img/phoenix_point.png" Width="16" Margin="0,0,5,0"/>
                                     <AccessText Text="_Launch"/>
                                 </StackPanel>
                             </Button>
-                            <Button x:Name="ButtonRunOffline" Grid.Column="2" Padding="10,5" Click="ButtonOffline_Click" IsEnabled="False">
+                            <Button x:Name="ButtonRunOffline" Grid.Column="2" Padding="10,5" Click="ButtonOffline_Click" IsEnabled="False" TabIndex="400">
                                 <StackPanel Orientation="Horizontal">
                                     <Image Source="Resources/img/offline.png" Width="16" Margin="0,0,5,0"/>
                                     <AccessText Text="Run _Offine"/>
                                 </StackPanel>
                             </Button>
-                            <Button x:Name="ButtonManual" Grid.Column="4" Padding="10,5" Click="ButtonManual_Click">
+                            <Button x:Name="ButtonManual" Grid.Column="4" Padding="10,5" Click="ButtonManual_Click" TabIndex="400">
                                 <StackPanel Orientation="Horizontal">
                                     <Image Source="Resources/img/book.png" Width="16" Margin="0,0,5,0"/>
                                     <AccessText Text="_Manual"/>
                                 </StackPanel>
                             </Button>
-                            <Button x:Name="ButtonWebsite" Grid.Row="2" Padding="10,5" Click="ButtonWebsite_Click">
+                            <Button x:Name="ButtonWebsite" Grid.Row="2" Padding="10,5" Click="ButtonWebsite_Click" TabIndex="400">
                                 <StackPanel Orientation="Horizontal">
                                     <Image Source="Resources/img/www.png" Width="16" Margin="0,0,5,0"/>
                                     <AccessText Text="_Website"/>
                                 </StackPanel>
                             </Button>
-                            <Button x:Name="ButtonForum" Grid.Column="2" Grid.Row="2" Padding="10,5" Click="ButtonForum_Click">
+                            <Button x:Name="ButtonForum" Grid.Column="2" Grid.Row="2" Padding="10,5" Click="ButtonForum_Click" TabIndex="400">
                                 <StackPanel Orientation="Horizontal">
                                     <Image Source="Resources/img/snapshot.png" Width="16" Margin="0,0,5,0"/>
                                     <AccessText Text="_Forum"/>
                                 </StackPanel>
                             </Button>
-                            <Button x:Name="ButtonReddit" Grid.Column="4" Grid.Row="2" Padding="10,5" Click="ButtonReddit_Click">
+                            <Button x:Name="ButtonReddit" Grid.Column="4" Grid.Row="2" Padding="10,5" Click="ButtonReddit_Click" TabIndex="400">
                                 <StackPanel Orientation="Horizontal">
                                     <Image Source="Resources/img/reddit.png" Width="16" Margin="0,0,5,0"/>
                                     <AccessText Text="_Reddit"/>
                                 </StackPanel>
                             </Button>
-                            <Button x:Name="ButtonTwitter" Grid.Row="4" Padding="10,5" Click="ButtonTwitter_Click">
+                            <Button x:Name="ButtonTwitter" Grid.Row="4" Padding="10,5" Click="ButtonTwitter_Click" TabIndex="400">
                                 <StackPanel Orientation="Horizontal">
                                     <Image Source="Resources/img/twitter.png" Width="16" Margin="0,0,5,0"/>
                                     <AccessText Text="_Twitter"/>
                                 </StackPanel>
                             </Button>
-                            <Button x:Name="ButtonCanny" Grid.Column="2" Grid.Row="4" Padding="10,5" Click="ButtonCanny_Click">
+                            <Button x:Name="ButtonCanny" Grid.Column="2" Grid.Row="4" Padding="10,5" Click="ButtonCanny_Click" TabIndex="400">
                                 <StackPanel Orientation="Horizontal">
                                     <Image Source="Resources/img/canny.png" Width="16" Margin="0,0,5,0"/>
                                     <AccessText Text="_Canny"/>
                                 </StackPanel>
                             </Button>
-                            <Button x:Name="ButtonDiscord" Grid.Column="4" Grid.Row="4" Padding="10,5" Click="ButtonDiscord_Click">
+                            <Button x:Name="ButtonDiscord" Grid.Column="4" Grid.Row="4" Padding="10,5" Click="ButtonDiscord_Click" TabIndex="400">
                                 <StackPanel Orientation="Horizontal">
                                     <Image Source="Resources/img/discord.png" Width="16" Margin="0,0,5,0"/>
                                     <AccessText Text="_Discord"/>
@@ -138,20 +138,20 @@
                             <ColumnDefinition Width="10"/>
                             <ColumnDefinition/>
                         </Grid.ColumnDefinitions>
-                        <Button x:Name="ButtonModOpenModDir" Padding="5" IsEnabled="False" Click="ButtonModOpenModDir_Click">
+                        <Button x:Name="ButtonModOpenModDir" Padding="5" IsEnabled="False" Click="ButtonModOpenModDir_Click" TabIndex="600">
                             <StackPanel Orientation="Horizontal">
                                 <Image Source="Resources/img/folder.png" Width="16" Margin="0,0,5,0"/>
                                 <AccessText Text="Explore"/>
                             </StackPanel>
                         </Button>
-                        <Button x:Name="ButtonModDelete" Grid.Column="2" Padding="5" IsEnabled="False" Click="ButtonModDelete_Click">
+                        <Button x:Name="ButtonModDelete" Grid.Column="2" Padding="5" IsEnabled="False" Click="ButtonModDelete_Click" TabIndex="600">
                             <StackPanel Orientation="Horizontal">
                                 <Image Source="Resources/img/cross.png" Width="16" Margin="0,0,5,0"/>
                                 <AccessText Text="Delete"/>
                             </StackPanel>
                         </Button>
                     </Grid>
-                    <RichTextBox x:Name="richModInfo" IsReadOnly="True" VerticalScrollBarVisibility="Auto" BorderBrush="{x:Null}" Margin="0,10,0,5">
+                    <RichTextBox x:Name="richModInfo" IsReadOnly="True" VerticalScrollBarVisibility="Auto" BorderBrush="{x:Null}" Margin="0,10,0,5" TabIndex="500">
                         <RichTextBox.Background>
                             <ImageBrush x:Name="BkgdModeInfo" ImageSource="Resources/img/modder.png" Stretch="Uniform" Opacity="0.5" >
                                 <ImageBrush.RelativeTransform>
@@ -167,16 +167,16 @@
                         </FlowDocument>
                     </RichTextBox>
                 </DockPanel>
-                <GridSplitter x:Name="gridSplitter" Grid.Column="1" HorizontalAlignment="Center" Width="5" Margin="0"/>
+                <GridSplitter x:Name="gridSplitter" Grid.Column="1" HorizontalAlignment="Center" Width="5" Margin="0" IsTabStop="False"/>
                 <DockPanel Grid.Column="2" Margin="5,0,0,0">
                     <DockPanel DockPanel.Dock="Top" Margin="0">
-                        <Button x:Name="ButtonAddMod" HorizontalAlignment="Right" DockPanel.Dock="Left" Padding="10,5" IsEnabled="False" Click="ButtonAddMod_Click" Visibility="Collapsed">
+                        <Button x:Name="ButtonAddMod" HorizontalAlignment="Right" DockPanel.Dock="Left" Padding="10,5" IsEnabled="False" Click="ButtonAddMod_Click" Visibility="Collapsed" TabIndex="700">
                             <AccessText Text="_Add Mod"/>
                         </Button>
-                        <Button x:Name="ButtonRefreshMod" HorizontalAlignment="Right" DockPanel.Dock="Right" Padding="10,5" IsEnabled="False" Click="ButtonAddMod_Click" ToolTip="Refresh">
+                        <Button x:Name="ButtonRefreshMod" HorizontalAlignment="Right" DockPanel.Dock="Right" Padding="10,5" IsEnabled="False" Click="ButtonAddMod_Click" ToolTip="Refresh" TabIndex="800">
                             <Image Source="Resources/img/reload.png" Width="16" />
                         </Button>
-                        <Label x:Name="LabelModList" Grid.Column="2" VerticalAlignment="Center" HorizontalContentAlignment="Center"/>
+                        <Label x:Name="LabelModList" Grid.Column="2" VerticalAlignment="Center" HorizontalContentAlignment="Center" />
                     </DockPanel>
                     <Grid DockPanel.Dock="Bottom">
                         <Grid.ColumnDefinitions>
@@ -184,20 +184,20 @@
                             <ColumnDefinition Width="10"/>
                             <ColumnDefinition/>
                         </Grid.ColumnDefinitions>
-                        <Button x:Name="ButtonModDir" Padding="10,5" IsEnabled="False" Click="ButtonModDir_Click">
+                        <Button x:Name="ButtonModDir" Padding="10,5" IsEnabled="False" Click="ButtonModDir_Click" TabIndex="1000">
                             <StackPanel Orientation="Horizontal">
                                 <Image Source="Resources/img/folder.png" Width="16" Margin="0,0,5,0"/>
                                 <AccessText Text="Mods Folder"/>
                             </StackPanel>
                         </Button>
-                        <Button x:Name="ButtonNexus" Grid.Column="2" Padding="10,5" Click="ButtonNexus_Click">
+                        <Button x:Name="ButtonNexus" Grid.Column="2" Padding="10,5" Click="ButtonNexus_Click" TabIndex="1000">
                             <StackPanel Orientation="Horizontal">
                                 <Image Source="Resources/img/nexusmods.png" Width="16" Margin="0,0,5,0"/>
                                 <AccessText Text="_Nexus Mods"/>
                             </StackPanel>
                         </Button>
                     </Grid>
-                    <DataGrid x:Name="GridModList" VerticalScrollBarVisibility="Visible" AutoGenerateColumns="False" IsReadOnly="True" Margin="0,5" CurrentCellChanged="GridModList_CurrentCellChanged" SelectionMode="Single">
+                    <DataGrid x:Name="GridModList" VerticalScrollBarVisibility="Visible" AutoGenerateColumns="False" IsReadOnly="True" Margin="0,5" CurrentCellChanged="GridModList_CurrentCellChanged" SelectionMode="Single" >
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Mod" Binding="{Binding Name}" ClipboardContentBinding="{x:Null}"/>
                             <DataGridTextColumn Header="Version" Binding="{Binding Version}" ClipboardContentBinding="{x:Null}"/>
@@ -226,8 +226,8 @@
         <TabItem x:Name="TabLog" Header="Log">
             <DockPanel Margin="10">
                 <DockPanel DockPanel.Dock="Top">
-                    <Button x:Name="ButtonLogClear" Content="Clear" Padding="5" Click="ButtonLogClear_Click"/>
-                    <Button x:Name="ButtonLogSave" Content="Save As..." Padding="5" DockPanel.Dock="Right" Click="ButtonLogSave_Click" IsEnabled="False"/>
+                    <Button x:Name="ButtonLogClear" Content="Clear" Padding="5" Click="ButtonLogClear_Click" TabIndex="2100"/>
+                    <Button x:Name="ButtonLogSave" Content="Save As..." Padding="5" DockPanel.Dock="Right" Click="ButtonLogSave_Click" IsEnabled="False" TabIndex="2200"/>
                     <Label x:Name="LabelLogTitle" Content="Dialogistic Log" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                 </DockPanel>
                 <Grid DockPanel.Dock="Bottom" Margin="0">
@@ -236,10 +236,10 @@
                         <ColumnDefinition Width="10"/>
                         <ColumnDefinition/>
                     </Grid.ColumnDefinitions>
-                    <Button x:Name="ButtonLoaderLog" Content="Loader Log" Padding="5" Click="ButtonLoaderLog_Click"/>
-                    <Button x:Name="ButtonCheckUpdate" Content="Check Update" Padding="5" Grid.Column="2" Click="ButtonCheckUpdate_Click"/>
+                    <Button x:Name="ButtonLoaderLog" Content="Loader Log" Padding="5" Click="ButtonLoaderLog_Click" TabIndex="2400"/>
+                    <Button x:Name="ButtonCheckUpdate" Content="Check Update" Padding="5" Grid.Column="2" Click="ButtonCheckUpdate_Click" TabIndex="2400"/>
                 </Grid>
-                <TextBox x:Name="TextLog" Text="" VerticalScrollBarVisibility="Visible" DockPanel.Dock="Bottom" HorizontalScrollBarVisibility="Visible" IsReadOnly="True" IsReadOnlyCaretVisible="True" Margin="0,5"/>
+                <TextBox x:Name="TextLog" Text="" VerticalScrollBarVisibility="Visible" DockPanel.Dock="Bottom" HorizontalScrollBarVisibility="Visible" IsReadOnly="True" IsReadOnlyCaretVisible="True" Margin="0,5" TabIndex="2300"/>
             </DockPanel>
         </TabItem>
     </TabControl>
