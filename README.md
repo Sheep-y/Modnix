@@ -4,20 +4,20 @@
 
 Modnix is a mod loader for [Phoenix Point](https://phoenixpoint.info/), [Snapshot Games](http://www.snapshotgames.com/) 2019.
 
-Featuring a GUI with support for advanced mods,
+Featuring a GUI, supporting advanced mods,
 it is designed to succeed (replace) [Phoenix Point](https://github.com/RealityMachina/PhoenixPointModInjector/#readme) [Mod Loader](https://github.com/Ijwu/PhoenixPointModLoader/)s.
 
-Modnix is under active development, and mature enough to be tested by developers and power users.
-
-See the [Wiki](https://github.com/Sheep-y/Modnix/wiki#wiki-wrapper) for documentation,
-such as [User Guide](https://github.com/Sheep-y/Modnix/wiki/User-Guide#wiki-wrapper)
-and [Troubleshooting](https://github.com/Sheep-y/Modnix/wiki/Troubleshooting-Modnix#wiki-wrapper).
+Modnix is under development, but mature enough to be tested by developers and power users.
 
 ## User Features
 
 1. Easy to use.  Single file installer, GUI to show status, mod list, and mod information.
-2. Advanced mods, such as ''real'' Skip Intro, and can load ''both'' PPML 0.1 and 0.2 mods.
-3. Easy access to mods folder, communities, resources, and of course the game.
+2. Advanced mods, such as *real* Skip Intro, and can load *both* PPML 0.1 and 0.2 mods.
+3. Easy access to mod files, communities, resources, and of course the game.
+
+See the [Wiki](https://github.com/Sheep-y/Modnix/wiki#wiki-wrapper) for documentation,
+such as [User Guide](https://github.com/Sheep-y/Modnix/wiki/User-Guide#wiki-wrapper)
+and [Troubleshooting](https://github.com/Sheep-y/Modnix/wiki/Troubleshooting-Modnix#wiki-wrapper).
 
 ## Modder Features
 
@@ -28,6 +28,8 @@ and [Troubleshooting](https://github.com/Sheep-y/Modnix/wiki/Troubleshooting-Mod
 5. Unified background logger. Querier for game, loader, and mod versions.
 
 See the [Wiki](https://github.com/Sheep-y/Modnix/wiki#wiki-wrapper) for mod specs.
+
+You can try to get support on the #mods channel on [official Discord](https://discordapp.com/invite/phoenixpoint).
 
 ## License
 
