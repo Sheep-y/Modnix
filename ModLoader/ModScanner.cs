@@ -322,7 +322,8 @@ namespace Sheepy.Modnix {
                   if ( pass && req.Min != null && req.Min > ver ) pass = false;
                   if ( pass && req.Max != null && req.Max < ver ) pass = false;
                   if ( ! pass ) {
-                     DisableAndRemoveMod( mod, "requires", "Mod [{0}] requirement {1} [{2}-{3}] failed, found {4}", mod.Metadata.Id, req.Id, req.Min, req.Max, ver );
+                     DisableAndRemoveMod( mod, "requires", "Mod {0} requirement {1} [{2}-{3}] failed, found {4}",
+                        mod.Metadata.Id, req.Id, req.Min, req.Max, ver );
                      NeedAnotherLoop = true;
                   }
                }
@@ -337,22 +338,18 @@ namespace Sheepy.Modnix {
             if ( targets == null ) continue;
             foreach ( var req in targets ) {
                var target = GetModById( req.Id );
-               if ( target == null || target == mod ) continue;
-               /*
-               var pass = ver != null;
-               if ( pass && req.Min != null && req.Min > ver ) pass = false;
-               if ( pass && req.Max != null && req.Max < ver ) pass = false;
-               if ( ! pass ) {
-                  DisableAndRemoveMod( mod, "requires", "Mod [{0}] requirement {1} [{2}-{3}] failed, found {4}", mod.Metadata.Id, req.Id, req.Min, req.Max, ver );
-                  NeedAnotherLoop = true;
-               }
-               */
-               DisableAndRemoveMod( target, "conflict", "Mod {1} is marked as conflicting with {2}", mod, target.Metadata.Id, mod.Metadata.Id );
+               if ( target == null || target == mod || target.Disabled ) continue;
+               var ver = GetVersionFromMod( target );
+               if ( req.Min != null && req.Min > ver ) continue;
+               if ( req.Max != null && req.Max < ver ) continue;
+               DisableAndRemoveMod( target, "conflict", "Mod {1} (v{3}) is marked as conflicting with {2} [{4}-{5}]",
+                  mod, target.Metadata.Id, mod.Metadata.Id, ver, req.Min, req.Max );
             }
          }
       }
 
       private static void DisableAndRemoveMod ( ModEntry mod, string reason, string log, params object[] augs ) {
+         if ( mod.Disabled ) return;
          Log.Info( log, augs );
          mod.Disabled = true;
          mod.AddNotice( SourceLevels.Error, reason, augs );

@@ -94,5 +94,28 @@ namespace Sheepy.Modnix.Tests {
          Assert.IsTrue( No.Disabled, "No" );
          Assert.AreEqual( 4, ModScanner.EnabledMods.Count );
       }
+
+      [TestMethod()] public void ConflictTest () {
+         // A conflicts with B, B conflicts with C, D conflicts with A B D.
+         // A disables B, B is skipped, D disables A and B and skip itself, leaving C and D
+         var A = new ModEntry{ Metadata = new ModMeta{ Id = "A", Version = Ver( "1.2" ), Conflicts = new AppVer[]{ new AppVer{ Id = "B" }, new AppVer{ Id = "D", Min = Ver( "4.5" ) } } } };
+         var B = new ModEntry{ Metadata = new ModMeta{ Id = "B", Version = Ver( "2.3" ), Conflicts = new AppVer[]{ new AppVer{ Id = "C" } } } };
+         var C = new ModEntry{ Metadata = new ModMeta{ Id = "C", Version = Ver( "4.5" ), Conflicts = new AppVer[]{ new AppVer{ Id = "D", Max = Ver( "2.0" ) } } } };
+         var D = new ModEntry{ Metadata = new ModMeta{ Id = "D", Version = Ver( "3.4" ), Conflicts = new AppVer[]{ new AppVer{ Id = "A" }, new AppVer{ Id = "B" },  new AppVer{ Id = "D" } } } };
+
+         var AllMods = ModScanner.AllMods;
+         AllMods.Add( A );
+         AllMods.Add( B );
+         AllMods.Add( C );
+         AllMods.Add( D );
+         ResolveMods();
+
+         Assert.AreEqual( 4, AllMods.Count );
+         Assert.IsTrue( A.Disabled, "A" );
+         Assert.IsTrue( B.Disabled, "B" );
+         Assert.IsFalse( C.Disabled, "C" );
+         Assert.IsFalse( D.Disabled, "D" );
+         Assert.AreEqual( 2, ModScanner.EnabledMods.Count );
+      }
    }
 }
