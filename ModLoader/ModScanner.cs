@@ -29,6 +29,8 @@ namespace Sheepy.Modnix {
       };
       private static Logger Log => ModLoader.Log;
 
+      internal static string NormaliseModId ( string Id ) => Id.Trim().ToLowerInvariant();
+
       #region Scanning
       public static void BuildModList ( ) { try { lock ( AllMods ) {
          AllMods.Clear();
@@ -232,6 +234,7 @@ namespace Sheepy.Modnix {
          EnabledMods.AddRange( AllMods.Where( e => ! e.Disabled ) );
          RemoveDuplicateMods();
          RemoveUnfulfilledMods();
+         RemoveConflictMods();
       }
 
       private static void RemoveDuplicateMods () {
@@ -241,6 +244,7 @@ namespace Sheepy.Modnix {
             var key = mod.Key;
             if ( ! IdList.Contains( key ) ) continue; // Already removed dups
             RemoveDuplicates( EnabledMods.Where( e => e.Key == key ).ToArray() );
+            IdList.Remove( key );
          }
       }
 
@@ -276,9 +280,14 @@ namespace Sheepy.Modnix {
          return true;
       }
 
+      internal static ModEntry GetModById ( string key ) {
+         key = NormaliseModId( key );
+         return EnabledMods.Find( e => e.Key == key && ! e.Disabled );
+      }
+
       internal static Version GetVersionById ( string key ) {
          if ( string.IsNullOrEmpty( key ) ) return ModLoader.LoaderVersion;
-         key = key.Trim().ToLowerInvariant();
+         key = NormaliseModId( key );
          switch ( key ) {
             case "modnix" : case "":
                return ModLoader.LoaderVersion;
@@ -289,10 +298,13 @@ namespace Sheepy.Modnix {
             case "non-modnix" : case "nonmodnix" :
                return null;
             default:
-               var target = EnabledMods.Find( e => e.Key == key );
-               if ( target != null ) return target.Metadata.Version ?? new Version( 0, 0 );
-               return null;
+               return GetVersionFromMod( GetModById( key ) );
          }
+      }
+
+      private static Version GetVersionFromMod ( ModEntry mod ) {
+         if ( mod == null ) return null;
+         return mod.Metadata.Version ?? new Version( 0, 0 );
       }
 
       private static void RemoveUnfulfilledMods () {
@@ -316,6 +328,28 @@ namespace Sheepy.Modnix {
                }
             }
          } while ( NeedAnotherLoop && loopIndex++ <= 20 );
+      }
+
+      private static void RemoveConflictMods () {
+         foreach ( var mod in EnabledMods.ToArray() ) {
+            if ( mod.Disabled ) continue;
+            var targets = mod.Metadata.Conflicts;
+            if ( targets == null ) continue;
+            foreach ( var req in targets ) {
+               var target = GetModById( req.Id );
+               if ( target == null || target == mod ) continue;
+               /*
+               var pass = ver != null;
+               if ( pass && req.Min != null && req.Min > ver ) pass = false;
+               if ( pass && req.Max != null && req.Max < ver ) pass = false;
+               if ( ! pass ) {
+                  DisableAndRemoveMod( mod, "requires", "Mod [{0}] requirement {1} [{2}-{3}] failed, found {4}", mod.Metadata.Id, req.Id, req.Min, req.Max, ver );
+                  NeedAnotherLoop = true;
+               }
+               */
+               DisableAndRemoveMod( target, "conflict", "Mod {1} is marked as conflicting with {2}", mod, target.Metadata.Id, mod.Metadata.Id );
+            }
+         }
       }
 
       private static void DisableAndRemoveMod ( ModEntry mod, string reason, string log, params object[] augs ) {
