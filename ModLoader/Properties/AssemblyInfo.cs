@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle( "Modnix Loader" )]
-[assembly: AssemblyDescription( "Mod Loader of Modnix - a Phoenix Point modding tool" )]
+[assembly: AssemblyDescription( "Modnix Mod Loader - a Phoenix Point modding tool" )]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany( "Sheepy" )]
 [assembly: AssemblyProduct( "Modnix Loader" )]
@@ -32,5 +32,5 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion( "0.75.0.0" )]
-[assembly: AssemblyFileVersion( "0.75.0.0" )]
+[assembly: AssemblyVersion( "0.80.0.0" )]
+[assembly: AssemblyFileVersion( "0.80.0.0" )]

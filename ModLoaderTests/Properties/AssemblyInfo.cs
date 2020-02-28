@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration( "" )]
 [assembly: AssemblyCompany( "" )]
 [assembly: AssemblyProduct( "ModLoaderTests" )]
-[assembly: AssemblyCopyright( "Copyright ©  2020" )]
+[assembly: AssemblyCopyright( "Public Domain" )]
 [assembly: AssemblyTrademark( "" )]
 [assembly: AssemblyCulture( "" )]
 

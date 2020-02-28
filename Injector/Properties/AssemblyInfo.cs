@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle( "Modnix Injector" )]
-[assembly: AssemblyDescription( "Injector Program of Modnix - a Phoenix Point modding tool" )]
+[assembly: AssemblyDescription( "Modnix Injector - a Phoenix Point modding tool" )]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany( "Sheepy" )]
 [assembly: AssemblyProduct( "Modnix Injector" )]
