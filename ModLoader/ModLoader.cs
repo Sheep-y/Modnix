@@ -192,6 +192,8 @@ namespace Sheepy.Modnix {
             else if ( pType == typeof( Action<SourceLevels,object,object[]> ) && aug.Name.ToLowerInvariant().Contains( "log" ) )
                augs.Add( LoggerD( CreateLogger( mod ) ) );
             // Mod info
+            else if ( pType == typeof( Func<string,ModEntry> ) )
+               augs.Add( (Func<string,ModEntry>) ModScanner.GetModById );
             else if ( pType == typeof( ModMeta ) )
                augs.Add( mod.Metadata );
             else if ( pType == typeof( ModEntry ) )

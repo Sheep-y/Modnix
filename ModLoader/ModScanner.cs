@@ -29,7 +29,11 @@ namespace Sheepy.Modnix {
       };
       private static Logger Log => ModLoader.Log;
 
-      internal static string NormaliseModId ( string Id ) => Id.Trim().ToLowerInvariant();
+      private static readonly Regex IgnoreInModId = new Regex( "[^\\w.-]+", RegexOptions.Compiled );
+      internal static string NormaliseModId ( string Id ) {
+         if ( Id == null ) return null;
+         return IgnoreInModId.Replace( Id.Trim().ToLowerInvariant(), "" );
+      }
 
       #region Scanning
       public static void BuildModList ( ) { try { lock ( AllMods ) {
@@ -73,12 +77,12 @@ namespace Sheepy.Modnix {
          return true;
       }
 
-       private static readonly Regex DropFromName = new Regex( "\\W+", RegexOptions.Compiled );
+      private static readonly Regex IgnoreInFolderName = new Regex( "\\W+", RegexOptions.Compiled );
 
       private static bool NameMatch ( string container, string subject ) {
          if ( container == null || subject == null ) return false;
-         container = DropFromName.Replace( container, "" ).ToLowerInvariant();
-         subject = DropFromName.Replace( subject, "" ).ToLowerInvariant();
+         container = IgnoreInFolderName.Replace( container, "" ).ToLowerInvariant();
+         subject = IgnoreInFolderName.Replace( subject, "" ).ToLowerInvariant();
          if ( container.Length < 3 || subject.Length < 3 ) return false;
          var len = Math.Max( 3, (int) Math.Round( Math.Min( container.Length, subject.Length ) * 2.0 / 3.0 ) );
          return container.Substring( 0, len ) == subject.Substring( 0, len );
