@@ -81,9 +81,9 @@ namespace Sheepy.Modnix.MainGUI {
          Log( "Refreshing app buttons" );
          ButtonSetup.IsEnabled  = AppState != null;
          switch ( AppState ) {
-            case "modnix"  : ButtonSetup.Content = "Revert"; break;
-            case "running" : ButtonSetup.Content = "Refresh"; break;
-            default        : ButtonSetup.Content = "Setup"; break;
+            case "modnix"  : BtnTxtSetup.Text = "Revert"; break;
+            case "running" : BtnTxtSetup.Text = "Refresh"; break;
+            default        : BtnTxtSetup.Text = "Setup"; break;
          }
          ButtonLoaderLog.IsEnabled = File.Exists( LoaderLog );
       } catch ( Exception ex ) { Log( ex ); } }

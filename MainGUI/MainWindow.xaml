@@ -35,7 +35,7 @@
                             <Button x:Name="ButtonSetup" Padding="10,5" IsEnabled="False" Click="ButtonSetup_Click">
                                 <StackPanel Orientation="Horizontal">
                                     <Image Source="Resources/img/modnix.ico" Width="16" Margin="0,0,5,0"/>
-                                    <AccessText Text="Setup"/>
+                                    <AccessText x:Name="BtnTxtSetup" Text="Setup"/>
                                 </StackPanel>
                             </Button>
                             <Button x:Name="ButtonGitHub" Padding="5" Grid.Column="2" Click="ButtonGitHub_Click" Visibility="Hidden">
