@@ -52,7 +52,7 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>Resources\modnix.ico</ApplicationIcon>
+    <ApplicationIcon>Resources\img\modnix.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
@@ -147,7 +147,7 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\modnix.ico" />
+    <Resource Include="Resources\img\modnix.ico" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Newtonsoft.Json.dll" />
@@ -161,6 +161,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\0Harmony.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\img\info.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\img\modnix.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

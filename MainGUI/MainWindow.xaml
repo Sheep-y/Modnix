@@ -7,181 +7,192 @@
         mc:Ignorable="d"
         WindowStartupLocation="CenterScreen"
         Title="Modnix" Height="550" Width="700">
-   <TabControl>
-      <TabItem x:Name="TabMods" Header="Mods">
-         <Grid Margin="10">
-            <Grid.ColumnDefinitions>
-               <ColumnDefinition Width="3*"/>
-               <ColumnDefinition Width="5" MinWidth="5" MaxWidth="5"/>
-               <ColumnDefinition Width="4*"/>
-            </Grid.ColumnDefinitions>
-            <DockPanel Margin="0,0,5,0">
-               <StackPanel DockPanel.Dock="Top" VerticalAlignment="Top">
-                  <RichTextBox x:Name="richAppInfo" Height="50" IsReadOnly="True" BorderBrush="{x:Null}" Margin="0,0,0,5">
-                     <FlowDocument>
-                        <Paragraph>
-                           <Run Text="Modder&#xA;Ver 1.0&#xA;Status: Requires Setup"/>
-                        </Paragraph>
-                     </FlowDocument>
-                  </RichTextBox>
-                  <Grid AutomationProperties.AcceleratorKey="D">
-                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition/>
-                        <ColumnDefinition Width="5"/>
-                        <ColumnDefinition/>
-                        <ColumnDefinition Width="5"/>
-                        <ColumnDefinition/>
-                     </Grid.ColumnDefinitions>
-                     <Button x:Name="ButtonSetup" Content="Setup" Padding="10,5" IsEnabled="False" Click="ButtonSetup_Click"/>
-                     <Button x:Name="ButtonGitHub" Padding="5" Grid.Column="2" Click="ButtonGitHub_Click" Visibility="Hidden">
-                        <AccessText Text="GitHub"/>
-                     </Button>
-                     <Button x:Name="ButtonUserGuide" Padding="5" Grid.Column="2" Click="ButtonUserGuide_Click">
-                        <AccessText Text="Modnix Guide"/>
-                     </Button>
-                     <Button x:Name="ButtonWiki" Padding="5" Grid.Column="4" Click="ButtonWiki_Click">
-                        <AccessText Text="Game Wi_ki"/>
-                     </Button>
-                  </Grid>
-                  <RichTextBox x:Name="richGameInfo" Height="50" IsReadOnly="True" BorderBrush="{x:Null}" Margin="0,10,0,5">
-                     <FlowDocument>
-                        <Paragraph>
-                           <Run Text="Phoenix Point&#xA;Ver 1.0"/>
-                        </Paragraph>
-                     </FlowDocument>
-                  </RichTextBox>
-                  <Grid>
-                     <Grid.RowDefinitions>
-                        <RowDefinition/>
-                        <RowDefinition Height="5"/>
-                        <RowDefinition/>
-                        <RowDefinition Height="5"/>
-                        <RowDefinition/>
-                     </Grid.RowDefinitions>
-                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition/>
-                        <ColumnDefinition Width="5"/>
-                        <ColumnDefinition/>
-                        <ColumnDefinition Width="5"/>
-                        <ColumnDefinition/>
-                     </Grid.ColumnDefinitions>
-                     <Button x:Name="ButtonRunOnline" Padding="10,5" Click="ButtonOnline_Click" IsEnabled="False">
-                        <AccessText Text="_Launch (Epic)"/>
-                     </Button>
-                     <Button x:Name="ButtonRunOffline" Grid.Column="2" Padding="10,5" Click="ButtonOffline_Click" IsEnabled="False">
-                        <AccessText Text="Run _Offine"/>
-                     </Button>
-                     <Button x:Name="ButtonManual" Grid.Column="4" Padding="10,5" Click="ButtonManual_Click">
-                        <AccessText Text="_Manual"/>
-                     </Button>
-                     <Button x:Name="ButtonWebsite" Grid.Row="2" Padding="10,5" Click="ButtonWebsite_Click">
-                        <AccessText Text="_Website"/>
-                     </Button>
-                     <Button x:Name="ButtonForum" Grid.Column="2" Grid.Row="2" Padding="10,5" Click="ButtonForum_Click">
-                        <AccessText Text="_Forum"/>
-                     </Button>
-                     <Button x:Name="ButtonReddit" Grid.Column="4" Grid.Row="2" Padding="10,5" Click="ButtonReddit_Click">
-                        <AccessText Text="_Reddit"/>
-                     </Button>
-                     <Button x:Name="ButtonTwitter" Grid.Row="4" Padding="10,5" Click="ButtonTwitter_Click">
-                        <AccessText Text="_Twitter"/>
-                     </Button>
-                     <Button x:Name="ButtonCanny" Grid.Column="2" Grid.Row="4" Padding="10,5" Click="ButtonCanny_Click">
-                        <AccessText Text="_Canny"/>
-                     </Button>
-                     <Button x:Name="ButtonDiscord" Grid.Column="4" Grid.Row="4" Padding="10,5" Click="ButtonDiscord_Click">
-                        <AccessText Text="_Discord"/>
-                     </Button>
-                  </Grid>
-               </StackPanel>
-               <Grid DockPanel.Dock="Bottom">
-                  <Grid.ColumnDefinitions>
-                     <ColumnDefinition/>
-                     <ColumnDefinition Width="10"/>
-                     <ColumnDefinition/>
-                  </Grid.ColumnDefinitions>
-                  <Button x:Name="ButtonModOpenModDir" Padding="5" IsEnabled="False" Click="ButtonModOpenModDir_Click">
-                     <AccessText Text="Explore"/>
-                  </Button>
-                  <Button x:Name="ButtonModDelete" Grid.Column="2" Padding="5" IsEnabled="False" Click="ButtonModDelete_Click">
-                     <AccessText Text="Delete"/>
-                  </Button>
-               </Grid>
-               <RichTextBox x:Name="richModInfo" IsReadOnly="True" VerticalScrollBarVisibility="Auto" BorderBrush="{x:Null}" Margin="0,10,0,5">
-                  <FlowDocument>
-                     <Paragraph>
-                     </Paragraph>
-                  </FlowDocument>
-               </RichTextBox>
-            </DockPanel>
-            <GridSplitter x:Name="gridSplitter" Grid.Column="1" HorizontalAlignment="Center" Width="5" Margin="0"/>
-            <DockPanel Grid.Column="2" Margin="5,0,0,0">
-               <DockPanel DockPanel.Dock="Top" Margin="0">
-                  <Button x:Name="ButtonAddMod" HorizontalAlignment="Right" DockPanel.Dock="Left" Padding="10,5" IsEnabled="False" Click="ButtonAddMod_Click">
-                     <AccessText Text="_Add Mod"/>
-                  </Button>
-                  <Label x:Name="LabelModList" Grid.Column="2" VerticalAlignment="Center"/>
-                  <Button x:Name="ButtonRefreshMod" HorizontalAlignment="Right" DockPanel.Dock="Right" Padding="10,5" IsEnabled="False" Click="ButtonAddMod_Click">
-                     <AccessText Text="Refresh"/>
-                  </Button>
-               </DockPanel>
-               <Grid DockPanel.Dock="Bottom">
-                  <Grid.ColumnDefinitions>
-                     <ColumnDefinition/>
-                     <ColumnDefinition Width="10"/>
-                     <ColumnDefinition/>
-                  </Grid.ColumnDefinitions>
-                  <Button x:Name="ButtonModDir" Padding="10,5" IsEnabled="False" Click="ButtonModDir_Click">
-                     <AccessText Text="Mod Directory"/>
-                  </Button>
-                  <Button x:Name="ButtonNexus" Grid.Column="2" Padding="10,5" Click="ButtonNexus_Click">
-                     <AccessText Text="_Nexus Mods"/>
-                  </Button>
-               </Grid>
-               <DataGrid x:Name="GridModList" VerticalScrollBarVisibility="Visible" AutoGenerateColumns="False" IsReadOnly="True" Margin="0,5" CurrentCellChanged="GridModList_CurrentCellChanged" SelectionMode="Single">
-                  <DataGrid.Columns>
-                     <DataGridTextColumn Header="Mod" Binding="{Binding Name}" ClipboardContentBinding="{x:Null}"/>
-                     <DataGridTextColumn Header="Version" Binding="{Binding Version}" ClipboardContentBinding="{x:Null}"/>
-                     <DataGridTextColumn Header="Author" Binding="{Binding Author}" ClipboardContentBinding="{x:Null}"/>
-                     <DataGridTextColumn Header="Type" Binding="{Binding Type}" ClipboardContentBinding="{x:Null}"/>
-                     <DataGridTextColumn Header="Status" Binding="{Binding Status}" ClipboardContentBinding="{x:Null}"/>
-                  </DataGrid.Columns>
-               </DataGrid>
-            </DockPanel>
-         </Grid>
-      </TabItem>
-      <TabItem Header="Language" Visibility="Collapsed">
-         <Grid>
-            <Grid.ColumnDefinitions>
-               <ColumnDefinition/>
-               <ColumnDefinition Width="10"/>
-               <ColumnDefinition/>
-               <ColumnDefinition Width="10"/>
-               <ColumnDefinition/>
-            </Grid.ColumnDefinitions>
-            <Button x:Name="ButtonLangAuto" Content="Auto"/>
-            <Button x:Name="ButtonLangEn" Content="English" Grid.Column="2"/>
-            <Button x:Name="ButtonLangZh" Content="中文" Grid.Column="4"/>
-         </Grid>
-      </TabItem>
-      <TabItem x:Name="TabLog" Header="Log">
-         <DockPanel Margin="10">
-            <DockPanel DockPanel.Dock="Top">
-               <Button x:Name="ButtonLogClear" Content="Clear" Padding="5" Click="ButtonLogClear_Click"/>
-               <Button x:Name="ButtonLogSave" Content="Save As..." Padding="5" DockPanel.Dock="Right" Click="ButtonLogSave_Click" IsEnabled="False"/>
-               <Label x:Name="LabelLogTitle" Content="Dialogistic Log" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-            </DockPanel>
-            <Grid DockPanel.Dock="Bottom" Margin="0">
-               <Grid.ColumnDefinitions>
-                  <ColumnDefinition/>
-                  <ColumnDefinition Width="10"/>
-                  <ColumnDefinition/>
-               </Grid.ColumnDefinitions>
-               <Button x:Name="ButtonLoaderLog" Content="Loader Log" Padding="5" Click="ButtonLoaderLog_Click"/>
-               <Button x:Name="ButtonCheckUpdate" Content="Check Update" Padding="5" Grid.Column="2" Click="ButtonCheckUpdate_Click"/>
+    <TabControl>
+        <TabItem x:Name="TabMods" Header="Mods">
+            <Grid Margin="10">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="3*"/>
+                    <ColumnDefinition Width="5" MinWidth="5" MaxWidth="5"/>
+                    <ColumnDefinition Width="4*"/>
+                </Grid.ColumnDefinitions>
+                <DockPanel Margin="0,0,5,0">
+                    <StackPanel DockPanel.Dock="Top" VerticalAlignment="Top">
+                        <RichTextBox x:Name="richAppInfo" Height="50" IsReadOnly="True" BorderBrush="{x:Null}" Margin="0,0,0,5">
+                            <FlowDocument>
+                                <Paragraph>
+                                    <Run Text="Modder&#xA;Ver 1.0&#xA;Status: Requires Setup"/>
+                                </Paragraph>
+                            </FlowDocument>
+                        </RichTextBox>
+                        <Grid AutomationProperties.AcceleratorKey="D">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition/>
+                                <ColumnDefinition Width="5"/>
+                                <ColumnDefinition/>
+                                <ColumnDefinition Width="5"/>
+                                <ColumnDefinition/>
+                            </Grid.ColumnDefinitions>
+                            <Button x:Name="ButtonSetup" Padding="10,5" IsEnabled="False" Click="ButtonSetup_Click">
+                                <StackPanel Orientation="Horizontal">
+                                    <Image Source="Resources/img/modnix.ico" Width="16" Margin="0,0,5,0"/>
+                                    <AccessText Text="Setup"/>
+                                </StackPanel>
+                            </Button>
+                            <Button x:Name="ButtonGitHub" Padding="5" Grid.Column="2" Click="ButtonGitHub_Click" Visibility="Hidden">
+                                <AccessText Text="GitHub"/>
+                            </Button>
+                            <Button x:Name="ButtonUserGuide" Padding="5" Grid.Column="2" Click="ButtonUserGuide_Click">
+                                <StackPanel Orientation="Horizontal">
+                                    <Image Source="Resources/img/info.png" Width="16" Margin="0,0,5,0"/>
+                                    <AccessText Text="_Help"/>
+                                </StackPanel>
+                            </Button>
+                            <Button x:Name="ButtonWiki" Padding="5" Grid.Column="4" Click="ButtonWiki_Click">
+                                <StackPanel Orientation="Horizontal">
+                                    <Image Source="Resources/img/fandom.ico" Width="16" Margin="0,0,5,0"/>
+                                    <AccessText Text="Wi_ki"/>
+                                </StackPanel>
+                            </Button>
+                        </Grid>
+                        <RichTextBox x:Name="richGameInfo" Height="50" IsReadOnly="True" BorderBrush="{x:Null}" Margin="0,10,0,5">
+                            <FlowDocument>
+                                <Paragraph>
+                                    <Run Text="Phoenix Point&#xA;Ver 1.0"/>
+                                </Paragraph>
+                            </FlowDocument>
+                        </RichTextBox>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition/>
+                                <RowDefinition Height="5"/>
+                                <RowDefinition/>
+                                <RowDefinition Height="5"/>
+                                <RowDefinition/>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition/>
+                                <ColumnDefinition Width="5"/>
+                                <ColumnDefinition/>
+                                <ColumnDefinition Width="5"/>
+                                <ColumnDefinition/>
+                            </Grid.ColumnDefinitions>
+                            <Button x:Name="ButtonRunOnline" Padding="10,5" Click="ButtonOnline_Click" IsEnabled="False">
+                                <AccessText Text="_Launch (Epic)"/>
+                            </Button>
+                            <Button x:Name="ButtonRunOffline" Grid.Column="2" Padding="10,5" Click="ButtonOffline_Click" IsEnabled="False">
+                                <AccessText Text="Run _Offine"/>
+                            </Button>
+                            <Button x:Name="ButtonManual" Grid.Column="4" Padding="10,5" Click="ButtonManual_Click">
+                                <AccessText Text="_Manual"/>
+                            </Button>
+                            <Button x:Name="ButtonWebsite" Grid.Row="2" Padding="10,5" Click="ButtonWebsite_Click">
+                                <AccessText Text="_Website"/>
+                            </Button>
+                            <Button x:Name="ButtonForum" Grid.Column="2" Grid.Row="2" Padding="10,5" Click="ButtonForum_Click">
+                                <AccessText Text="_Forum"/>
+                            </Button>
+                            <Button x:Name="ButtonReddit" Grid.Column="4" Grid.Row="2" Padding="10,5" Click="ButtonReddit_Click">
+                                <AccessText Text="_Reddit"/>
+                            </Button>
+                            <Button x:Name="ButtonTwitter" Grid.Row="4" Padding="10,5" Click="ButtonTwitter_Click">
+                                <AccessText Text="_Twitter"/>
+                            </Button>
+                            <Button x:Name="ButtonCanny" Grid.Column="2" Grid.Row="4" Padding="10,5" Click="ButtonCanny_Click">
+                                <AccessText Text="_Canny"/>
+                            </Button>
+                            <Button x:Name="ButtonDiscord" Grid.Column="4" Grid.Row="4" Padding="10,5" Click="ButtonDiscord_Click">
+                                <AccessText Text="_Discord"/>
+                            </Button>
+                        </Grid>
+                    </StackPanel>
+                    <Grid DockPanel.Dock="Bottom">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition/>
+                            <ColumnDefinition Width="10"/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+                        <Button x:Name="ButtonModOpenModDir" Padding="5" IsEnabled="False" Click="ButtonModOpenModDir_Click">
+                            <AccessText Text="Explore"/>
+                        </Button>
+                        <Button x:Name="ButtonModDelete" Grid.Column="2" Padding="5" IsEnabled="False" Click="ButtonModDelete_Click">
+                            <AccessText Text="Delete"/>
+                        </Button>
+                    </Grid>
+                    <RichTextBox x:Name="richModInfo" IsReadOnly="True" VerticalScrollBarVisibility="Auto" BorderBrush="{x:Null}" Margin="0,10,0,5">
+                        <FlowDocument>
+                            <Paragraph>
+                            </Paragraph>
+                        </FlowDocument>
+                    </RichTextBox>
+                </DockPanel>
+                <GridSplitter x:Name="gridSplitter" Grid.Column="1" HorizontalAlignment="Center" Width="5" Margin="0"/>
+                <DockPanel Grid.Column="2" Margin="5,0,0,0">
+                    <DockPanel DockPanel.Dock="Top" Margin="0">
+                        <Button x:Name="ButtonAddMod" HorizontalAlignment="Right" DockPanel.Dock="Left" Padding="10,5" IsEnabled="False" Click="ButtonAddMod_Click">
+                            <AccessText Text="_Add Mod"/>
+                        </Button>
+                        <Label x:Name="LabelModList" Grid.Column="2" VerticalAlignment="Center"/>
+                        <Button x:Name="ButtonRefreshMod" HorizontalAlignment="Right" DockPanel.Dock="Right" Padding="10,5" IsEnabled="False" Click="ButtonAddMod_Click">
+                            <AccessText Text="Refresh"/>
+                        </Button>
+                    </DockPanel>
+                    <Grid DockPanel.Dock="Bottom">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition/>
+                            <ColumnDefinition Width="10"/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+                        <Button x:Name="ButtonModDir" Padding="10,5" IsEnabled="False" Click="ButtonModDir_Click">
+                            <AccessText Text="Mod Directory"/>
+                        </Button>
+                        <Button x:Name="ButtonNexus" Grid.Column="2" Padding="10,5" Click="ButtonNexus_Click">
+                            <AccessText Text="_Nexus Mods"/>
+                        </Button>
+                    </Grid>
+                    <DataGrid x:Name="GridModList" VerticalScrollBarVisibility="Visible" AutoGenerateColumns="False" IsReadOnly="True" Margin="0,5" CurrentCellChanged="GridModList_CurrentCellChanged" SelectionMode="Single">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Mod" Binding="{Binding Name}" ClipboardContentBinding="{x:Null}"/>
+                            <DataGridTextColumn Header="Version" Binding="{Binding Version}" ClipboardContentBinding="{x:Null}"/>
+                            <DataGridTextColumn Header="Author" Binding="{Binding Author}" ClipboardContentBinding="{x:Null}"/>
+                            <DataGridTextColumn Header="Type" Binding="{Binding Type}" ClipboardContentBinding="{x:Null}"/>
+                            <DataGridTextColumn Header="Status" Binding="{Binding Status}" ClipboardContentBinding="{x:Null}"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
             </Grid>
-            <TextBox x:Name="TextLog" Text="" VerticalScrollBarVisibility="Visible" DockPanel.Dock="Bottom" HorizontalScrollBarVisibility="Visible" IsReadOnly="True" IsReadOnlyCaretVisible="True" Margin="0,5"/>
-         </DockPanel>
-      </TabItem>
-   </TabControl>
+        </TabItem>
+        <TabItem Header="Language" Visibility="Collapsed">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="10"/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="10"/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <Button x:Name="ButtonLangAuto" Content="Auto"/>
+                <Button x:Name="ButtonLangEn" Content="English" Grid.Column="2"/>
+                <Button x:Name="ButtonLangZh" Content="中文" Grid.Column="4"/>
+            </Grid>
+        </TabItem>
+        <TabItem x:Name="TabLog" Header="Log">
+            <DockPanel Margin="10">
+                <DockPanel DockPanel.Dock="Top">
+                    <Button x:Name="ButtonLogClear" Content="Clear" Padding="5" Click="ButtonLogClear_Click"/>
+                    <Button x:Name="ButtonLogSave" Content="Save As..." Padding="5" DockPanel.Dock="Right" Click="ButtonLogSave_Click" IsEnabled="False"/>
+                    <Label x:Name="LabelLogTitle" Content="Dialogistic Log" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </DockPanel>
+                <Grid DockPanel.Dock="Bottom" Margin="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition Width="10"/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+                    <Button x:Name="ButtonLoaderLog" Content="Loader Log" Padding="5" Click="ButtonLoaderLog_Click"/>
+                    <Button x:Name="ButtonCheckUpdate" Content="Check Update" Padding="5" Grid.Column="2" Click="ButtonCheckUpdate_Click"/>
+                </Grid>
+                <TextBox x:Name="TextLog" Text="" VerticalScrollBarVisibility="Visible" DockPanel.Dock="Bottom" HorizontalScrollBarVisibility="Visible" IsReadOnly="True" IsReadOnlyCaretVisible="True" Margin="0,5"/>
+            </DockPanel>
+        </TabItem>
+    </TabControl>
 </Window>
