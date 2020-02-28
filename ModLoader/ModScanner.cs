@@ -230,7 +230,46 @@ namespace Sheepy.Modnix {
       private static void ResolveMods () {
          EnabledMods.Clear();
          EnabledMods.AddRange( AllMods.Where( e => ! e.Disabled ) );
+         RemoveDuplicateMods();
          RemoveUnfulfilledMods();
+      }
+
+      private static void RemoveDuplicateMods () {
+         var IdList = new HashSet<string>( EnabledMods.Select( e => e.Key ) );
+         foreach ( var mod in EnabledMods.ToArray() ) {
+            if ( mod.Disabled ) continue; // Already removed as a dup
+            var key = mod.Key;
+            if ( ! IdList.Contains( key ) ) continue; // Already removed dups
+            RemoveDuplicates( EnabledMods.Where( e => e.Key == key ).ToArray() );
+         }
+      }
+
+      private static void RemoveDuplicates ( ModEntry[] clones ) {
+         ModEntry keep = FindLatestMod( clones );
+         foreach ( var mod in clones ) {
+            if ( mod == keep ) continue;
+            DisableAndRemoveMod( mod, "duplicate", "Mod {1} is a duplicate of {2}.", keep, mod.Path, keep.Path );
+         }
+      }
+
+      private static ModEntry FindLatestMod ( ModEntry[] clones ) {
+         ModEntry best = clones[0];
+         foreach ( var mod in clones ) {
+            if ( mod == best ) continue;
+            if ( TestAndSwap( mod.Metadata.Version, best.Metadata.Version, mod, ref best ) ) continue;
+            FileInfo myInfo = new FileInfo( mod.Path ), bestInfo = new FileInfo( best.Path );
+            if ( TestAndSwap( myInfo.LastWriteTime, bestInfo.LastWriteTime, mod, ref best ) ) continue;
+            if ( TestAndSwap( myInfo.Length, bestInfo.Length, mod, ref best ) ) continue;
+         }
+         return best;
+      }
+
+      private static bool TestAndSwap < T > ( T mine, T their, ModEntry me, ref ModEntry best ) where T : IComparable {
+         var compare = mine.CompareTo( their );
+         if ( compare == 0 ) return false; // We are same
+         if ( compare < 0 ) return true; // We are smaller
+         best = me;
+         return true;
       }
 
       internal static Version GetVersionById ( string key ) {
@@ -267,15 +306,19 @@ namespace Sheepy.Modnix {
                   if ( pass && req.Min != null && req.Min > ver ) pass = false;
                   if ( pass && req.Max != null && req.Max < ver ) pass = false;
                   if ( ! pass ) {
-                     Log.Info( "Mod [{0}] requirement {1} [{2}-{3}] failed, found {4}", mod.Metadata.Id, req.Id, req.Min, req.Max, ver );
-                     mod.Disabled = true;
-                     mod.AddNotice( SourceLevels.Error, "requires", req.Id, req.Min, req.Max, ver );
-                     EnabledMods.Remove( mod );
+                     DisableAndRemoveMod( mod, "requires", "Mod [{0}] requirement {1} [{2}-{3}] failed, found {4}", mod.Metadata.Id, req.Id, req.Min, req.Max, ver );
                      NeedAnotherLoop = true;
                   }
                }
             }
          } while ( NeedAnotherLoop && loopIndex++ <= 20 );
+      }
+
+      private static void DisableAndRemoveMod ( ModEntry mod, string reason, string log, params object[] augs ) {
+         Log.Info( log, augs );
+         mod.Disabled = true;
+         mod.AddNotice( SourceLevels.Error, reason, augs );
+         EnabledMods.Remove( mod );
       }
       #endregion
    }
