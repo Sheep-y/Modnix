@@ -206,9 +206,11 @@ namespace Sheepy.Modnix.MainGUI {
          if ( CurrentMod == null ) {
             Log( "Clearing mod info" );
             richModInfo.TextRange().Text = "";
+            BkgdModeInfo.Opacity = 0.5;
             return;
          }
          Log( $"Refreshing mod {CurrentMod}" );
+         BkgdModeInfo.Opacity = 0;
          CurrentMod.BuildDesc( richModInfo.Document );
       } catch ( Exception ex ) { Log( ex ); } }
 

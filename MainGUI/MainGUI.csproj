@@ -152,6 +152,7 @@
     <Resource Include="Resources\img\fandom.png" />
     <Resource Include="Resources\img\folder.png" />
     <Resource Include="Resources\img\info.png" />
+    <Resource Include="Resources\img\modder.png" />
     <Resource Include="Resources\img\modnix.ico" />
     <Resource Include="Resources\img\nexusmods.png" />
     <Resource Include="Resources\img\offline.png" />

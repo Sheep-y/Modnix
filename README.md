@@ -25,7 +25,9 @@ and [Troubleshooting](https://github.com/Sheep-y/Modnix/wiki/Troubleshooting-Mod
 2. Each mod can have their own folder, not necessary at the root.
 3. Display mod information to users, such as author and links, with embedded or standalone info file.
 4. Declarative mod dependencies and conflicts.  Opt-in pre-splash loading.
-5. High performance loggers. Querier for game, loader, and mod versions.
+5. Unified background logger. Querier for game, loader, and mod versions.
+
+See the [Wiki](https://github.com/Sheep-y/Modnix/wiki#wiki-wrapper) for mod specs.
 
 ## License
 

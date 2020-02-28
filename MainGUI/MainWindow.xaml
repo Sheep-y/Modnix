@@ -152,6 +152,15 @@
                         </Button>
                     </Grid>
                     <RichTextBox x:Name="richModInfo" IsReadOnly="True" VerticalScrollBarVisibility="Auto" BorderBrush="{x:Null}" Margin="0,10,0,5">
+                        <RichTextBox.Background>
+                            <ImageBrush x:Name="BkgdModeInfo" ImageSource="Resources/img/modder.png" Stretch="Uniform" Opacity="0.5" >
+                                <ImageBrush.RelativeTransform>
+                                    <TransformGroup>
+                                        <ScaleTransform CenterY="0.5" CenterX="0.5" ScaleX="0.8" ScaleY="0.8"/>
+                                    </TransformGroup>
+                                </ImageBrush.RelativeTransform>
+                            </ImageBrush>
+                        </RichTextBox.Background>
                         <FlowDocument>
                             <Paragraph>
                             </Paragraph>
