@@ -131,13 +131,11 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Resources\0Harmony.dll" />
     <None Include="Resources\ModnixInjector.exe" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\ModnixLoader.dll" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\Mono.Cecil.dll" />
+    <None Include="Resources\Newtonsoft.Json.dll" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
@@ -148,9 +146,17 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\img\modnix.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\Newtonsoft.Json.dll" />
+    <Resource Include="Resources\img\info.png" />
+    <Resource Include="Resources\img\fandom.png" />
+    <Resource Include="Resources\img\phoenix_point.png" />
+    <Resource Include="Resources\img\book.png" />
+    <Resource Include="Resources\img\canny.png" />
+    <Resource Include="Resources\img\discord.png" />
+    <Resource Include="Resources\img\offline.png" />
+    <Resource Include="Resources\img\reddit.png" />
+    <Resource Include="Resources\img\snapshot.png" />
+    <Resource Include="Resources\img\twitter.png" />
+    <Resource Include="Resources\img\www.png" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ModLoader\ModLoader.csproj">
@@ -158,15 +164,6 @@
       <Name>ModLoader</Name>
       <Private>False</Private>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\0Harmony.dll" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\img\info.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\img\modnix.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

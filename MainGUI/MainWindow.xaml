@@ -6,14 +6,14 @@
         xmlns:local="clr-namespace:Sheepy.Modnix.MainGUI"
         mc:Ignorable="d"
         WindowStartupLocation="CenterScreen"
-        Title="Modnix" Height="550" Width="700">
+        Title="Modnix" Height="550" Width="750">
     <TabControl>
         <TabItem x:Name="TabMods" Header="Mods">
             <Grid Margin="10">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="3*"/>
-                    <ColumnDefinition Width="5" MinWidth="5" MaxWidth="5"/>
                     <ColumnDefinition Width="4*"/>
+                    <ColumnDefinition Width="5" MinWidth="5" MaxWidth="5"/>
+                    <ColumnDefinition Width="5*"/>
                 </Grid.ColumnDefinitions>
                 <DockPanel Margin="0,0,5,0">
                     <StackPanel DockPanel.Dock="Top" VerticalAlignment="Top">
@@ -49,7 +49,7 @@
                             </Button>
                             <Button x:Name="ButtonWiki" Padding="5" Grid.Column="4" Click="ButtonWiki_Click">
                                 <StackPanel Orientation="Horizontal">
-                                    <Image Source="Resources/img/fandom.ico" Width="16" Margin="0,0,5,0"/>
+                                    <Image Source="Resources/img/fandom.png" Width="16" Margin="0,0,5,0"/>
                                     <AccessText Text="Wi_ki"/>
                                 </StackPanel>
                             </Button>
@@ -77,31 +77,58 @@
                                 <ColumnDefinition/>
                             </Grid.ColumnDefinitions>
                             <Button x:Name="ButtonRunOnline" Padding="10,5" Click="ButtonOnline_Click" IsEnabled="False">
-                                <AccessText Text="_Launch (Epic)"/>
+                                <StackPanel Orientation="Horizontal">
+                                    <Image Source="Resources/img/phoenix_point.png" Width="16" Margin="0,0,5,0"/>
+                                    <AccessText Text="_Launch"/>
+                                </StackPanel>
                             </Button>
                             <Button x:Name="ButtonRunOffline" Grid.Column="2" Padding="10,5" Click="ButtonOffline_Click" IsEnabled="False">
-                                <AccessText Text="Run _Offine"/>
+                                <StackPanel Orientation="Horizontal">
+                                    <Image Source="Resources/img/offline.png" Width="16" Margin="0,0,5,0"/>
+                                    <AccessText Text="Run _Offine"/>
+                                </StackPanel>
                             </Button>
                             <Button x:Name="ButtonManual" Grid.Column="4" Padding="10,5" Click="ButtonManual_Click">
-                                <AccessText Text="_Manual"/>
+                                <StackPanel Orientation="Horizontal">
+                                    <Image Source="Resources/img/book.png" Width="16" Margin="0,0,5,0"/>
+                                    <AccessText Text="_Manual"/>
+                                </StackPanel>
                             </Button>
                             <Button x:Name="ButtonWebsite" Grid.Row="2" Padding="10,5" Click="ButtonWebsite_Click">
-                                <AccessText Text="_Website"/>
+                                <StackPanel Orientation="Horizontal">
+                                    <Image Source="Resources/img/www.png" Width="16" Margin="0,0,5,0"/>
+                                    <AccessText Text="_Website"/>
+                                </StackPanel>
                             </Button>
                             <Button x:Name="ButtonForum" Grid.Column="2" Grid.Row="2" Padding="10,5" Click="ButtonForum_Click">
-                                <AccessText Text="_Forum"/>
+                                <StackPanel Orientation="Horizontal">
+                                    <Image Source="Resources/img/snapshot.png" Width="16" Margin="0,0,5,0"/>
+                                    <AccessText Text="_Forum"/>
+                                </StackPanel>
                             </Button>
                             <Button x:Name="ButtonReddit" Grid.Column="4" Grid.Row="2" Padding="10,5" Click="ButtonReddit_Click">
-                                <AccessText Text="_Reddit"/>
+                                <StackPanel Orientation="Horizontal">
+                                    <Image Source="Resources/img/reddit.png" Width="16" Margin="0,0,5,0"/>
+                                    <AccessText Text="_Reddit"/>
+                                </StackPanel>
                             </Button>
                             <Button x:Name="ButtonTwitter" Grid.Row="4" Padding="10,5" Click="ButtonTwitter_Click">
-                                <AccessText Text="_Twitter"/>
+                                <StackPanel Orientation="Horizontal">
+                                    <Image Source="Resources/img/twitter.png" Width="16" Margin="0,0,5,0"/>
+                                    <AccessText Text="_Twitter"/>
+                                </StackPanel>
                             </Button>
                             <Button x:Name="ButtonCanny" Grid.Column="2" Grid.Row="4" Padding="10,5" Click="ButtonCanny_Click">
-                                <AccessText Text="_Canny"/>
+                                <StackPanel Orientation="Horizontal">
+                                    <Image Source="Resources/img/canny.png" Width="16" Margin="0,0,5,0"/>
+                                    <AccessText Text="_Canny"/>
+                                </StackPanel>
                             </Button>
                             <Button x:Name="ButtonDiscord" Grid.Column="4" Grid.Row="4" Padding="10,5" Click="ButtonDiscord_Click">
-                                <AccessText Text="_Discord"/>
+                                <StackPanel Orientation="Horizontal">
+                                    <Image Source="Resources/img/discord.png" Width="16" Margin="0,0,5,0"/>
+                                    <AccessText Text="_Discord"/>
+                                </StackPanel>
                             </Button>
                         </Grid>
                     </StackPanel>
