@@ -1,0 +1,52 @@
+<h1>
+Manual Setup Package for Modnix
+</h1>
+<p>
+   <a href="https://github.com/Sheep-y/Modnix">Modnix</a>
+   is a program for loading <a href="https://en.wikipedia.org/wiki/Mod_(video_games)">mods</a>
+   into <a href="https://phoenixpoint.info/">Phoenix Point</a>.
+</p>
+<p>
+   Generally, you should use the <a href="https://github.com/Sheep-y/Modnix/releases">Installer</a> first.
+   But when things don't work out, follow these steps for a manual setup:
+</p>
+<ol>
+   <li>
+      Reboot computer. Always reboot first.
+   <li>
+      Find "game code folder".
+      Default to <pre>C:\Program Files\Epic Games\PhoenixPoint\PhoenixPointWin64_Data\Managed</pre>.
+      You can find <pre>Assembly-CSharp.dll</pre> in it.
+   <li>
+      Delete all files in the dll folder.
+      Then go up two folders to find <pre>UnityPlayer.dll</pre>,
+      again deleting all dlls.
+   <li>
+      From the game launcher (EGS or Steam), do Verify Files.
+   <li>
+      Launch the game and make sure it works.  Exit game.
+   <li>
+      Explore <pre>%UserProfile%\Documents</pre>, and creates the folders <pre>My Games\Phoenix Point\Mods</pre>.
+      This is the "mod folder".
+   <li>
+      Move extracted <pre>Modnix.exe</pre> into "mod folder".
+   <li>
+      Move all files in the extracted <pre>Managed</pre> folder into the "game code folder".
+      Nothing should be overwritten if you cleared the folders in step 3.
+   <li>
+      Double-click <pre>ModnixInjector.exe</pre>, which has just been moved.
+      It should says "Injection complete!"
+   <li>
+      Basic setup complete.  Launch the moved <pre>Modnix.exe</pre> and see whether it works.
+</ol>
+<p>
+   Some mods may be unsatisfied by a basic setup.
+   See <a href="https://github.com/Sheep-y/Modnix/wiki/Manual-Setup">wiki</a>
+   for how to solve them, and/or other troubleshoot guides.
+</p>
+<style>
+   html { background: #CCC; }
+   h1, p, ol { font-size: 1.5rem; margin: 2ex auto; max-width: 600px; }
+   pre { background: #AAA; display: inline-block; margin: 0; padding: 0 5px; }
+   li { margin-bottom: 1ex; }
+</style>
