@@ -236,12 +236,14 @@ namespace Sheepy.Modnix {
       private static void ResolveMods () {
          EnabledMods.Clear();
          EnabledMods.AddRange( AllMods.Where( e => ! e.Disabled ) );
+         Log.Info( "Resolving {0} mods", EnabledMods.Count );
          RemoveDuplicateMods();
          RemoveUnfulfilledMods();
          RemoveConflictMods();
       }
 
       private static void RemoveDuplicateMods () {
+         Log.Verbo( "Check duplicate mods" );
          var IdList = new HashSet<string>( EnabledMods.Select( e => e.Key ) );
          foreach ( var mod in EnabledMods.ToArray() ) {
             if ( mod.Disabled ) continue; // Already removed as a dup
@@ -316,8 +318,9 @@ namespace Sheepy.Modnix {
          bool NeedAnotherLoop;
          do {
             NeedAnotherLoop = false;
-            Log.Info( "Resolving {0} mods, loop {1}", EnabledMods.Count, loopIndex );
+            Log.Verbo( "Check mod requirements, loop {0}", loopIndex );
             foreach ( var mod in EnabledMods.ToArray() ) {
+               if ( mod.Disabled ) continue;
                var reqs = mod.Metadata.Requires;
                if ( reqs == null ) continue;
                foreach ( var req in reqs ) {
@@ -336,6 +339,7 @@ namespace Sheepy.Modnix {
       }
 
       private static void RemoveConflictMods () {
+         Log.Verbo( "Check mod conflicts" );
          foreach ( var mod in EnabledMods.ToArray() ) {
             if ( mod.Disabled ) continue;
             var targets = mod.Metadata.Conflicts;
@@ -354,7 +358,7 @@ namespace Sheepy.Modnix {
 
       private static void DisableAndRemoveMod ( ModEntry mod, string reason, string log, params object[] augs ) {
          if ( mod.Disabled ) return;
-         Log.Info( log, augs );
+         Log.Warn( log, augs );
          mod.Disabled = true;
          mod.AddNotice( SourceLevels.Error, reason, augs );
          EnabledMods.Remove( mod );
