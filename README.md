@@ -33,5 +33,5 @@ You can try to get support on the #mods channel on [official Discord](https://di
 
 ## License
 
-The Injector and Mod Loader, being simple and succeed from PPML, are in the public domain.
-The rest are licensed under MIT, same as Harmony, since Modnix's Harmony bridge copied lots of Harmony code.
+The Injector and Mod Loader are released to the public domain.
+The Main Program is licensed under MIT.
