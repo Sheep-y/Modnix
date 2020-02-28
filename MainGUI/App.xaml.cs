@@ -33,7 +33,8 @@ namespace Sheepy.Modnix.MainGUI {
       internal const string LOADER   = "ModnixLoader.dll";
       internal const string PAST     = "PhoenixPointModLoaderInjector.exe";
       internal const string PAST_BK  = "PhoenixPointModLoaderInjector.exe.orig";
-      internal const string PAST_DLL = "PPModLoader.dll";
+      internal const string PAST_DL1 = "PPModLoader.dll";
+      internal const string PAST_DL2 = "PhoenixPointModLoader.dll";
       internal const string PAST_MOD = "Mods";
       internal const string HARM_DLL = "0Harmony.dll";
       internal const string CECI_DLL = "Mono.Cecil.dll";
@@ -384,8 +385,8 @@ namespace Sheepy.Modnix.MainGUI {
             if ( HasLegacy() && currentGame.RenameCodeFile( PAST, PAST_BK ) )
                prompt += ",ppml";
             // Cleanup - accident prevention. Old dlls at game base may override dlls in the managed folder.
-            foreach ( var file in new string[] { PAST, PAST_DLL, INJECTOR, LOADER, HARM_DLL, CECI_DLL } )
-               currentGame.DeleteGameFile( file );
+            foreach ( var file in new string[] { PAST, PAST_DL1, PAST_DL2, INJECTOR, LOADER, HARM_DLL, CECI_DLL } )
+               currentGame.DeleteRootFile( file );
             GUI.Prompt( prompt );
          } else
             GUI.Prompt( "error" );
@@ -413,13 +414,14 @@ namespace Sheepy.Modnix.MainGUI {
             CreateShortcut();
             return false;
          }
-         // Delete a few files that should not be in the mods folder, or will be replaced
-         var dllCheck = new GameInstallation( OldPath );
-         dllCheck.DeleteGameFile( LIVE_NAME + APP_EXT );
-         dllCheck.DeleteGameFile( LOADER );
-         dllCheck.DeleteGameFile( INJECTOR );
-         dllCheck.DeleteGameFile( PAST );
-         dllCheck.DeleteGameFile( PAST_DLL );
+         // Delete a few files that should not be in the mods folder
+         var modDir = new GameInstallation( OldPath );
+         modDir.DeleteRootFile( LOADER );
+         modDir.DeleteRootFile( INJECTOR );
+         modDir.DeleteRootFile( HARM_DLL );
+         modDir.DeleteRootFile( PAST );
+         modDir.DeleteRootFile( PAST_DL1 );
+         modDir.DeleteRootFile( PAST_DL2 );
          if ( IsSameDir( OldPath, ModFolder ) ) {
             Log( $"{OldPath} seems to be symbolic link, skipping migration." );
             return false;
@@ -631,7 +633,7 @@ namespace Sheepy.Modnix.MainGUI {
          File.WriteAllBytes( target, content );
       }
 
-      internal bool DeleteGameFile ( string file ) { try {
+      internal bool DeleteRootFile ( string file ) { try {
          string subject = Path.Combine( GameDir, file );
          if ( ! File.Exists( subject ) ) return false;
          App.Log( $"Deleting {subject}" );

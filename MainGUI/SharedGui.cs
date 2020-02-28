@@ -34,7 +34,7 @@ namespace Sheepy.Modnix.MainGUI {
             if ( parts.Contains( ",ppml" ) )
                txt += "\nPPML renamed to prevent accidents.";
             if ( parts.Contains( ",self_copy" ) ) {
-               txt += "\n\nThis setup file may be deleted.\nShowing Modnix location now.";
+               txt += "\n\nThis setup file may be deleted.\nShowing Modnix location now.\nYou may pin it to Start or send it to Desktop.";
                if ( MessageBox.Show( txt, "Success", MessageBoxButton.OKCancel, MessageBoxImage.Information ) == MessageBoxResult.OK )
                   OnRestart();
             } else {
