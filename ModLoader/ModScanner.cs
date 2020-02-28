@@ -88,7 +88,7 @@ namespace Sheepy.Modnix {
          ModMeta meta;
          if ( file.EndsWith( ".dll", StringComparison.InvariantCultureIgnoreCase ) ) {
             meta = ParseDllInfo( file );
-            if ( meta != null ) return null;
+            if ( meta == null ) return null;
             var info = FindEmbeddedModInfo( file );
             if ( info != null ) {
                Log.Verbo( "Parsing embedded mod_info" );
@@ -99,7 +99,7 @@ namespace Sheepy.Modnix {
             var default_id = Path.GetFileNameWithoutExtension( file );
             if ( default_id.ToLowerInvariant() == "mod_info" ) default_id = container;
             meta = ParseInfoJs( File.ReadAllText( file, Encoding.UTF8 ).Trim(), default_id );
-            if ( meta != null ) return null;
+            if ( meta == null ) return null;
             if ( ! meta.HasContent )
                meta.Dlls = Directory.EnumerateFiles( Path.GetDirectoryName( file ), "*.dll" )
                   .Where( e => NameMatch( container, Path.GetFileNameWithoutExtension( e ) ) )
