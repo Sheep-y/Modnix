@@ -140,7 +140,7 @@ namespace Sheepy.Modnix.MainGUI {
                settings.Save();
             Log( "Settings saved." );
             }
-            // v0.6 had no default value for Last_Update_Check which may cause NRE?
+            // v0.6 had no default value for Last_Update_Check which may throw NRE on access
             try {
                if ( settings.Last_Update_Check == null ) throw new NullReferenceException();
             } catch ( NullReferenceException ) {

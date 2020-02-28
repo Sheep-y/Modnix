@@ -12,8 +12,14 @@ namespace Sheepy.Modnix {
 
    [ JsonObject( MemberSerialization.OptIn ) ]
    public class ModEntry {
-      public string Path;
-      public ModMeta Metadata;
+      public readonly string Path;
+      public readonly ModMeta Metadata;
+
+      public ModEntry ( ModMeta meta ) : this( null, meta ) { }
+      public ModEntry ( string path, ModMeta meta ) {
+         Path = path;
+         Metadata = meta ?? throw new ArgumentNullException( nameof( meta ) );
+      }
 
       internal LoggerProxy Logger; // Created when and only when an initialiser accepts a logging function
       internal object Instance; // Created when and only when a non-static initialiser is called
@@ -30,7 +36,7 @@ namespace Sheepy.Modnix {
 
       internal void AddNotice ( SourceLevels lv, string reason, params object[] augs ) =>
          Notices = new LogEntry{ Level = lv, Message = reason, Args = augs };
-      public override string ToString () => $"Mod {Metadata?.Name}{(Disabled?" (Disabled)":"")}";
+      public override string ToString () => $"Mod {Metadata.Name}{(Disabled?" (Disabled)":"")}";
    }
 
    public class ModMeta {
@@ -184,6 +190,7 @@ namespace Sheepy.Modnix {
       public readonly static LoggerProxy JsonLogger = new JsonTraceLogger();
       public readonly static JsonSerializerSettings JsonOptions = new JsonSerializerSettings{
          Converters = new JsonConverter[]{ new ModMetaReader() }.ToList(),
+         ContractResolver = new DefaultContractResolver(),
          DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate,
          ReferenceLoopHandling = ReferenceLoopHandling.Error,
          Error = ( sender, err ) => JsonLogger.Error( err ),

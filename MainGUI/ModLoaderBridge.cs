@@ -18,7 +18,7 @@ namespace Sheepy.Modnix.MainGUI {
          }
          App.Log( "Building mod list" );
          ModScanner.BuildModList();
-         return ModScanner.AllMods.Select( e => new GridModItem(){ Mod = e } );
+         return ModScanner.AllMods.Select( e => new GridModItem( e ) );
       }
 
       internal void Delete ( ModInfo mod ) {
@@ -31,10 +31,11 @@ namespace Sheepy.Modnix.MainGUI {
    }
 
    internal class GridModItem : ModInfo {
-      internal ModEntry Mod;
-      public override string Name => Mod?.Metadata?.Name?.ToString();
-      public override string Version => Mod?.Metadata?.Version?.ToString();
-      public override string Author => Mod?.Metadata?.Author?.ToString();
+      internal readonly ModEntry Mod;
+      internal GridModItem ( ModEntry mod ) => Mod = mod ?? throw new ArgumentNullException( nameof( mod ) );
+      public override string Name => Mod.Metadata.Name?.ToString();
+      public override string Version => Mod.Metadata.Version?.ToString();
+      public override string Author => Mod.Metadata.Author?.ToString();
       public override string Status { get {
          if ( Mod == null ) return "Null";
          return Mod.Disabled ? "Disabled" : "Enabled";
@@ -42,18 +43,18 @@ namespace Sheepy.Modnix.MainGUI {
 
       public override void BuildDesc ( FlowDocument doc ) {
          new TextRange( doc.ContentStart, doc.ContentEnd ).Text =
-            $"{Name}\rVersion {Version}\rType {Type}\n{Mod?.Metadata?.Description}\nAuthor\t{(Author)}";
+            $"{Name}\rVersion {Version}\rType {Type}\n{Mod.Metadata.Description}\nAuthor\t{(Author)}";
       }
 
       public override string Path => Mod.Path;
       public override string Type { get {
-         var dlls = Mod?.Metadata?.Dlls;
+         var dlls = Mod.Metadata.Dlls;
          if ( dlls == null ) return "???";
          if ( dlls.Any( e => e?.Methods?.ContainsKey( "Init" ) ?? false ) ) return "PPML";
          if ( dlls.Any( e => e?.Methods?.ContainsKey( "Initialize" ) ?? false ) ) return "PPML+";
          return "DLL";
       } }
-      public override string ToString () => Mod?.ToString();
+      public override string ToString () => Mod.ToString();
    }
 
    internal class GUILogger : Logger {

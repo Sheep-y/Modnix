@@ -111,15 +111,14 @@ namespace Sheepy.Modnix {
       } catch ( Exception ex ) { Log?.Error( ex ); } }
 
       public static void SetLog ( Logger logger, bool clear = false ) {
-         if ( logger == null ) throw new NullReferenceException( nameof( logger ) );
          if ( Log != null ) throw new InvalidOperationException();
-         LoaderVersion = Assembly.GetExecutingAssembly().GetName().Version;
-         Log = logger;
+         Log = logger ?? throw new NullReferenceException( nameof( logger ) );
          logger.Filters.Clear();
          logger.Filters.Add( LogFilters.FormatParams );
          logger.Filters.Add( LogFilters.ResolveLazy );
          //logger.Level = SourceLevels.All;
          if ( clear ) Log.Clear();
+         LoaderVersion = Assembly.GetExecutingAssembly().GetName().Version;
          Log.Info( "{0}/{1}; {2}", typeof( ModLoader ).FullName, LoaderVersion, DateTime.Now.ToString( "u" ) );
          ModMetaJson.JsonLogger.Masters.Clear();
          ModMetaJson.JsonLogger.Masters.Add( Log );
