@@ -17,6 +17,7 @@ namespace Sheepy.Modnix {
 
       internal LoggerProxy Logger; // Created when and only when an initialiser accepts a logging function
       internal object Instance; // Created when and only when a non-static initialiser is called
+      internal string Key => Metadata?.Id?.ToLowerInvariant();
 
       public ModEntry Parent;
       public List<ModEntry> Children;
@@ -85,7 +86,7 @@ namespace Sheepy.Modnix {
 
       #region Normalise
       public ModMeta Normalise () { lock ( this ) {
-         Id = NormString( Id )?.ToLowerInvariant();
+         Id = NormString( Id );
          NormTextSet( ref Name );
          if ( Name == null ) Name = new TextSet{ Default = Id };
          NormStringArray( ref Langs );
