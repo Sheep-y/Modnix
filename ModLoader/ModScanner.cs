@@ -149,21 +149,25 @@ namespace Sheepy.Modnix {
          }.Normalise();
       } catch ( Exception ex ) { Log.Warn( ex ); return null; } }
 
-      private static string FindEmbeddedModInfo ( string file ) {
+      private static string FindEmbeddedModInfo ( string file ) { try {
          using ( var lib = AssemblyDefinition.ReadAssembly( file ) ) {
             if ( ! lib.MainModule.HasResources ) return null;
             var res = lib.MainModule?.Resources.FirstOrDefault() as EmbeddedResource;
             if ( res == null || res.ResourceType != ResourceType.Embedded ) return null;
-            using ( var reader = new ResourceReader( res.GetResourceStream() ) ) {
-               var data = reader.GetEnumerator();
-               while ( data.MoveNext() ) {
-                  if ( data.Key.ToString().ToLowerInvariant() == "mod_info" )
-                     return data.Value?.ToString();
+            if ( res.Name.ToLowerInvariant().Contains( ".mod_info.js" ) ) {
+               return Encoding.UTF8.GetString( res.GetResourceData() );
+            } else if ( res.Name.EndsWith( ".resources", StringComparison.InvariantCultureIgnoreCase ) ) {
+               using ( var reader = new ResourceReader( res.GetResourceStream() ) ) {
+                  var data = reader.GetEnumerator();
+                  while ( data.MoveNext() ) {
+                     if ( data.Key.ToString().ToLowerInvariant() == "mod_info" )
+                        return data.Value?.ToString();
+                  }
                }
             }
          }
          return null;
-      }
+      } catch ( Exception ex ) { Log.Warn( ex ); return null; } }
 
       private static DllEntryMeta ParseEntryPoints ( string file ) {
          DllEntryMeta result = null;
