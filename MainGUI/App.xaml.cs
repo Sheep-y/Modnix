@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -308,7 +309,6 @@ namespace Sheepy.Modnix.MainGUI {
 
       internal string CheckGameVer () { try {
          Log( "Detecting game version." );
-
          try {
             string logFile = Path.Combine( ModFolder, MOD_LOG );
             if ( File.Exists( logFile ) && 
@@ -326,6 +326,8 @@ namespace Sheepy.Modnix.MainGUI {
 
       /// Try to detect game path
       private bool FoundGame ( out string gamePath ) { gamePath = null; try {
+         gamePath = SearchRegistry();
+         if ( gamePath != null ) return true;
          gamePath = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.ProgramFiles ), "Epic Games", "PhoenixPoint" );
          if ( IsGamePath( gamePath ) ) return true;
          gamePath = SearchDrives();
@@ -333,11 +335,16 @@ namespace Sheepy.Modnix.MainGUI {
          return false;
       } catch ( IOException ex ) { gamePath = null; return Log( ex, false ); } }
 
-      private bool IsGamePath ( string path ) { try {
-         string exe = Path.Combine( path, GAME_EXE ), dll = Path.Combine( path, DLL_PATH, GAME_DLL );
-         Log( $"Checking {path}" );
-         return File.Exists( exe ) && File.Exists( dll );
-      } catch ( Exception ex ) { return Log( ex, false ); } }
+      private string SearchRegistry () { try {
+         using ( RegistryKey key = Registry.CurrentUser.OpenSubKey( "System\\GameConfigStore\\Children\\acd774ad-4030-4091-8b74-e50749daefd8" ) ) {
+            if ( key == null ) return null;
+            var val = key.GetValue( "MatchedExeFullPath" )?.ToString();
+            if ( val == null || ! File.Exists( val ) ) return null;
+            val= Path.GetDirectoryName( val );
+            if ( IsGamePath( val ) ) return val;
+         }
+         return null;
+      } catch ( Exception ex ) { return Log< string >( ex, null ); } }
 
       private string SearchDrives () { try {
          foreach ( var drive in DriveInfo.GetDrives() ) try {
@@ -348,6 +355,12 @@ namespace Sheepy.Modnix.MainGUI {
          } catch ( Exception ) { }
          return null;
       } catch ( Exception ex ) { return Log< string >( ex, null ); } }
+
+      private bool IsGamePath ( string path ) { try {
+         string exe = Path.Combine( path, GAME_EXE ), dll = Path.Combine( path, DLL_PATH, GAME_DLL );
+         Log( $"Checking {path}" );
+         return File.Exists( exe ) && File.Exists( dll );
+      } catch ( Exception ex ) { return Log( ex, false ); } }
       #endregion
 
       internal void LaunchGame ( string type ) {
