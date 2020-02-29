@@ -517,7 +517,7 @@ namespace Sheepy.Modnix.MainGUI {
       #endregion
 
       #region mods
-      private void GetModList () { try {
+      public void GetModList () { try {
          if ( bridge == null ) bridge = new ModLoaderBridge();
          GUI.SetInfo( "mod_list", bridge.LoadModList() );
       } catch ( IOException ex ) { Log( ex ); } }

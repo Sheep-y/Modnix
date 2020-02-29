@@ -18,7 +18,6 @@ namespace Sheepy.Modnix.MainGUI {
    public partial class MainWindow : Window, IAppGui {
       private readonly AppControl App = AppControl.Instance;
       private string AppVer, AppState, GamePath, GameVer;
-      private IEnumerable<ModInfo> ModList;
 
       public MainWindow () { try {
          InitializeComponent();
@@ -51,7 +50,7 @@ namespace Sheepy.Modnix.MainGUI {
             case "game_path"    : GamePath = txt; RefreshGameInfo(); break;
             case "game_version" : GameVer  = txt; RefreshGameInfo(); break;
             case "update"  : Update = value; UpdateChecked(); RefreshUpdateStatus(); break;
-            case "mod_list" : ModList = value as IEnumerable<ModInfo>; RefreshModList(); break;
+            case "mod_list" : RefreshModList( value as IEnumerable<ModInfo> ); break;
             default : Log( $"Unknown info {info}" ); break;
          }
       } catch ( Exception ex ) { Log( ex ); } } ); }
@@ -173,6 +172,12 @@ namespace Sheepy.Modnix.MainGUI {
       #region Mod Info Area
       private ModInfo CurrentMod;
       private bool IsInjected => AppState == "modnix" || AppState == "both";
+      private IEnumerable<ModInfo> ModList;
+
+      private void RefreshModList ( IEnumerable<ModInfo> list ) {
+         ModList = list;
+         RefreshModList();
+      }
 
       private void RefreshModList () { try {
          Log( "Refreshing mod list" );
@@ -215,8 +220,8 @@ namespace Sheepy.Modnix.MainGUI {
       } catch ( Exception ex ) { Log( ex ); } }
 
       private void ButtonAddMod_Click ( object sender, RoutedEventArgs e ) {
-         RefreshModInfo( null );
-         RefreshModList();
+         RefreshModList( null );
+         App.GetModList();
       }
 
       private void ButtonModOpenModDir_Click ( object sender, RoutedEventArgs e ) {
