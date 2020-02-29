@@ -150,9 +150,12 @@
     <Resource Include="Resources\img\canny.png" />
     <Resource Include="Resources\img\cross.png" />
     <Resource Include="Resources\img\discord.png" />
+    <Resource Include="Resources\img\eraser.png" />
+    <Resource Include="Resources\img\floppy.png" />
     <Resource Include="Resources\img\fandom.png" />
     <Resource Include="Resources\img\folder.png" />
     <Resource Include="Resources\img\info.png" />
+    <Resource Include="Resources\img\log_file.png" />
     <Resource Include="Resources\img\modder.png" />
     <Resource Include="Resources\img\modnix.ico" />
     <Resource Include="Resources\img\nexusmods.png" />
@@ -162,6 +165,7 @@
     <Resource Include="Resources\img\reload.png" />
     <Resource Include="Resources\img\snapshot.png" />
     <Resource Include="Resources\img\twitter.png" />
+    <Resource Include="Resources\img\upgrade.png" />
     <Resource Include="Resources\img\www.png" />
   </ItemGroup>
   <ItemGroup>

@@ -22,9 +22,9 @@ namespace Sheepy.Modnix.MainGUI {
       public MainWindow () { try {
          InitializeComponent();
          Log( "Disclaimer:\nModnix icon made from Phoenix Point's Technicial icon\n" +
-              "Book, Folder, Offline, and Reload icons from https://icons8.com/ under its Linkware License\n" +
               "Info and Red Cross icons from https://en.wikipedia.org/ under Public Domain\n" +
-              "Remaining icons belong to relevant sites." );
+              "Other action icons from https://www.visualpharm.com/ (https://icons8.com/) under its Linkware License\n" +
+              "Site icons belong to relevant sites." );
          RefreshGUI();
       } catch ( Exception ex ) { Console.WriteLine( ex ); } }
 
@@ -71,7 +71,7 @@ namespace Sheepy.Modnix.MainGUI {
                case "no_game": txt += "Game not found; Please do Manual Setup"; break;
                default: txt += "Unknown state; see log"; break;
             }
-         richAppInfo.TextRange().Text = txt;
+         RichAppInfo.TextRange().Text = txt;
          RefreshAppButtons();
          RefreshModList();
       } catch ( Exception ex ) { Log( ex ); } }
@@ -153,7 +153,7 @@ namespace Sheepy.Modnix.MainGUI {
                txt += "\rVer: " + GameVer;
          } else
             txt += "Game not found";
-         richGameInfo.TextRange().Text = txt;
+         RichGameInfo.TextRange().Text = txt;
          ButtonRunOnline .IsEnabled = GamePath != null;
          ButtonRunOffline.IsEnabled = GamePath != null;
       } catch ( Exception ex ) { Log( ex ); } }
@@ -210,13 +210,13 @@ namespace Sheepy.Modnix.MainGUI {
          ButtonModOpenModDir.IsEnabled = CurrentMod != null;
          if ( CurrentMod == null ) {
             Log( "Clearing mod info" );
-            richModInfo.TextRange().Text = "";
+            RichModInfo.TextRange().Text = "";
             BkgdModeInfo.Opacity = 0.5;
             return;
          }
          Log( $"Refreshing mod {CurrentMod}" );
          BkgdModeInfo.Opacity = 0;
-         CurrentMod.BuildDesc( richModInfo.Document );
+         CurrentMod.BuildDesc( RichModInfo.Document );
       } catch ( Exception ex ) { Log( ex ); } }
 
       private void ButtonAddMod_Click ( object sender, RoutedEventArgs e ) {
@@ -272,11 +272,11 @@ namespace Sheepy.Modnix.MainGUI {
          Log( $"Update is {(Update ?? "null")}" );
          if ( Object.Equals( "checking", Update ) ) {
             ButtonCheckUpdate.IsEnabled = false;
-            ButtonCheckUpdate.Content = "Checking...";
+            BtnTextCheckUpdate.Text = "Checking...";
             return;
          }
          ButtonCheckUpdate.IsEnabled = true;
-         ButtonCheckUpdate.Content = "Check Update";
+         BtnTextCheckUpdate.Text = "Check Update";
          GithubRelease release = Update as GithubRelease;
          if ( release == null ) return;
 
