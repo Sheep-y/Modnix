@@ -251,6 +251,7 @@ namespace Sheepy.Modnix.MainGUI {
          Log( "Checking status" );
          GUI.SetInfo( "version", CheckAppVer() );
          if ( FoundGame( out string gamePath ) ) {
+            Log( $"Found game at {gamePath}" );
             currentGame = new GameInstallation( gamePath );
             GUI.SetInfo( "game_path", gamePath );
             CheckInjectionStatus();
@@ -324,17 +325,29 @@ namespace Sheepy.Modnix.MainGUI {
       } catch ( Exception ex ) { return Log( ex, "error" ); } }
 
       /// Try to detect game path
-      internal bool FoundGame ( out string gamePath ) { gamePath = null; try {
-         foreach ( string path in GAME_PATHS ) {
-            string exe = Path.Combine( path, GAME_EXE ), dll = Path.Combine( path, DLL_PATH, GAME_DLL );
-            if ( File.Exists( exe ) && File.Exists( dll ) ) {
-               gamePath = Path.GetFullPath( path );
-               return Log( $"Found game at " + gamePath, true );
-            }
-            Log( $"Game not found at {path}" );
-         }
+      private bool FoundGame ( out string gamePath ) { gamePath = null; try {
+         gamePath = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.ProgramFiles ), "Epic Games", "PhoenixPoint" );
+         if ( IsGamePath( gamePath ) ) return true;
+         gamePath = SearchDrives();
+         if ( gamePath != null ) return true;
          return false;
-      } catch ( IOException ex ) { return Log( ex, false ); } }
+      } catch ( IOException ex ) { gamePath = null; return Log( ex, false ); } }
+
+      private bool IsGamePath ( string path ) { try {
+         string exe = Path.Combine( path, GAME_EXE ), dll = Path.Combine( path, DLL_PATH, GAME_DLL );
+         Log( $"Checking {path}" );
+         return File.Exists( exe ) && File.Exists( dll );
+      } catch ( Exception ex ) { return Log( ex, false ); } }
+
+      private string SearchDrives () { try {
+         foreach ( var drive in DriveInfo.GetDrives() ) try {
+            if ( drive.DriveType != DriveType.Fixed ) continue;
+            if ( ! drive.IsReady ) continue;
+            string path = Path.Combine( drive.Name, "Program Files", "Epic Games", "PhoenixPoint" );
+            if ( IsGamePath( path ) ) return path;
+         } catch ( Exception ) { }
+         return null;
+      } catch ( Exception ex ) { return Log< string >( ex, null ); } }
       #endregion
 
       internal void LaunchGame ( string type ) {
