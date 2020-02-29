@@ -19,6 +19,9 @@ namespace Sheepy.Modnix.MainGUI {
       private readonly AppControl App = AppControl.Instance;
       private string AppVer, AppState, GamePath, GameVer;
 
+      private bool IsInjected => AppState == "modnix" || AppState == "both";
+      private bool CanModify => AppState != null && AppState != "running";
+
       public MainWindow () { try {
          InitializeComponent();
          Log( "Disclaimer:\nModnix icon made from Phoenix Point's Technicial icon\n" +
@@ -55,6 +58,17 @@ namespace Sheepy.Modnix.MainGUI {
          }
       } catch ( Exception ex ) { Log( ex ); } } ); }
 
+      private void Window_Activated ( object sender, EventArgs e ) {
+         if ( AppControl.IsGameRunning() ) {
+            if ( AppState != "running" )
+               SetInfo( "state", "running" );
+         } else 
+            if ( AppState == "running" ) {
+               SetInfo( "state", null );
+               App.CheckStatusAsync();
+            }
+      }
+
       #region App Info Area
       private void RefreshAppInfo () { try {
          Log( "Refreshing app info" );
@@ -77,8 +91,12 @@ namespace Sheepy.Modnix.MainGUI {
       } catch ( Exception ex ) { Log( ex ); } }
 
       private void RefreshAppButtons () { try {
-         Log( "Refreshing app buttons" );
-         ButtonSetup.IsEnabled  = AppState != null;
+         Log( "Refreshing app buttons, " + ( CanModify ? "can mod" : "cannot mod" ) );
+         ButtonSetup.IsEnabled = AppState != null;
+         ButtonRunOnline .IsEnabled = CanModify && GamePath != null;
+         ButtonRunOffline.IsEnabled = CanModify && GamePath != null;
+         ButtonModDelete.IsEnabled = CanModify && CurrentMod != null;
+         ButtonModOpenModDir.IsEnabled = CanModify && CurrentMod != null;
          switch ( AppState ) {
             case "modnix"  : BtnTxtSetup.Text = "Revert"; break;
             case "running" : BtnTxtSetup.Text = "Refresh"; break;
@@ -103,6 +121,7 @@ namespace Sheepy.Modnix.MainGUI {
                   DoRestore();
                break;
             case "running" :
+               SetInfo( "state", null );
                App.CheckStatusAsync();
                break;
             default:
@@ -154,8 +173,7 @@ namespace Sheepy.Modnix.MainGUI {
          } else
             txt += "Game not found";
          RichGameInfo.TextRange().Text = txt;
-         ButtonRunOnline .IsEnabled = GamePath != null;
-         ButtonRunOffline.IsEnabled = GamePath != null;
+         RefreshAppButtons();
       } catch ( Exception ex ) { Log( ex ); } }
 
       private void ButtonOnline_Click  ( object sender, RoutedEventArgs e ) => App.LaunchGame( "online" );
@@ -171,7 +189,6 @@ namespace Sheepy.Modnix.MainGUI {
 
       #region Mod Info Area
       private ModInfo CurrentMod;
-      private bool IsInjected => AppState == "modnix" || AppState == "both";
       private IEnumerable<ModInfo> ModList;
 
       private void RefreshModList ( IEnumerable<ModInfo> list ) {
@@ -185,15 +202,15 @@ namespace Sheepy.Modnix.MainGUI {
          ButtonModDir.IsEnabled = Directory.Exists( App.ModFolder );
          ButtonRefreshMod.IsEnabled = AppState != null;
          if ( GridModList.ItemsSource != ModList ) {
-            Log( "New list of mods" );
+            Log( "New mod list, clearing selection" );
             GridModList.ItemsSource = ModList;
             RefreshModInfo( null );
          }
-         if ( IsInjected || AppState == null ) {
+         if ( IsInjected || AppState == null || AppState == "running" ) {
             LabelModList.Content = AppState == null || ModList == null ? "Checking..." : $"{ModList.Count()} Mods";
             LabelModList.Foreground = Brushes.Black;
          } else {
-            LabelModList.Content = $"NOT INSTALLED";
+            LabelModList.Content = "NOT INSTALLED";
             LabelModList.Foreground = Brushes.Red;
          }
          GridModList.Items?.Refresh();
@@ -206,8 +223,7 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       private void RefreshModInfo () { try {
-         ButtonModDelete.IsEnabled = CurrentMod != null;
-         ButtonModOpenModDir.IsEnabled = CurrentMod != null;
+         RefreshAppButtons();
          if ( CurrentMod == null ) {
             Log( "Clearing mod info" );
             RichModInfo.TextRange().Text = "";
