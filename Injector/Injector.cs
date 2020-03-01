@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using static System.Console;
 
 namespace Sheepy.Modnix {
@@ -183,8 +184,9 @@ namespace Sheepy.Modnix {
          if ( ! string.IsNullOrEmpty( OptionsIn.RequiredGameVersion ) && OptionsIn.RequiredGameVersion != State.gameVersion )
             Exit( PromptForKey( SayRequiredGameVersionMismatchMessage( State.gameVersion, OptionsIn.RequiredGameVersion ) ) );
 
-         State.ppmlDll.CheckInjection();
-         State.modxDll.CheckInjection();
+         Task.WaitAll(
+            Task.Run( State.ppmlDll.CheckInjection ),
+            Task.Run( State.modxDll.CheckInjection ) );
          var state = State.ppmlDll.Status | State.modxDll.Status;
          if ( OptionsIn.Detecting )
             Exit( SayInjectedStatus( state ) );
@@ -356,21 +358,23 @@ namespace Sheepy.Modnix {
          if ( ! File.Exists( BackupFile ) )
             throw new BackupFileError( BackupFile, "could not be found" );
 
-         if ( CheckInjection( BackupFile ) != InjectionState.NONE )
+         if ( CheckInjectionOf( BackupFile ) != InjectionState.NONE )
             throw new BackupFileError( BackupFile, "was injected" );
 
          File.Copy( BackupFile, Target, true );
          WriteLine( $"{Path.GetFileName( BackupFile )} restored to {Path.GetFileName( Target )}" );
       }
+
+      internal InjectionState CheckInjection () => CheckInjectionOf( Target );
       
-      internal InjectionState CheckInjection ( string target = null ) {
-         if ( target == null ) target = Target;
+      internal InjectionState CheckInjectionOf ( string target ) {
          using ( var dll = ModuleDefinition.ReadModule( target ) ) {
             foreach ( var type in dll.Types ) {
+               if ( type.IsNotPublic ) continue;
                var result = CheckInjection( type );
                if ( result != InjectionState.NONE ) {
                   if ( Target.Equals( target ) )
-                     Status = result; 
+                     Status = result;
                   return result;
                }
             }
@@ -396,8 +400,6 @@ namespace Sheepy.Modnix {
             if ( ! instruction.OpCode.Equals( OpCodes.Call ) ) continue;
             string op = instruction.Operand.ToString();
             if ( op.StartsWith( ModnixInjectCheck ) )
-               // Update check:
-               // if ( methodDefinition.FullName.Contains( HOOK_TYPE ) && methodDefinition.FullName.Contains( HOOK_METHOD ) )
                return InjectionState.MODNIX;
             else if ( op.StartsWith( PPML01InjectCheck ) || op.StartsWith( PPML02InjectCheck ) )
                return InjectionState.PPML;
