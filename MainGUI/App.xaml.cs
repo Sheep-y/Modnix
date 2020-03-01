@@ -74,24 +74,26 @@ namespace Sheepy.Modnix.MainGUI {
       internal void ApplicationStartup ( object sender, StartupEventArgs e ) { try {
          Instance = this;
          Log( $"Startup time {DateTime.Now.ToString( "yyyy-MM-dd HH:mm:ss.ffff", InvariantCulture )}" );
-         Init( e?.Args );
-         if ( ! ParamSkipStartupCheck ) {
-            Log( $"Running startup checks" );
-            MigrateSettings();
-            if ( FoundRunningModnix() ) {
-               Shutdown();
-               return;
+         lock ( Instance ) {
+            Init( e?.Args );
+            if ( ! ParamSkipStartupCheck ) {
+               Log( $"Running startup checks" );
+               MigrateSettings();
+               if ( FoundRunningModnix() ) {
+                  Shutdown();
+                  return;
+               }
+               if ( ! IsSelfInstalled() ) {
+                  if ( FoundInstalledModnix() )
+                     GUI = new SetupWindow( "launch" );
+                  else if ( ShouldRunSetup() )
+                     GUI = new SetupWindow( "setup" );
+               }
             }
-            if ( ! IsSelfInstalled() ) {
-               if ( FoundInstalledModnix() )
-                  GUI = new SetupWindow( "launch" );
-               else if ( ShouldRunSetup() )
-                  GUI = new SetupWindow( "setup" );
-            }
+            Log( $"Launching main window" );
+            if ( GUI == null )
+               GUI = new MainWindow();
          }
-         Log( $"Launching main window" );
-         if ( GUI == null )
-            GUI = new MainWindow();
          Log( null ); // Send startup log to GUI
          GUI.SetInfo( GuiInfo.VISIBILITY, "true" );
       } catch ( Exception ex ) {
@@ -252,11 +254,12 @@ namespace Sheepy.Modnix.MainGUI {
       internal void CheckStatusAsync () {
          Log( "Queuing status check" );
          Task.Run( (Action) CheckStatus );
-            Task.Run( (Action) GetModList );
+         Task.Run( (Action) GetModList );
       }
 
       private void CheckStatus () { try {
-         Log( "Checking status" );
+         lock ( Instance ) // Make sure GUI is set
+            Log( "Checking status" );
          GUI.SetInfo( GuiInfo.APP_VER, CheckAppVer() );
          if ( FoundGame( out string gamePath ) ) {
             Log( $"Found game at {gamePath}" );
@@ -544,7 +547,8 @@ namespace Sheepy.Modnix.MainGUI {
 
       #region mods
       public void GetModList () { try {
-         if ( ModBridge == null ) ModBridge = new ModLoaderBridge();
+         lock ( Instance ) // Make sure GUI is set
+            if ( ModBridge == null ) ModBridge = new ModLoaderBridge();
          var list = ModBridge.LoadModList();
          if ( list != null ) GUI.SetInfo( GuiInfo.MOD_LIST, list );
       } catch ( IOException ex ) { Log( ex ); } }
