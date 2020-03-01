@@ -362,9 +362,11 @@ namespace Sheepy.Modnix.MainGUI {
 
       #region Logging
       public void Log ( object message ) {
+         var txt = message?.ToString();
+         Console.WriteLine( txt );
          string time = DateTime.Now.ToString( "hh:mm:ss.ffff ", InvariantCulture );
          this.Dispatch( () => { try {
-            TextLog.AppendText( time + message?.ToString() + "\n" );
+            TextLog.AppendText( time + txt + "\n" );
             TextLog.ScrollToEnd();
             ButtonLogSave.IsEnabled = true;
          } catch ( Exception ex ) { Console.WriteLine( ex ); } } );

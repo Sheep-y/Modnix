@@ -118,15 +118,14 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       public void Log ( object message ) {
+         string time = DateTime.Now.ToString( "hh:mm:ss.ffff ", InvariantCulture );
+         string line = $"{time} {message}\n";
+         Console.WriteLine( line );
          this.Dispatch( () => { try {
-            string time = DateTime.Now.ToString( "hh:mm:ss.ffff ", InvariantCulture );
-            string line = $"{time} {message}\n";
-            if ( Mode != "log" )
-               Console.Write( line );
             if ( Mode == "log" ) {
                TextMessage.AppendText( line );
                TextMessage.ScrollToEnd();
-            }  else
+            } else
                LogContent += line;
          } catch ( Exception ex ) { Console.WriteLine( ex ); } } );
       }

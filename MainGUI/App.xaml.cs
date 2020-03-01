@@ -237,8 +237,9 @@ namespace Sheepy.Modnix.MainGUI {
 
       private bool ShouldRunSetup () { try {
          if ( ! MyPath.Contains( "/Mods/" ) && ! MyPath.Contains( "\\Mods\\" ) ) return true;
-         if ( Path.GetFileName( MyPath ).ToLowerInvariant().Contains( "setup" ) ) return true;
-         if ( Path.GetFileName( MyPath ).ToLowerInvariant().Contains( "install" ) ) return true;
+         string myPath = Path.GetFileName( MyPath ).ToLowerInvariant();
+         if ( myPath.Contains( "setup" ) ) return true;
+         if ( myPath.Contains( "install" ) ) return true;
          Log( $"No need to run setup." );
          return false;
       } catch ( Exception ex ) { return Log( ex, false ); } }
@@ -286,14 +287,14 @@ namespace Sheepy.Modnix.MainGUI {
       internal string InjectorPath ( string gamePath ) => Path.Combine( gamePath, DLL_PATH, INJECTOR );
       internal string LoaderPath   ( string gamePath ) => Path.Combine( gamePath, DLL_PATH, LOADER   );
 
-      /// Check that mod injector and mod loader is in place
+      // Check that mod injector and mod loader is in place
       internal bool InjectorInPlace () { try {
          if ( ! File.Exists( currentGame.Injector ) ) return Log( $"Missing injector: {currentGame.Injector}", false );
          if ( ! File.Exists( currentGame.Loader   ) ) return Log( $"Missing loader: {currentGame.Loader}", false );
          return Log( $"Injector and loader found in {currentGame.CodeDir}", true );
       } catch ( IOException ex ) { return Log( ex, false ); } }
 
-      /// Return true if injectors are in place and injected.
+      // Return true if injectors are in place and injected.
       internal bool CheckInjected () {
          try {
             if ( ! InjectorInPlace() ) return false;
@@ -328,7 +329,7 @@ namespace Sheepy.Modnix.MainGUI {
          return currentGame.RunInjector( "/g" );
       } catch ( Exception ex ) { return Log( ex, "error" ); } }
 
-      /// Try to detect game path
+      // Try to detect game path
       private bool FoundGame ( out string gamePath ) { gamePath = null; try {
          gamePath = SearchRegistry();
          if ( gamePath != null ) return true;
@@ -367,27 +368,24 @@ namespace Sheepy.Modnix.MainGUI {
       } catch ( Exception ex ) { return Log( ex, false ); } }
       #endregion
 
-      internal void LaunchGame ( string type ) {
-         // Non-Async
-         try {
-            if ( type == "online" ) {
-               if ( currentGame.GameType == "epic" ) {
-                  Log( "Launching through epic game launcher" );
-                  Process.Start( "com.epicgames.launcher://apps/Iris?action=launch" );
-                  return;
-               }
-            } else {
-               string exe = Path.Combine( currentGame.GameDir, GAME_EXE );
-               Log( $"Launching {exe}" );
-               Process.Start( exe );
+      internal void LaunchGame ( string type ) { try {
+         if ( type == "online" ) {
+            if ( currentGame.GameType == "epic" ) {
+               Log( "Launching through epic game launcher" );
+               Process.Start( "com.epicgames.launcher://apps/Iris?action=launch" );
                return;
             }
-            Log( $"Unsupported launch type. Requested {type}. Game is {currentGame.GameType}." );
-            GUI.Prompt( "error" );
-         } catch ( Exception ex ) {
-            GUI.Prompt( "error", ex );
+         } else {
+            string exe = Path.Combine( currentGame.GameDir, GAME_EXE );
+            Log( $"Launching {exe}" );
+            Process.Start( exe );
+            return;
          }
-      }
+         Log( $"Unsupported launch type. Requested {type}. Game is {currentGame.GameType}." );
+         GUI.Prompt( "error" );
+      } catch ( Exception ex ) {
+         GUI.Prompt( "error", ex );
+      } }
 
       #region Setup / Restore
       internal void DoSetupAsync () {
