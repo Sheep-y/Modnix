@@ -2,10 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Documents;
-using System.Windows.Threading;
 using static System.StringComparison;
 
 namespace Sheepy.Modnix.MainGUI {
@@ -15,6 +13,7 @@ namespace Sheepy.Modnix.MainGUI {
       public abstract string Version { get; }
       public abstract string Author { get; }
       public abstract string Status { get; }
+      public abstract object Query ( string prop );
       public abstract void BuildDesc ( FlowDocument doc );
       public abstract string Path { get; }
       public abstract string Type { get; }

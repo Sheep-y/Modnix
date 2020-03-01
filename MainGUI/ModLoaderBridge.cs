@@ -41,6 +41,17 @@ namespace Sheepy.Modnix.MainGUI {
          return Mod.Disabled ? "Disabled" : "Enabled";
       } }
 
+      public override object Query ( string prop ) {
+         switch ( prop ) {
+            case "IsSingleFile" :
+               return true;
+            case "IsChild" : 
+               return Mod.Parent != null;
+            default:
+               return null;
+         }
+      }
+
       public override void BuildDesc ( FlowDocument doc ) {
          new TextRange( doc.ContentStart, doc.ContentEnd ).Text =
             $"{Name}\rVersion {Version}\rType {Type}\n{Mod.Metadata.Description}\nAuthor\t{(Author)}";
