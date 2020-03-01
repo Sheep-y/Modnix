@@ -104,7 +104,7 @@ namespace Sheepy.Modnix.MainGUI {
          ButtonSetup.IsEnabled = AppState != null;
          ButtonRunOnline .IsEnabled = CanModify && GamePath != null;
          ButtonRunOffline.IsEnabled = CanModify && GamePath != null;
-         ButtonModOpenModDir.IsEnabled = CanModify && CurrentMod != null;
+         ButtonModOpenModDir.IsEnabled = CurrentMod != null;
          ButtonModDelete.IsEnabled = CanDeleteMod;
          if ( IsGameRunning )
             BtnTxtSetup.Text = "Refresh";
@@ -189,13 +189,13 @@ namespace Sheepy.Modnix.MainGUI {
       private void ButtonOnline_Click  ( object sender, RoutedEventArgs e ) {
          App.LaunchGame( "online" );
          SetInfo( GuiInfo.GAME_RUNNING, true );
-         new Timer( CheckGameRunning, null, 5_000, Timeout.Infinite );
+         new Timer( CheckGameRunning, null, 10_000, Timeout.Infinite );
       }
 
       private void ButtonOffline_Click ( object sender, RoutedEventArgs e ) {
          App.LaunchGame( "offline" );
          SetInfo( GuiInfo.GAME_RUNNING, true );
-         new Timer( CheckGameRunning, null, 5_000, Timeout.Infinite );
+         new Timer( CheckGameRunning, null, 10_000, Timeout.Infinite );
       }
 
       private void ButtonCanny_Click   ( object sender, RoutedEventArgs e ) => OpenUrl( "canny", e );
