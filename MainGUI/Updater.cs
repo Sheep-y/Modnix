@@ -27,12 +27,12 @@ namespace Sheepy.Modnix.MainGUI {
       private const string RELEASE  = "https://api.github.com/repos/Sheep-y/Modnix/releases";
 
       private readonly AppControl App = AppControl.Instance;
-      private JsonSerializerSettings jsonOptions;
+      private JsonSerializerSettings JsonOptions;
 
       internal Updater () {
          ServicePointManager.Expect100Continue = true;
          ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-         jsonOptions = new JsonSerializerSettings() {
+         JsonOptions = new JsonSerializerSettings() {
             DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate,
             Error = ( sender, err ) => App.Log( err ),
             MissingMemberHandling = MissingMemberHandling.Ignore,
@@ -40,7 +40,13 @@ namespace Sheepy.Modnix.MainGUI {
          };
       }
 
+      private bool Checking;
+
       internal GithubRelease FindUpdate ( Version update_from ) { try {
+         lock ( App ) {
+            if ( Checking ) return null;
+            Checking = true;
+         }
          App.Log( $"Checking update from {RELEASE}" );
          HttpWebRequest request = WebRequest.Create( new Uri( RELEASE ) ) as HttpWebRequest;
          if ( request == null )
@@ -60,7 +66,7 @@ namespace Sheepy.Modnix.MainGUI {
             return App.Log<GithubRelease>( ReadAsString( wex.Response ), null );
          }
 
-         GithubRelease[] releases = JsonConvert.DeserializeObject<GithubRelease[]>( json, jsonOptions );
+         GithubRelease[] releases = JsonConvert.DeserializeObject<GithubRelease[]>( json, JsonOptions );
          App.Log( $"Found {releases?.Length} releases." );
          if ( RELEASE == null || releases.Length <= 0 ) return null;
          foreach ( var e in releases ) try {
@@ -79,7 +85,11 @@ namespace Sheepy.Modnix.MainGUI {
             }
          } catch ( Exception ex ) { App.Log( ex ); } 
          return null;
-      } catch ( Exception ex ) { return App.Log<GithubRelease>( ex, null ); } }
+      } catch ( Exception ex ) {
+         return App.Log<GithubRelease>( ex, null );
+      } finally {
+         lock( App ) { Checking = false; }
+      } }
 
       private static string ReadAsString ( WebResponse response ) {
          using ( StreamReader reader = new StreamReader( response.GetResponseStream() ) ) {

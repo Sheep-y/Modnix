@@ -49,30 +49,12 @@ namespace Sheepy.Modnix.MainGUI {
          Log( $"Set {info} = {value}" );
          string txt = value?.ToString();
          switch ( info ) {
-            case GuiInfo.VISIBILITY :
-               Show();
-               break;
-            case GuiInfo.APP_VER :
-               AppVer = txt;
-               RefreshAppInfo();
-               break;
-            case GuiInfo.APP_STATE :
-               AppState = txt;
-               RefreshAppInfo();
-               break;
-            case GuiInfo.APP_UPDATE :
-               Update = value;
-               UpdateChecked();
-               RefreshUpdateStatus();
-               break;
-            case GuiInfo.GAME_RUNNING :
-               IsGameRunning = (bool) value;
-               RefreshAppInfo();
-               break;
-            case GuiInfo.GAME_PATH :
-               GamePath = txt;
-               RefreshGameInfo();
-               break;
+            case GuiInfo.VISIBILITY : Show(); break;
+            case GuiInfo.APP_VER : AppVer = txt; RefreshAppInfo(); break;
+            case GuiInfo.APP_STATE : AppState = txt; RefreshAppInfo(); break;
+            case GuiInfo.APP_UPDATE : Update = value; UpdateChecked(); RefreshUpdateStatus(); break;
+            case GuiInfo.GAME_RUNNING : IsGameRunning = (bool) value; RefreshAppInfo(); break;
+            case GuiInfo.GAME_PATH : GamePath = txt; RefreshGameInfo(); break;
             case GuiInfo.GAME_VER :
                if ( GameVer == txt ) return;
                GameVer  = txt;

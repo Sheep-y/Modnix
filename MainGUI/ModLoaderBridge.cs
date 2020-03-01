@@ -10,15 +10,23 @@ using System.Windows.Documents;
 namespace Sheepy.Modnix.MainGUI {
    internal class ModLoaderBridge {
       private AppControl App = AppControl.Instance;
+      private bool Loading;
 
       internal object LoadModList () {
+         lock ( App ) {
+            if ( Loading ) return null;
+            Loading = true;
+         }
          if ( ModLoader.NeedSetup ) {
             ModLoader.SetLog( new GUILogger( App.GUI ) );
             ModLoader.Setup();
          }
          App.Log( "Building mod list" );
          ModScanner.BuildModList();
-         return ModScanner.AllMods.Select( e => new GridModItem( e ) );
+         lock ( App ) {
+            Loading = false;
+            return ModScanner.AllMods.Select( e => new GridModItem( e ) );
+         }
       }
 
       internal void Delete ( ModInfo mod, ModActionType type ) {
@@ -58,38 +66,41 @@ namespace Sheepy.Modnix.MainGUI {
       public override string Name => Mod.Metadata.Name?.ToString();
       public override string Version => Mod.Metadata.Version?.ToString();
       public override string Author => Mod.Metadata.Author?.ToString();
-      public override string Status { get {
-         if ( Mod == null ) return "Null";
+      public override string Status { get { lock ( Mod ) {
          return Mod.Disabled ? "Disabled" : "Enabled";
-      } }
+      } } }
 
-      public override object Query ( ModQueryType prop ) {
+      public override object Query ( ModQueryType prop ) { lock ( Mod ) {
          switch ( prop ) {
             case ModQueryType.IS_FOLDER :
                return System.IO.Path.GetDirectoryName( Path ) != AppControl.Instance.ModFolder;
-            case ModQueryType.IS_CHILD : 
+            case ModQueryType.IS_CHILD :
                return Mod.Parent != null;
-            case ModQueryType.HAS_SETTINGS : 
+            case ModQueryType.HAS_SETTINGS :
                return false;
             default:
                return null;
          }
-      }
+      } }
 
-      public override void BuildDesc ( FlowDocument doc ) {
+      public override void BuildDesc ( FlowDocument doc ) { lock ( Mod ) {
          new TextRange( doc.ContentStart, doc.ContentEnd ).Text =
             $"{Name}\rVersion {Version}\rType {Type}\n{Mod.Metadata.Description}\nAuthor\t{(Author)}";
-      }
+      } }
 
       public override string Path => Mod.Path;
-      public override string Type { get {
+
+      public override string Type { get { lock ( Mod ) {
          var dlls = Mod.Metadata.Dlls;
          if ( dlls == null ) return "???";
          if ( dlls.Any( e => e?.Methods?.ContainsKey( "Init" ) ?? false ) ) return "PPML";
          if ( dlls.Any( e => e?.Methods?.ContainsKey( "Initialize" ) ?? false ) ) return "PPML+";
          return "DLL";
+      } } }
+
+      public override string ToString () { lock ( Mod ) {
+         return Mod.ToString();
       } }
-      public override string ToString () => Mod.ToString();
    }
 
    internal class GUILogger : Logger {
