@@ -6,7 +6,8 @@
 * Faster startup: Check game version in parallel with injection status.
 * Faster startup: Check ppml and modnix injection status in parallel, and check only public classes.
 * Detect whether game is running, and disables setup / modifications accordingly.
-* Prompt and delete whole subfolder of a mod.
+* If mod is in a subfolder, prompt and delete whole subfolder.
+* Remove empty folders left by deleting a mod.
 
 # Version 0.80, 2020-02-29
 

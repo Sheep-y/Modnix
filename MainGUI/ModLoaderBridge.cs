@@ -43,11 +43,7 @@ namespace Sheepy.Modnix.MainGUI {
          string path = mod.Path;
          App.Log( $"Deleting {path}" );
          File.Delete( path );
-         path = Path.GetDirectoryName( path );
-         if ( path != ModLoader.ModDirectory && ! Directory.EnumerateFileSystemEntries( path ).Any() ) {
-            App.Log( $"Deleting empty {path}" );
-            Directory.Delete( path );
-         }
+         RemoveEmptyFolders( path );
       }
 
       private void DeleteModFolder ( ModInfo mod ) {
@@ -65,6 +61,16 @@ namespace Sheepy.Modnix.MainGUI {
             RecurDelete( dir );
          App.Log( $"Deleting {path}" );
          Directory.Delete( path );
+         RemoveEmptyFolders( path );
+      }
+
+      private void RemoveEmptyFolders ( string path ) {
+         path = Path.GetDirectoryName( path );
+         while ( path != ModLoader.ModDirectory && ! Directory.EnumerateFileSystemEntries( path ).Any() ) {
+            App.Log( $"Deleting empty {path}" );
+            Directory.Delete( path );
+            path = Path.GetDirectoryName( path );
+         }
       }
    }
 
