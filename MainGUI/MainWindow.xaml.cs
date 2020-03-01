@@ -290,7 +290,7 @@ namespace Sheepy.Modnix.MainGUI {
          if ( CurrentMod == null ) return;
          ModActionType action = ModActionType.DELETE_FILE;
          if ( (bool) CurrentMod.Query( ModQueryType.IS_FOLDER ) ) {
-            var ans = MessageBox.Show( $"Delete {CurrentMod.Name} folder, or just the file?", "Confirm",
+            var ans = MessageBox.Show( $"Delete {CurrentMod.Name} folder?\nSay no to delete just the file.", "Confirm",
                   MessageBoxButton.YesNoCancel, MessageBoxImage.Question, MessageBoxResult.Cancel );
             if ( ans == MessageBoxResult.Cancel ) return;
             if ( ans == MessageBoxResult.Yes )

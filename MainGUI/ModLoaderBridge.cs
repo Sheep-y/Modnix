@@ -21,12 +21,34 @@ namespace Sheepy.Modnix.MainGUI {
          return ModScanner.AllMods.Select( e => new GridModItem( e ) );
       }
 
-      internal void Delete ( ModInfo mod ) {
-         App.Log( $"Deleting Mod {mod.Name}" );
+      internal void Delete ( ModInfo mod, ModActionType type ) {
+         App.Log( $"{type} {mod.Name}" );
+         switch ( type ) {
+            case ModActionType.DELETE_FILE : DeleteModFile( mod ); break;
+            case ModActionType.DELETE_SETTINGS : break;
+            case ModActionType.DELETE_DIR : DeleteModFolder( mod ); break;
+            default: throw new ArgumentException( $"Unknown mod deletion {type}" );
+         }
+      }
+
+      private void DeleteModFile ( ModInfo mod ) {
          string path = mod.Path;
          App.Log( $"Deleting {path}" );
-         if ( ! File.Exists( path ) ) throw new FileNotFoundException( path );
          File.Delete( path );
+      }
+
+      private void DeleteModFolder ( ModInfo mod ) {
+         string path = Path.GetDirectoryName( mod.Path );
+         App.Log( $"Deleting {path}" );
+         RecurDelete( path );
+      }
+
+      private void RecurDelete ( string path ) {
+         foreach ( var file in Directory.EnumerateFiles( path ) )
+            File.Delete( file );
+         foreach ( var dir in Directory.EnumerateDirectories( path ) )
+            RecurDelete( dir );
+         Directory.Delete( path );
       }
    }
 

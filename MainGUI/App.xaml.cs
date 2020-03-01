@@ -560,9 +560,13 @@ namespace Sheepy.Modnix.MainGUI {
       private void DoModAction ( ModActionType action, ModInfo mod ) { try { lock ( SynRoot) {
          if ( mod == null ) return;
          switch ( action ) {
-            case ModActionType.DELETE : 
-               bridge.Delete( mod );
+            case ModActionType.DELETE_FILE :
+            case ModActionType.DELETE_DIR :
+               bridge.Delete( mod, action );
                GetModList();
+               return;
+            case ModActionType.DELETE_SETTINGS :
+               Log( new NotImplementedException() );
                return;
             default :
                Log( $"Unknown command {action}" );
