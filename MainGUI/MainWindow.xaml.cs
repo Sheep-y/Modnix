@@ -18,9 +18,10 @@ namespace Sheepy.Modnix.MainGUI {
    public partial class MainWindow : Window, IAppGui {
       private readonly AppControl App = AppControl.Instance;
       private string AppVer, AppState, GamePath, GameVer;
+      private bool IsGameRunning;
 
       private bool IsInjected => AppState == "modnix" || AppState == "both";
-      private bool CanModify => AppState != null && AppState != "running";
+      private bool CanModify => AppState != null && ! IsGameRunning;
 
       public MainWindow () { try {
          InitializeComponent();
@@ -49,6 +50,7 @@ namespace Sheepy.Modnix.MainGUI {
          switch ( info ) {
             case "visible" : Show(); break;
             case "version" : AppVer = txt; RefreshAppInfo(); break;
+            case "running" : IsGameRunning = (bool) value; RefreshAppInfo(); break;
             case "state"   : AppState = txt; RefreshAppInfo(); break;
             case "game_path"    : GamePath = txt; RefreshGameInfo(); break;
             case "game_version" : GameVer  = txt; RefreshGameInfo(); break;
@@ -59,21 +61,17 @@ namespace Sheepy.Modnix.MainGUI {
       } catch ( Exception ex ) { Log( ex ); } } ); }
 
       private void Window_Activated ( object sender, EventArgs e ) {
-         if ( AppControl.IsGameRunning() ) {
-            if ( AppState != "running" )
-               SetInfo( "state", "running" );
-         } else 
-            if ( AppState == "running" ) {
-               SetInfo( "state", null );
-               App.CheckStatusAsync();
-            }
+         if ( AppControl.IsGameRunning() != IsGameRunning )
+            SetInfo( "running", ! IsGameRunning );
       }
 
       #region App Info Area
       private void RefreshAppInfo () { try {
          Log( "Refreshing app info" );
          string txt = $"Modnix\rVer {AppVer}\rStatus: ";
-         if ( AppState == null )
+         if ( IsGameRunning )
+            txt += "Game is running";
+         else if ( AppState == null )
             txt += "Busy";
          else
             switch ( AppState ) {
@@ -81,7 +79,6 @@ namespace Sheepy.Modnix.MainGUI {
                case "both"   : txt += "PPML found, can remove"; break;
                case "modnix" : txt += "Injected"; break;
                case "setup"  : txt += "Requires Setup"; break;
-               case "running": txt += "Game is running"; break;
                case "no_game": txt += "Game not found; Please do Manual Setup"; break;
                default: txt += "Unknown state; see log"; break;
             }
@@ -97,11 +94,12 @@ namespace Sheepy.Modnix.MainGUI {
          ButtonRunOffline.IsEnabled = CanModify && GamePath != null;
          ButtonModDelete.IsEnabled = CanModify && CurrentMod != null;
          ButtonModOpenModDir.IsEnabled = CanModify && CurrentMod != null;
-         switch ( AppState ) {
-            case "modnix"  : BtnTxtSetup.Text = "Revert"; break;
-            case "running" : BtnTxtSetup.Text = "Refresh"; break;
-            default        : BtnTxtSetup.Text = "Setup"; break;
-         }
+         if ( IsGameRunning )
+            BtnTxtSetup.Text = "Refresh";
+         else if ( AppState == "modnix" )
+            BtnTxtSetup.Text = "Revert";
+         else if ( AppState == "modnix" )
+            BtnTxtSetup.Text = "Setup";
          ButtonLoaderLog.IsEnabled = File.Exists( LoaderLog );
       } catch ( Exception ex ) { Log( ex ); } }
 
@@ -112,6 +110,10 @@ namespace Sheepy.Modnix.MainGUI {
       private void ButtonSetup_Click ( object sender, RoutedEventArgs e ) { try {
          Log( "Main action button clicked" );
          if ( e?.Source is UIElement src ) src.Focus();
+         if ( IsGameRunning ) { // Refresh
+            SetInfo( "state", null );
+            App.CheckStatusAsync();
+         }
          switch ( AppState ) {
             case "ppml" : case "both" : case "setup" :
                DoSetup();
@@ -119,10 +121,6 @@ namespace Sheepy.Modnix.MainGUI {
             case "modnix" :
                if ( MessageBox.Show( "Remove Modnix from Phoenix Poing?", "Revert", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No ) == MessageBoxResult.Yes )
                   DoRestore();
-               break;
-            case "running" :
-               SetInfo( "state", null );
-               App.CheckStatusAsync();
                break;
             default:
                DoManualSetup();
@@ -206,7 +204,7 @@ namespace Sheepy.Modnix.MainGUI {
             GridModList.ItemsSource = ModList;
             RefreshModInfo( null );
          }
-         if ( IsInjected || AppState == null || AppState == "running" ) {
+         if ( IsInjected || AppState == null || IsGameRunning ) {
             LabelModList.Content = AppState == null || ModList == null ? "Checking..." : $"{ModList.Count()} Mods";
             LabelModList.Foreground = Brushes.Black;
          } else {

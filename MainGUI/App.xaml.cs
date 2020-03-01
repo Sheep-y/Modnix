@@ -263,16 +263,13 @@ namespace Sheepy.Modnix.MainGUI {
       } } catch ( Exception ex ) { Log( ex ); } }
 
       private void CheckInjectionStatus () {
-         string status;
-         if ( IsGameRunning() )
-            status = "running";
-         else if ( CheckInjected() ) {
-            status = currentGame.Status; // status should be either modnix or both
+         GUI.SetInfo( "running", IsGameRunning() );
+         if ( CheckInjected() ) {
+            GUI.SetInfo( "state", currentGame.Status );
             GUI.SetInfo( "game_version", CheckGameVer() );
          } else {
-            status = "setup";
+            GUI.SetInfo( "state", "setup" );
          }
-         GUI.SetInfo( "state", status );
       }
 
       public static bool IsGameRunning () {
