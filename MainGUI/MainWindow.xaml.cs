@@ -74,8 +74,10 @@ namespace Sheepy.Modnix.MainGUI {
                RefreshGameInfo();
                break;
             case GuiInfo.GAME_VER :
+               if ( GameVer == txt ) return;
                GameVer  = txt;
                RefreshGameInfo();
+               App.GetModList();
                break;
             case GuiInfo.MOD_LIST :
                RefreshModList( value as IEnumerable<ModInfo> );

@@ -260,20 +260,23 @@ namespace Sheepy.Modnix.MainGUI {
             Log( $"Found game at {gamePath}" );
             currentGame = new GameInstallation( gamePath );
             GUI.SetInfo( GuiInfo.GAME_PATH, gamePath );
-            CheckInjectionStatus();
+            CheckInjectionStatus( true );
          } else {
             GUI.SetInfo( GuiInfo.APP_STATE, "no_game" );
          }
       } } catch ( Exception ex ) { Log( ex ); } }
 
-      private void CheckInjectionStatus () {
+      private void CheckInjectionStatus ( bool CheckVersion = false ) {
          GUI.SetInfo( GuiInfo.GAME_RUNNING, IsGameRunning() );
-         if ( CheckInjected() ) {
-            GUI.SetInfo( GuiInfo.APP_STATE, currentGame.Status );
-            GUI.SetInfo( GuiInfo.GAME_VER, CheckGameVer() );
-         } else {
-            GUI.SetInfo( GuiInfo.APP_STATE, "setup" ); // TODO: Return "none"
+         if ( InjectorInPlace() ) {
+            if ( CheckVersion )
+               Task.Run( () => GUI.SetInfo( GuiInfo.GAME_VER, CheckGameVer() ) );
+            if ( CheckInjected() ) {
+               GUI.SetInfo( GuiInfo.APP_STATE, currentGame.Status );
+               return;
+            }
          }
+         GUI.SetInfo( GuiInfo.APP_STATE, "setup" ); // TODO: Return "none"
       }
 
       public static bool IsGameRunning () {
