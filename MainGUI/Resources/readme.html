@@ -12,15 +12,16 @@ Manual Setup Package for Modnix
 </p>
 <ol>
    <li>
-      Reboot computer. Always reboot first.
+      Reboot computer.
    <li>
       Find "game code folder".
-      Default to <pre>C:\Program Files\Epic Games\PhoenixPoint\PhoenixPointWin64_Data\Managed</pre>.
+      Default to <pre>C:\Program Files\Epic Games\PhoenixPoint\PhoenixPointWin64_Data\Managed</pre>
       You can find <pre>Assembly-CSharp.dll</pre> in it.
    <li>
-      Delete all files in the dll folder.
-      Then go up two folders to find <pre>UnityPlayer.dll</pre>,
-      again deleting all dlls.
+      Delete all files in the code folder.
+      Then go up two levels to find <pre>UnityPlayer.dll</pre>,
+      again deleting all files.
+      (Leave the folders alone.)
    <li>
       From the game launcher (EGS or Steam), do Verify Files.
    <li>
@@ -29,18 +30,18 @@ Manual Setup Package for Modnix
       Explore <pre>%UserProfile%\Documents</pre>, and creates the folders <pre>My Games\Phoenix Point\Mods</pre>.
       This is the "mod folder".
    <li>
-      Move extracted <pre>Modnix.exe</pre> into "mod folder".
+      Move extracted <pre>Modnix.exe</pre> from this package into "mod folder".
    <li>
-      Move all files in the extracted <pre>Managed</pre> folder into the "game code folder".
-      Nothing should be overwritten if you cleared the folders in step 3.
+      Find the <pre>Managed</pre> folder from this package, move its files into the "game code folder".
+      Nothing should be overwritten if you cleared the folder in step 3.
    <li>
       Double-click <pre>ModnixInjector.exe</pre>, which has just been moved.
       It should says "Injection complete!"
    <li>
-      Basic setup complete.  Launch the moved <pre>Modnix.exe</pre> and see whether it works.
+      Basic setup complete.  Launch the moved <pre>Modnix.exe</pre> and see how it goes.
 </ol>
 <p>
-   Some mods may be unsatisfied by a basic setup.
+   Some mods may not work with a basic setup.
    See <a href="https://github.com/Sheep-y/Modnix/wiki/Manual-Setup">wiki</a>
    for how to solve them, and/or other troubleshoot guides.
 </p>
