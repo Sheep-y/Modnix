@@ -19,8 +19,8 @@ namespace Sheepy.Modnix.MainGUI {
       public abstract string Type { get; }
    }
 
-   internal enum ModActionType { NONE, DELETE, ENABLE, DISABLE }
-   internal enum ModQueryType { NONE, IS_FOLDER, IS_CHILD }
+   internal enum ModActionType { NONE, ENABLE, DISABLE, DELETE_DIR, DELETE_FILE, DELETE_SETTINGS }
+   internal enum ModQueryType { NONE, IS_FOLDER, IS_CHILD, HAS_SETTINGS }
 
    internal static class SharedGui {
       internal static void Prompt ( string parts, Exception ex, Action OnRestart ) {

@@ -47,6 +47,8 @@ namespace Sheepy.Modnix.MainGUI {
                return System.IO.Path.GetDirectoryName( Path ) != AppControl.Instance.ModFolder;
             case ModQueryType.IS_CHILD : 
                return Mod.Parent != null;
+            case ModQueryType.HAS_SETTINGS : 
+               return false;
             default:
                return null;
          }

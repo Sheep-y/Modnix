@@ -288,10 +288,27 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void ButtonModDelete_Click ( object sender, RoutedEventArgs e ) {
          if ( CurrentMod == null ) return;
-         if ( MessageBox.Show( $"Delete {CurrentMod.Name}?", "Confirm", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No ) == MessageBoxResult.Yes ) {
-            ButtonModDelete.IsEnabled = false;
-            App.DoModActionAsync( ModActionType.DELETE, CurrentMod );
+         ModActionType action = ModActionType.DELETE_FILE;
+         if ( (bool) CurrentMod.Query( ModQueryType.IS_FOLDER ) ) {
+            var ans = MessageBox.Show( $"Delete {CurrentMod.Name} folder, or just the file?", "Confirm",
+                  MessageBoxButton.YesNoCancel, MessageBoxImage.Question, MessageBoxResult.Cancel );
+            if ( ans == MessageBoxResult.Cancel ) return;
+            if ( ans == MessageBoxResult.Yes )
+               action = ModActionType.DELETE_DIR;
+         } else {
+            var ans = MessageBox.Show( $"Delete {CurrentMod.Name}?", "Confirm",
+                  MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No );
+            if ( ans == MessageBoxResult.No ) return;
          }
+         if ( action == ModActionType.DELETE_FILE && (bool) CurrentMod.Query( ModQueryType.HAS_SETTINGS ) ) {
+            var ans = MessageBox.Show( $"Delete {CurrentMod.Name} settings?", "Confirm",
+                  MessageBoxButton.YesNoCancel, MessageBoxImage.Question, MessageBoxResult.Cancel );
+            if ( ans == MessageBoxResult.Cancel ) return;
+            if ( ans == MessageBoxResult.Yes )
+               App.DoModActionAsync( ModActionType.DELETE_SETTINGS, CurrentMod );
+         }
+         ButtonModDelete.IsEnabled = false;
+         App.DoModActionAsync( action, CurrentMod );
       }
 
       private void GridModList_CurrentCellChanged ( object sender, EventArgs e ) {
