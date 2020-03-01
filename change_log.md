@@ -1,13 +1,19 @@
 # Modnix Changelog
 
-# Version ???
+# Version 0.81, 2020-03-01
 
+* Fix: Mod list refresh button now works.
 * Faster startup: Scan mod list in parallel with startup checks.
 * Faster startup: Check game version in parallel with injection status.
 * Faster startup: Check ppml and modnix injection status in parallel, and check only public classes.
-* Detect whether game is running, and disables setup / modifications accordingly.
-* If mod is in a subfolder, prompt and delete whole subfolder.
-* Remove empty folders left by deleting a mod.
+* New: Detect game folder from Windows 10 Gamebar registry.
+* New: Detect game folder from system program path.
+* New: Detect game folder from the Program Files on all hard drives, and skip all non-hard drives.
+* New: Detect whether game is running, and disables / enables buttons accordingly.
+* New: If mod is in a subfolder, prompt and delete whole subfolder.
+* New: Remove empty folders left by deleting a mod.
+* Installer no longer scan for mods.
+* All log messages are duplicated to standard out, instead of silence after GUI shows up.
 
 # Version 0.80, 2020-02-29
 

@@ -251,10 +251,11 @@ namespace Sheepy.Modnix.MainGUI {
       private ModLoaderBridge _ModBridge;
       private ModLoaderBridge ModBridge { get => Get( ref _ModBridge ); set => Set( ref _ModBridge, value ); }
 
-      internal void CheckStatusAsync () {
+      internal void CheckStatusAsync ( bool listMods ) {
          Log( "Queuing status check" );
          Task.Run( (Action) CheckStatus );
-         Task.Run( (Action) GetModList );
+         if ( listMods )
+            Task.Run( (Action) GetModList );
       }
 
       private void CheckStatus () { try {

@@ -24,7 +24,7 @@ namespace Sheepy.Modnix.MainGUI {
          Mode = mode;
          InitializeComponent();
          RefreshInfo();
-         App.CheckStatusAsync();
+         App.CheckStatusAsync( false );
       } catch ( Exception ex ) { Console.WriteLine( ex ); } }
 
       private void Window_Activated ( object sender, EventArgs e ) {
@@ -120,7 +120,7 @@ namespace Sheepy.Modnix.MainGUI {
       public void Log ( object message ) {
          string time = DateTime.Now.ToString( "hh:mm:ss.ffff ", InvariantCulture );
          string line = $"{time} {message}\n";
-         Console.WriteLine( line );
+         Console.Write( line );
          this.Dispatch( () => { try {
             if ( Mode == "log" ) {
                TextMessage.AppendText( line );
