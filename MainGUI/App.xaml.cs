@@ -250,6 +250,7 @@ namespace Sheepy.Modnix.MainGUI {
       internal void CheckStatusAsync () {
          Log( "Queuing status check" );
          Task.Run( (Action) CheckStatus );
+         Task.Run( (Action) GetModList );
       }
 
       private void CheckStatus () { try { lock ( SynRoot ) {
@@ -260,7 +261,6 @@ namespace Sheepy.Modnix.MainGUI {
             currentGame = new GameInstallation( gamePath );
             GUI.SetInfo( GuiInfo.GAME_PATH, gamePath );
             CheckInjectionStatus();
-            GetModList();
          } else {
             GUI.SetInfo( GuiInfo.APP_STATE, "no_game" );
          }
