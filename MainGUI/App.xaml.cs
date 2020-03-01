@@ -14,10 +14,14 @@ using static System.Globalization.CultureInfo;
 namespace Sheepy.Modnix.MainGUI {
 
    internal interface IAppGui {
-      void SetInfo ( string info, object value );
+      void SetInfo ( GuiInfo info, object value );
       void Prompt ( string v, Exception ex = null );
       void Log ( object message );
    }
+
+   public enum GuiInfo { NONE, VISIBILITY, MOD_LIST,
+      APP_STATE, APP_VER, APP_UPDATE,
+      GAME_RUNNING, GAME_PATH, GAME_VER }
 
    public partial class AppControl : Application {
       public static AppControl Instance { get; private set; }
@@ -89,14 +93,14 @@ namespace Sheepy.Modnix.MainGUI {
          if ( GUI == null )
             GUI = new MainWindow();
          Log( null ); // Send startup log to GUI
-         GUI.SetInfo( "visible", "true" );
+         GUI.SetInfo( GuiInfo.VISIBILITY, "true" );
       } } catch ( Exception ex ) {
          try {
             Console.WriteLine( ex );
             File.WriteAllText( LIVE_NAME + " Startup Error.log", startup_log + ex.ToString() );
          } catch ( Exception ) { }
          if ( GUI != null ) {
-            GUI.SetInfo( "visible", "true" );
+            GUI.SetInfo( GuiInfo.VISIBILITY, "true" );
             Log( ex );
          } else {
             Shutdown();
@@ -225,7 +229,7 @@ namespace Sheepy.Modnix.MainGUI {
          Log( $"Their version: {ver}" );
          if ( ver >= Myself.Version ) {
             if ( GUI != null )
-               GUI.SetInfo( "version", ver.ToString() );
+               GUI.SetInfo( GuiInfo.APP_VER, ver.ToString() );
             return true;
          }
          return false;
@@ -250,25 +254,25 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void CheckStatus () { try { lock ( SynRoot ) {
          Log( "Checking status" );
-         GUI.SetInfo( "version", CheckAppVer() );
+         GUI.SetInfo( GuiInfo.APP_VER, CheckAppVer() );
          if ( FoundGame( out string gamePath ) ) {
             Log( $"Found game at {gamePath}" );
             currentGame = new GameInstallation( gamePath );
-            GUI.SetInfo( "game_path", gamePath );
+            GUI.SetInfo( GuiInfo.GAME_PATH, gamePath );
             CheckInjectionStatus();
             GetModList();
          } else {
-            GUI.SetInfo( "state", "no_game" );
+            GUI.SetInfo( GuiInfo.APP_STATE, "no_game" );
          }
       } } catch ( Exception ex ) { Log( ex ); } }
 
       private void CheckInjectionStatus () {
-         GUI.SetInfo( "running", IsGameRunning() );
+         GUI.SetInfo( GuiInfo.GAME_RUNNING, IsGameRunning() );
          if ( CheckInjected() ) {
-            GUI.SetInfo( "state", currentGame.Status );
-            GUI.SetInfo( "game_version", CheckGameVer() );
+            GUI.SetInfo( GuiInfo.APP_STATE, currentGame.Status );
+            GUI.SetInfo( GuiInfo.GAME_VER, CheckGameVer() );
          } else {
-            GUI.SetInfo( "state", "setup" );
+            GUI.SetInfo( GuiInfo.APP_STATE, "setup" ); // TODO: Return "none"
          }
       }
 
@@ -535,25 +539,25 @@ namespace Sheepy.Modnix.MainGUI {
             if ( updater == null )
                updater = new Updater();
          }
-         GUI.SetInfo( "update", updater.FindUpdate( Myself.Version ) );
+         GUI.SetInfo( GuiInfo.APP_UPDATE, updater.FindUpdate( Myself.Version ) );
       } catch ( Exception ex ) { Log( ex ); } }
       #endregion
 
       #region mods
       public void GetModList () { try {
          if ( bridge == null ) bridge = new ModLoaderBridge();
-         GUI.SetInfo( "mod_list", bridge.LoadModList() );
+         GUI.SetInfo( GuiInfo.MOD_LIST, bridge.LoadModList() );
       } catch ( IOException ex ) { Log( ex ); } }
 
-      internal void DoModActionAsync ( ModAction action, ModInfo mod ) {
+      internal void DoModActionAsync ( ModActionType action, ModInfo mod ) {
          Log( $"Queuing mod {action}" );
          Task.Run( () => DoModAction( action, mod ) );
       }
 
-      private void DoModAction ( ModAction action, ModInfo mod ) { try { lock ( SynRoot) {
+      private void DoModAction ( ModActionType action, ModInfo mod ) { try { lock ( SynRoot) {
          if ( mod == null ) return;
          switch ( action ) {
-            case ModAction.DELETE : 
+            case ModActionType.DELETE : 
                bridge.Delete( mod );
                GetModList();
                return;

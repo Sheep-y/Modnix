@@ -45,25 +45,52 @@ namespace Sheepy.Modnix.MainGUI {
             CheckUpdate( false );
       } catch ( Exception ex ) { Log( ex ); } }
 
-      public void SetInfo ( string info, object value ) { this.Dispatch( () => { try {
+      public void SetInfo ( GuiInfo info, object value ) { this.Dispatch( () => { try {
          Log( $"Set {info} = {value}" );
          string txt = value?.ToString();
          switch ( info ) {
-            case "visible" : Show(); break;
-            case "version" : AppVer = txt; RefreshAppInfo(); break;
-            case "running" : IsGameRunning = (bool) value; RefreshAppInfo(); break;
-            case "state"   : AppState = txt; RefreshAppInfo(); break;
-            case "game_path"    : GamePath = txt; RefreshGameInfo(); break;
-            case "game_version" : GameVer  = txt; RefreshGameInfo(); break;
-            case "update"  : Update = value; UpdateChecked(); RefreshUpdateStatus(); break;
-            case "mod_list" : RefreshModList( value as IEnumerable<ModInfo> ); break;
-            default : Log( $"Unknown info {info}" ); break;
+            case GuiInfo.VISIBILITY :
+               Show();
+               break;
+            case GuiInfo.APP_VER :
+               AppVer = txt;
+               RefreshAppInfo();
+               break;
+            case GuiInfo.APP_STATE :
+               AppState = txt;
+               RefreshAppInfo();
+               break;
+            case GuiInfo.APP_UPDATE :
+               Update = value;
+               UpdateChecked();
+               RefreshUpdateStatus();
+               break;
+            case GuiInfo.GAME_RUNNING :
+               IsGameRunning = (bool) value;
+               RefreshAppInfo();
+               break;
+            case GuiInfo.GAME_PATH :
+               GamePath = txt;
+               RefreshGameInfo();
+               break;
+            case GuiInfo.GAME_VER :
+               GameVer  = txt;
+               RefreshGameInfo();
+               break;
+            case GuiInfo.MOD_LIST :
+               RefreshModList( value as IEnumerable<ModInfo> );
+               break;
+            default :
+               Log( $"Unknown info {info}" );
+               break;
          }
       } catch ( Exception ex ) { Log( ex ); } } ); }
 
-      private void Window_Activated ( object sender, EventArgs e ) {
+      private void Window_Activated ( object sender, EventArgs e ) => CheckGameRunning();
+
+      private void CheckGameRunning ( object _ = null ) {
          if ( AppControl.IsGameRunning() != IsGameRunning )
-            SetInfo( "running", ! IsGameRunning );
+            SetInfo( GuiInfo.GAME_RUNNING, ! IsGameRunning );
       }
 
       #region App Info Area
@@ -93,8 +120,8 @@ namespace Sheepy.Modnix.MainGUI {
          ButtonSetup.IsEnabled = AppState != null;
          ButtonRunOnline .IsEnabled = CanModify && GamePath != null;
          ButtonRunOffline.IsEnabled = CanModify && GamePath != null;
-         ButtonModDelete.IsEnabled = CanModify && CurrentMod != null;
          ButtonModOpenModDir.IsEnabled = CanModify && CurrentMod != null;
+         ButtonModDelete.IsEnabled = CanDeleteMod;
          if ( IsGameRunning )
             BtnTxtSetup.Text = "Refresh";
          else if ( AppState == "modnix" )
@@ -112,8 +139,8 @@ namespace Sheepy.Modnix.MainGUI {
          Log( "Main action button clicked" );
          if ( e?.Source is UIElement src ) src.Focus();
          if ( IsGameRunning ) { // Refresh
-            SetInfo( "state", null );
-            App.CheckStatusAsync();
+            CheckGameRunning();
+            return;
          }
          switch ( AppState ) {
             case "ppml" : case "both" : case "setup" :
@@ -177,14 +204,14 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void ButtonOnline_Click  ( object sender, RoutedEventArgs e ) {
          App.LaunchGame( "online" );
-         SetInfo( "running", true );
-         new Timer( ( _ ) => Window_Activated( sender, e ), null, 5_000, Timeout.Infinite );
+         SetInfo( GuiInfo.GAME_RUNNING, true );
+         new Timer( CheckGameRunning, null, 5_000, Timeout.Infinite );
       }
 
       private void ButtonOffline_Click ( object sender, RoutedEventArgs e ) {
          App.LaunchGame( "offline" );
-         SetInfo( "running", true );
-         new Timer( ( _ ) => Window_Activated( sender, e ), null, 5_000, Timeout.Infinite );
+         SetInfo( GuiInfo.GAME_RUNNING, true );
+         new Timer( CheckGameRunning, null, 5_000, Timeout.Infinite );
       }
 
       private void ButtonCanny_Click   ( object sender, RoutedEventArgs e ) => OpenUrl( "canny", e );
@@ -199,6 +226,8 @@ namespace Sheepy.Modnix.MainGUI {
       #region Mod Info Area
       private ModInfo CurrentMod;
       private IEnumerable<ModInfo> ModList;
+
+      private bool CanDeleteMod => CanModify && CurrentMod != null && ! (bool) CurrentMod.Query( ModQueryType.IS_CHILD );
 
       private void RefreshModList ( IEnumerable<ModInfo> list ) {
          ModList = list;
@@ -259,7 +288,7 @@ namespace Sheepy.Modnix.MainGUI {
          if ( CurrentMod == null ) return;
          if ( MessageBox.Show( $"Delete {CurrentMod.Name}?", "Confirm", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No ) == MessageBoxResult.Yes ) {
             ButtonModDelete.IsEnabled = false;
-            App.DoModActionAsync( ModAction.DELETE, CurrentMod );
+            App.DoModActionAsync( ModActionType.DELETE, CurrentMod );
          }
       }
 

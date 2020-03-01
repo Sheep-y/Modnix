@@ -28,26 +28,26 @@ namespace Sheepy.Modnix.MainGUI {
       } catch ( Exception ex ) { Console.WriteLine( ex ); } }
 
       private void Window_Activated ( object sender, EventArgs e ) {
-         SetInfo( "running", AppControl.IsGameRunning() );
+         SetInfo( GuiInfo.GAME_RUNNING, AppControl.IsGameRunning() );
       }
 
-      public void SetInfo ( string info, object value ) { this.Dispatch( () => {
+      public void SetInfo ( GuiInfo info, object value ) { this.Dispatch( () => {
          Log( $"Set {info} = {value}" );
          try {
             string txt = value?.ToString();
             switch ( info ) {
-               case "visible": Show(); break;
-               case "version": AppVer = txt; break;
-               case "running": IsGameRunning = (bool) value; break;
-               case "state": AppState = txt; break;
-               case "game_path": GamePath = txt; break;
-               case "game_version": 
-               case "update": 
+               case GuiInfo.VISIBILITY: Show(); break;
+               case GuiInfo.APP_VER: AppVer = txt; break;
+               case GuiInfo.APP_STATE: AppState = txt; break;
+               case GuiInfo.GAME_RUNNING: IsGameRunning = (bool) value; break;
+               case GuiInfo.GAME_PATH: GamePath = txt; ButtonAction.Focus(); break;
+               case GuiInfo.GAME_VER:
+               case GuiInfo.APP_UPDATE: 
+               case GuiInfo.MOD_LIST: 
                   break;
                default: Log( $"Unknown info {info}" ); return;
             }
             RefreshInfo();
-            if ( info == "game_path" ) ButtonAction.Focus();
          } catch ( Exception ex ) { Log( ex ); }
       } ); }
 

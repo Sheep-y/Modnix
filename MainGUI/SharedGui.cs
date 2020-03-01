@@ -13,13 +13,14 @@ namespace Sheepy.Modnix.MainGUI {
       public abstract string Version { get; }
       public abstract string Author { get; }
       public abstract string Status { get; }
-      public abstract object Query ( string prop );
+      public abstract object Query ( ModQueryType prop );
       public abstract void BuildDesc ( FlowDocument doc );
       public abstract string Path { get; }
       public abstract string Type { get; }
    }
 
-   internal enum ModAction { NONE, DELETE, ENABLE, DISABLE }
+   internal enum ModActionType { NONE, DELETE, ENABLE, DISABLE }
+   internal enum ModQueryType { NONE, IS_FOLDER, IS_CHILD }
 
    internal static class SharedGui {
       internal static void Prompt ( string parts, Exception ex, Action OnRestart ) {

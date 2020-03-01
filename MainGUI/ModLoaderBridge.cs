@@ -41,11 +41,11 @@ namespace Sheepy.Modnix.MainGUI {
          return Mod.Disabled ? "Disabled" : "Enabled";
       } }
 
-      public override object Query ( string prop ) {
+      public override object Query ( ModQueryType prop ) {
          switch ( prop ) {
-            case "IsSingleFile" :
-               return true;
-            case "IsChild" : 
+            case ModQueryType.IS_FOLDER :
+               return System.IO.Path.GetDirectoryName( Path ) != AppControl.Instance.ModFolder;
+            case ModQueryType.IS_CHILD : 
                return Mod.Parent != null;
             default:
                return null;
