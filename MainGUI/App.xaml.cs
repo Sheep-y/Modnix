@@ -253,7 +253,7 @@ namespace Sheepy.Modnix.MainGUI {
       internal void CheckStatusAsync () {
          Log( "Queuing status check" );
          Task.Run( (Action) CheckStatus );
-         Task.Run( (Action) GetModList );
+            Task.Run( (Action) GetModList );
       }
 
       private void CheckStatus () { try {
