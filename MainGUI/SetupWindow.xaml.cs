@@ -16,6 +16,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       private readonly AppControl App = AppControl.Instance;
       private string AppVer, AppState, GamePath = null;
+      private bool IsGameRunning;
       private string Mode = "log"; // launch, setup, log
       private string LogContent;
 
@@ -26,6 +27,10 @@ namespace Sheepy.Modnix.MainGUI {
          App.CheckStatusAsync();
       } catch ( Exception ex ) { Console.WriteLine( ex ); } }
 
+      private void Window_Activated ( object sender, EventArgs e ) {
+         SetInfo( "running", AppControl.IsGameRunning() );
+      }
+
       public void SetInfo ( string info, object value ) { this.Dispatch( () => {
          Log( $"Set {info} = {value}" );
          try {
@@ -33,6 +38,7 @@ namespace Sheepy.Modnix.MainGUI {
             switch ( info ) {
                case "visible": Show(); break;
                case "version": AppVer = txt; break;
+               case "running": IsGameRunning = (bool) value; break;
                case "state": AppState = txt; break;
                case "game_path": GamePath = txt; break;
                case "game_version": 
@@ -47,14 +53,14 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void RefreshInfo () { try {
          Log( $"Refreshing {Mode}" );
-         if ( Mode == "log" ) {
+         if ( Mode == "log" )
             return;
-         }
          string txt = $"Modnix {AppVer}\n";
          if ( Mode == "launch" ) {
             txt += "Installed at " + App.ModGuiExe + "\n\nUse it to resetup or restore.";
             EnableLaunch();
          } else { // Mode == "setup"
+            ButtonAction.IsEnabled = ! IsGameRunning;
             txt += "\nPhoenix Point\n";
             if ( AppState == "no_game" ) {
                txt += "Not Found";
