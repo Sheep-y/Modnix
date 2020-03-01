@@ -14,7 +14,7 @@ using static System.Reflection.BindingFlags;
 namespace Sheepy.Modnix {
    using DllEntryMeta = Dictionary< string, HashSet< string > >;
 
-   public class ModScanner {
+   public static class ModScanner {
       public readonly static List<ModEntry> AllMods = new List<ModEntry>();
       public readonly static List<ModEntry> EnabledMods = new List<ModEntry>();
 
@@ -101,7 +101,7 @@ namespace Sheepy.Modnix {
          } else {
             Log.Verbo( $"Parsing as mod_info: {file}" );
             var default_id = Path.GetFileNameWithoutExtension( file );
-            if ( default_id.ToLowerInvariant() == "mod_info" ) default_id = container;
+            if ( "mod_info".Equals( default_id, StringComparison.InvariantCultureIgnoreCase ) ) default_id = container;
             meta = ParseInfoJs( File.ReadAllText( file, Encoding.UTF8 ).Trim(), default_id );
             if ( meta == null ) return null;
             if ( ! meta.HasContent )
@@ -360,13 +360,13 @@ namespace Sheepy.Modnix {
          }
       }
 
-      private static void DisableAndRemoveMod ( ModEntry mod, string reason, string log, params object[] augs ) {
+      private static void DisableAndRemoveMod ( ModEntry mod, string reason, string log, params object[] augs ) { lock ( mod ) {
          if ( mod.Disabled ) return;
          Log.Warn( log, augs );
          mod.Disabled = true;
          mod.AddNotice( SourceLevels.Error, reason, augs );
          EnabledMods.Remove( mod );
-      }
+      } }
       #endregion
    }
 }

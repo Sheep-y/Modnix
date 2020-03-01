@@ -43,19 +43,27 @@ namespace Sheepy.Modnix.MainGUI {
          string path = mod.Path;
          App.Log( $"Deleting {path}" );
          File.Delete( path );
+         path = Path.GetDirectoryName( path );
+         if ( path != ModLoader.ModDirectory && ! Directory.EnumerateFileSystemEntries( path ).Any() ) {
+            App.Log( $"Deleting empty {path}" );
+            Directory.Delete( path );
+         }
       }
 
       private void DeleteModFolder ( ModInfo mod ) {
          string path = Path.GetDirectoryName( mod.Path );
-         App.Log( $"Deleting {path}" );
+         if ( path == ModLoader.ModDirectory ) throw new IOException( "Cannot delete mod folder" );
          RecurDelete( path );
       }
 
       private void RecurDelete ( string path ) {
-         foreach ( var file in Directory.EnumerateFiles( path ) )
+         foreach ( var file in Directory.EnumerateFiles( path ) ) {
+            App.Log( $"Deleting {file}" );
             File.Delete( file );
+         }
          foreach ( var dir in Directory.EnumerateDirectories( path ) )
             RecurDelete( dir );
+         App.Log( $"Deleting {path}" );
          Directory.Delete( path );
       }
    }
@@ -73,7 +81,8 @@ namespace Sheepy.Modnix.MainGUI {
       public override object Query ( ModQueryType prop ) { lock ( Mod ) {
          switch ( prop ) {
             case ModQueryType.IS_FOLDER :
-               return System.IO.Path.GetDirectoryName( Path ) != AppControl.Instance.ModFolder;
+               var path = System.IO.Path.GetDirectoryName( Path );
+               return path != AppControl.Instance.ModFolder && Directory.EnumerateFileSystemEntries( path ).Count() > 1;
             case ModQueryType.IS_CHILD :
                return Mod.Parent != null;
             case ModQueryType.HAS_SETTINGS :
