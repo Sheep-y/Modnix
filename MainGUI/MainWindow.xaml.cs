@@ -41,7 +41,7 @@ namespace Sheepy.Modnix.MainGUI {
          RefreshUpdateStatus();
          Log( "Initiating Controller" );
          App.CheckStatusAsync();
-         if ( ! App.paramSkipProcessCheck )
+         if ( ! App.ParamSkipStartupCheck )
             CheckUpdate( false );
       } catch ( Exception ex ) { Log( ex ); } }
 

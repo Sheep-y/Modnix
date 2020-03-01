@@ -47,34 +47,35 @@ namespace Sheepy.Modnix.MainGUI {
 
       internal const string EPIC_DIR = ".egstore";
 
-      private readonly static string[] GAME_PATHS =
-         new string[]{
-            "C:/Program Files/Epic Games/PhoenixPoint".FixSlash(),
-            ".." ,
-            "." ,
-            "D:/Program Files/Epic Games/PhoenixPoint".FixSlash(),
-            "E:/Program Files/Epic Games/PhoenixPoint".FixSlash(),
-            };
+      internal readonly string ModFolder = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.MyDocuments ), MOD_PATH );
 
-      internal string ModFolder = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.MyDocuments ), MOD_PATH );
-      internal string ModGuiExe;
-      internal string MyPath;
+      private string _ModGuiExe;
+      internal string ModGuiExe { get => Get( ref _ModGuiExe ); private set => SetOnce( ref _ModGuiExe, value ); }
 
-      internal IAppGui GUI;
-      private GameInstallation currentGame;
-      private readonly object SynRoot = new object();
+      private string _MyPath;
+      internal string MyPath { get => Get( ref _MyPath ); private set => SetOnce( ref _MyPath, value ); }
+
+      private IAppGui _GUI;
+      internal IAppGui GUI { get => Get( ref _GUI ); private set => SetOnce( ref _GUI, value ); }
+
+      private GameInstallation _CurrentGame;
+      private GameInstallation CurrentGame { get => Get( ref _CurrentGame ); set => Set( ref _CurrentGame, value ); }
 
       #region Startup
-      private AssemblyName Myself;
+      private AssemblyName _Myself;
+      private AssemblyName Myself { get => Get( ref _Myself ); set => SetOnce( ref _Myself, value ); }
 
-      internal bool paramSkipProcessCheck;
-      private int  paramIgnorePid;
+      private bool _ParamSkipStartupCheck;
+      internal bool ParamSkipStartupCheck { get => Get( ref _ParamSkipStartupCheck ); set => Set( ref _ParamSkipStartupCheck, value ); }
 
-      internal void ApplicationStartup ( object sender, StartupEventArgs e ) { try { lock ( SynRoot ) {
+      private int _ParamIgnorePid;
+      private int ParamIgnorePid { get => Get( ref _ParamIgnorePid ); set => Set( ref _ParamIgnorePid, value ); }
+
+      internal void ApplicationStartup ( object sender, StartupEventArgs e ) { try {
          Instance = this;
          Log( $"Startup time {DateTime.Now.ToString( "yyyy-MM-dd HH:mm:ss.ffff", InvariantCulture )}" );
          Init( e?.Args );
-         if ( ! paramSkipProcessCheck ) {
+         if ( ! ParamSkipStartupCheck ) {
             Log( $"Running startup checks" );
             MigrateSettings();
             if ( FoundRunningModnix() ) {
@@ -94,10 +95,10 @@ namespace Sheepy.Modnix.MainGUI {
             GUI = new MainWindow();
          Log( null ); // Send startup log to GUI
          GUI.SetInfo( GuiInfo.VISIBILITY, "true" );
-      } } catch ( Exception ex ) {
+      } catch ( Exception ex ) {
          try {
             Console.WriteLine( ex );
-            File.WriteAllText( LIVE_NAME + " Startup Error.log", startup_log + ex.ToString() );
+            File.WriteAllText( LIVE_NAME + " Startup Error.log", StartupLog + ex.ToString() );
          } catch ( Exception ) { }
          if ( GUI != null ) {
             GUI.SetInfo( GuiInfo.VISIBILITY, "true" );
@@ -175,14 +176,16 @@ namespace Sheepy.Modnix.MainGUI {
          }
 
          int pid = ParamIndex( param, "i", "ignore-pid" );
-         if ( pid >= 0 && param.Count > pid+1 )
-            _ = int.TryParse( param[ pid + 1 ], out paramIgnorePid );
+         if ( pid >= 0 && param.Count > pid+1 ) {
+            if ( int.TryParse( param[ pid + 1 ], out int id ) )
+               ParamIgnorePid = id;
+         }
 
          /// -o --open-mod-dir        Open mod folder on launch, once used as part of setup
          //if ( ParamIndex( param, "o", "open-mod-dir" ) >= 0 )
          //   Process.Start( "explorer.exe", $"/select, \"{ModGuiExe}\"" );
 
-         paramSkipProcessCheck = ParamIndex( param, "s", "skip-launch-check" ) >= 0;
+         ParamSkipStartupCheck = ParamIndex( param, "s", "skip-launch-check" ) >= 0;
       }
 
       private static int ParamIndex ( List<String> args, string quick, string full ) {
@@ -199,7 +202,7 @@ namespace Sheepy.Modnix.MainGUI {
          Process running = Array.Find( Process.GetProcesses(), e => ( e.ProcessName == LIVE_NAME ||
                        e.ProcessName.StartsWith( LIVE_NAME+"Setup", StringComparison.InvariantCultureIgnoreCase ) ||
                        e.ProcessName.StartsWith( LIVE_NAME+"Install", StringComparison.InvariantCultureIgnoreCase ) ) &&
-                       e.Id != myId && ( paramIgnorePid == 0 || e.Id != paramIgnorePid ) );
+                       e.Id != myId && ( ParamIgnorePid == 0 || e.Id != ParamIgnorePid ) );
          if ( running == null ) return false;
          // Bring to foreground
          IntPtr handle = running.MainWindowHandle;
@@ -244,7 +247,8 @@ namespace Sheepy.Modnix.MainGUI {
       #endregion
 
       #region Check Status
-      private ModLoaderBridge bridge;
+      private ModLoaderBridge _ModBridge;
+      private ModLoaderBridge ModBridge { get => Get( ref _ModBridge ); set => Set( ref _ModBridge, value ); }
 
       internal void CheckStatusAsync () {
          Log( "Queuing status check" );
@@ -252,18 +256,18 @@ namespace Sheepy.Modnix.MainGUI {
          Task.Run( (Action) GetModList );
       }
 
-      private void CheckStatus () { try { lock ( SynRoot ) {
+      private void CheckStatus () { try {
          Log( "Checking status" );
          GUI.SetInfo( GuiInfo.APP_VER, CheckAppVer() );
          if ( FoundGame( out string gamePath ) ) {
             Log( $"Found game at {gamePath}" );
-            currentGame = new GameInstallation( gamePath );
+            CurrentGame = new GameInstallation( gamePath );
             GUI.SetInfo( GuiInfo.GAME_PATH, gamePath );
             CheckInjectionStatus( true );
          } else {
             GUI.SetInfo( GuiInfo.APP_STATE, "no_game" );
          }
-      } } catch ( Exception ex ) { Log( ex ); } }
+      } catch ( Exception ex ) { Log( ex ); } }
 
       private void CheckInjectionStatus ( bool CheckVersion = false ) {
          GUI.SetInfo( GuiInfo.GAME_RUNNING, IsGameRunning() );
@@ -271,7 +275,7 @@ namespace Sheepy.Modnix.MainGUI {
             if ( CheckVersion )
                Task.Run( () => GUI.SetInfo( GuiInfo.GAME_VER, CheckGameVer() ) );
             if ( CheckInjected() ) {
-               GUI.SetInfo( GuiInfo.APP_STATE, currentGame.Status );
+               GUI.SetInfo( GuiInfo.APP_STATE, CurrentGame.Status );
                return;
             }
          }
@@ -282,25 +286,21 @@ namespace Sheepy.Modnix.MainGUI {
          return Process.GetProcessesByName( Path.GetFileNameWithoutExtension( GAME_EXE ) ).Length > 0;
       }
 
-      internal string InjectorPath ( string gamePath ) => Path.Combine( gamePath, DLL_PATH, INJECTOR );
-      internal string LoaderPath   ( string gamePath ) => Path.Combine( gamePath, DLL_PATH, LOADER   );
-
       // Check that mod injector and mod loader is in place
       internal bool InjectorInPlace () { try {
-         if ( ! File.Exists( currentGame.Injector ) ) return Log( $"Missing injector: {currentGame.Injector}", false );
-         if ( ! File.Exists( currentGame.Loader   ) ) return Log( $"Missing loader: {currentGame.Loader}", false );
-         return Log( $"Injector and loader found in {currentGame.CodeDir}", true );
+         if ( ! File.Exists( CurrentGame.Injector ) ) return Log( $"Missing injector: {CurrentGame.Injector}", false );
+         if ( ! File.Exists( CurrentGame.Loader   ) ) return Log( $"Missing loader: {CurrentGame.Loader}", false );
+         return Log( $"Injector and loader found in {CurrentGame.CodeDir}", true );
       } catch ( IOException ex ) { return Log( ex, false ); } }
 
       // Return true if injectors are in place and injected.
-      internal bool CheckInjected () {
+      private bool CheckInjected () {
          try {
-            if ( ! InjectorInPlace() ) return false;
             Log( "Detecting injection status." );
-            var result = currentGame.Status = currentGame.RunInjector( "/d" );
+            var result = CurrentGame.Status = CurrentGame.RunInjector( "/d" );
             return result == "modnix" || result == "both";
          } catch ( Exception ex ) {
-            currentGame.Status  = "error";
+            CurrentGame.Status = "error";
             return Log( ex, false );
          }
       }
@@ -315,7 +315,7 @@ namespace Sheepy.Modnix.MainGUI {
          try {
             string logFile = Path.Combine( ModFolder, MOD_LOG );
             if ( File.Exists( logFile ) && 
-                 File.GetLastWriteTime( logFile ) > File.GetLastWriteTime( Path.Combine( currentGame.CodeDir, GAME_DLL ) ) ) {
+                 File.GetLastWriteTime( logFile ) > File.GetLastWriteTime( Path.Combine( CurrentGame.CodeDir, GAME_DLL ) ) ) {
                Log( $"Parsing {logFile}" );
                var line = File.ReadLines( logFile ).ElementAtOrDefault( 1 );
                var match = Regex.Match( line ?? "", "Assembly-CSharp/([^ ;]+)", RegexOptions.IgnoreCase );
@@ -324,18 +324,21 @@ namespace Sheepy.Modnix.MainGUI {
             }
          } catch ( Exception ex ) { Log( ex ); }
 
-         return currentGame.RunInjector( "/g" );
+         return CurrentGame.RunInjector( "/g" );
       } catch ( Exception ex ) { return Log( ex, "error" ); } }
 
       // Try to detect game path
       private bool FoundGame ( out string gamePath ) { gamePath = null; try {
+         gamePath = ".";
+         if ( IsGamePath( "." ) ) return true;
+         gamePath = "..";
+         if ( IsGamePath( "." ) ) return true;
          gamePath = SearchRegistry();
          if ( gamePath != null ) return true;
          gamePath = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.ProgramFiles ), "Epic Games", "PhoenixPoint" );
          if ( IsGamePath( gamePath ) ) return true;
          gamePath = SearchDrives();
-         if ( gamePath != null ) return true;
-         return false;
+         return gamePath != null;
       } catch ( IOException ex ) { gamePath = null; return Log( ex, false ); } }
 
       private string SearchRegistry () { try {
@@ -368,18 +371,18 @@ namespace Sheepy.Modnix.MainGUI {
 
       internal void LaunchGame ( string type ) { try {
          if ( type == "online" ) {
-            if ( currentGame.GameType == "epic" ) {
+            if ( CurrentGame.GameType == "epic" ) {
                Log( "Launching through epic game launcher" );
                Process.Start( "com.epicgames.launcher://apps/Iris?action=launch" );
                return;
             }
          } else {
-            string exe = Path.Combine( currentGame.GameDir, GAME_EXE );
+            string exe = Path.Combine( CurrentGame.GameDir, GAME_EXE );
             Log( $"Launching {exe}" );
             Process.Start( exe );
             return;
          }
-         Log( $"Unsupported launch type. Requested {type}. Game is {currentGame.GameType}." );
+         Log( $"Unsupported launch type. Requested {type}. Game is {CurrentGame.GameType}." );
          GUI.Prompt( "error" );
       } catch ( Exception ex ) {
          GUI.Prompt( "error", ex );
@@ -391,32 +394,32 @@ namespace Sheepy.Modnix.MainGUI {
          Task.Run( (Action) DoSetup );
       }
 
-      private void DoSetup () { try { lock ( SynRoot ) {
+      private void DoSetup () { try {
          string prompt = "setup_ok";
          // Copy exe to mod folder
          if ( CopySelf( MyPath, ModGuiExe ) )
             prompt += ",self_copy";
          // Copy hook files
-         currentGame.WriteCodeFile( HARM_DLL, MainGUI.Properties.Resources._0Harmony   );
-         currentGame.WriteCodeFile( CECI_DLL, MainGUI.Properties.Resources.Mono_Cecil   );
-         currentGame.WriteCodeFile( LOADER  , MainGUI.Properties.Resources.ModnixLoader  );
-         currentGame.WriteCodeFile( INJECTOR, MainGUI.Properties.Resources.ModnixInjector );
-         currentGame.RunInjector( "/y" );
+         CurrentGame.WriteCodeFile( HARM_DLL, MainGUI.Properties.Resources._0Harmony   );
+         CurrentGame.WriteCodeFile( CECI_DLL, MainGUI.Properties.Resources.Mono_Cecil   );
+         CurrentGame.WriteCodeFile( LOADER  , MainGUI.Properties.Resources.ModnixLoader  );
+         CurrentGame.WriteCodeFile( INJECTOR, MainGUI.Properties.Resources.ModnixInjector );
+         CurrentGame.RunInjector( "/y" );
          CheckInjectionStatus();
-         if ( currentGame.Status == "modnix" ) {
+         if ( CurrentGame.Status == "modnix" ) {
             // Migrate mods
             if ( MigrateLegacy() )
                prompt += ",mod_moved";
             // Disable PPML
-            if ( HasLegacy() && currentGame.RenameCodeFile( PAST, PAST_BK ) )
+            if ( HasLegacy() && CurrentGame.RenameCodeFile( PAST, PAST_BK ) )
                prompt += ",ppml";
             // Cleanup - accident prevention. Old dlls at game base may override dlls in the managed folder.
             foreach ( var file in new string[] { PAST, PAST_DL1, PAST_DL2, INJECTOR, LOADER, HARM_DLL, CECI_DLL } )
-               currentGame.DeleteRootFile( file );
+               CurrentGame.DeleteRootFile( file );
             GUI.Prompt( prompt );
          } else
             GUI.Prompt( "error" );
-      } } catch ( Exception ex ) {
+      } catch ( Exception ex ) {
          try { CheckStatus(); } catch ( Exception ) {}
          Log( ex );
          GUI.Prompt( "error", ex );
@@ -434,7 +437,7 @@ namespace Sheepy.Modnix.MainGUI {
       } catch ( Exception ex ) { return Log( ex, false ); } }
 
       private bool MigrateLegacy () { try {
-         string OldPath = Path.Combine( currentGame.GameDir, PAST_MOD );
+         string OldPath = Path.Combine( CurrentGame.GameDir, PAST_MOD );
          string NewPath = ModFolder;
          if ( ! Directory.Exists( OldPath ) ) {
             CreateShortcut();
@@ -497,14 +500,14 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       private bool HasLegacy () { try {
-         return File.Exists( Path.Combine( currentGame.CodeDir, PAST ) );
+         return File.Exists( Path.Combine( CurrentGame.CodeDir, PAST ) );
       } catch ( Exception ex ) { return Log( ex, false ); } }
       
 
       internal void CreateShortcut () {
-         string name = Path.Combine( currentGame.GameDir, PAST_MOD );
+         string name = Path.Combine( CurrentGame.GameDir, PAST_MOD );
          Log( "Creating Mods shortcut to support legacy mods." );
-         RunAndWait( currentGame.GameDir, "cmd", $"/c mklink /d \"{name}\" \"{ModFolder}\"", true );
+         RunAndWait( CurrentGame.GameDir, "cmd", $"/c mklink /d \"{name}\" \"{ModFolder}\"", true );
       }
 
       internal void DoRestoreAsync () {
@@ -512,16 +515,16 @@ namespace Sheepy.Modnix.MainGUI {
          Task.Run( (Action) DoRestore );
       }
 
-      private void DoRestore () { try { lock ( SynRoot ) { 
-         currentGame.RunInjector( "/y /r" );
+      private void DoRestore () { try {
+         CurrentGame.RunInjector( "/y /r" );
          CheckInjectionStatus();
-         if ( currentGame.Status == "none" ) {
-            currentGame.DeleteCodeFile( INJECTOR );
-            currentGame.DeleteCodeFile( LOADER );
+         if ( CurrentGame.Status == "none" ) {
+            CurrentGame.DeleteCodeFile( INJECTOR );
+            CurrentGame.DeleteCodeFile( LOADER );
             GUI.Prompt( "restore_ok" );
          } else
             GUI.Prompt( "error" );
-      } } catch ( Exception ex ) {
+      } catch ( Exception ex ) {
          Log( ex );
          GUI.Prompt( "error", ex );
       } }
@@ -531,21 +534,19 @@ namespace Sheepy.Modnix.MainGUI {
          Task.Run( (Action) CheckUpdate );
       }
 
-      private Updater updater;
+      private Updater _UpdateChecker;
+      private Updater UpdateChecker { get => Get( ref _UpdateChecker ); set => Set( ref _UpdateChecker, value ); }
 
       private void CheckUpdate () { try {
-         lock( SynRoot ) {
-            if ( updater == null )
-               updater = new Updater();
-         }
-         GUI.SetInfo( GuiInfo.APP_UPDATE, updater.FindUpdate( Myself.Version ) );
+         if ( UpdateChecker == null ) UpdateChecker = new Updater();
+         GUI.SetInfo( GuiInfo.APP_UPDATE, UpdateChecker.FindUpdate( Myself.Version ) );
       } catch ( Exception ex ) { Log( ex ); } }
       #endregion
 
       #region mods
       public void GetModList () { try {
-         if ( bridge == null ) bridge = new ModLoaderBridge();
-         GUI.SetInfo( GuiInfo.MOD_LIST, bridge.LoadModList() );
+         if ( ModBridge == null ) ModBridge = new ModLoaderBridge();
+         GUI.SetInfo( GuiInfo.MOD_LIST, ModBridge.LoadModList() );
       } catch ( IOException ex ) { Log( ex ); } }
 
       internal void DoModActionAsync ( ModActionType action, ModInfo mod ) {
@@ -553,12 +554,12 @@ namespace Sheepy.Modnix.MainGUI {
          Task.Run( () => DoModAction( action, mod ) );
       }
 
-      private void DoModAction ( ModActionType action, ModInfo mod ) { try { lock ( SynRoot) {
+      private void DoModAction ( ModActionType action, ModInfo mod ) { try {
          if ( mod == null ) return;
          switch ( action ) {
             case ModActionType.DELETE_FILE :
             case ModActionType.DELETE_DIR :
-               bridge.Delete( mod, action );
+               ModBridge.Delete( mod, action );
                GetModList();
                return;
             case ModActionType.DELETE_SETTINGS :
@@ -568,7 +569,7 @@ namespace Sheepy.Modnix.MainGUI {
                Log( $"Unknown command {action}" );
                return;
          }
-      } } catch ( IOException ex ) {
+      } catch ( IOException ex ) {
          Log( ex );
          GUI.Prompt( "error", ex );
          GetModList();
@@ -576,6 +577,27 @@ namespace Sheepy.Modnix.MainGUI {
       #endregion
 
       #region Helpers
+      private static readonly object SynGetSet = new object();
+
+      private static T SetOnce < T > ( ref T field, T val ) where T : class {
+         lock ( SynGetSet ) {
+            if ( field != null ) throw new InvalidOperationException();
+            field = val;
+         }
+         return val;
+      }
+
+      private static T Set < T > ( ref T field, T val ) {
+         lock ( SynGetSet ) {
+            field = val;
+         }
+         return val;
+      }
+
+      private static T Get < T > ( ref T field ) {
+         lock ( SynGetSet ) { return field; }
+      }
+
       internal static void Explore ( string filename ) {
          Process.Start( "explorer.exe", $"/select, \"{filename}\"" );
       }
@@ -607,18 +629,19 @@ namespace Sheepy.Modnix.MainGUI {
          }
       }
 
-      private string startup_log = "Startup log:\n";
+      private string _StartupLog = "Startup log:\n";
+      private string StartupLog { get => Get( ref _StartupLog ); set => Set( ref _StartupLog, value ); }
 
       internal void Log ( object message ) {
          if ( GUI != null ) {
-            if ( startup_log != null ) {
-               GUI.Log( startup_log.Trim() );
-               startup_log = null;
+            if ( StartupLog != null ) {
+               GUI.Log( StartupLog.Trim() );
+               StartupLog = null;
                if ( message == null ) return;
             }
             GUI.Log( message?.ToString() );
          } else {
-            startup_log += message + "\n";
+            StartupLog += message + "\n";
             Console.WriteLine( message );
          }
       }
@@ -644,7 +667,10 @@ namespace Sheepy.Modnix.MainGUI {
       internal readonly string Injector;
       internal readonly string Loader;
 
-      internal string Status; // Injection status
+      internal string _Status; // Injection status
+      internal string Status  {
+         get { lock( this ) { return _Status; } }
+         set { lock( this ) { _Status = value; } } }
 
       internal string GameType { get {
          if ( Directory.Exists( Path.Combine( GameDir, AppControl.EPIC_DIR ) ) )

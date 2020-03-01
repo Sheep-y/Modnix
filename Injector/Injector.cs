@@ -187,9 +187,11 @@ namespace Sheepy.Modnix {
          Task.WaitAll(
             Task.Run( State.ppmlDll.CheckInjection ),
             Task.Run( State.modxDll.CheckInjection ) );
-         var state = State.ppmlDll.Status | State.modxDll.Status;
-         if ( OptionsIn.Detecting )
-            Exit( SayInjectedStatus( state ) );
+         lock( State.ppmlDll ) { lock ( State.modxDll ) {
+            var state = State.ppmlDll.Status | State.modxDll.Status;
+            if ( OptionsIn.Detecting )
+               Exit( SayInjectedStatus( state ) );
+         } }
       }
 
       private static int SayInjectedStatus ( InjectionState injected ) {
@@ -331,7 +333,8 @@ namespace Sheepy.Modnix {
       internal TargetFile ppmlDll;
    }
 
-   internal enum InjectionState { NONE = 0, MODNIX = 1, PPML = 2, BOTH = 3 }
+   [Flags]
+   internal enum InjectionState { NONE, MODNIX , PPML, BOTH = MODNIX | PPML }
 
    internal class TargetFile {
       internal readonly string Directory;
@@ -373,8 +376,9 @@ namespace Sheepy.Modnix {
                if ( type.IsNotPublic ) continue;
                var result = CheckInjection( type );
                if ( result != InjectionState.NONE ) {
-                  if ( Target.Equals( target ) )
+                  if ( Target.Equals( target ) ) lock ( this ) {
                      Status = result;
+                  }
                   return result;
                }
             }
