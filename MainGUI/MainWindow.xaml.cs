@@ -259,7 +259,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void ButtonAddMod_Click ( object sender, RoutedEventArgs e ) {
          RefreshModList( null );
-         App.GetModList();
+         new Timer( ( _ ) => App.GetModList(), null, 100, Timeout.Infinite );
       }
 
       private void ButtonModOpenModDir_Click ( object sender, RoutedEventArgs e ) {
