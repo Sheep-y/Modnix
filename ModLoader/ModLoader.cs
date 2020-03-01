@@ -11,7 +11,7 @@ using static System.Reflection.BindingFlags;
 namespace Sheepy.Modnix {
 
    public static class ModLoader {
-      private readonly static string MOD_PATH  = "My Games/Phoenix Point/Mods".FixSlash();
+      private readonly static string MOD_PATH = "My Games/Phoenix Point/Mods".FixSlash();
 
       internal static Logger Log;
       public static Version LoaderVersion, GameVersion;
@@ -75,9 +75,11 @@ namespace Sheepy.Modnix {
          return null;
       }
 
-      public static bool NeedSetup => ModDirectory == null;
+      public static bool NeedSetup { get { lock( MOD_PATH ) {
+         return ModDirectory == null;
+      } } }
 
-      public static void Setup () { try {
+      public static void Setup () { try { lock( MOD_PATH ) {
          if ( ModDirectory != null ) return;
          // Dynamically load embedded dll
          AppDomain.CurrentDomain.AssemblyResolve += ( domain, dll ) => { try {
@@ -106,9 +108,9 @@ namespace Sheepy.Modnix {
          }
          var corlib = new Uri( typeof( string ).Assembly.CodeBase ).LocalPath;
          Log.Verbo( ".Net/{0}; mscorlib/{1} {2}", Environment.Version, FileVersionInfo.GetVersionInfo( corlib ).FileVersion, corlib );
-      } catch ( Exception ex ) { Log?.Error( ex ); } }
+      } } catch ( Exception ex ) { Log?.Error( ex ); } }
 
-      public static void SetLog ( Logger logger, bool clear = false ) {
+      public static void SetLog ( Logger logger, bool clear = false ) { lock (  MOD_PATH ) {
          if ( Log != null ) throw new InvalidOperationException();
          Log = logger ?? throw new NullReferenceException( nameof( logger ) );
          logger.Filters.Clear();
@@ -120,15 +122,15 @@ namespace Sheepy.Modnix {
          Log.Info( "{0}/{1}; {2}", typeof( ModLoader ).FullName, LoaderVersion, DateTime.Now.ToString( "u" ) );
          ModMetaJson.JsonLogger.Masters.Clear();
          ModMetaJson.JsonLogger.Masters.Add( Log );
-      }
+      } }
 
-      public static void LogGameVersion () { try {
+      public static void LogGameVersion () { try { lock ( MOD_PATH ) {
          var game = GetGameAssembly();
          if ( game == null ) return;
          var ver = game.GetType( "Base.Build.RuntimeBuildInfo" ).GetProperty( "Version" ).GetValue( null )?.ToString();
          Log.Info( "{0}/{1}", Path.GetFileNameWithoutExtension( game.CodeBase ), ver );
          GameVersion = Version.Parse( ver );
-      } catch ( Exception ex ) { Log?.Error( ex ); } }
+      } } catch ( Exception ex ) { Log?.Error( ex ); } }
       #endregion
 
       #region Loading Mods

@@ -157,10 +157,10 @@ namespace Sheepy.Modnix.MainGUI {
          } catch ( Exception ex ) { Log( ex ); }
       }
 
-      /// Parse command line arguments.
-      /// -i --ignore-pid (id)    Ignore given pid in running process check
-      /// -s --skip-launch-check  Skip checking running process, modnix installation, and setting migration
-      /// -reset --reset          Clear and reset App settings
+      // Parse command line arguments.
+      // -i --ignore-pid (id)    Ignore given pid in running process check
+      // -s --skip-launch-check  Skip checking running process, modnix installation, and setting migration
+      // -reset --reset          Clear and reset App settings
       private void ProcessParams ( string[] args ) {
          if ( args == null || args.Length <= 0 ) return;
          List<string> param = args.ToList();
@@ -196,11 +196,10 @@ namespace Sheepy.Modnix.MainGUI {
       private bool FoundRunningModnix () { try {
          // Find running instances
          int myId = Process.GetCurrentProcess().Id;
-         Process running = Process.GetProcesses()
-               .Where( e => e.ProcessName == LIVE_NAME ||
+         Process running = Array.Find( Process.GetProcesses(), e => ( e.ProcessName == LIVE_NAME ||
                        e.ProcessName.StartsWith( LIVE_NAME+"Setup", StringComparison.InvariantCultureIgnoreCase ) ||
-                       e.ProcessName.StartsWith( LIVE_NAME+"Install", StringComparison.InvariantCultureIgnoreCase ) )
-               .Where( e => e.Id != myId && ( paramIgnorePid == 0 || e.Id != paramIgnorePid ) ).FirstOrDefault();
+                       e.ProcessName.StartsWith( LIVE_NAME+"Install", StringComparison.InvariantCultureIgnoreCase ) ) &&
+                       e.Id != myId && ( paramIgnorePid == 0 || e.Id != paramIgnorePid ) );
          if ( running == null ) return false;
          // Bring to foreground
          IntPtr handle = running.MainWindowHandle;
@@ -228,8 +227,7 @@ namespace Sheepy.Modnix.MainGUI {
          var ver = Version.Parse( FileVersionInfo.GetVersionInfo( ModGuiExe ).ProductVersion );
          Log( $"Their version: {ver}" );
          if ( ver >= Myself.Version ) {
-            if ( GUI != null )
-               GUI.SetInfo( GuiInfo.APP_VER, ver.ToString() );
+            GUI?.SetInfo( GuiInfo.APP_VER, ver.ToString() );
             return true;
          }
          return false;
