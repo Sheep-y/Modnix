@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -174,8 +175,18 @@ namespace Sheepy.Modnix.MainGUI {
          RefreshAppButtons();
       } catch ( Exception ex ) { Log( ex ); } }
 
-      private void ButtonOnline_Click  ( object sender, RoutedEventArgs e ) => App.LaunchGame( "online" );
-      private void ButtonOffline_Click ( object sender, RoutedEventArgs e ) => App.LaunchGame( "offline" );
+      private void ButtonOnline_Click  ( object sender, RoutedEventArgs e ) {
+         App.LaunchGame( "online" );
+         SetInfo( "running", true );
+         new Timer( ( _ ) => Window_Activated( sender, e ), null, 5_000, Timeout.Infinite );
+      }
+
+      private void ButtonOffline_Click ( object sender, RoutedEventArgs e ) {
+         App.LaunchGame( "offline" );
+         SetInfo( "running", true );
+         new Timer( ( _ ) => Window_Activated( sender, e ), null, 5_000, Timeout.Infinite );
+      }
+
       private void ButtonCanny_Click   ( object sender, RoutedEventArgs e ) => OpenUrl( "canny", e );
       private void ButtonDiscord_Click ( object sender, RoutedEventArgs e ) => OpenUrl( "discord", e );
       private void ButtonForum_Click   ( object sender, RoutedEventArgs e ) => OpenUrl( "forum", e );
