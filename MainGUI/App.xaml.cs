@@ -83,11 +83,10 @@ namespace Sheepy.Modnix.MainGUI {
                return;
             }
             if ( ! IsSelfInstalled() ) {
-               if ( FoundInstalledModnix() ) {
+               if ( FoundInstalledModnix() )
                   GUI = new SetupWindow( "launch" );
-               } else if ( ShouldRunSetup() ) {
+               else if ( ShouldRunSetup() )
                   GUI = new SetupWindow( "setup" );
-               }
             }
          }
          Log( $"Launching main window" );
@@ -589,14 +588,11 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       private static T Set < T > ( ref T field, T val ) {
-         lock ( SynGetSet ) {
-            field = val;
-         }
-         return val;
+         lock ( SynGetSet ) return field = val;
       }
 
       private static T Get < T > ( ref T field ) {
-         lock ( SynGetSet ) { return field; }
+         lock ( SynGetSet ) return field;
       }
 
       internal static void Explore ( string filename ) {

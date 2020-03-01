@@ -376,9 +376,8 @@ namespace Sheepy.Modnix {
                if ( type.IsNotPublic ) continue;
                var result = CheckInjection( type );
                if ( result != InjectionState.NONE ) {
-                  if ( Target.Equals( target ) ) lock ( this ) {
+                  if ( Target.Equals( target ) ) lock ( this )
                      Status = result;
-                  }
                   return result;
                }
             }

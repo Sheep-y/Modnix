@@ -80,9 +80,7 @@ namespace Sheepy.Modnix.MainGUI {
       public override string Name => Mod.Metadata.Name?.ToString();
       public override string Version => Mod.Metadata.Version?.ToString();
       public override string Author => Mod.Metadata.Author?.ToString();
-      public override string Status { get { lock ( Mod ) {
-         return Mod.Disabled ? "Disabled" : "Enabled";
-      } } }
+      public override string Status { get { lock ( Mod ) return Mod.Disabled ? "Disabled" : "Enabled"; } }
 
       public override object Query ( ModQueryType prop ) { lock ( Mod ) {
          switch ( prop ) {
@@ -113,9 +111,7 @@ namespace Sheepy.Modnix.MainGUI {
          return "DLL";
       } } }
 
-      public override string ToString () { lock ( Mod ) {
-         return Mod.ToString();
-      } }
+      public override string ToString () { lock ( Mod ) return Mod.ToString(); }
    }
 
    internal class GUILogger : Logger {
