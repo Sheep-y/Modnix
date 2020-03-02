@@ -2,7 +2,12 @@
 
 # Version ??
 
-* Fix: Little typos.
+* New: Formatted app/game/mod info.  Mod info panel now shows all documented values.
+* Fix: Lang now accepts a single string as intended.
+* Fix: Url and Contact no longer lowercase their keys.
+* Fix: Embedded mod_info now overwrites Url, Contact, and Copyright.
+* Fix: Typo on log label.
+* In mod_info, Langs are change to Lang, Urls changed to Url.  This make info fields consistent.
 * Injector's game version check now returns only type of error, instead of full stacktrace, to keep returned text on one line.
 
 # Version 0.81, 2020-03-01
