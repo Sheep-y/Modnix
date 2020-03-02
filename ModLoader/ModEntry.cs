@@ -220,6 +220,7 @@ namespace Sheepy.Modnix {
          if ( objectType == typeof( TextSet   ) ) return true;
          if ( objectType == typeof( TextSet[] ) ) return true;
          if ( objectType == typeof( Version   ) ) return true;
+         if ( objectType == typeof( string[]  ) ) return true;
          return false;
       }
 
@@ -231,6 +232,7 @@ namespace Sheepy.Modnix {
          if ( objectType == typeof( TextSet   ) ) return ParseTextSet( reader );
          if ( objectType == typeof( TextSet[] ) ) return ParseTextSetArray( reader );
          if ( objectType == typeof( Version   ) ) return ParseVersion( reader );
+         if ( objectType == typeof( string[]  ) ) return ParseStringArray( reader );
          throw new InvalidOperationException();
       }
 
@@ -287,6 +289,30 @@ namespace Sheepy.Modnix {
          }
          e.Dict.Add( prop, txt );
          return e;
+      }
+
+      private static string ParseString ( JsonReader r ) {
+         var token = r.SkipComment();
+         if ( token == JsonToken.Null || token == JsonToken.Undefined ) return null;
+         if ( token == JsonToken.String ) return r.Value.ToString();
+         throw new JsonException( $"String expected" );
+      }
+
+      private static string[] ParseStringArray ( JsonReader r ) {
+         var token = r.SkipComment();
+         if ( token == JsonToken.Null || token == JsonToken.Undefined ) return null;
+         if ( token == JsonToken.String ) return new string[] { r.Value.ToString() };
+         if ( token == JsonToken.StartArray ) {
+            if ( r.ReadAndSkipComment() == JsonToken.EndArray ) return null;
+            List<string> result = new List<string>();
+            do {
+               string node = ParseString( r );
+               if ( node != null ) result.Add( node );
+               if ( r.ReadAndSkipComment() == JsonToken.EndArray )
+                  return result.Count > 0 ? result.ToArray() : null;
+            } while ( true );
+         }
+         throw new JsonException( $"String or array expected for string[]" );
       }
 
       private static T[] ParseArray < T > ( JsonReader r, Func< JsonReader, T > objParser ) where T : class, new() {
