@@ -108,10 +108,15 @@ namespace Sheepy.Modnix.MainGUI {
          var meta = Mod.Metadata;
          var basic = new Paragraph( new Bold( new Run( Name ) ) );
          var list = basic.Inlines;
-         if ( meta.Version != null ) list.Add( new Run( $"\rVersion {Version}" ) );
-         list.Add( new Run( $"\rType {Type}" ) );
-         if ( meta.Author != null ) list.Add( new Run( $"\rAuthor {Author}" ) );
-         if ( meta.Copyright != null ) list.Add( new Run( $"\r{meta.Copyright.ToString( "en" )}" ) );
+         if ( meta.Version != null ) list.Add( new Run( $"\tVer {Version}" ) );
+         list.Add( new Run( $"\rType\t{Type}" ) );
+         if ( meta.Author != null ) list.Add( new Run( $"\rAuthor\t{Author}" ) );
+         if ( meta.Copyright != null ) {
+            var txt = meta.Copyright.ToString( "en" );
+            if ( ! txt.StartsWith( "Copyright", StringComparison.InvariantCultureIgnoreCase ) )
+               txt = "Copyright\t" + txt;
+            list.Add( new Run( "\r" + txt ) );
+         }
          if ( meta.Url != null ) {
             foreach ( var e in meta.Url.Dict ) try {
                string name = e.Key, link = e.Value;
