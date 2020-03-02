@@ -99,33 +99,72 @@ namespace Sheepy.Modnix.MainGUI {
 
       public override void BuildDesc ( FlowDocument doc ) { lock ( Mod ) {
          doc.Replace(
-            BuildBasicDesc(),
-            new Paragraph( new Run( Mod.Metadata.Description?.ToString( "en" ) ) )
+            BuildBlock( BuildBasicDesc ),
+            new Paragraph( new Run( Mod.Metadata.Description?.ToString( "en" ) ) ),
+            BuildBlock( BuildLinks ),
+            BuildBlock( BuildContacts ),
+            BuildBlock( BuildFileList ),
+            BuildCopyright()
          );
       } }
 
-      private Block BuildBasicDesc () {
-         var meta = Mod.Metadata;
-         var basic = new Paragraph( new Bold( new Run( Name ) ) );
-         var list = basic.Inlines;
-         if ( meta.Version != null ) list.Add( new Run( $"\tVer {Version}" ) );
-         list.Add( new Run( $"\rType\t{Type}" ) );
-         if ( meta.Author != null ) list.Add( new Run( $"\rAuthor\t{Author}" ) );
-         if ( meta.Copyright != null ) {
-            var txt = meta.Copyright.ToString( "en" );
-            if ( ! txt.StartsWith( "Copyright", StringComparison.InvariantCultureIgnoreCase ) )
-               txt = "Copyright\t" + txt;
-            list.Add( new Run( "\r" + txt ) );
+      private void BuildBasicDesc ( ModMeta meta, InlineCollection list ) {
+         list.Add( new Bold( new Run( meta.Name.ToString( "en" ) ) ) );
+         if ( meta.Version != null ) list.Add( $"\tVer {Version}" );
+         list.Add( $"\rType\t{Type}" );
+         if ( meta.Author != null ) list.Add( $"\rAuthor\t{Author}" );
+      }
+
+      private static void BuildLinks ( ModMeta meta, InlineCollection list ) {
+         if ( meta.Url == null ) return;
+         list.Add( "Link(s)" );
+         BuildDict( meta.Url, list );
+      }
+
+      private void BuildContacts ( ModMeta meta, InlineCollection list ) {
+         if ( meta.Contact == null ) return;
+         list.Add( "Contact(s)" );
+         BuildDict( meta.Contact, list );
+      }
+
+      private void BuildFileList ( ModMeta meta, InlineCollection list ) {
+         Func< string, string > fileName = System.IO.Path.GetFileName;
+         list.Add( "File(s)" );
+         var self = fileName( Path );
+         var selfRun = new Run( "\r" + self );
+         list.Add( selfRun );
+         foreach ( var e in meta.Dlls ) {
+            var path = fileName( e.Path );
+            if ( path == self ) list.Remove( selfRun );
+            list.Add( "\r" + path + " [" + string.Join( ", ", e.Methods.Keys ) + "]" );
          }
-         if ( meta.Url != null ) {
-            foreach ( var e in meta.Url.Dict ) try {
-               string name = e.Key, link = e.Value;
-               if ( string.IsNullOrWhiteSpace( name ) || string.IsNullOrWhiteSpace( link ) ) continue;
-               list.Add( new Run( "\r" + name + "\t" ) );
-               list.Add( new Hyperlink( new Run( link ) ){ NavigateUri = new Uri( link ) } );
-            } catch ( UriFormatException ) { }
+      }
+
+      private Block BuildCopyright () {
+         var txt = Mod.Metadata.Copyright?.ToString( "en" );
+         if ( string.IsNullOrWhiteSpace( txt ) ) return null;
+         if ( ! txt.StartsWith( "Copyright", StringComparison.InvariantCultureIgnoreCase ) )
+            txt = "Copyright: " + txt;
+         return new Paragraph( new Run( txt ) );
+      }
+
+      private Block BuildBlock ( Action<ModMeta,InlineCollection> builder ) {
+         var block = new Paragraph();
+         builder( Mod.Metadata, block.Inlines );
+         return block.Inlines.Count == 0 ? null : block;
+      }
+
+      private static void BuildDict ( TextSet data, InlineCollection list ) {
+         if ( data.Dict == null ) {
+            list.Add( data.Default );
+            return;
          }
-         return basic;
+         foreach ( var e in data.Dict ) {
+            string name = e.Key, link = e.Value;
+            if ( string.IsNullOrWhiteSpace( name ) || string.IsNullOrWhiteSpace( link ) ) continue;
+            list.Add( "\r" + name + "\t" ); 
+            list.Add( new Hyperlink( new Run( link ) ){ NavigateUri = new Uri( link ) } );
+         }
       }
 
       public override string Path => Mod.Path;

@@ -2,7 +2,7 @@
 
 # Version ??
 
-* New: Formatted app/game/mod info.  Mod info panel now shows all documented values.
+* New: Formatted app/game/mod info.  Mod info panel now shows all diplay info, plus file list and entry points.
 * Fix: Lang now accepts a single string as intended.
 * Fix: Url and Contact no longer lowercase their keys.
 * Fix: Embedded mod_info now overwrites Url, Contact, and Copyright.

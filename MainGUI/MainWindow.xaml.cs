@@ -186,15 +186,14 @@ namespace Sheepy.Modnix.MainGUI {
       #region Game Info Area
       private void RefreshGameInfo () { try {
          Log( "Refreshing game info" );
-         var content = new List<Inline>();
-         content.Add( new Bold( new Run( "Phoenix Point" ) ) );
+         var p = new Paragraph( new Bold( new Run( "Phoenix Point" ) ) );
          if ( GamePath != null ) {
             if ( GameVer  != null )
-               content.Add( new Run( $"\tVer {GameVer}" ) );
-            content.Add( new Run( "\r" + Path.GetFullPath( GamePath ) ) );
+               p.Inlines.Add( $"\tVer {GameVer}" );
+            p.Inlines.Add( "\r" + Path.GetFullPath( GamePath ) );
          } else
-            content.Add( new Run( "\rGame not found" ){ Foreground = Brushes.Red } );
-         RichGameInfo.Document.Replace( P( content.ToArray() ) );
+            p.Inlines.Add( new Run( "\rGame not found" ){ Foreground = Brushes.Red } );
+         RichGameInfo.Document.Replace( p );
          RefreshAppButtons();
       } catch ( Exception ex ) { Log( ex ); } }
 
@@ -424,7 +423,8 @@ namespace Sheepy.Modnix.MainGUI {
          return new TextRange( box.Document.ContentStart, box.Document.ContentEnd );
       }
 
-      public static void Replace ( this FlowDocument doc, params Block[] blocks ) {
+      public static void Replace ( this FlowDocument doc, params Block[] blocks ) => Replace( doc, (IEnumerable<Block>) blocks );
+      public static void Replace ( this FlowDocument doc, IEnumerable< Block > blocks ) {
          var body = doc.Blocks;
          body.Clear();
          foreach ( var e in blocks )
@@ -432,7 +432,8 @@ namespace Sheepy.Modnix.MainGUI {
                body.Add( e );
       }
 
-      public static Paragraph P ( params Inline[] inlines ) {
+      public static Paragraph P ( params Inline[] inlines ) => P( (IEnumerable<Inline>) inlines );
+      public static Paragraph P ( IEnumerable< Inline > inlines ) {
          var result = new Paragraph();
          var body = result.Inlines;
          foreach ( var e in inlines )
