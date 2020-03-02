@@ -59,6 +59,42 @@ namespace Sheepy.Modnix.Tests {
          Assert.AreEqual( max, appver.Max, $"{id}.max"  );
       }
 
+      [TestMethod()] public void StringArrayTest () {
+         var val = ModMetaJson.Parse<string[]>( "null" );
+         Assert.IsNull( val, "null" );
+
+         val = ModMetaJson.Parse<string[]>( "[]" );
+         Assert.IsNull( val, "[]" );
+
+         val = ModMetaJson.Parse<string[]>( "[ null ]" );
+         Assert.IsNull( val, "[null]" );
+
+         val = ModMetaJson.Parse<string[]>( @"""en""" );
+         Assert.IsNotNull( val, "en not null" );
+         Assert.AreEqual( 1, val.Length, "en.Length" );
+         Assert.AreEqual( "en", val[0], "en" );
+
+         val = ModMetaJson.Parse<string[]>( @"/*A*/ [ /*B*/ ""en"" /*C*/, /*D*/ ""zh"" /*E*/ ]" );
+         Assert.IsNotNull( val, "zh not null" );
+         Assert.AreEqual( 2, val.Length, "zh.Length" );
+         Assert.AreEqual( "zh", val[1], "zh" );
+      }
+
+      [TestMethod()] public void TextSetTest () {
+         var val = ModMetaJson.Parse<TextSet>( "null" );
+         Assert.IsNull( val, "null" );
+
+         val = ModMetaJson.Parse<TextSet>( @"""Lorem""" );
+         Assert.IsNotNull( val, "Lorem" );
+         Assert.AreEqual( "Lorem", val.Default, "Lorem.Default" );
+         Assert.AreEqual( "Lorem", val.ToString(), "Lorem.ToString" );
+
+         val = ModMetaJson.Parse<TextSet>( @"/*1*/ { /*2*/ Ab: /*3*/ ""Cd"" /*4*/, e: ""f"" /*5*/ }" );
+         Assert.IsNotNull( val, "Abe" );
+         Assert.AreEqual( "Cd", val.Default, "Abe.Default" );
+         Assert.AreEqual( "f", val.ToString( "e" ), "Abe.ToString" );
+      }
+
       [TestMethod()] public void VersionTest () {
          var appver = ModMetaJson.Parse<Version>( "null" );
          Assert.IsNull( appver, "null" );

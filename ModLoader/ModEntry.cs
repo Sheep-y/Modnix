@@ -241,7 +241,7 @@ namespace Sheepy.Modnix {
       private static AppVer   AssignAppVerProp ( AppVer e, string prop, object val ) {
          string txt = val.ToString().Trim();
          if ( txt.Length <= 0 ) return e;
-         switch ( prop ) {
+         switch ( prop.ToLowerInvariant() ) {
             case "id"  : e.Id  = txt; break;
             case "min" : 
                if ( ! txt.Contains( '.' ) ) txt += ".0";
@@ -262,17 +262,14 @@ namespace Sheepy.Modnix {
          prop = prop.Trim();
          string txt = val.ToString().Trim();
          if ( prop.Length <= 0 || txt.Length <= 0 ) return e;
-         switch ( prop ) {
-            case "path" :
-               e.Path = txt;
-               break;
-            default :
-               var methods = e.Methods;
-               if ( methods == null ) e.Methods = methods = new DllEntryMeta();
-               if ( ! methods.TryGetValue( prop, out var list ) )
-                  methods[ prop ] = list = new HashSet<string>();
-               list.Add( txt );
-               break;
+         if ( "path".Equals( prop, StringComparison.InvariantCultureIgnoreCase ) ) {
+            e.Path = txt;
+         } else {
+            var methods = e.Methods;
+            if ( methods == null ) e.Methods = methods = new DllEntryMeta();
+            if ( ! methods.TryGetValue( prop, out var list ) )
+               methods[ prop ] = list = new HashSet<string>();
+            list.Add( txt );
          }
          return e;
       }
@@ -344,7 +341,7 @@ namespace Sheepy.Modnix {
                if ( r.ReadAndSkipComment() == JsonToken.EndObject ) return null;
                do {
                   if ( r.TokenType == JsonToken.PropertyName ) {
-                     var prop = r.Value?.ToString()?.ToLowerInvariant();
+                     var prop = r.Value?.ToString();
                      token = r.ReadAndSkipComment();
                      if ( token == JsonToken.String || token == JsonToken.Integer )
                         assignProp( result, prop, r.Value );
