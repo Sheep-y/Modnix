@@ -238,7 +238,7 @@
                             <AccessText Text="Save As..."/>
                         </StackPanel>
                     </Button>
-                    <Label x:Name="LabelLogTitle" Content="Dialogistic Log" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <Label x:Name="LabelLogTitle" Content="Diagnostic Log" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                 </DockPanel>
                 <Grid DockPanel.Dock="Bottom" Margin="0">
                     <Grid.ColumnDefinitions>

@@ -1,5 +1,10 @@
 # Modnix Changelog
 
+# Version ??
+
+* Fix: Little typos.
+* Injector's game version check now returns only type of error, instead of full stacktrace, to keep returned text on one line.
+
 # Version 0.81, 2020-03-01
 
 * Fix: Mod list refresh button now works.
@@ -8,7 +13,7 @@
 * Faster startup: Check ppml and modnix injection status in parallel, and check only public classes.
 * New: Detect game folder from Windows 10 Gamebar registry.
 * New: Detect game folder from system program path.
-* New: Detect game folder from the Program Files on all hard drives, and skip all non-hard drives.
+* New: Detect game folder from the Program Files on all hard drives, and skip all non-hard drives.  This replace old hardcoded checks.
 * New: Detect whether game is running, and disables / enables buttons accordingly.
 * New: If mod is in a subfolder, prompt and delete whole subfolder.
 * New: Remove empty folders left by deleting a mod.
