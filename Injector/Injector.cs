@@ -521,7 +521,7 @@ namespace Sheepy.Modnix {
             if ( ldcCount < 2 ) return "ERR too few vers";
             return version[0].ToString() + '.' + version[1];
          } catch ( Exception e ) {
-            return $"ERR {e}";
+            return $"ERR {e.GetType()}";
          }
       }
    }

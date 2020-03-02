@@ -36,14 +36,14 @@ namespace Sheepy.Modnix.MainGUI {
          try {
             string txt = value?.ToString();
             switch ( info ) {
-               case GuiInfo.VISIBILITY: Show(); break;
-               case GuiInfo.APP_VER: AppVer = txt; break;
-               case GuiInfo.APP_STATE: AppState = txt; break;
-               case GuiInfo.GAME_RUNNING: IsGameRunning = (bool) value; break;
-               case GuiInfo.GAME_PATH: GamePath = txt; ButtonAction.Focus(); break;
-               case GuiInfo.GAME_VER:
-               case GuiInfo.APP_UPDATE: 
-               case GuiInfo.MOD_LIST: 
+               case GuiInfo.VISIBILITY : Show(); break;
+               case GuiInfo.APP_VER : AppVer = txt; break;
+               case GuiInfo.APP_STATE : AppState = txt; break;
+               case GuiInfo.GAME_RUNNING : IsGameRunning = (bool) value; break;
+               case GuiInfo.GAME_PATH : GamePath = txt; ButtonAction.Focus(); break;
+               case GuiInfo.GAME_VER :
+               case GuiInfo.APP_UPDATE :
+               case GuiInfo.MOD_LIST :
                   break;
                default: Log( $"Unknown info {info}" ); return;
             }
