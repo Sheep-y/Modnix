@@ -80,21 +80,23 @@ namespace Sheepy.Modnix.MainGUI {
       #region App Info Area
       private void RefreshAppInfo () { try {
          Log( "Refreshing app info" );
-         string txt = $"Modnix\rVer {AppVer}\rStatus: ";
+         string txt;
          if ( IsGameRunning )
-            txt += "Game is running";
+            txt = "Game is running";
          else if ( AppState == null )
-            txt += "Busy";
+            txt = "Busy";
          else
             switch ( AppState ) {
-               case "ppml"   : txt += "PPML only, need setup"; break;
-               case "both"   : txt += "PPML found, can remove"; break;
-               case "modnix" : txt += "Injected"; break;
-               case "setup"  : txt += "Requires Setup"; break;
-               case "no_game": txt += "Game not found; Please do Manual Setup"; break;
-               default: txt += "Unknown state; see log"; break;
+               case "ppml"   : txt = "PPML only, need setup"; break;
+               case "both"   : txt = "PPML found, can remove"; break;
+               case "modnix" : txt = "Injected"; break;
+               case "setup"  : txt = "Requires Setup"; break;
+               case "no_game": txt = "Game not found; Please do Manual Setup"; break;
+               default: txt = "Unknown state; see log"; break;
             }
-         RichAppInfo.TextRange().Text = txt;
+         var state = new Run( txt );
+         if ( AppState != "modnix" ) state.Foreground = Brushes.Red;
+         RichAppInfo.Document.Replace( P( new Bold( new Run( AppControl.LIVE_NAME ) ), new Run( $"\tVer {AppVer}\rStatus: " ), state ) );
          RefreshAppButtons();
          RefreshModList();
       } catch ( Exception ex ) { Log( ex ); } }
@@ -381,7 +383,7 @@ namespace Sheepy.Modnix.MainGUI {
       }
       #endregion
 
-      #region Openers
+      #region Helpers
       private void OpenUrl ( string type, RoutedEventArgs e = null ) {
          Log( "OpenUrl " + type );
          if ( e?.Source is UIElement src ) src.Focus();
@@ -404,12 +406,26 @@ namespace Sheepy.Modnix.MainGUI {
          Log( $"Opening {url}" );
          Process.Start( url );
       }
+
+      private static Paragraph P ( params Inline[] inlines ) {
+         var result = new Paragraph();
+         var body = result.Inlines;
+         foreach ( var e in inlines ) body.Add( e );
+         return result;
+      }
       #endregion
    }
 
    public static class WpfHelper {
       public static TextRange TextRange ( this RichTextBox box ) {
          return new TextRange( box.Document.ContentStart, box.Document.ContentEnd );
+      }
+
+      public static void Replace ( this FlowDocument doc, params Block[] blocks ) {
+         var body = doc.Blocks;
+         body.Clear();
+         doc.PagePadding = new Thickness( 0 ); // WPF bug - document reset its padding on first render.
+         foreach ( var e in blocks ) body.Add( e );
       }
    }
 }
