@@ -13,6 +13,7 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using static System.Globalization.CultureInfo;
+using static Sheepy.Modnix.MainGUI.WpfHelper;
 
 namespace Sheepy.Modnix.MainGUI {
 
@@ -415,13 +416,6 @@ namespace Sheepy.Modnix.MainGUI {
          Log( $"Opening {url}" );
          Process.Start( url );
       }
-
-      private static Paragraph P ( params Inline[] inlines ) {
-         var result = new Paragraph();
-         var body = result.Inlines;
-         foreach ( var e in inlines ) body.Add( e );
-         return result;
-      }
       #endregion
    }
 
@@ -433,7 +427,18 @@ namespace Sheepy.Modnix.MainGUI {
       public static void Replace ( this FlowDocument doc, params Block[] blocks ) {
          var body = doc.Blocks;
          body.Clear();
-         foreach ( var e in blocks ) body.Add( e );
+         foreach ( var e in blocks )
+            if ( e != null )
+               body.Add( e );
+      }
+
+      public static Paragraph P ( params Inline[] inlines ) {
+         var result = new Paragraph();
+         var body = result.Inlines;
+         foreach ( var e in inlines )
+            if ( e != null )
+               body.Add( e );
+         return result;
       }
    }
 }
