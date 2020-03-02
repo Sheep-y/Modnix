@@ -49,7 +49,7 @@ namespace Sheepy.Modnix.MainGUI {
          Log( $"Set {info} = {value}" );
          string txt = value?.ToString();
          switch ( info ) {
-            case GuiInfo.VISIBILITY : Show(); break;
+            case GuiInfo.VISIBILITY : Show(); ResetPaddings(); break;
             case GuiInfo.APP_VER : AppVer = txt; RefreshAppInfo(); break;
             case GuiInfo.APP_STATE : AppState = txt; RefreshAppInfo(); break;
             case GuiInfo.APP_UPDATE : Update = value; UpdateChecked(); RefreshUpdateStatus(); break;
@@ -71,6 +71,14 @@ namespace Sheepy.Modnix.MainGUI {
       } catch ( Exception ex ) { Log( ex ); } } ); }
 
       private void Window_Activated ( object sender, EventArgs e ) => CheckGameRunning();
+
+      private void ResetPaddings () {
+         // WPF bug - document reset its padding on first render.
+         var empty = new Thickness( 0 );
+         RichAppInfo.Document.PagePadding = empty;
+         RichGameInfo.Document.PagePadding = empty;
+         RichModInfo.Document.PagePadding = empty;
+      }
 
       private void CheckGameRunning ( object _ = null ) {
          if ( AppControl.IsGameRunning() != IsGameRunning )
@@ -177,27 +185,28 @@ namespace Sheepy.Modnix.MainGUI {
       #region Game Info Area
       private void RefreshGameInfo () { try {
          Log( "Refreshing game info" );
-         string txt = "Phoenix Point";
+         var content = new List<Inline>();
+         content.Add( new Bold( new Run( "Phoenix Point" ) ) );
          if ( GamePath != null ) {
-            txt += "\r" + Path.GetFullPath( GamePath );
             if ( GameVer  != null )
-               txt += "\rVer: " + GameVer;
+               content.Add( new Run( $"\tVer {GameVer}" ) );
+            content.Add( new Run( "\r" + Path.GetFullPath( GamePath ) ) );
          } else
-            txt += "Game not found";
-         RichGameInfo.TextRange().Text = txt;
+            content.Add( new Run( "\rGame not found" ){ Foreground = Brushes.Red } );
+         RichGameInfo.Document.Replace( P( content.ToArray() ) );
          RefreshAppButtons();
       } catch ( Exception ex ) { Log( ex ); } }
 
       private void ButtonOnline_Click  ( object sender, RoutedEventArgs e ) {
          App.LaunchGame( "online" );
          SetInfo( GuiInfo.GAME_RUNNING, true );
-         new Timer( CheckGameRunning, null, 10_000, Timeout.Infinite );
+         _ = new Timer( CheckGameRunning, null, 10_000, Timeout.Infinite );
       }
 
       private void ButtonOffline_Click ( object sender, RoutedEventArgs e ) {
          App.LaunchGame( "offline" );
          SetInfo( GuiInfo.GAME_RUNNING, true );
-         new Timer( CheckGameRunning, null, 10_000, Timeout.Infinite );
+         _ = new Timer( CheckGameRunning, null, 10_000, Timeout.Infinite );
       }
 
       private void ButtonCanny_Click   ( object sender, RoutedEventArgs e ) => OpenUrl( "canny", e );
@@ -424,7 +433,6 @@ namespace Sheepy.Modnix.MainGUI {
       public static void Replace ( this FlowDocument doc, params Block[] blocks ) {
          var body = doc.Blocks;
          body.Clear();
-         doc.PagePadding = new Thickness( 0 ); // WPF bug - document reset its padding on first render.
          foreach ( var e in blocks ) body.Add( e );
       }
    }

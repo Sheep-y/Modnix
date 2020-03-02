@@ -54,7 +54,7 @@
                                 </StackPanel>
                             </Button>
                         </Grid>
-                        <RichTextBox x:Name="RichGameInfo" Height="50" IsReadOnly="True" BorderBrush="{x:Null}" Margin="0,10,0,5" IsTabStop="False" TabIndex="300">
+                        <RichTextBox x:Name="RichGameInfo" Height="33" IsReadOnly="True" BorderBrush="{x:Null}" Margin="0,10,0,5" IsTabStop="False" TabIndex="300">
                             <FlowDocument PagePadding="0">
                                 <Paragraph>
                                     <Run Text="Phoenix Point&#xA;Ver 1.0"/>
