@@ -78,7 +78,7 @@ namespace Sheepy.Modnix.Tests {
          dict.Add( "*", "def" );
          var meta = new ModMeta(){
             Id = "",
-            Langs = new string[ 0 ],
+            Lang = new string[ 0 ],
             Mods = new string[]{ "" },
             Name = new TextSet{ Default = " " },
             Description = new TextSet{ Default = "a", Dict = new Dictionary<string, string>() },
@@ -89,7 +89,7 @@ namespace Sheepy.Modnix.Tests {
          };
          meta.Normalise();
          Assert.IsNull( meta.Id, "Id" );
-         Assert.IsNull( meta.Langs, "Langs" );
+         Assert.IsNull( meta.Lang, "Langs" );
          Assert.IsNull( meta.Mods, "Mods" );
          Assert.IsNull( meta.Name, "Name" );
          Assert.IsNull( meta.Description.Dict, "Description" );

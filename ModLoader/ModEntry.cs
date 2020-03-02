@@ -44,10 +44,10 @@ namespace Sheepy.Modnix {
       public Version  Version;
 
       public TextSet  Name;
-      public string[] Langs;
+      public string[] Lang;
       public TextSet  Description;
       public TextSet  Author;
-      public TextSet  Urls;
+      public TextSet  Url;
       public TextSet  Contact;
       public TextSet  Copyright;
 
@@ -67,9 +67,12 @@ namespace Sheepy.Modnix {
             CopyNonNull( overrider.Id, ref Id );
             CopyNonNull( overrider.Version, ref Version );
             CopyNonNull( overrider.Name, ref Name );
-            CopyNonNull( overrider.Langs, ref Langs );
+            CopyNonNull( overrider.Lang, ref Lang );
             CopyNonNull( overrider.Description, ref Description );
             CopyNonNull( overrider.Author, ref Author );
+            CopyNonNull( overrider.Url, ref Url );
+            CopyNonNull( overrider.Contact, ref Contact );
+            CopyNonNull( overrider.Copyright, ref Copyright );
             CopyNonNull( overrider.Requires, ref Requires );
             CopyNonNull( overrider.Conflicts, ref Conflicts );
             CopyNonNull( overrider.LoadsAfter, ref LoadsAfter );
@@ -96,10 +99,10 @@ namespace Sheepy.Modnix {
          NormTextSet( ref Name );
          if ( Name == null && Id != null )
             Name = new TextSet{ Default = Id };
-         NormStringArray( ref Langs );
+         NormStringArray( ref Lang );
          NormTextSet( ref Description );
          NormTextSet( ref Author );
-         NormTextSet( ref Urls );
+         NormTextSet( ref Url );
          NormTextSet( ref Contact );
          NormTextSet( ref Copyright );
          NormAppVer( ref Requires );

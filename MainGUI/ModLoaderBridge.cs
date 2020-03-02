@@ -112,8 +112,8 @@ namespace Sheepy.Modnix.MainGUI {
          list.Add( new Run( $"\rType {Type}" ) );
          if ( meta.Author != null ) list.Add( new Run( $"\rAuthor {Author}" ) );
          if ( meta.Copyright != null ) list.Add( new Run( $"\r{meta.Copyright.ToString( "en" )}" ) );
-         if ( meta.Urls != null ) {
-            foreach ( var e in meta.Urls.Dict ) try {
+         if ( meta.Url != null ) {
+            foreach ( var e in meta.Url.Dict ) try {
                string name = e.Key, link = e.Value;
                if ( string.IsNullOrWhiteSpace( name ) || string.IsNullOrWhiteSpace( link ) ) continue;
                list.Add( new Run( "\r" + name + "\t" ) );
