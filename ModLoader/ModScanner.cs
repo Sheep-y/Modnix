@@ -238,59 +238,7 @@ namespace Sheepy.Modnix {
       }
       #endregion
 
-      #region Resolving
-      private static void ResolveMods () {
-         EnabledMods.Clear();
-         EnabledMods.AddRange( AllMods.Where( e => ! e.Disabled ) );
-         Log.Info( "Resolving {0} mods", EnabledMods.Count );
-         RemoveDuplicateMods();
-         RemoveUnfulfilledMods();
-         RemoveConflictMods();
-      }
-
-      private static void RemoveDuplicateMods () {
-         Log.Verbo( "Check duplicate mods" );
-         var IdList = new HashSet<string>( EnabledMods.Select( e => e.Key ) );
-         foreach ( var mod in EnabledMods.ToArray() ) {
-            if ( mod.Disabled ) continue; // Already removed as a dup
-            var key = mod.Key;
-            if ( ! IdList.Contains( key ) ) continue; // Already removed dups
-            RemoveDuplicates( EnabledMods.Where( e => e.Key == key ).ToArray() );
-            IdList.Remove( key );
-         }
-      }
-
-      private static void RemoveDuplicates ( ModEntry[] clones ) {
-         ModEntry keep = FindLatestMod( clones );
-         foreach ( var mod in clones ) {
-            if ( mod == keep ) continue;
-            DisableAndRemoveMod( mod, "duplicate", "Mod {1} is a duplicate of {2}.", keep, mod.Path, keep.Path );
-         }
-      }
-
-      private static ModEntry FindLatestMod ( ModEntry[] clones ) {
-         ModEntry best = clones[0];
-         foreach ( var mod in clones ) {
-            if ( mod == best ) continue;
-            if ( TestAndSwap( mod.Metadata.Version, best.Metadata.Version, mod, ref best ) ) continue;
-            if ( TestAndSwap( mod.LastModified, mod.LastModified, mod, ref best ) ) continue;
-            if ( TestAndSwap( new FileInfo( mod.Path ).Length, new FileInfo( best.Path ).Length, mod, ref best ) ) continue;
-         }
-         return best;
-      }
-
-      private static bool TestAndSwap < T > ( T our, T their, ModEntry me, ref ModEntry best ) where T : IComparable {
-         if ( our == null && me == null ) return false;
-         if ( our == null ) return true; // We are null while they are not
-         if ( their != null ) {
-            var compare = our.CompareTo( their );
-            if ( compare == 0 ) return false; // We are same
-            if ( compare < 0 ) return true; // We are smaller
-         } // Either we are bigger, or we are non-null while they are
-         best = me;
-         return true;
-      }
-
+      #region Mod Query
       internal static ModEntry GetModById ( string key ) {
          key = NormaliseModId( key );
          return EnabledMods.Find( e => e.Key == key && ! e.Disabled );
@@ -316,6 +264,63 @@ namespace Sheepy.Modnix {
       private static Version GetVersionFromMod ( ModEntry mod ) {
          if ( mod == null ) return null;
          return mod.Metadata.Version ?? new Version( 0, 0 );
+      }
+
+      private static ModEntry FindLatestMod ( ModEntry[] clones ) {
+         ModEntry best = clones[0];
+         foreach ( var mod in clones ) {
+            if ( CompareMod( mod, best ) == -1 )
+               best = mod;
+         }
+         return best;
+      }
+
+      private static int CompareMod ( ModEntry x, ModEntry y ) {
+         var diff = CompareAttr( x.Metadata.Version, y.Metadata.Version );
+         if ( diff != 0 ) return diff;
+         diff = CompareAttr( x.LastModified, y.LastModified );
+         if ( diff != 0 ) return diff;
+         if ( x.Path == null || y.Path == null ) return CompareAttr( x.Path, y.Path );
+         return CompareAttr( new FileInfo( x.Path ).Length, new FileInfo( y.Path ).Length );
+      }
+
+      private static int CompareAttr < T > ( T our, T their ) where T : IComparable {
+         if ( our == null && their == null ) return 0;
+         if ( our == null ) return -1; // We are null while they are not
+         if ( their == null ) return 1;
+         return our.CompareTo( their );
+      }
+      #endregion
+
+      #region Resolving
+      private static void ResolveMods () {
+         EnabledMods.Clear();
+         EnabledMods.AddRange( AllMods.Where( e => ! e.Disabled ) );
+         Log.Info( "Resolving {0} mods", EnabledMods.Count );
+         EnabledMods.Sort( CompareMod ); // Make determinstic
+         RemoveDuplicateMods();
+         RemoveUnfulfilledMods();
+         RemoveConflictMods();
+      }
+
+      private static void RemoveDuplicateMods () {
+         Log.Verbo( "Check duplicate mods" );
+         var IdList = new HashSet<string>( EnabledMods.Select( e => e.Key ) );
+         foreach ( var mod in EnabledMods.ToArray() ) {
+            if ( mod.Disabled ) continue; // Already removed as a dup
+            var key = mod.Key;
+            if ( ! IdList.Contains( key ) ) continue; // Already removed dups
+            RemoveDuplicates( EnabledMods.Where( e => e.Key == key ).ToArray() );
+            IdList.Remove( key );
+         }
+      }
+
+      private static void RemoveDuplicates ( ModEntry[] clones ) {
+         ModEntry keep = FindLatestMod( clones );
+         foreach ( var mod in clones ) {
+            if ( mod == keep ) continue;
+            DisableAndRemoveMod( mod, "duplicate", "Mod {1} is a duplicate of {2}.", keep, mod.Path, keep.Path );
+         }
       }
 
       private static void RemoveUnfulfilledMods () {

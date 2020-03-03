@@ -19,7 +19,7 @@ namespace Sheepy.Modnix {
       public ModEntry ( ModMeta meta ) : this( null, meta ) { }
       public ModEntry ( string path, ModMeta meta ) {
          Path = path;
-         LastModified = new FileInfo( path ).LastWriteTime;
+         if ( path != null ) LastModified = new FileInfo( path ).LastWriteTime;
          Metadata = meta ?? throw new ArgumentNullException( nameof( meta ) );
       }
 
