@@ -101,7 +101,8 @@ namespace Sheepy.Modnix {
          } else {
             Log.Verbo( $"Parsing as mod_info: {file}" );
             var default_id = Path.GetFileNameWithoutExtension( file );
-            if ( "mod_info".Equals( default_id, StringComparison.InvariantCultureIgnoreCase ) ) default_id = container;
+            if ( string.IsNullOrWhiteSpace( default_id ) || default_id.Equals( "mod_info", StringComparison.InvariantCultureIgnoreCase ) )
+               default_id = container;
             meta = ParseInfoJs( File.ReadAllText( file, Encoding.UTF8 ).Trim(), default_id );
             if ( meta == null ) return null;
             if ( ! meta.HasContent )
@@ -158,13 +159,13 @@ namespace Sheepy.Modnix {
             if ( ! lib.MainModule.HasResources ) return null;
             var res = lib.MainModule?.Resources.FirstOrDefault() as EmbeddedResource;
             if ( res == null || res.ResourceType != ResourceType.Embedded ) return null;
-            if ( res.Name.ToLowerInvariant().Contains( ".mod_info.js" ) ) {
+            if ( res.Name.IndexOf( ".mod_info.js", StringComparison.InvariantCultureIgnoreCase ) >= 0 ) {
                return Encoding.UTF8.GetString( res.GetResourceData() );
             } else if ( res.Name.EndsWith( ".resources", StringComparison.InvariantCultureIgnoreCase ) ) {
                using ( var reader = new ResourceReader( res.GetResourceStream() ) ) {
                   var data = reader.GetEnumerator();
                   while ( data.MoveNext() ) {
-                     if ( data.Key.ToString().ToLowerInvariant() == "mod_info" )
+                     if ( data.Key.ToString().Equals( "mod_info", StringComparison.InvariantCultureIgnoreCase ) )
                         return data.Value?.ToString();
                   }
                }
@@ -177,11 +178,12 @@ namespace Sheepy.Modnix {
          DllEntryMeta result = null;
          using ( var lib = AssemblyDefinition.ReadAssembly( file ) ) {
             foreach ( var type in lib.MainModule.GetTypes() ) {
-               HashSet<string> ignored = null;
+               HashSet<string> overloaded = null;
                foreach ( var method in type.Methods ) {
                   var name = method.Name;
                   if ( Array.IndexOf( ModLoader.PHASES, name ) < 0 ) continue;
-                  if ( ignored != null && ignored.Contains( name ) ) continue;
+                  if ( overloaded?.Contains( name ) == true ) continue;
+                  if ( method.CustomAttributes.Any( e => e.AttributeType.FullName.Equals( "System.ObsoleteAttribute" ) ) ) continue;
                   if ( name == "Initialize" && ! type.Interfaces.Any( e => e.InterfaceType.FullName == "PhoenixPointModLoader.IPhoenixPointMod" ) ) {
                      Log.Verbo( "Ignoring {0}.Initialize because not IPhoenixPointMod", type.FullName );
                      continue;
@@ -191,8 +193,8 @@ namespace Sheepy.Modnix {
                      result[ name ] = list = new HashSet<string>();
                   if ( list.Contains( type.FullName ) ) {
                      Log.Warn( "Ignoring all overloaded {0}.{1}", type.FullName, name );
-                     if ( ignored == null ) ignored = new HashSet<string>();
-                     ignored.Add( name );
+                     if ( overloaded == null ) overloaded = new HashSet<string>();
+                     overloaded.Add( name );
                      list.Remove( type.FullName );
                      goto NextType;
                   } else {
@@ -271,9 +273,8 @@ namespace Sheepy.Modnix {
          foreach ( var mod in clones ) {
             if ( mod == best ) continue;
             if ( TestAndSwap( mod.Metadata.Version, best.Metadata.Version, mod, ref best ) ) continue;
-            FileInfo myInfo = new FileInfo( mod.Path ), bestInfo = new FileInfo( best.Path );
-            if ( TestAndSwap( myInfo.LastWriteTime, bestInfo.LastWriteTime, mod, ref best ) ) continue;
-            if ( TestAndSwap( myInfo.Length, bestInfo.Length, mod, ref best ) ) continue;
+            if ( TestAndSwap( mod.LastModified, mod.LastModified, mod, ref best ) ) continue;
+            if ( TestAndSwap( new FileInfo( mod.Path ).Length, new FileInfo( best.Path ).Length, mod, ref best ) ) continue;
          }
          return best;
       }

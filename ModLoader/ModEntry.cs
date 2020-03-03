@@ -4,6 +4,7 @@ using Sheepy.Logging;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 
@@ -18,9 +19,11 @@ namespace Sheepy.Modnix {
       public ModEntry ( ModMeta meta ) : this( null, meta ) { }
       public ModEntry ( string path, ModMeta meta ) {
          Path = path;
+         LastModified = new FileInfo( path ).LastWriteTime;
          Metadata = meta ?? throw new ArgumentNullException( nameof( meta ) );
       }
 
+      internal readonly DateTime LastModified;
       internal LoggerProxy Logger; // Created when and only when an initialiser accepts a logging function
       internal object Instance; // Created when and only when a non-static initialiser is called
       internal string Key => ModScanner.NormaliseModId( Metadata.Id );
@@ -262,7 +265,7 @@ namespace Sheepy.Modnix {
          prop = prop.Trim();
          string txt = val.ToString().Trim();
          if ( prop.Length <= 0 || txt.Length <= 0 ) return e;
-         if ( "path".Equals( prop, StringComparison.InvariantCultureIgnoreCase ) ) {
+         if ( prop.Equals( "path", StringComparison.InvariantCultureIgnoreCase ) ) {
             e.Path = txt;
          } else {
             var methods = e.Methods;
