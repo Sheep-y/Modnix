@@ -278,7 +278,9 @@ namespace Sheepy.Modnix {
       }
 
       private static int CompareMod ( ModEntry x, ModEntry y ) {
-         var diff = CompareAttr( x.Metadata.Version, y.Metadata.Version );
+         var diff = CompareAttr( x.Key, y.Key );
+         if ( diff != 0 ) return diff;
+         diff = CompareAttr( x.Metadata.Version, y.Metadata.Version );
          if ( diff != 0 ) return diff;
          diff = CompareAttr( x.LastModified, y.LastModified );
          if ( diff != 0 ) return diff;
