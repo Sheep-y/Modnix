@@ -221,11 +221,12 @@ namespace Sheepy.Modnix {
 
       private static bool ValidateMod ( ModMeta meta ) {
          if ( meta == null ) return false;
-         if ( string.IsNullOrWhiteSpace( meta.Id ) ) {
+         var key = NormaliseModId( meta.Id );
+         if ( string.IsNullOrWhiteSpace( key ) ) {
             Log.Warn( "Id must not be empty" );
             return false;
          }
-         switch ( meta.Id.ToLowerInvariant() ) {
+         switch ( key ) {
             case "modnix" :
             case "phoenixpoint" : case "phoenix point" :
             case "ppml" : case "ppml+" : case "phoenixpointmodloader" : case "phoenix point mod loader" :
@@ -269,7 +270,8 @@ namespace Sheepy.Modnix {
       private static ModEntry FindLatestMod ( ModEntry[] clones ) {
          ModEntry best = clones[0];
          foreach ( var mod in clones ) {
-            if ( CompareMod( mod, best ) == -1 )
+            if ( mod == best ) continue;
+            if ( CompareMod( mod, best ) == 1 )
                best = mod;
          }
          return best;
