@@ -178,11 +178,9 @@ namespace Sheepy.Modnix {
          DllEntryMeta result = null;
          using ( var lib = AssemblyDefinition.ReadAssembly( file ) ) {
             foreach ( var type in lib.MainModule.GetTypes() ) {
-               HashSet<string> overloaded = null;
                foreach ( var method in type.Methods ) {
                   var name = method.Name;
                   if ( Array.IndexOf( ModLoader.PHASES, name ) < 0 ) continue;
-                  if ( overloaded?.Contains( name ) == true ) continue;
                   if ( method.CustomAttributes.Any( e => e.AttributeType.FullName.Equals( "System.ObsoleteAttribute" ) ) ) continue;
                   if ( name == "Initialize" && ! type.Interfaces.Any( e => e.InterfaceType.FullName == "PhoenixPointModLoader.IPhoenixPointMod" ) ) {
                      Log.Verbo( "Ignoring {0}.Initialize because not IPhoenixPointMod", type.FullName );
@@ -191,18 +189,11 @@ namespace Sheepy.Modnix {
                   if ( result == null ) result = new DllEntryMeta();
                   if ( ! result.TryGetValue( name, out var list ) )
                      result[ name ] = list = new HashSet<string>();
-                  if ( list.Contains( type.FullName ) ) {
-                     Log.Warn( "Ignoring all overloaded {0}.{1}", type.FullName, name );
-                     if ( overloaded == null ) overloaded = new HashSet<string>();
-                     overloaded.Add( name );
-                     list.Remove( type.FullName );
-                     goto NextType;
-                  } else {
+                  if ( ! list.Contains( type.FullName ) ) {
                      list.Add( type.FullName );
                      Log.Verbo( "Found {0}.{1}", type.FullName, name );
                   }
                }
-               NextType:;
             }
          }
          // Remove Init from Modnix DLLs, so that they will not be initiated twice

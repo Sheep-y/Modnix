@@ -169,7 +169,7 @@ namespace Sheepy.Modnix {
             return;
          }
 
-         var func = type.GetMethod( methodName, ModScanner.INIT_METHOD_FLAGS );
+         var func = type.GetMethods( ModScanner.INIT_METHOD_FLAGS )?.FirstOrDefault( e => e.Name.Equals( methodName ) );
          if ( func == null ) {
             Log.Error( "Cannot find {1}.{2} in {0}", dll.Location, typeName, methodName );
             return;
@@ -177,19 +177,20 @@ namespace Sheepy.Modnix {
          var augs = new List<object>();
          foreach ( var aug in func.GetParameters() ) {
             var pType = aug.ParameterType;
+            var isLog =  aug.Name.IndexOf( "log", StringComparison.InvariantCultureIgnoreCase ) >= 0;
             // Version checkers
             if ( pType == typeof( Func<string,Version> ) )
                augs.Add( (Func<string,Version>) ModScanner.GetVersionById );
             else if ( pType == typeof( Assembly ) )
                augs.Add( Assembly.GetExecutingAssembly() );
             // Loggers
-            else if ( pType == typeof( Action<object> ) && aug.Name.ToLowerInvariant().Contains( "log" ) )
+            else if ( pType == typeof( Action<object> ) && isLog )
                augs.Add( LoggerA( CreateLogger( mod ) ) );
-            else if ( pType == typeof( Action<object,object[]> ) && aug.Name.ToLowerInvariant().Contains( "log" ) )
+            else if ( pType == typeof( Action<object,object[]> ) && isLog )
                augs.Add( LoggerB( CreateLogger( mod ) ) );
-            else if ( pType == typeof( Action<SourceLevels,object> ) && aug.Name.ToLowerInvariant().Contains( "log" ) )
+            else if ( pType == typeof( Action<SourceLevels,object> ) && isLog )
                augs.Add( LoggerC( CreateLogger( mod ) ) );
-            else if ( pType == typeof( Action<SourceLevels,object,object[]> ) && aug.Name.ToLowerInvariant().Contains( "log" ) )
+            else if ( pType == typeof( Action<SourceLevels,object,object[]> ) && isLog )
                augs.Add( LoggerD( CreateLogger( mod ) ) );
             // Mod info
             else if ( pType == typeof( Func<string,ModEntry> ) )
