@@ -199,6 +199,8 @@ namespace Sheepy.Modnix {
             else if ( pType == typeof( ModEntry ) )
                augs.Add( mod );
             // Defaults
+            if ( aug.HasDefaultValue )
+               augs.Add( aug.RawDefaultValue );
             else if ( pType.IsValueType )
                augs.Add( Activator.CreateInstance( pType ) );
             else
