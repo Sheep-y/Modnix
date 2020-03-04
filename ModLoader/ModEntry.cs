@@ -33,9 +33,14 @@ namespace Sheepy.Modnix {
       public LogEntry Notices;
 
       [ JsonProperty ]
-      public bool Disabled;
+      public bool ManualDisable;
       [ JsonProperty ]
-      public SourceLevels LogLevel;
+      public SourceLevels LogLevel = SourceLevels.Information;
+      [ JsonProperty ]
+      public long? ManualPriority;
+
+      public bool Disabled;
+      public long Priority => ManualPriority ?? Metadata.Priority ?? 0;
 
       internal void AddNotice ( SourceLevels lv, string reason, params object[] augs ) =>
          Notices = new LogEntry{ Level = lv, Message = reason, Args = augs };
@@ -56,8 +61,7 @@ namespace Sheepy.Modnix {
 
       public AppVer[] Requires;
       public AppVer[] Conflicts;
-      public AppVer[] LoadsAfter;
-      public AppVer[] LoadsBefore;
+      public long? Priority;
 
       public string[] Mods;
       public DllMeta[] Dlls;
@@ -78,8 +82,7 @@ namespace Sheepy.Modnix {
             CopyNonNull( overrider.Copyright, ref Copyright );
             CopyNonNull( overrider.Requires, ref Requires );
             CopyNonNull( overrider.Conflicts, ref Conflicts );
-            CopyNonNull( overrider.LoadsAfter, ref LoadsAfter );
-            CopyNonNull( overrider.LoadsBefore, ref LoadsBefore );
+            CopyNonNull( overrider.Priority, ref Priority );
             CopyNonNull( overrider.Mods, ref Mods );
             CopyNonNull( overrider.Dlls, ref Dlls );
          } }
@@ -110,9 +113,6 @@ namespace Sheepy.Modnix {
          NormTextSet( ref Copyright );
          NormAppVer( ref Requires );
          NormAppVer( ref Conflicts );
-         NormAppVer( ref LoadsAfter );
-         NormAppVer( ref LoadsBefore );
-         NormAppVer( ref LoadsBefore );
          NormStringArray( ref Mods );
          NormDllMeta( ref Dlls );
          return this;

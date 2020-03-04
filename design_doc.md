@@ -180,7 +180,7 @@ The resolution repeats until no action is taken, or until a max depth.
 3. Modnix, PPML, and Phoenix Point requirements are checked for each mod.  If out of range, disable and removed from resolution.
 4. Remaining requirements are checked for each mod.  If missing any requirement, disable and removed from resolution.
 5. Conflicts are checked for each mod.  Targetted mods are disabled and removed from resolution.
-6. Mods are ordered by LoadsAfter and LoadsBefore. Conflicts cause the rule to be ignored.
+6. Mods are ordered by Priority. Conflicts cause the rule to be ignored.
 7. Expansion
     1. Mods are parsed and added to resolution.
 
@@ -205,55 +205,32 @@ Simple example:
 })
 ```
 
-Extended example:
+### Mod Settings
 
-```
-({
-    /* Mod Specification, affects mod loading. */
-    Id : "info.mod.refined.demo", /* Default to GUID of assembly, and fallback to file name. Non-alphanumeric are discarded. */
-    Version : "1.2.3.4",         /* Must be version parse-able, i.e. 1 to 4 integers. */
+Each mod and each dll may have a settings file, that has the same file name but with a .conf extension.
+It will be read as UTF-8 string and passed as the first String parameter of each initialiser.
 
-    /* Information for mod users; does not affect mod loading. */
-    Name : { en: "Refined Demo Mod", zh: "外掛示範" },
-    Langs : [ "en", "zh" ], /* Supported game languages. "*" means all. */
-    Description : { en: "Lorem ipsum", zh: "上大人" },
-    Author : { en: "Demonstrator", zh: "示範者" },
-    Url : { "GitHub": "https://...", "Nexus Mods": "https://...", "六四事件": "...", "五大訴求": "" },
-    Contact : { "Email": "demo@example.info", "Skype": "..." },
-    Copyright : { en: "Public Domain" },
+Mods may also expose a setting Type to Modnix.
 
-    /* Mod Requirements */
-               /* Required mod; if requirement is not met, this mod will be disabled. Reserved: Modnix, PPML, PhoenixPoint. */
-    Requires : [{ Id: "info.mod.simple.demo", Min: "1.0" }],
-                /* Conflicting mod; mods listed here will be disabled. */
-    Conflicts : [{ Id: "info.mod.evil", Max: "2.0" }],
-                  /* Try load me before these mods, no guarantee. */
-    LoadsAfter :  [ "info.mod.early" ],
-                  /* Try load me after these mods, no guarantee. */
-    LoadsBefore : "info.mod.late",
+Each class that has an initialiser will be scanned for a
+GetDefaultSettings public method or DefaultSettings public property.
+If exists, its value will be used as the default settings and setting type,
+used to deseralise .conf file when the type is required by an initialiser.
 
-    /* Mod Contents */
-           /* Load these files as mods. */
-    Mods : [ "DllMod.dll", "SimpleMod.json" ],
-           /* Override default dll scanning */
-    Dlls : [{ Path: "Loader.dll", "MainMod": "com.example.MyModClass" }],
-             /* Reserved for future use */
-    Alters : null,
-             /* Reserved for future use */
-    Assets : [{ Type: "WeaponDef", Path: "MyWeaponDefs" }, { Type: "Include", Path: "MoreDefs.json" }]
-})
-```
+If no initialiser use the type, the setting will not be called.
 
 ### Loader Settings
 
-These settings must be persisted:
+Loader and Modnix settings are stored in Modnix.conf, in the Mod folder.
 
-1. Global Log Level (on/off)
-2. Status of each mods.
+It stores:
+
+1. Global Log Level.
+2. Status of each mods - manual disabled, log level, manual priority.
 3. User override of mod metadata.
 
-The settings are associated with game path and mode,
-but most users should have only one default settings.
+The settings are not associated with game path;
+if there are multiple games, let the user manage the settings.
 
 ### Loading Phase
 
