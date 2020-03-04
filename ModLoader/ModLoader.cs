@@ -1,4 +1,5 @@
 ﻿using Harmony;
+using Newtonsoft.Json;
 using Sheepy.Logging;
 using System;
 using System.Collections.Generic;
@@ -6,6 +7,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using static System.Reflection.BindingFlags;
 
 namespace Sheepy.Modnix {
@@ -98,7 +100,7 @@ namespace Sheepy.Modnix {
                }
             }
             return null;
-         } catch ( Exception ) { return null; } };
+         } catch ( Exception ex ) { Log?.Error( ex ); return null; } };
          ModDirectory = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.MyDocuments ), MOD_PATH );
          if ( Log == null ) {
             if ( ! Directory.Exists( ModDirectory ) )
@@ -133,6 +135,36 @@ namespace Sheepy.Modnix {
       } } catch ( Exception ex ) { Log?.Error( ex ); } }
       #endregion
 
+      #region Mod settings
+      private static string GetSettingFile ( string path ) {
+         if ( path == null ) return null;
+         return Path.Combine( Path.GetDirectoryName( path ), Path.GetFileNameWithoutExtension( path ) + ".conf" );
+      }
+
+      private static string ReadSettingText ( string path ) { try {
+         var confFile = GetSettingFile( path );
+         if ( confFile == null || ! File.Exists( confFile ) ) return null;
+         return File.ReadAllText( path, Encoding.UTF8 );
+      } catch ( Exception ex ) { Log?.Error( ex ); return null; } }
+
+      private static bool IsSettingParam ( string path, Type owner, Type paramType, out object conf ) { conf = null; try {
+         var prop = owner.GetProperty( "DefaultSettings", ModScanner.INIT_METHOD_FLAGS );
+         if ( prop != null && prop.PropertyType.IsInstanceOfType( paramType ) )
+            return ReadSettingParam( path, prop.PropertyType, out conf );
+         var method = owner.GetMethods( ModScanner.INIT_METHOD_FLAGS )?.FirstOrDefault( e => e.Name.Equals( "GetDefaultSettings" ) );
+         if ( method != null && method.ReturnType.IsInstanceOfType( paramType ) )
+            return ReadSettingParam( path, method.ReturnType, out conf );
+         return false;
+      } catch ( Exception ex ) { Log?.Error( ex ); return false; } }
+
+      private static bool ReadSettingParam ( string path, Type settingType, out object conf ) { conf = null; try {
+         var txt = ReadSettingText( path );
+         if ( txt == null ) return false;
+         conf = JsonConvert.DeserializeObject( txt, settingType );
+         return true;
+      } catch ( Exception ex ) { Log?.Error( ex ); return false; } }
+      #endregion
+
       #region Loading Mods
       public static void LoadMods ( string phase ) { try {
          Log.Info( "PHASE {0}", phase );
@@ -144,7 +176,7 @@ namespace Sheepy.Modnix {
                var lib = LoadDll( dll.Path );
                if ( lib == null ) continue;
                foreach ( var type in entries )
-                  CallInit( mod, lib, type, phase );
+                  CallInit( mod, lib, dll.Path, type, phase );
             }
          }
          Log.Flush();
@@ -162,7 +194,7 @@ namespace Sheepy.Modnix {
       private static Action<SourceLevels,object> LoggerC ( Logger log ) => ( lv, msg ) => log.Log( lv, msg, null );
       private static Action<SourceLevels,object,object[]> LoggerD ( Logger log ) => ( lv, msg, augs ) => log.Log( lv, msg, augs );
 
-      public static void CallInit ( ModEntry mod, Assembly dll, string typeName, string methodName ) { try {
+      public static void CallInit ( ModEntry mod, Assembly dll, string path, string typeName, string methodName ) { try {
          var type = dll.GetType( typeName );
          if ( type == null ) {
             Log.Error( "Cannot find type {1} in {0}", dll.Location, typeName );
@@ -199,6 +231,11 @@ namespace Sheepy.Modnix {
                augs.Add( mod.Metadata );
             else if ( pType == typeof( ModEntry ) )
                augs.Add( mod );
+            // Settings
+            else if ( pType == typeof( string ) )
+               augs.Add( ReadSettingText( path ) );
+            else if ( IsSettingParam( path, type, pType, out object settings ) )
+               augs.Add( settings );
             // Defaults
             else if ( aug.HasDefaultValue )
                augs.Add( aug.RawDefaultValue );
