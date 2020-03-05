@@ -24,6 +24,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       private bool IsInjected => AppState == "modnix" || AppState == "both";
       private bool CanModify => AppState != null && ! IsGameRunning;
+      private bool CanModifyGame => CanModify && GamePath != null;
 
       public MainWindow () { try {
          InitializeComponent();
@@ -112,9 +113,10 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void RefreshAppButtons () { try {
          Log( "Refreshing app buttons, " + ( CanModify ? "can mod" : "cannot mod" ) );
-         ButtonSetup.IsEnabled = AppState != null;
-         ButtonRunOnline .IsEnabled = CanModify && GamePath != null;
-         ButtonRunOffline.IsEnabled = CanModify && GamePath != null;
+         ButtonSetup .IsEnabled = AppState != null;
+         ButtonAddMod.IsEnabled = CanModify;
+         ButtonRunOnline .IsEnabled = CanModifyGame;
+         ButtonRunOffline.IsEnabled = CanModifyGame;
          ButtonModOpenModDir.IsEnabled = CurrentMod != null;
          ButtonModDelete.IsEnabled = CanDeleteMod;
          if ( IsGameRunning )
@@ -269,6 +271,10 @@ namespace Sheepy.Modnix.MainGUI {
       } catch ( Exception ex ) { Log( ex ); } }
 
       private void ButtonAddMod_Click ( object sender, RoutedEventArgs e ) {
+
+      }
+
+      private void ButtonRefreshMod_Click ( object sender, RoutedEventArgs e ) {
          RefreshModList( null );
          new Timer( ( _ ) => App.GetModList(), null, 100, Timeout.Infinite );
       }
