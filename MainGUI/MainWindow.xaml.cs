@@ -20,11 +20,10 @@ namespace Sheepy.Modnix.MainGUI {
    public partial class MainWindow : Window, IAppGui {
       private readonly AppControl App = AppControl.Instance;
       private string AppVer, AppState, GamePath, GameVer;
-      private bool IsGameRunning;
+      private bool IsGameRunning, IsAppBusy;
 
       private bool IsInjected => AppState == "modnix" || AppState == "both";
       private bool CanModify => AppState != null && ! IsGameRunning;
-      private bool CanModifyGame => CanModify && GamePath != null;
 
       public MainWindow () { try {
          InitializeComponent();
@@ -113,10 +112,10 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void RefreshAppButtons () { try {
          Log( "Refreshing app buttons, " + ( CanModify ? "can mod" : "cannot mod" ) );
-         ButtonSetup .IsEnabled = AppState != null;
-         ButtonAddMod.IsEnabled = CanModify;
-         ButtonRunOnline .IsEnabled = CanModifyGame;
-         ButtonRunOffline.IsEnabled = CanModifyGame;
+         ButtonSetup .IsEnabled = CanModify;
+         ButtonAddMod.IsEnabled = CanModify && Directory.Exists( App.ModFolder );
+         ButtonRunOnline .IsEnabled = CanModify && GamePath != null;
+         ButtonRunOffline.IsEnabled = CanModify && GamePath != null;
          ButtonModOpenModDir.IsEnabled = CurrentMod != null;
          ButtonModDelete.IsEnabled = CanDeleteMod;
          if ( IsGameRunning )
@@ -241,12 +240,12 @@ namespace Sheepy.Modnix.MainGUI {
             GridModList.ItemsSource = ModList;
             RefreshModInfo( null );
          }
-         if ( IsInjected || AppState == null || IsGameRunning ) {
-            LabelModList.Content = AppState == null || ModList == null ? "Checking..." : $"{ModList.Count()} Mods";
-            LabelModList.Foreground = Brushes.Black;
-         } else {
+         if ( ! IsInjected && AppState != null ) {
             LabelModList.Content = "NOT INSTALLED";
             LabelModList.Foreground = Brushes.Red;
+         } else {
+            LabelModList.Content = AppState == null || ModList == null ? "Checking..." : $"{ModList.Count()} Mods";
+            LabelModList.Foreground = Brushes.Black;
          }
          GridModList.Items?.Refresh();
       } catch ( Exception ex ) { Log( ex ); } }
@@ -271,7 +270,21 @@ namespace Sheepy.Modnix.MainGUI {
       } catch ( Exception ex ) { Log( ex ); } }
 
       private void ButtonAddMod_Click ( object sender, RoutedEventArgs e ) {
-
+         var dialog = new Microsoft.Win32.OpenFileDialog {
+            DefaultExt = "*.js;*.dll;*.zip;*.7z",
+            Filter = "All Mods|*.js;*.dll;*.zip;*.7z|Mod Packages|*.zip;*.7z|Mod Files|*.js;*.dll|All Files|*.*",
+         };
+         if ( ! dialog.ShowDialog().GetValueOrDefault() ) return;
+         var target = dialog.FileName;
+         if ( target.StartsWith( App.ModFolder ) ) {
+            MessageBox.Show( "Action failed.\rFile is already in mod folder.", "Error", MessageBoxButton.OK, MessageBoxImage.Exclamation );
+            return;
+         }
+         if ( App.CurrentGame != null && target.StartsWith( App.CurrentGame.GameDir ) ) {
+            MessageBox.Show( "Action failed.\rFile is in game folder.", "Error", MessageBoxButton.OK, MessageBoxImage.Exclamation );
+            return;
+         }
+         App.InstallMod( target );
       }
 
       private void ButtonRefreshMod_Click ( object sender, RoutedEventArgs e ) {

@@ -59,7 +59,7 @@ namespace Sheepy.Modnix.MainGUI {
       internal IAppGui GUI { get => Get( ref _GUI ); private set => SetOnce( ref _GUI, value ); }
 
       private GameInstallation _CurrentGame;
-      private GameInstallation CurrentGame { get => Get( ref _CurrentGame ); set => Set( ref _CurrentGame, value ); }
+      internal GameInstallation CurrentGame { get => Get( ref _CurrentGame ); set => Set( ref _CurrentGame, value ); }
 
       #region Startup
       private AssemblyName _Myself;
@@ -391,6 +391,7 @@ namespace Sheepy.Modnix.MainGUI {
          GUI.Prompt( "error", ex );
       } }
 
+
       #region Setup / Restore
       internal void DoSetupAsync () {
          Log( "Queuing setup" );
@@ -578,6 +579,24 @@ namespace Sheepy.Modnix.MainGUI {
          Log( ex );
          GUI.Prompt( "error", ex );
          GetModList();
+      } }
+
+      internal void InstallMod ( string file ) { try {
+         var ext = Path.GetExtension( file );
+         if ( ext.Equals( "zip" ) || ext.Equals( "7zip" ) ) {
+            throw new NotSupportedException( "Not implemented" );
+         } else {
+            var destination = Path.Combine( ModFolder, Path.GetFileName( file ) );
+            if ( File.Exists( destination ) ) {
+               GUI.Prompt( "error" );
+               return;
+            }
+            File.Copy( file, destination );
+            GUI.Prompt( "setup_ok" );
+         }
+      } catch ( IOException ex ) {
+         Log( ex );
+         GUI.Prompt( "error", ex );
       } }
       #endregion
 
