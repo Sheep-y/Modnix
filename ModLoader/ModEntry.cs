@@ -215,17 +215,15 @@ namespace Sheepy.Modnix {
    internal class ModMetaReader : JsonConverter {
       public override bool CanWrite => false;
 
-      public override bool CanConvert ( Type objectType ) {
-         if ( objectType == typeof( AppVer    ) ) return true;
-         if ( objectType == typeof( AppVer[]  ) ) return true;
-         if ( objectType == typeof( DllMeta   ) ) return true;
-         if ( objectType == typeof( DllMeta[] ) ) return true;
-         if ( objectType == typeof( TextSet   ) ) return true;
-         if ( objectType == typeof( TextSet[] ) ) return true;
-         if ( objectType == typeof( Version   ) ) return true;
-         if ( objectType == typeof( string[]  ) ) return true;
-         return false;
-      }
+      private static readonly Type[] TYPES = new Type[]{
+         typeof( AppVer    ), typeof( AppVer [] ),
+         typeof( DllMeta   ), typeof( DllMeta[] ),
+         typeof( TextSet   ), typeof( TextSet[] ),
+         typeof( Version   ),
+         typeof( string[]  ),
+      };
+
+      public override bool CanConvert ( Type objectType ) => Array.IndexOf( TYPES, objectType ) >= 0;
 
       public override object ReadJson ( JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer ) {
          if ( objectType == typeof( AppVer    ) ) return ParseAppVer( reader );
