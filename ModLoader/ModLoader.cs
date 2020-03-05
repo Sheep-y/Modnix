@@ -148,19 +148,19 @@ namespace Sheepy.Modnix {
       } catch ( Exception ex ) { Log?.Error( ex ); return null; } }
 
       private static bool IsSettingParam ( string path, Type owner, Type paramType, out object conf ) { conf = null; try {
-         var prop = owner.GetProperty( "DefaultSettings", ModScanner.INIT_METHOD_FLAGS );
-         if ( prop != null && prop.PropertyType.IsInstanceOfType( paramType ) )
-            return ReadSettingParam( path, prop.PropertyType, out conf );
          var method = owner.GetMethods( ModScanner.INIT_METHOD_FLAGS )?.FirstOrDefault( e => e.Name.Equals( "GetDefaultSettings" ) );
          if ( method != null && method.ReturnType.IsInstanceOfType( paramType ) )
             return ReadSettingParam( path, method.ReturnType, out conf );
+         var prop = owner.GetProperty( "DefaultSettings", ModScanner.INIT_METHOD_FLAGS );
+         if ( prop != null && prop.PropertyType.IsInstanceOfType( paramType ) )
+            return ReadSettingParam( path, prop.PropertyType, out conf );
          return false;
       } catch ( Exception ex ) { Log?.Error( ex ); return false; } }
 
       private static bool ReadSettingParam ( string path, Type settingType, out object conf ) { conf = null; try {
          var txt = ReadSettingText( path );
          if ( txt == null ) return false;
-         conf = JsonConvert.DeserializeObject( txt, settingType );
+         conf = JsonConvert.DeserializeObject( txt, settingType, ModMetaJson.JsonOptions );
          return true;
       } catch ( Exception ex ) { Log?.Error( ex ); return false; } }
       #endregion

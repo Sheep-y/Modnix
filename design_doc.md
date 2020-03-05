@@ -217,7 +217,8 @@ GetDefaultSettings public method or DefaultSettings public property.
 If exists, its value will be used as the default settings and setting type,
 used to deseralise .conf file when the type is required by an initialiser.
 
-If no initialiser use the type, the setting will not be called.
+The method or property will not be called when the mod is loaded;
+they are for the GUI to reset settings.
 
 ### Loader Settings
 

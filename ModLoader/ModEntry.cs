@@ -197,12 +197,12 @@ namespace Sheepy.Modnix {
       public readonly static JsonSerializerSettings JsonOptions = new JsonSerializerSettings{
          Converters = new JsonConverter[]{ new ModMetaReader() }.ToList(),
          ContractResolver = new DefaultContractResolver(),
-         DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate,
+         DefaultValueHandling = DefaultValueHandling.Include,
          ReferenceLoopHandling = ReferenceLoopHandling.Error,
          Error = ( sender, err ) => JsonLogger.Error( err ),
          MetadataPropertyHandling = MetadataPropertyHandling.Ignore,
          MissingMemberHandling = MissingMemberHandling.Ignore,
-         NullValueHandling = NullValueHandling.Ignore,
+         NullValueHandling = NullValueHandling.Include,
          ObjectCreationHandling = ObjectCreationHandling.Replace,
          TraceWriter = JsonLogger as JsonTraceLogger,
          TypeNameHandling = TypeNameHandling.None
