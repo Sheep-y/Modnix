@@ -149,14 +149,16 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void BuildFileList ( ModMeta meta, InlineCollection list ) {
          Func< string, string > fileName = System.IO.Path.GetFileName;
+         list.Add( $"Path\r{System.IO.Path.GetDirectoryName(Path)}\r\r" );
          list.Add( "File(s)" );
          var self = fileName( Path );
          var selfRun = new Run( "\r" + self );
          list.Add( selfRun );
          foreach ( var e in meta.Dlls ) {
             var path = fileName( e.Path );
-            if ( path == self ) list.Remove( selfRun );
-            list.Add( "\r" + path + " [" + string.Join( ", ", e.Methods.Keys ) + "]" );
+            var txt = "\r" + path + " [" + string.Join( ", ", e.Methods.Keys ) + "]";
+            if ( path == self ) selfRun.Text = txt;
+            else list.Add( txt );
          }
       }
 
