@@ -19,11 +19,6 @@ namespace Sheepy.Modnix.MainGUI {
 
    public partial class MainWindow : Window, IAppGui {
       private readonly AppControl App = AppControl.Instance;
-      private string AppVer, AppState, GamePath, GameVer;
-      private bool IsGameRunning;
-
-      private bool IsInjected => AppState == "modnix" || AppState == "both";
-      private bool CanModify => AppState != null && ! IsGameRunning;
 
       public MainWindow () { try {
          InitializeComponent();
@@ -31,14 +26,28 @@ namespace Sheepy.Modnix.MainGUI {
               "Info and Red Cross icons from https://en.wikipedia.org/ under Public Domain\n" +
               "Other action icons from https://www.visualpharm.com/ (https://icons8.com/) under its Linkware License\n" +
               "Site icons belong to relevant sites." );
+         SetupGUI();
          RefreshGUI();
       } catch ( Exception ex ) { Console.WriteLine( ex ); } }
 
+      private void SetupGUI () {
+         Log( "Setting up GUI" );
+         SharedGui.AppStateChanged += RefreshAppInfo;
+         SharedGui.AppStateChanged += RefreshAppButtons;
+         SharedGui.GamePathChanged += RefreshGameInfo;
+         SharedGui.VersionChanged += RefreshAppInfo;
+         SharedGui.VersionChanged += RefreshGameInfo;
+         SharedGui.AppWorkingChanged += RefreshAppInfo;
+         SharedGui.AppWorkingChanged += RefreshAppButtons;
+         SharedGui.GameRunningChanged += RefreshAppButtons;
+      }
+
       private void RefreshGUI () { try {
-         Log( "Resetting GUI" );
+         Log( "Refreshing GUI" );
          RefreshAppInfo();
          RefreshGameInfo();
-         RefreshModList();
+         RefreshModInfo();
+         RefreshAppButtons();
          RefreshUpdateStatus();
          Log( "Initiating Controller" );
          App.CheckStatusAsync( true );
@@ -51,23 +60,9 @@ namespace Sheepy.Modnix.MainGUI {
          string txt = value?.ToString();
          switch ( info ) {
             case GuiInfo.VISIBILITY : Show(); ResetPaddings(); break;
-            case GuiInfo.APP_VER : AppVer = txt; RefreshAppInfo(); break;
-            case GuiInfo.APP_STATE : AppState = txt; RefreshAppInfo(); break;
             case GuiInfo.APP_UPDATE : Update = value; UpdateChecked(); RefreshUpdateStatus(); break;
-            case GuiInfo.GAME_RUNNING : IsGameRunning = (bool) value; RefreshAppInfo(); break;
-            case GuiInfo.GAME_PATH : GamePath = txt; RefreshGameInfo(); break;
-            case GuiInfo.GAME_VER :
-               if ( GameVer == txt ) return;
-               GameVer  = txt;
-               RefreshGameInfo();
-               App.GetModList();
-               break;
-            case GuiInfo.MOD_LIST :
-               RefreshModList( value as IEnumerable<ModInfo> );
-               break;
-            default :
-               Log( $"Unknown info {info}" );
-               break;
+            case GuiInfo.MOD_LIST : RefreshModList( value as IEnumerable<ModInfo> ); break;
+            default : SharedGui.SetInfo( info, value ); break;
          }
       } catch ( Exception ex ) { Log( ex ); } } ); }
 
@@ -81,21 +76,45 @@ namespace Sheepy.Modnix.MainGUI {
          RichModInfo.Document.PagePadding = empty;
       }
 
-      private void CheckGameRunning ( object _ = null ) {
-         if ( AppControl.IsGameRunning() != IsGameRunning )
-            SetInfo( GuiInfo.GAME_RUNNING, ! IsGameRunning );
-      }
+      private void CheckGameRunning ( object _ = null ) => SharedGui.IsGameRunning = AppControl.IsGameRunning();
+
+      private void RefreshAppButtons () { try {
+         Log( "Refreshing app buttons, " + ( SharedGui.CanModify ? "can mod" : "cannot mod" ) );
+         ButtonSetup .IsEnabled = SharedGui.CanModify;
+         ButtonAddMod.IsEnabled = SharedGui.CanModify && Directory.Exists( App.ModFolder );
+         ButtonModDir.IsEnabled = Directory.Exists( App.ModFolder );
+         ButtonRunOnline .IsEnabled = SharedGui.CanModify && SharedGui.IsGameFound;
+         ButtonRunOffline.IsEnabled = SharedGui.CanModify && SharedGui.IsGameFound;
+         ButtonModOpenModDir.IsEnabled = CurrentMod != null;
+         ButtonLoaderLog.IsEnabled = File.Exists( LoaderLog );
+         
+         ButtonModDelete.IsEnabled = CanDeleteMod;
+         if ( SharedGui.IsGameRunning )
+            BtnTxtSetup.Text = "Refresh";
+         else if ( SharedGui.AppState == "modnix" )
+            BtnTxtSetup.Text = "Revert";
+         else
+            BtnTxtSetup.Text = "Setup";
+
+         LabelModList.Foreground = Brushes.Black;
+         if ( ModList == null ) {
+            LabelModList.Content = "Checking";
+         } else if ( SharedGui.AppState != null && ! SharedGui.IsInjected ) {
+            LabelModList.Content = "NOT INSTALLED";
+            LabelModList.Foreground = Brushes.Red;
+         } else {
+            LabelModList.Content = $"{ModList.Count()} Mods";
+         }
+      } catch ( Exception ex ) { Log( ex ); } }
 
       #region App Info Area
       private void RefreshAppInfo () { try {
          Log( "Refreshing app info" );
          string txt;
-         if ( IsGameRunning )
-            txt = "Game is running";
-         else if ( AppState == null )
+         if ( SharedGui.IsAppWorking || SharedGui.AppState == null )
             txt = "Busy";
          else
-            switch ( AppState ) {
+            switch ( SharedGui.AppState ) {
                case "ppml"   : txt = "PPML only, need setup"; break;
                case "both"   : txt = "PPML found, can remove"; break;
                case "modnix" : txt = "Injected"; break;
@@ -104,27 +123,8 @@ namespace Sheepy.Modnix.MainGUI {
                default: txt = "Unknown state; see log"; break;
             }
          var state = new Run( txt );
-         if ( AppState != "modnix" ) state.Foreground = Brushes.Red;
-         RichAppInfo.Document.Replace( P( new Bold( new Run( AppControl.LIVE_NAME ) ), new Run( $"\tVer {AppVer}\rStatus: " ), state ) );
-         RefreshAppButtons();
-         RefreshModList();
-      } catch ( Exception ex ) { Log( ex ); } }
-
-      private void RefreshAppButtons () { try {
-         Log( "Refreshing app buttons, " + ( CanModify ? "can mod" : "cannot mod" ) );
-         ButtonSetup .IsEnabled = CanModify;
-         ButtonAddMod.IsEnabled = CanModify && Directory.Exists( App.ModFolder );
-         ButtonRunOnline .IsEnabled = CanModify && GamePath != null;
-         ButtonRunOffline.IsEnabled = CanModify && GamePath != null;
-         ButtonModOpenModDir.IsEnabled = CurrentMod != null;
-         ButtonModDelete.IsEnabled = CanDeleteMod;
-         if ( IsGameRunning )
-            BtnTxtSetup.Text = "Refresh";
-         else if ( AppState == "modnix" )
-            BtnTxtSetup.Text = "Revert";
-         else if ( AppState == "modnix" )
-            BtnTxtSetup.Text = "Setup";
-         ButtonLoaderLog.IsEnabled = File.Exists( LoaderLog );
+         if ( SharedGui.AppState != "modnix" ) state.Foreground = Brushes.Red;
+         RichAppInfo.Document.Replace( P( new Bold( new Run( AppControl.LIVE_NAME ) ), new Run( $"\tVer {SharedGui.AppVer}\rStatus: " ), state ) );
       } catch ( Exception ex ) { Log( ex ); } }
 
       private void ButtonWiki_Click ( object sender, RoutedEventArgs e ) => OpenUrl( "wiki", e );
@@ -134,11 +134,11 @@ namespace Sheepy.Modnix.MainGUI {
       private void ButtonSetup_Click ( object sender, RoutedEventArgs e ) { try {
          Log( "Main action button clicked" );
          if ( e?.Source is UIElement src ) src.Focus();
-         if ( IsGameRunning ) { // Refresh
+         if ( SharedGui.IsGameRunning ) { // Refresh
             CheckGameRunning();
             return;
          }
-         switch ( AppState ) {
+         switch ( SharedGui.AppState ) {
             case "ppml" : case "both" : case "setup" :
                DoSetup();
                break;
@@ -154,8 +154,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void DoSetup () {
          Log( "Calling setup" );
-         AppState = null;
-         RefreshAppInfo();
+         SharedGui.IsAppWorking = true;
          App.DoSetupAsync();
       }
 
@@ -163,8 +162,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void DoRestore () {
          Log( "Calling restore" );
-         AppState = null;
-         RefreshAppInfo();
+         SharedGui.IsAppWorking = true;
          App.DoRestoreAsync();
       }
 
@@ -188,14 +186,13 @@ namespace Sheepy.Modnix.MainGUI {
       private void RefreshGameInfo () { try {
          Log( "Refreshing game info" );
          var p = new Paragraph( new Bold( new Run( "Phoenix Point" ) ) );
-         if ( GamePath != null ) {
-            if ( GameVer  != null )
-               p.Inlines.Add( $"\tVer {GameVer}" );
-            p.Inlines.Add( "\r" + Path.GetFullPath( GamePath ) );
+         if ( SharedGui.IsGameFound ) {
+            if ( SharedGui.GameVer != null )
+               p.Inlines.Add( $"\tVer {SharedGui.GameVer}" );
+            p.Inlines.Add( "\r" + Path.GetFullPath( SharedGui.GamePath ) );
          } else
             p.Inlines.Add( new Run( "\rGame not found" ){ Foreground = Brushes.Red } );
          RichGameInfo.Document.Replace( p );
-         RefreshAppButtons();
       } catch ( Exception ex ) { Log( ex ); } }
 
       private void ButtonOnline_Click  ( object sender, RoutedEventArgs e ) {
@@ -223,7 +220,7 @@ namespace Sheepy.Modnix.MainGUI {
       private ModInfo CurrentMod;
       private IEnumerable<ModInfo> ModList;
 
-      private bool CanDeleteMod => CanModify && CurrentMod != null && ! (bool) CurrentMod.Query( ModQueryType.IS_CHILD );
+      private bool CanDeleteMod => ! SharedGui.CanModify && CurrentMod != null && ! (bool) CurrentMod.Query( ModQueryType.IS_CHILD );
 
       private void RefreshModList ( IEnumerable<ModInfo> list ) {
          ModList = list;
@@ -232,20 +229,10 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void RefreshModList () { try {
          Log( "Refreshing mod list" );
-         ButtonAddMod.IsEnabled = Directory.Exists( App.ModFolder );
-         ButtonModDir.IsEnabled = Directory.Exists( App.ModFolder );
-         ButtonRefreshMod.IsEnabled = AppState != null;
          if ( GridModList.ItemsSource != ModList ) {
             Log( "New mod list, clearing selection" );
             GridModList.ItemsSource = ModList;
             RefreshModInfo( null );
-         }
-         if ( ! IsInjected && AppState != null ) {
-            LabelModList.Content = "NOT INSTALLED";
-            LabelModList.Foreground = Brushes.Red;
-         } else {
-            LabelModList.Content = AppState == null || ModList == null ? "Checking..." : $"{ModList.Count()} Mods";
-            LabelModList.Foreground = Brushes.Black;
          }
          GridModList.Items?.Refresh();
       } catch ( Exception ex ) { Log( ex ); } }

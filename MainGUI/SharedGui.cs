@@ -30,7 +30,70 @@ namespace Sheepy.Modnix.MainGUI {
    }
 
    internal static class SharedGui {
-      internal static void Prompt ( PromptFlag parts, Exception ex, Action OnRestart ) {
+      internal static string _AppVer, _AppState, _GamePath, _GameVer;
+
+      internal static string AppVer { get => _AppVer; set {
+         if ( _AppVer == value ) return;
+         _AppVer = value;
+         VersionChanged.Invoke();
+      } }
+      
+      internal static string AppState { get => _AppState; set {
+         if ( _AppState == value ) return;
+         _AppState = value;
+         AppStateChanged.Invoke();
+      } }
+
+      internal static string GamePath { get => _GamePath; set {
+         if ( _GamePath == value ) return;
+         _GamePath = value;
+         GamePathChanged.Invoke();
+      } }
+
+      internal static string GameVer { get => _GameVer; set {
+         if ( _GameVer == value ) return;
+         _GameVer = value;
+         VersionChanged.Invoke();
+      } }
+
+      internal static bool _IsGameRunning;
+      internal static bool IsGameRunning { get => _IsGameRunning; set {
+         if ( _IsGameRunning == value ) return;
+         _IsGameRunning = value;
+         GameRunningChanged.Invoke();
+      } }
+
+      internal static bool _IsAppWorking;
+      internal static bool IsAppWorking { get => _IsAppWorking; set {
+         if ( _IsAppWorking == value ) return;
+         _IsAppWorking = value;
+         AppWorkingChanged.Invoke();
+      } }
+
+      internal static bool IsInjected => AppState == "modnix" || AppState == "both";
+      internal static bool IsGameFound => GamePath != null;
+      internal static bool CanModify => AppState != null && ! IsGameRunning && ! IsAppWorking;
+
+      internal static event Action AppStateChanged;
+      internal static event Action GamePathChanged;
+      internal static event Action VersionChanged;
+      internal static event Action AppWorkingChanged;
+      internal static event Action GameRunningChanged;
+
+      public static void SetInfo ( GuiInfo info, object value ) {
+         string txt = value?.ToString();
+         switch ( info ) {
+            case GuiInfo.APP_VER : AppVer = txt; break;
+            case GuiInfo.APP_STATE : AppState = txt; break;
+            case GuiInfo.GAME_RUNNING : IsGameRunning = (bool) value; break;
+            case GuiInfo.GAME_PATH : GamePath = txt; break;
+            case GuiInfo.GAME_VER : GameVer  = txt; break;
+            default :
+               throw new InvalidOperationException( $"Unknown info {info}" );
+         }
+      }
+
+      internal static void Prompt ( PromptFlag parts, Exception ex, Action OnRestart ) { try {
          var action = "Action";
          if ( parts.Has( PromptFlag.SETUP ) ) action = "Setup";
          else if ( parts.Has( PromptFlag.REVERT ) ) action = "Revert";
@@ -65,7 +128,9 @@ namespace Sheepy.Modnix.MainGUI {
          } else {
             MessageBox.Show( string.Format( "{0} success.", action ), "Success" );
          }
-      }
+      } finally {
+         IsAppWorking = false;
+      } }
 
       internal static void Dispatch ( this Window win, Action task ) {
          if ( win.Dispatcher.CheckAccess() )
