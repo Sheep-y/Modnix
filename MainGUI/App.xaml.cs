@@ -83,10 +83,10 @@ namespace Sheepy.Modnix.MainGUI {
                   Shutdown();
                   return;
                }
-               if ( ! IsSelfInstalled() ) {
+               if ( IsInstaller ) {
                   if ( FoundInstalledModnix() )
                      GUI = new SetupWindow( "launch" );
-                  else if ( ShouldRunSetup() )
+                  else
                      GUI = new SetupWindow( "setup" );
                }
             }
@@ -198,12 +198,6 @@ namespace Sheepy.Modnix.MainGUI {
          Process.Start( ModGuiExe, "/i " + Process.GetCurrentProcess().Id );
       } catch ( Exception ex ) { Log( ex ); } }
 
-      private bool IsSelfInstalled () {
-         // Modnix may be launched from My Games or from PhoenixPoint symbolic link, so we're just checking the tail.
-         return MyPath.EndsWith( Path.Combine( PAST_MOD, LIVE_NAME + APP_EXT ), StringComparison.InvariantCultureIgnoreCase );
-         // Alternatively, use Win32 api to find real path: https://stackoverflow.com/questions/2302416/
-      }
-
       private bool FoundInstalledModnix () { try {
          if ( ! File.Exists( ModGuiExe ) ) return false;
          ModGuiExe = new FileInfo( ModGuiExe ).FullName; // Normalise path - e.g. My Documents to Documents
@@ -219,14 +213,8 @@ namespace Sheepy.Modnix.MainGUI {
          return false;
       } catch ( Exception ex ) { return Log( ex, false ); } }
 
-      private bool ShouldRunSetup () { try {
-         if ( ! MyPath.Contains( "/Mods/" ) && ! MyPath.Contains( "\\Mods\\" ) ) return true;
-         string myPath = Path.GetFileName( MyPath ).ToLowerInvariant();
-         if ( myPath.Contains( "setup" ) ) return true;
-         if ( myPath.Contains( "install" ) ) return true;
-         Log( $"No need to run setup." );
-         return false;
-      } catch ( Exception ex ) { return Log( ex, false ); } }
+      private bool IsInstaller =>
+         Path.GetFileName( MyPath ).IndexOf( "Installer", StringComparison.InvariantCultureIgnoreCase ) >= 0;
       #endregion
 
       #region Check Status

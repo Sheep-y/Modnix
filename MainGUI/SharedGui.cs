@@ -102,8 +102,9 @@ namespace Sheepy.Modnix.MainGUI {
 
          string txt;
          if ( parts.Has( PromptFlag.ERROR ) ) {
-            txt = string.Format( "{0} failed. See log for details.", action );
+            txt = string.Format( "{0} failed.", action );
             if ( ex != null ) txt += "\r\rError: " + ex;
+            else txt += "\r\rSee log for details.";
             MessageBox.Show(  txt , "Error", MessageBoxButton.OK, MessageBoxImage.Error );
             return;
          }

@@ -265,11 +265,11 @@ namespace Sheepy.Modnix.MainGUI {
          if ( ! dialog.ShowDialog().GetValueOrDefault() ) return;
          var target = dialog.FileName;
          if ( target.StartsWith( App.ModFolder ) ) {
-            MessageBox.Show( "Action failed.\rFile is already in mod folder.", "Error", MessageBoxButton.OK, MessageBoxImage.Exclamation );
+            MessageBox.Show( "Add Mod failed.\rFile is already in mod folder.", "Error", MessageBoxButton.OK, MessageBoxImage.Exclamation );
             return;
          }
          if ( App.CurrentGame != null && target.StartsWith( App.CurrentGame.GameDir ) ) {
-            MessageBox.Show( "Action failed.\rFile is in game folder.", "Error", MessageBoxButton.OK, MessageBoxImage.Exclamation );
+            MessageBox.Show( "Add Mod failed.\rFile is in game folder.", "Error", MessageBoxButton.OK, MessageBoxImage.Exclamation );
             return;
          }
          App.InstallMod( target );
