@@ -119,9 +119,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\0Harmony.dll" />
     <None Include="Resources\ModnixInjector.exe" />
     <None Include="Resources\ModnixLoader.dll" />
