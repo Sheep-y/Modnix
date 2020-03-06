@@ -11,8 +11,22 @@ using System.Text;
 namespace Sheepy.Modnix {
    using DllEntryMeta = Dictionary< string, HashSet< string > >;
 
-   [ JsonObject( MemberSerialization.OptIn ) ]
-   public class ModEntry {
+   public class LoaderSettings {
+      // For mod manager
+      public bool CheckUpdate = true;
+      public DateTime? LastCheckUpdate = null;
+      public string GamePath = null;
+      // For mod loader, set by manager
+      public Dictionary< string, ModSettings > Mods;
+   }
+
+   public class ModSettings {
+      public bool Disabled;
+      public SourceLevels LogLevel = SourceLevels.Information;
+      public long? Priority;
+   }
+
+   public class ModEntry : ModSettings {
       public readonly string Path;
       public readonly ModMeta Metadata;
 
@@ -26,25 +40,19 @@ namespace Sheepy.Modnix {
       internal readonly DateTime LastModified;
       internal LoggerProxy Logger; // Created when and only when an initialiser accepts a logging function
       internal object Instance; // Created when and only when a non-static initialiser is called
-      internal string Key => ModScanner.NormaliseModId( Metadata.Id );
+      internal string Key { get { lock ( Metadata ) { return ModScanner.NormaliseModId( Metadata.Id ); } } }
 
       public ModEntry Parent;
       public List<ModEntry> Children;
-      public LogEntry Notices;
+      public List<LogEntry> Notices;
 
-      [ JsonProperty ]
-      public bool ManualDisable;
-      [ JsonProperty ]
-      public SourceLevels LogLevel = SourceLevels.Information;
-      [ JsonProperty ]
-      public long? ManualPriority;
+      public long GetPriority () { lock ( Metadata ) { return Priority ?? Metadata.Priority; } }
 
-      public bool Disabled;
-      public long Priority => ManualPriority ?? Metadata.Priority ?? 0;
-
-      internal void AddNotice ( SourceLevels lv, string reason, params object[] augs ) =>
-         Notices = new LogEntry{ Level = lv, Message = reason, Args = augs };
-      public override string ToString () => $"Mod {Metadata.Name}{(Disabled?" (Disabled)":"")}";
+      internal void AddNotice ( SourceLevels lv, string reason, params object[] augs ) { lock ( Metadata ) {
+         if ( Notices == null ) Notices = new List<LogEntry>();
+         Notices.Add( new LogEntry{ Level = lv, Message = reason, Args = augs } );
+      } }
+      public override string ToString () { lock ( Metadata ) { return $"Mod {Metadata.Name}{(Disabled?" (Disabled)":"")}"; } }
    }
 
    public class ModMeta {
@@ -61,7 +69,7 @@ namespace Sheepy.Modnix {
 
       public AppVer[] Requires;
       public AppVer[] Conflicts;
-      public long? Priority;
+      public long Priority;
 
       public string[] Mods;
       public DllMeta[] Dlls;

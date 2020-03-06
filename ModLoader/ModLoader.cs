@@ -17,6 +17,7 @@ namespace Sheepy.Modnix {
 
       internal static Logger Log;
       public static Version LoaderVersion, GameVersion;
+      public static LoaderSettings Settings;
       internal readonly static Version PPML_COMPAT = new Version( 0, 1 );
 
       public static string ModDirectory { get; private set; }
@@ -25,7 +26,7 @@ namespace Sheepy.Modnix {
 
       #region Initialisation
       private static bool RunMainPhaseOnInit;
-      private static object harmony;
+      private static object harmony; // Type is not HarmonyInstance to avoid hard crash when harmony is missing 
       private static Assembly GameAssembly;
 
       public static void Init () { try {
@@ -48,12 +49,12 @@ namespace Sheepy.Modnix {
 
       private static void PatchMenuCrt () { try {
          var patcher = HarmonyInstance.Create( typeof( ModLoader ).Namespace );
-         patcher.Patch( 
+         patcher.Patch(
             GetGameAssembly().GetType( "PhoenixPoint.Common.Game.PhoenixGame" ).GetMethod( "MenuCrt", NonPublic | Instance ),
             postfix: new HarmonyMethod( typeof( ModLoader ).GetMethod( nameof( MainPhase ), NonPublic | Static ) )
          );
          harmony = patcher;
-         RunMainPhaseOnInit = false;
+         RunMainPhaseOnInit = false; // Disable fallback
       } catch ( Exception ex ) { Log.Error( ex ); } }
 
       private static void UnpatchMenuCrt () { try {
