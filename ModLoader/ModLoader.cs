@@ -13,7 +13,8 @@ using static System.Reflection.BindingFlags;
 namespace Sheepy.Modnix {
 
    public static class ModLoader {
-      private readonly static string MOD_PATH = "My Games/Phoenix Point/Mods".FixSlash();
+      private readonly static string MOD_PATH  = "My Games/Phoenix Point/Mods".FixSlash();
+      private const string CONF_FILE = "Modnix.conf";
 
       internal static Logger Log;
       public static Version LoaderVersion, GameVersion;
@@ -85,33 +86,58 @@ namespace Sheepy.Modnix {
       public static void Setup () { try { lock( MOD_PATH ) {
          if ( ModDirectory != null ) return;
          // Dynamically load embedded dll
-         AppDomain.CurrentDomain.AssemblyResolve += ( domain, dll ) => { try {
-            Log.Trace( "Resolving {0}", dll.Name );
-            AppDomain app = domain as AppDomain ?? AppDomain.CurrentDomain;
-            if ( dll.Name.StartsWith( "PhoenixPointModLoader, Version=0.2.0.0, ", StringComparison.InvariantCultureIgnoreCase ) ) {
-               Log.Verbo( "Loading embedded PPML v0.2" );
-               return app.Load( Properties.Resources.PPML_0_2 );
-            }
-            if ( dll.Name.StartsWith( "System." ) && dll.Name.Contains( ',' ) ) { // Generic system library lookup
-               string file = dll.Name.Substring( 0, dll.Name.IndexOf( ',' ) ) + ".dll";
-               string target = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.Windows ), "Microsoft.NET/Framework/v4.0.30319", file );
-               if ( File.Exists( target ) ) {
-                  Log.Info( "Loading {0}", target );
-                  return Assembly.LoadFrom( target );
+         AppDomain.CurrentDomain.AssemblyResolve += ( domain, dll ) => {
+            try {
+               Log.Trace( "Resolving {0}", dll.Name );
+               AppDomain app = domain as AppDomain ?? AppDomain.CurrentDomain;
+               if ( dll.Name.StartsWith( "PhoenixPointModLoader, Version=0.2.0.0, ", StringComparison.InvariantCultureIgnoreCase ) ) {
+                  Log.Verbo( "Loading embedded PPML v0.2" );
+                  return app.Load( Properties.Resources.PPML_0_2 );
                }
-            }
-            return null;
-         } catch ( Exception ex ) { Log?.Error( ex ); return null; } };
+               if ( dll.Name.StartsWith( "System." ) && dll.Name.Contains( ',' ) ) { // Generic system library lookup
+                  string file = dll.Name.Substring( 0, dll.Name.IndexOf( ',' ) ) + ".dll";
+                  string target = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.Windows ), "Microsoft.NET/Framework/v4.0.30319", file );
+                  if ( File.Exists( target ) ) {
+                     Log.Info( "Loading {0}", target );
+                     return Assembly.LoadFrom( target );
+                  }
+               }
+               return null;
+            } catch ( Exception ex ) { Log?.Error( ex ); return null; }
+         };
+
          ModDirectory = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.MyDocuments ), MOD_PATH );
          if ( Log == null ) {
-            if ( ! Directory.Exists( ModDirectory ) )
+            if ( !Directory.Exists( ModDirectory ) )
                Directory.CreateDirectory( ModDirectory );
-            SetLog( new FileLogger( Path.Combine( ModDirectory, Assembly.GetExecutingAssembly().GetName().Name + ".log" ) ){ TimeFormat = "HH:mm:ss.ffff " }, true );
+            SetLog( new FileLogger( Path.Combine( ModDirectory, Assembly.GetExecutingAssembly().GetName().Name + ".log" ) ) { TimeFormat = "HH:mm:ss.ffff " }, true );
             LogGameVersion();
          }
          var corlib = new Uri( typeof( string ).Assembly.CodeBase ).LocalPath;
          Log.Verbo( ".Net/{0}; mscorlib/{1} {2}", Environment.Version, FileVersionInfo.GetVersionInfo( corlib ).FileVersion, corlib );
+         LoadSettings();
       } } catch ( Exception ex ) { Log?.Error( ex ); } }
+
+      private static void LoadSettings () {
+         var confFile = Path.Combine( ModDirectory, CONF_FILE );
+         if ( File.Exists( confFile ) ) try {
+            Log.Info( $"Loading {confFile}" );
+            Settings = JsonConvert.DeserializeObject<LoaderSettings>( confFile );
+         } catch ( Exception ex ) { Log.Error( ex ); }
+         if ( Settings == null ) {
+            Log.Info( $"Using default settings, because cannot find or parse {confFile}" );
+            Settings = new LoaderSettings();
+         }
+      }
+
+      public static void SaveSettings () {
+         var confFile = Path.Combine( ModDirectory, CONF_FILE );
+         var json = JsonConvert.SerializeObject( Settings );
+         if ( string.IsNullOrWhiteSpace( json ) ) return;
+         if ( ! Directory.Exists( ModDirectory ) )
+            Directory.CreateDirectory( ModDirectory );
+         File.WriteAllText( confFile, json, Encoding.UTF8 );
+      }
 
       public static void SetLog ( Logger logger, bool clear = false ) { lock (  MOD_PATH ) {
          if ( Log != null ) throw new InvalidOperationException();
