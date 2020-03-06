@@ -17,9 +17,11 @@ namespace Sheepy.Modnix.MainGUI {
 
       internal void CheckSetup () { lock ( App ) {
          if ( ModLoader.NeedSetup ) {
+            App.Log( "Initiating ModLoader" );
             var logger = new GuiLogger( App );
             ModLoader.SetLog( logger );
             logger.Filters.Add( LogFilters.AddPrefix( "Loader┊" ) );
+            App.Log( "Setup ModLoader" );
             ModLoader.Setup();
          }
       } }

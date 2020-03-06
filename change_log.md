@@ -9,6 +9,7 @@
 * Fix: Embedded mod_info now overwrites Url, Contact, and Copyright.
 * Fix: Typo on log label.
 * Fix: Game is now detected when in upper folder.
+* Fix: Manual setup package should no longer run in setup mode.
 * In mod_info, Langs are change to Lang, Urls changed to Url.  This make info fields consistent.
 * Injector's game version check now returns only type of error, instead of full stacktrace, to keep returned text on one line.
 

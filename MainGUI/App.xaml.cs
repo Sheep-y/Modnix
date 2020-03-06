@@ -224,9 +224,9 @@ namespace Sheepy.Modnix.MainGUI {
       internal void CheckStatusAsync ( bool listMods ) {
          lock ( Instance ) // Make sure GUI and ModBridge are both set
             Log( "Queuing status check" );
-         Task.Run( (Action) CheckStatus );
          if ( listMods )
             Task.Run( (Action) GetModList );
+         Task.Run( (Action) CheckStatus );
       }
 
       private void CheckStatus () { try {
