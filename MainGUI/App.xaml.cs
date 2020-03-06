@@ -551,9 +551,13 @@ namespace Sheepy.Modnix.MainGUI {
          if ( ext.Equals( "zip" ) || ext.Equals( "7zip" ) ) {
             throw new NotSupportedException( "Not implemented" );
          } else {
-            var destination = Path.Combine( ModFolder, Path.GetFileName( file ) );
+            var folder = Path.Combine( ModFolder, Path.GetFileNameWithoutExtension( file ) );
+            Log( $"Creating {folder}" );
+            Directory.CreateDirectory( folder );
+            var destination = Path.Combine( folder, Path.GetFileName( file ) );
             if ( File.Exists( destination ) )
                throw new IOException( $"{destination} already exists" );
+            Log( $"Copying {file} to {destination}" );
             File.Copy( file, destination );
             GUI.Prompt( PromptFlag.ADD_MOD );
          }
