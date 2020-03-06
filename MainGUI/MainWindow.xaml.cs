@@ -20,7 +20,7 @@ namespace Sheepy.Modnix.MainGUI {
    public partial class MainWindow : Window, IAppGui {
       private readonly AppControl App = AppControl.Instance;
       private string AppVer, AppState, GamePath, GameVer;
-      private bool IsGameRunning, IsAppBusy;
+      private bool IsGameRunning;
 
       private bool IsInjected => AppState == "modnix" || AppState == "both";
       private bool CanModify => AppState != null && ! IsGameRunning;
@@ -174,7 +174,7 @@ namespace Sheepy.Modnix.MainGUI {
          Process.Start( "explorer.exe", arg );
       } catch ( Exception ex ) { Log( ex ); } }
 
-      public void Prompt ( string parts, Exception ex = null ) { this.Dispatch( () => { try {
+      public void Prompt ( PromptFlag parts, Exception ex = null ) { this.Dispatch( () => { try {
          Log( $"Prompt {parts}" );
          SharedGui.Prompt( parts, ex, () => {
             AppControl.Explore( App.ModGuiExe );

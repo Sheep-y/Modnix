@@ -15,7 +15,7 @@ namespace Sheepy.Modnix.MainGUI {
 
    internal interface IAppGui {
       void SetInfo ( GuiInfo info, object value );
-      void Prompt ( string v, Exception ex = null );
+      void Prompt ( PromptFlag v, Exception ex = null );
       void Log ( object message );
    }
 
@@ -333,9 +333,9 @@ namespace Sheepy.Modnix.MainGUI {
       // Try to detect game path
       private bool FoundGame ( out string gamePath ) { gamePath = null; try {
          gamePath = ".";
-         if ( IsGamePath( "." ) ) return true;
+         if ( IsGamePath( gamePath ) ) return true;
          gamePath = "..";
-         if ( IsGamePath( "." ) ) return true;
+         if ( IsGamePath( gamePath ) ) return true;
          gamePath = SearchRegistry();
          if ( gamePath != null ) return true;
          gamePath = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.ProgramFiles ), "Epic Games", "PhoenixPoint" );
@@ -385,10 +385,9 @@ namespace Sheepy.Modnix.MainGUI {
             Process.Start( exe );
             return;
          }
-         Log( $"Unsupported launch type. Requested {type}. Game is {CurrentGame.GameType}." );
-         GUI.Prompt( "error" );
+         throw new InvalidOperationException( $"Game is {CurrentGame.GameType}. Cannot launch as {type}." );
       } catch ( Exception ex ) {
-         GUI.Prompt( "error", ex );
+         GUI.Prompt( PromptFlag.ERROR, ex );
       } }
 
 
@@ -399,10 +398,10 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       private void DoSetup () { try {
-         string prompt = "setup_ok";
+         PromptFlag prompt = PromptFlag.SETUP;
          // Copy exe to mod folder
          if ( CopySelf( MyPath, ModGuiExe ) )
-            prompt += ",self_copy";
+            prompt |= PromptFlag.SETUP_SELF_COPY;
          // Copy hook files
          CurrentGame.WriteCodeFile( HARM_DLL, MainGUI.Properties.Resources._0Harmony   );
          CurrentGame.WriteCodeFile( CECI_DLL, MainGUI.Properties.Resources.Mono_Cecil   );
@@ -413,20 +412,20 @@ namespace Sheepy.Modnix.MainGUI {
          if ( CurrentGame.Status == "modnix" ) {
             // Migrate mods
             if ( MigrateLegacy() )
-               prompt += ",mod_moved";
+               prompt |= PromptFlag.SETUP_MOD_MOVED;
             // Disable PPML
             if ( HasLegacy() && CurrentGame.RenameCodeFile( PAST, PAST_BK ) )
-               prompt += ",ppml";
+               prompt |= PromptFlag.SETUP_PPML;
             // Cleanup - accident prevention. Old dlls at game base may override dlls in the managed folder.
             foreach ( var file in new string[] { PAST, PAST_DL1, PAST_DL2, INJECTOR, LOADER, HARM_DLL, CECI_DLL } )
                CurrentGame.DeleteRootFile( file );
             GUI.Prompt( prompt );
          } else
-            GUI.Prompt( "error" );
+            throw new Exception( "Modnix injection failed" );
       } catch ( Exception ex ) {
          try { CheckStatus(); } catch ( Exception ) {}
          Log( ex );
-         GUI.Prompt( "error", ex );
+         GUI.Prompt( PromptFlag.ERROR | PromptFlag.SETUP, ex );
       } }
 
       internal bool CopySelf ( string me, string there ) { try {
@@ -525,12 +524,12 @@ namespace Sheepy.Modnix.MainGUI {
          if ( CurrentGame.Status == "none" ) {
             CurrentGame.DeleteCodeFile( INJECTOR );
             CurrentGame.DeleteCodeFile( LOADER );
-            GUI.Prompt( "restore_ok" );
+            GUI.Prompt( PromptFlag.REVERT );
          } else
-            GUI.Prompt( "error" );
+            throw new Exception( "Modnix revert failed" );
       } catch ( Exception ex ) {
          Log( ex );
-         GUI.Prompt( "error", ex );
+         GUI.Prompt( PromptFlag.ERROR | PromptFlag.REVERT, ex );
       } }
 
       internal void CheckUpdateAsync () {
@@ -577,7 +576,7 @@ namespace Sheepy.Modnix.MainGUI {
          }
       } catch ( IOException ex ) {
          Log( ex );
-         GUI.Prompt( "error", ex );
+         GUI.Prompt( PromptFlag.ERROR, ex );
          GetModList();
       } }
 
@@ -587,16 +586,14 @@ namespace Sheepy.Modnix.MainGUI {
             throw new NotSupportedException( "Not implemented" );
          } else {
             var destination = Path.Combine( ModFolder, Path.GetFileName( file ) );
-            if ( File.Exists( destination ) ) {
-               GUI.Prompt( "error" );
-               return;
-            }
+            if ( File.Exists( destination ) )
+               throw new IOException( $"{destination} already exists" );
             File.Copy( file, destination );
-            GUI.Prompt( "setup_ok" );
+            GUI.Prompt( PromptFlag.ADD_MOD );
          }
       } catch ( IOException ex ) {
          Log( ex );
-         GUI.Prompt( "error", ex );
+         GUI.Prompt( PromptFlag.ERROR | PromptFlag.ADD_MOD, ex );
       } }
       #endregion
 

@@ -105,7 +105,7 @@ namespace Sheepy.Modnix.MainGUI {
          }
       } catch ( Exception ex ) { Log( ex ); } }
 
-      public void Prompt ( string parts, Exception ex = null ) {
+      public void Prompt ( PromptFlag parts, Exception ex = null ) {
          this.Dispatch( () => { try {
             Log( $"Prompt {parts}" );
             if ( AppState == "modnix" || AppState == "both" )
