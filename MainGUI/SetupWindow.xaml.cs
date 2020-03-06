@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows;
@@ -15,14 +16,17 @@ namespace Sheepy.Modnix.MainGUI {
    public partial class SetupWindow : Window, IAppGui {
 
       private readonly AppControl App = AppControl.Instance;
-      private string AppVer, AppState, GamePath = null;
-      private bool IsGameRunning;
       private string Mode = "log"; // launch, setup, log
       private string LogContent;
 
       public SetupWindow ( string mode ) { try {
          Mode = mode;
          InitializeComponent();
+         SharedGui.AppStateChanged += RefreshInfo;
+         SharedGui.GamePathChanged += RefreshInfo;
+         SharedGui.VersionChanged += RefreshInfo;
+         SharedGui.AppWorkingChanged += RefreshInfo;
+         SharedGui.GameRunningChanged += RefreshInfo;
          RefreshInfo();
          App.CheckStatusAsync( false );
       } catch ( Exception ex ) { Console.WriteLine( ex ); } }
@@ -37,17 +41,13 @@ namespace Sheepy.Modnix.MainGUI {
             string txt = value?.ToString();
             switch ( info ) {
                case GuiInfo.VISIBILITY : Show(); break;
-               case GuiInfo.APP_VER : AppVer = txt; break;
-               case GuiInfo.APP_STATE : AppState = txt; break;
-               case GuiInfo.GAME_RUNNING : IsGameRunning = (bool) value; break;
-               case GuiInfo.GAME_PATH : GamePath = txt; ButtonAction.Focus(); break;
-               case GuiInfo.GAME_VER :
                case GuiInfo.APP_UPDATE :
                case GuiInfo.MOD_LIST :
                   break;
-               default: Log( $"Unknown info {info}" ); return;
+               default:
+                  SharedGui.SetInfo( info, value );
+                  break;
             }
-            RefreshInfo();
          } catch ( Exception ex ) { Log( ex ); }
       } ); }
 
@@ -55,21 +55,21 @@ namespace Sheepy.Modnix.MainGUI {
          Log( $"Refreshing {Mode}" );
          if ( Mode == "log" )
             return;
-         string txt = $"Modnix {AppVer}\n";
+         string txt = $"Modnix {SharedGui.AppVer}\n";
          if ( Mode == "launch" ) {
             txt += "Installed at " + App.ModGuiExe + "\n\nUse it to resetup or restore.";
             EnableLaunch();
          } else { // Mode == "setup"
-            ButtonAction.IsEnabled = ! IsGameRunning;
+            ButtonAction.IsEnabled = ! SharedGui.IsGameRunning;
             txt += "\nPhoenix Point\n";
-            if ( AppState == "no_game" ) {
+            if ( SharedGui.AppState == "no_game" ) {
                txt += "Not Found";
                AccessAction.Text = "Manual _Setup";
                ButtonAction.IsEnabled = true;
             } else {
-               txt += GamePath ?? "Detecting...";
+               txt += SharedGui.GamePath ?? "Detecting...";
                AccessAction.Text = "_Setup";
-               ButtonAction.IsEnabled = GamePath != null;
+               ButtonAction.IsEnabled = SharedGui.GamePath != null;
             }
          }
          TextMessage.Text = txt;
@@ -77,14 +77,14 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void EnableLaunch () {
          AccessAction.Text = "_Launch";
-         ButtonAction.IsEnabled = true;
+         ButtonAction.IsEnabled = File.Exists( App.ModGuiExe );
       }
 
       private void ButtonAction_Click ( object sender, RoutedEventArgs e ) { try {
          Log( $"\"{Mode}\" initiated" );
          if ( e.Source is Button btn ) btn.Focus();
          if ( Mode == "setup" ) {
-            if ( AppState == "no_game" ) {
+            if ( SharedGui.AppState == "no_game" ) {
                Process.Start( "https://github.com/Sheep-y/Modnix/wiki/Manual-Setup#wiki-wrapper" );
                return;
             }
@@ -108,7 +108,7 @@ namespace Sheepy.Modnix.MainGUI {
       public void Prompt ( PromptFlag parts, Exception ex = null ) {
          this.Dispatch( () => { try {
             Log( $"Prompt {parts}" );
-            if ( AppState == "modnix" || AppState == "both" )
+            if ( SharedGui.AppState == "modnix" || SharedGui.AppState == "both" )
                EnableLaunch();
             SharedGui.Prompt( parts, ex, () => {
                AppControl.Explore( App.ModGuiExe );

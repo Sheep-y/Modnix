@@ -103,7 +103,7 @@ namespace Sheepy.Modnix.MainGUI {
          string txt;
          if ( parts.Has( PromptFlag.ERROR ) ) {
             txt = string.Format( "{0} failed. See log for details.", action );
-            if ( ex != null ) txt += "Error: " + ex;
+            if ( ex != null ) txt += "\r\rError: " + ex;
             MessageBox.Show(  txt , "Error", MessageBoxButton.OK, MessageBoxImage.Error );
             return;
          }
@@ -139,6 +139,6 @@ namespace Sheepy.Modnix.MainGUI {
             win.Dispatcher.Invoke( task );
       }
 
-      internal static bool Has ( this PromptFlag haysack, PromptFlag needle ) => ( haysack | needle ) == needle;
+      internal static bool Has ( this PromptFlag haysack, PromptFlag needle ) => ( haysack & needle ) == needle;
    }
 }
