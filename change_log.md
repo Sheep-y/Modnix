@@ -2,10 +2,12 @@
 
 # Version ??
 
+* New: Add mod button, automatically place mod in subfolder.
 * New: Dll mods may now receive a setting string, if a config file exists.
 * New: Dll mods may now export a setting class/struct and have the config file parsed by Modnix.
 * New: Modnix settings now stored in Modnix.conf which can be edited easily.
 * New: Formatted app/game/mod info.  Mod info panel now shows all display info, plus file list and entry points.
+* Fix: Mono.Cecil.dll is now deleted from Mods folder on setup, in addition to other loader dlls.
 * Fix: Lang of mod info now accepts a single string as intended.
 * Fix: Url and Contact no longer lowercase their keys.
 * Fix: Embedded mod_info now have their Url, Contact, and Copyright applied.

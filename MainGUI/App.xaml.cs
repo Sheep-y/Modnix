@@ -416,12 +416,8 @@ namespace Sheepy.Modnix.MainGUI {
          }
          // Delete a few files that should not be in the mods folder
          var modDir = new GameInstallation( OldPath );
-         modDir.DeleteRootFile( LOADER );
-         modDir.DeleteRootFile( INJECTOR );
-         modDir.DeleteRootFile( HARM_DLL );
-         modDir.DeleteRootFile( PAST );
-         modDir.DeleteRootFile( PAST_DL1 );
-         modDir.DeleteRootFile( PAST_DL2 );
+         foreach ( var dll in new string[] { LOADER, INJECTOR, CECI_DLL, HARM_DLL, PAST, PAST_DL1, PAST_DL2 } )
+            modDir.DeleteRootFile( dll );
          if ( IsSameDir( OldPath, ModFolder ) ) {
             Log( $"{OldPath} seems to be symbolic link, skipping migration." );
             return false;
