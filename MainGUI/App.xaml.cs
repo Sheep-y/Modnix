@@ -303,10 +303,8 @@ namespace Sheepy.Modnix.MainGUI {
 
       // Try to detect game path
       private bool FoundGame ( out string gamePath ) { gamePath = null; try {
-         gamePath = ".";
-         if ( IsGamePath( gamePath ) ) return true;
-         gamePath = "..";
-         if ( IsGamePath( gamePath ) ) return true;
+         foreach ( var path in new string[] { ".", "..", Path.Combine( "..", ".." ) } )
+            if ( IsGamePath( gamePath = path ) ) return true;
          gamePath = SearchRegistry();
          if ( gamePath != null ) return true;
          gamePath = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.ProgramFiles ), "Epic Games", "PhoenixPoint" );
