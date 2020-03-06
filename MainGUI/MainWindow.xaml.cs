@@ -124,7 +124,7 @@ namespace Sheepy.Modnix.MainGUI {
                case "ppml"   : txt = "PPML only, need setup"; break;
                case "both"   : txt = "PPML found, can remove"; break;
                case "modnix" : txt = "Injected"; break;
-               case "setup"  : txt = "Requires Setup"; break;
+               case "none"   : txt = "Requires Setup"; break;
                case "no_game": txt = "Game not found; Please do Manual Setup"; break;
                default: txt = "Unknown state; see log"; break;
             }
@@ -145,7 +145,7 @@ namespace Sheepy.Modnix.MainGUI {
             return;
          }
          switch ( SharedGui.AppState ) {
-            case "ppml" : case "both" : case "setup" :
+            case "ppml" : case "both" : case "none" :
                DoSetup();
                break;
             case "modnix" :
@@ -276,7 +276,7 @@ namespace Sheepy.Modnix.MainGUI {
             MessageBox.Show( "Add Mod failed.\rFile is in game folder.", "Error", MessageBoxButton.OK, MessageBoxImage.Exclamation );
             return;
          }
-         App.InstallMod( target );
+         App.AddMod( target );
       }
 
       private void ButtonRefreshMod_Click ( object sender, RoutedEventArgs e ) {

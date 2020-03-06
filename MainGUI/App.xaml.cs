@@ -253,7 +253,7 @@ namespace Sheepy.Modnix.MainGUI {
                return;
             }
          }
-         GUI.SetInfo( GuiInfo.APP_STATE, "setup" ); // TODO: Return "none"
+         GUI.SetInfo( GuiInfo.APP_STATE, "none" );
       }
 
       public static bool IsGameRunning () {
@@ -542,7 +542,7 @@ namespace Sheepy.Modnix.MainGUI {
          GetModList();
       } }
 
-      internal void InstallMod ( string file ) { try {
+      internal void AddMod ( string file ) { try {
          var ext = Path.GetExtension( file );
          if ( ext.Equals( "zip" ) || ext.Equals( "7zip" ) ) {
             throw new NotSupportedException( "Not implemented" );
