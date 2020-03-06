@@ -19,7 +19,9 @@ namespace Sheepy.Modnix.MainGUI {
             Loading = true;
          }
          if ( ModLoader.NeedSetup ) {
-            ModLoader.SetLog( new GUILogger( App.GUI ) );
+            var logger = new GUILogger( App.GUI );
+            ModLoader.SetLog( logger );
+            logger.Filters.Add( LogFilters.AddPrefix( "Loader┊" ) );
             ModLoader.Setup();
          }
          App.Log( "Building mod list" );
