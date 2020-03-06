@@ -20,6 +20,8 @@ namespace Sheepy.Modnix.MainGUI {
    public partial class MainWindow : Window, IAppGui {
       private readonly AppControl App = AppControl.Instance;
 
+      private event Action ModListChanged;
+
       public MainWindow () { try {
          InitializeComponent();
          Log( "Disclaimer:\nModnix icon made from Phoenix Point's Technicial icon\n" +
@@ -40,6 +42,8 @@ namespace Sheepy.Modnix.MainGUI {
          SharedGui.AppWorkingChanged += RefreshAppInfo;
          SharedGui.AppWorkingChanged += RefreshAppButtons;
          SharedGui.GameRunningChanged += RefreshAppButtons;
+         ModListChanged += RefreshModList;
+         ModListChanged += RefreshAppButtons;
       }
 
       private void RefreshGUI () { try {
@@ -57,7 +61,7 @@ namespace Sheepy.Modnix.MainGUI {
          switch ( info ) {
             case GuiInfo.VISIBILITY : ShowWindow(); break;
             case GuiInfo.APP_UPDATE : Update = value; UpdateChecked(); RefreshUpdateStatus(); break;
-            case GuiInfo.MOD_LIST : RefreshModList( value as IEnumerable<ModInfo> ); break;
+            case GuiInfo.MOD_LIST : SetModList( value as IEnumerable<ModInfo> ); break;
             default : SharedGui.SetInfo( info, value ); break;
          }
       } catch ( Exception ex ) { Log( ex ); } } ); }
@@ -82,14 +86,15 @@ namespace Sheepy.Modnix.MainGUI {
       private void RefreshAppButtons () { try {
          Log( "Refreshing app buttons, " + ( SharedGui.CanModify ? "can mod" : "cannot mod" ) );
          ButtonSetup .IsEnabled = SharedGui.CanModify;
-         ButtonAddMod.IsEnabled = SharedGui.CanModify && Directory.Exists( App.ModFolder );
-         ButtonModDir.IsEnabled = Directory.Exists( App.ModFolder );
          ButtonRunOnline .IsEnabled = SharedGui.CanModify && SharedGui.IsGameFound;
          ButtonRunOffline.IsEnabled = SharedGui.CanModify && SharedGui.IsGameFound;
+         ButtonAddMod.IsEnabled = SharedGui.CanModify && Directory.Exists( App.ModFolder );
+         ButtonModDir.IsEnabled = Directory.Exists( App.ModFolder );
+         ButtonRefreshMod.IsEnabled = Directory.Exists( App.ModFolder ) && ! SharedGui.IsAppWorking;
          ButtonModOpenModDir.IsEnabled = CurrentMod != null;
+         ButtonModDelete.IsEnabled = SharedGui.CanModify && CurrentMod != null && ! (bool) CurrentMod.Query( ModQueryType.IS_CHILD );;
          ButtonLoaderLog.IsEnabled = File.Exists( LoaderLog );
-         
-         ButtonModDelete.IsEnabled = CanDeleteMod;
+
          if ( SharedGui.IsGameRunning )
             BtnTxtSetup.Text = "Refresh";
          else if ( SharedGui.AppState == "modnix" )
@@ -175,9 +180,9 @@ namespace Sheepy.Modnix.MainGUI {
 
       public void Prompt ( PromptFlag parts, Exception ex = null ) { this.Dispatch( () => { try {
          Log( $"Prompt {parts}" );
-         SharedGui.Prompt( parts, ex, () => {
-            AppControl.Explore( App.ModGuiExe );
-         } );
+         SharedGui.Prompt( parts, ex, () => AppControl.Explore( App.ModGuiExe ) );
+         if ( ( parts & ( PromptFlag.ADD_MOD | PromptFlag.DEL_MOD ) ) > PromptFlag.NONE )
+            ModListChanged.Invoke();
       } catch ( Exception err ) { Log( err ); } } ); }
 
       private void ButtonNexus_Click ( object sender, RoutedEventArgs e ) => OpenUrl( "nexus", e );
@@ -221,11 +226,10 @@ namespace Sheepy.Modnix.MainGUI {
       private ModInfo CurrentMod;
       private IEnumerable<ModInfo> ModList;
 
-      private bool CanDeleteMod => ! SharedGui.CanModify && CurrentMod != null && ! (bool) CurrentMod.Query( ModQueryType.IS_CHILD );
-
-      private void RefreshModList ( IEnumerable<ModInfo> list ) {
+      private void SetModList ( IEnumerable<ModInfo> list ) {
          ModList = list;
          RefreshModList();
+         RefreshAppButtons();
       }
 
       private void RefreshModList () { try {
@@ -233,19 +237,19 @@ namespace Sheepy.Modnix.MainGUI {
          if ( GridModList.ItemsSource != ModList ) {
             Log( "New mod list, clearing selection" );
             GridModList.ItemsSource = ModList;
-            RefreshModInfo( null );
+            SetSelectedMod( null );
          }
          GridModList.Items?.Refresh();
       } catch ( Exception ex ) { Log( ex ); } }
 
-      private void RefreshModInfo ( ModInfo mod ) {
+      private void SetSelectedMod ( ModInfo mod ) {
          if ( mod == CurrentMod ) return;
          CurrentMod = mod;
          RefreshModInfo();
+         RefreshAppButtons();
       }
 
       private void RefreshModInfo () { try {
-         RefreshAppButtons();
          if ( CurrentMod == null ) {
             Log( "Clearing mod info" );
             RichModInfo.TextRange().Text = "";
@@ -276,7 +280,7 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       private void ButtonRefreshMod_Click ( object sender, RoutedEventArgs e ) {
-         RefreshModList( null );
+         SetModList( null );
          new Timer( ( _ ) => App.GetModList(), null, 100, Timeout.Infinite );
       }
 
@@ -313,7 +317,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void GridModList_CurrentCellChanged ( object sender, EventArgs e ) {
          if ( GridModList.CurrentItem == null ) return;
-         RefreshModInfo( GridModList.CurrentItem as ModInfo );
+         SetSelectedMod( GridModList.CurrentItem as ModInfo );
       }
       #endregion
 

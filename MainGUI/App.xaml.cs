@@ -533,7 +533,7 @@ namespace Sheepy.Modnix.MainGUI {
                ModBridge.Delete( mod, action );
                GetModList();
                return;
-            case ModActionType.DELETE_SETTINGS :
+            case ModActionType.DELETE_SETTINGS : // TODO: Implement
                Log( new NotImplementedException() );
                return;
             default :
@@ -542,7 +542,7 @@ namespace Sheepy.Modnix.MainGUI {
          }
       } catch ( IOException ex ) {
          Log( ex );
-         GUI.Prompt( PromptFlag.ERROR, ex );
+         GUI.Prompt( PromptFlag.ERROR | PromptFlag.DEL_MOD, ex );
          GetModList();
       } }
 
@@ -559,7 +559,7 @@ namespace Sheepy.Modnix.MainGUI {
                throw new IOException( $"{destination} already exists" );
             Log( $"Copying {file} to {destination}" );
             File.Copy( file, destination );
-            GUI.Prompt( PromptFlag.ADD_MOD );
+            GetModList();
          }
       } catch ( IOException ex ) {
          Log( ex );
