@@ -72,13 +72,13 @@ namespace Sheepy.Modnix.MainGUI {
       private int ParamIgnorePid { get => Get( ref _ParamIgnorePid ); set => Set( ref _ParamIgnorePid, value ); }
 
       internal void ApplicationStartup ( object sender, StartupEventArgs e ) { try {
-         Instance = this;
          Log( $"Startup time {DateTime.Now.ToString( "yyyy-MM-dd HH:mm:ss.ffff", InvariantCulture )}" );
+         Instance = this;
+         ModBridge = new ModLoaderBridge();
+         Init( e?.Args );
          lock ( Instance ) {
-            Init( e?.Args );
             if ( ! ParamSkipStartupCheck ) {
                Log( $"Running startup checks" );
-               MigrateSettings();
                if ( FoundRunningModnix() ) {
                   Shutdown();
                   return;
@@ -93,14 +93,15 @@ namespace Sheepy.Modnix.MainGUI {
             Log( $"Launching main window" );
             if ( GUI == null )
                GUI = new MainWindow();
+            MigrateSettings();
          }
          Log( null ); // Send startup log to GUI
          GUI.SetInfo( GuiInfo.VISIBILITY, "true" );
       } catch ( Exception ex ) {
+         Console.WriteLine( ex );
          try {
-            Console.WriteLine( ex );
             File.WriteAllText( LIVE_NAME + " Startup Error.log", StartupLog + ex.ToString() );
-         } catch ( Exception ) { }
+         } catch ( SystemException ) { }
          if ( GUI != null ) {
             GUI.SetInfo( GuiInfo.VISIBILITY, "true" );
             Log( ex );
@@ -137,26 +138,8 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       private void MigrateSettings () {
-         // Migrate settings from old version
-         try {
-            var settings = MainGUI.Properties.Settings.Default;
-            if ( ! settings.Settings_Migrated ) {
-               Log( $"Migrating settings from {settings.Settings_Version}" );
-               settings.Upgrade();
-               settings.Settings_Migrated = true;
-               settings.Settings_Version = Myself.Version.ToString();
-               settings.Save();
-            Log( "Settings saved." );
-            }
-            // v0.6 had no default value for Last_Update_Check which may throw NRE on access
-            try {
-               if ( settings.Last_Update_Check == null ) throw new NullReferenceException();
-            } catch ( NullReferenceException ) {
-               Log( "Filling Last_Update_Check default" );
-               settings.Last_Update_Check = DateTime.Parse( "2000-01-01T12:00", InvariantCulture );
-               settings.Save();
-            }
-         } catch ( Exception ex ) { Log( ex ); }
+         // Do nothing for now
+         // var settings = ModBridge.GetSettings();
       }
 
       // Parse command line arguments.
@@ -168,12 +151,11 @@ namespace Sheepy.Modnix.MainGUI {
          List<string> param = args.ToList();
 
          if ( ParamIndex( param, "reset", "reset" ) >= 0 ) {
-            Log( "Resetting app settings." );
-            var settings = MainGUI.Properties.Settings.Default;
-            settings.Reset();
-            settings.Settings_Migrated = true;
-            settings.Save();
-            Log( "Settings saved." );
+            var file = Path.Combine( ModFolder, ModLoader.CONF_FILE );
+            try {
+               Log( $"Deleting {file}" );
+               File.Delete( file );
+            } catch ( IOException ex ) { Log( ex ); }
          }
 
          int pid = ParamIndex( param, "i", "ignore-pid" );
@@ -249,10 +231,11 @@ namespace Sheepy.Modnix.MainGUI {
 
       #region Check Status
       private ModLoaderBridge _ModBridge;
-      private ModLoaderBridge ModBridge { get => Get( ref _ModBridge ); set => Set( ref _ModBridge, value ); }
+      internal ModLoaderBridge ModBridge { get => Get( ref _ModBridge ); set => Set( ref _ModBridge, value ); }
 
       internal void CheckStatusAsync ( bool listMods ) {
-         Log( "Queuing status check" );
+         lock ( Instance ) // Make sure GUI and ModBridge are both set
+            Log( "Queuing status check" );
          Task.Run( (Action) CheckStatus );
          if ( listMods )
             Task.Run( (Action) GetModList );
@@ -260,7 +243,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void CheckStatus () { try {
          lock ( Instance ) // Make sure GUI is set
-            Log( "Checking status" );
+            Log( "Checking app and game status" );
          GUI.SetInfo( GuiInfo.APP_VER, CheckAppVer() );
          if ( FoundGame( out string gamePath ) ) {
             Log( $"Found game at {gamePath}" );
@@ -361,13 +344,13 @@ namespace Sheepy.Modnix.MainGUI {
             if ( ! drive.IsReady ) continue;
             string path = Path.Combine( drive.Name, "Program Files", "Epic Games", "PhoenixPoint" );
             if ( IsGamePath( path ) ) return path;
-         } catch ( Exception ) { }
+         } catch ( SystemException ) { }
          return null;
       } catch ( Exception ex ) { return Log< string >( ex, null ); } }
 
       private bool IsGamePath ( string path ) { try {
          string exe = Path.Combine( path, GAME_EXE ), dll = Path.Combine( path, DLL_PATH, GAME_DLL );
-         Log( $"Checking {path}" );
+         Log( $"Detecting game at {path}" );
          return File.Exists( exe ) && File.Exists( dll );
       } catch ( Exception ex ) { return Log( ex, false ); } }
       #endregion
@@ -423,7 +406,6 @@ namespace Sheepy.Modnix.MainGUI {
          } else
             throw new Exception( "Modnix injection failed" );
       } catch ( Exception ex ) {
-         try { CheckStatus(); } catch ( Exception ) {}
          Log( ex );
          GUI.Prompt( PromptFlag.ERROR | PromptFlag.SETUP, ex );
       } }
@@ -548,8 +530,6 @@ namespace Sheepy.Modnix.MainGUI {
 
       #region mods
       public void GetModList () { try {
-         lock ( Instance ) // Make sure GUI is set
-            if ( ModBridge == null ) ModBridge = new ModLoaderBridge();
          var list = ModBridge.LoadModList();
          if ( list != null ) GUI.SetInfo( GuiInfo.MOD_LIST, list );
       } catch ( IOException ex ) { Log( ex ); } }

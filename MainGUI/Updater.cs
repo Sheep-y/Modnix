@@ -66,30 +66,38 @@ namespace Sheepy.Modnix.MainGUI {
             return App.Log<GithubRelease>( ReadAsString( wex.Response ), null );
          }
 
-         GithubRelease[] releases = JsonConvert.DeserializeObject<GithubRelease[]>( json, JsonOptions );
-         App.Log( $"Found {releases?.Length} releases." );
-         if ( RELEASE == null || releases.Length <= 0 ) return null;
-         foreach ( var e in releases ) try {
-            App.Log( $"{e.Tag_Name} ({(e.Prerelease?"Prerelease":"Production")}) {e.Assets?.Length??0} asset(s)" );
-            if ( String.IsNullOrWhiteSpace( e.Tag_Name ) || e.Tag_Name[0] != 'v' ) continue;
-            if ( e.Assets == null || e.Assets.Length <= 0 ) continue;
-            if ( ! Object.Equals( Properties.Settings.Default.Update_Branch, "dev" ) && e.Prerelease ) continue;
-            Version eVer = Version.Parse( e.Tag_Name.Substring( 1 ) );
-            if ( eVer <= update_from ) continue;
-            foreach ( var a in e.Assets ) {
-               App.Log( $"{a.Name} {a.State} {a.Size} bytes {a.Browser_Download_Url}" );
-               if ( a.State == "uploaded" && a.Name.EndsWith( ".exe", StringComparison.InvariantCultureIgnoreCase ) ) {
-                  e.Assets = new GithubAsset[] { a };
-                  return e;
-               }
-            }
-         } catch ( Exception ex ) { App.Log( ex ); } 
+         if ( HasNewRelease( JsonConvert.DeserializeObject<GithubRelease[]>( json, JsonOptions ), update_from, out GithubRelease release ) ) 
+            return release;
          return null;
       } catch ( Exception ex ) {
          return App.Log<GithubRelease>( ex, null );
       } finally {
          lock( App ) { Checking = false; }
       } }
+
+      private bool HasNewRelease ( GithubRelease[] releases, Version update_from, out GithubRelease release ) {
+         release = null;
+         App.Log( $"Found {releases?.Length} releases." );
+         if ( releases == null || releases.Length <= 0 ) return false;
+         bool isDevChannel = App.ModBridge.GetSettings()?.UpdateChannel == "dev";
+         foreach ( var e in releases ) try {
+            App.Log( $"{e.Tag_Name} ({(e.Prerelease?"Prerelease":"Production")}) {e.Assets?.Length??0} asset(s)" );
+            if ( String.IsNullOrWhiteSpace( e.Tag_Name ) || e.Tag_Name[0] != 'v' ) continue;
+            if ( e.Assets == null || e.Assets.Length <= 0 ) continue;
+            if ( isDevChannel && e.Prerelease ) continue;
+            Version eVer = Version.Parse( e.Tag_Name.Substring( 1 ) );
+            if ( eVer <= update_from ) continue;
+            foreach ( var a in e.Assets ) {
+               App.Log( $"{a.Name} {a.State} {a.Size} bytes {a.Browser_Download_Url}" );
+               if ( a.State == "uploaded" && a.Name.EndsWith( ".exe", StringComparison.InvariantCultureIgnoreCase ) ) {
+                  e.Assets = new GithubAsset[] { a };
+                  release = e;
+                  return true;
+               }
+            }
+         } catch ( Exception ex ) { App.Log( ex ); } 
+         return false;
+      }
 
       private static string ReadAsString ( WebResponse response ) {
          using ( StreamReader reader = new StreamReader( response.GetResponseStream() ) ) {

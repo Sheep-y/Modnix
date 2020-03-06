@@ -27,8 +27,6 @@ namespace Sheepy.Modnix.MainGUI {
          SharedGui.VersionChanged += RefreshInfo;
          SharedGui.AppWorkingChanged += RefreshInfo;
          SharedGui.GameRunningChanged += RefreshInfo;
-         RefreshInfo();
-         App.CheckStatusAsync( false );
       } catch ( Exception ex ) { Console.WriteLine( ex ); } }
 
       private void Window_Activated ( object sender, EventArgs e ) {
@@ -40,7 +38,11 @@ namespace Sheepy.Modnix.MainGUI {
          try {
             string txt = value?.ToString();
             switch ( info ) {
-               case GuiInfo.VISIBILITY : Show(); break;
+               case GuiInfo.VISIBILITY :
+                  RefreshInfo();
+                  App.CheckStatusAsync( false );
+                  Show();
+                  break;
                case GuiInfo.APP_UPDATE :
                case GuiInfo.MOD_LIST :
                   break;

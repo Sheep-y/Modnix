@@ -6,24 +6,40 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Documents;
-using static Sheepy.Modnix.MainGUI.WpfHelper;
 
 namespace Sheepy.Modnix.MainGUI {
+   // This class was created to separate ModLoader classes from the main program
+   // But as the integration become more tight, it become more and more difficult
+   // Expect the bridging classes to be simplified in the future.
    internal class ModLoaderBridge {
-      private AppControl App = AppControl.Instance;
+      private readonly AppControl App = AppControl.Instance;
       private bool Loading;
+
+      internal void CheckSetup () { lock ( App ) {
+         if ( ModLoader.NeedSetup ) {
+            var logger = new GuiLogger( App );
+            ModLoader.SetLog( logger );
+            logger.Filters.Add( LogFilters.AddPrefix( "Loader┊" ) );
+            ModLoader.Setup();
+         }
+      } }
+
+      internal LoaderSettings GetSettings () {
+         CheckSetup();
+         return ModLoader.Settings;
+      }
+
+      internal void SaveSettings () {
+         CheckSetup();
+         ModLoader.SaveSettings();
+      }
 
       internal object LoadModList () {
          lock ( App ) {
             if ( Loading ) return null;
             Loading = true;
          }
-         if ( ModLoader.NeedSetup ) {
-            var logger = new GUILogger( App.GUI );
-            ModLoader.SetLog( logger );
-            logger.Filters.Add( LogFilters.AddPrefix( "Loader┊" ) );
-            ModLoader.Setup();
-         }
+         CheckSetup();
          App.Log( "Building mod list" );
          ModScanner.BuildModList();
          lock ( App ) {
@@ -182,11 +198,11 @@ namespace Sheepy.Modnix.MainGUI {
       public override string ToString () { lock ( Mod ) return Mod.ToString(); }
    }
 
-   internal class GUILogger : Logger {
-      private readonly IAppGui GUI;
-      public GUILogger ( IAppGui gui ) => GUI = gui;
+   internal class GuiLogger : Logger {
+      private readonly AppControl App;
+      public GuiLogger ( AppControl app ) => App = app;
       public override void Clear () { }
       public override void Flush () { }
-      protected override void _Log ( LogEntry entry ) => GUI.Log( EntryToString( entry ) );
+      protected override void _Log ( LogEntry entry ) => App.Log( EntryToString( entry ) );
    }
 }

@@ -49,17 +49,13 @@ namespace Sheepy.Modnix.MainGUI {
          RefreshModInfo();
          RefreshAppButtons();
          RefreshUpdateStatus();
-         Log( "Initiating Controller" );
-         App.CheckStatusAsync( true );
-         if ( ! App.ParamSkipStartupCheck )
-            CheckUpdate( false );
       } catch ( Exception ex ) { Log( ex ); } }
 
       public void SetInfo ( GuiInfo info, object value ) { this.Dispatch( () => { try {
          Log( $"Set {info} = {value}" );
          string txt = value?.ToString();
          switch ( info ) {
-            case GuiInfo.VISIBILITY : Show(); ResetPaddings(); break;
+            case GuiInfo.VISIBILITY : ShowWindow(); break;
             case GuiInfo.APP_UPDATE : Update = value; UpdateChecked(); RefreshUpdateStatus(); break;
             case GuiInfo.MOD_LIST : RefreshModList( value as IEnumerable<ModInfo> ); break;
             default : SharedGui.SetInfo( info, value ); break;
@@ -68,7 +64,12 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void Window_Activated ( object sender, EventArgs e ) => CheckGameRunning();
 
-      private void ResetPaddings () {
+      private void ShowWindow () {
+         Log( "Checking app status" );
+         App.CheckStatusAsync( true );
+         if ( ! App.ParamSkipStartupCheck )
+            CheckUpdate( false );
+         Show();
          // WPF bug - document reset its padding on first render.
          var empty = new Thickness( 0 );
          RichAppInfo.Document.PagePadding = empty;
@@ -321,9 +322,13 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void CheckUpdate ( bool manual ) { try {
          if ( ! manual ) {
-            DateTime lastCheck = Properties.Settings.Default.Last_Update_Check;
-            Log( $"Last update check was {lastCheck}" );
-            if ( lastCheck != null && ( DateTime.Now - lastCheck ).TotalDays < 7 ) return;
+            var lastCheck = App.ModBridge.GetSettings().LastCheckUpdate;
+            if ( ! lastCheck.HasValue )
+               Log( "Last update check was never" );
+            else {
+               Log( $"Last update check was {lastCheck}" );
+               if ( lastCheck != null && ( DateTime.Now - lastCheck.Value ).TotalDays < 7 ) return;
+            }
          }
          Log( "Checking update" );
          Update = "checking";
@@ -333,8 +338,8 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void UpdateChecked () { try {
          Log( $"Updating last update check time." );
-         Properties.Settings.Default.Last_Update_Check = DateTime.Now;
-         Properties.Settings.Default.Save();
+         App.ModBridge.GetSettings().LastCheckUpdate = DateTime.Now;
+         App.ModBridge.SaveSettings();
          ButtonCheckUpdate.IsEnabled = true;
       } catch ( Exception ex ) { Log( ex ); } }
 
