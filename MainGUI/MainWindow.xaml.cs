@@ -103,7 +103,10 @@ namespace Sheepy.Modnix.MainGUI {
             BtnTxtSetup.Text = "Setup";
 
          LabelModList.Foreground = Brushes.Black;
-         if ( ModList == null ) {
+         if ( SharedGui.IsGameRunning ) {
+            LabelModList.Content = "GAME RUNNING";
+            LabelModList.Foreground = Brushes.Red;
+         } else if ( ModList == null ) {
             LabelModList.Content = "Checking";
          } else if ( SharedGui.AppState != null && ! SharedGui.IsInjected ) {
             LabelModList.Content = "NOT INSTALLED";

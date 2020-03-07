@@ -544,7 +544,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       internal void AddMod ( string file ) { try {
          var ext = Path.GetExtension( file );
-         if ( ext.Equals( "zip" ) || ext.Equals( "7zip" ) ) {
+         if ( ext.Equals( "zip" ) || ext.Equals( "7z" ) ) {
             throw new NotSupportedException( "Not implemented" );
          } else {
             var folder = Path.Combine( ModFolder, Path.GetFileNameWithoutExtension( file ) );
