@@ -353,10 +353,10 @@ namespace Sheepy.Logging {
       private static object RecurFormatParam ( object param, int level = 0 ) {
          if ( param == null ) return "null";
          if ( level > 10 ) return "...";
-         if ( param is System.Collections.ICollection collections ) {
+         if ( param is ICollection collections ) {
             StringBuilder result = new StringBuilder().Append( collections.GetType().Name ).Append( "{ " );
             foreach ( var e in collections ) result.Append( RecurFormatParam( e, level + 1 ) ).Append( ", " );
-            result.Length -= 1;
+            --result.Length;
             return result.Append( " }" ).ToString();
          }
          return param;
