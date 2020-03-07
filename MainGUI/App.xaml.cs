@@ -510,7 +510,7 @@ namespace Sheepy.Modnix.MainGUI {
       } catch ( Exception ex ) { Log( ex ); } }
       #endregion
 
-      #region mods
+      #region Mods
       public void GetModList () { try {
          var list = ModBridge.LoadModList();
          if ( list != null ) GUI.SetInfo( GuiInfo.MOD_LIST, list );
@@ -551,8 +551,7 @@ namespace Sheepy.Modnix.MainGUI {
             Log( $"Creating {folder}" );
             Directory.CreateDirectory( folder );
             var destination = Path.Combine( folder, Path.GetFileName( file ) );
-            if ( File.Exists( destination ) )
-               throw new IOException( $"{destination} already exists" );
+            File.Delete( destination );
             Log( $"Copying {file} to {destination}" );
             File.Copy( file, destination );
             GetModList();
