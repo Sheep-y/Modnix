@@ -390,7 +390,7 @@ namespace Sheepy.Modnix.MainGUI {
                CurrentGame.DeleteRootFile( file );
             GUI.Prompt( prompt );
          } else
-            throw new Exception( "Modnix injection failed" );
+            throw new ApplicationException( "Modnix injection failed" );
       } catch ( Exception ex ) {
          Log( ex );
          GUI.Prompt( PromptFlag.ERROR | PromptFlag.SETUP, ex );
@@ -490,7 +490,7 @@ namespace Sheepy.Modnix.MainGUI {
             CurrentGame.DeleteCodeFile( LOADER );
             GUI.Prompt( PromptFlag.REVERT );
          } else
-            throw new Exception( "Modnix revert failed" );
+            throw new ApplicationException( "Modnix revert failed" );
       } catch ( Exception ex ) {
          Log( ex );
          GUI.Prompt( PromptFlag.ERROR | PromptFlag.REVERT, ex );
