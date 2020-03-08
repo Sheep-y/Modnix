@@ -38,7 +38,7 @@ namespace Sheepy.Modnix {
             ModScanner.BuildModList();
             LoadMods( "SplashMod" );
             PatchMenuCrt();
-         } else if ( RunMainPhaseOnInit ) { // Subsequence runs
+         } if ( RunMainPhaseOnInit ) { // Subsequence runs
             MainPhase();
             return;
          }
@@ -236,53 +236,8 @@ namespace Sheepy.Modnix {
             return;
          }
          var augs = new List<object>();
-         foreach ( var aug in func.GetParameters() ) {
-            var pType = aug.ParameterType;
-            var pName = aug.Name;
-            var isLog =  pName.IndexOf( "log", StringComparison.InvariantCultureIgnoreCase ) >= 0;
-            // Paths
-            if ( pType == typeof( string ) && pName.Equals( "ModsRoot", StringComparison.InvariantCultureIgnoreCase ) )
-               augs.Add( ModDirectory );
-            else if ( pType == typeof( string ) && pName.Equals( "ModPath", StringComparison.InvariantCultureIgnoreCase ) )
-               augs.Add( mod.Path );
-            else if ( pType == typeof( string ) && pName.Equals( "AssemblyPath", StringComparison.InvariantCultureIgnoreCase ) )
-               augs.Add( path );
-            // Version checkers
-            else if ( pType == typeof( Func<string,Version> ) )
-               augs.Add( (Func<string,Version>) ModScanner.GetVersionById );
-            else if ( pType == typeof( Assembly ) )
-               augs.Add( Assembly.GetExecutingAssembly() );
-            // Loggers
-            else if ( pType == typeof( Action<object> ) && isLog )
-               augs.Add( LoggerA( CreateLogger( mod ) ) );
-            else if ( pType == typeof( Action<object,object[]> ) && isLog )
-               augs.Add( LoggerB( CreateLogger( mod ) ) );
-            else if ( pType == typeof( Action<SourceLevels,object> ) && isLog )
-               augs.Add( LoggerC( CreateLogger( mod ) ) );
-            else if ( pType == typeof( Action<SourceLevels,object,object[]> ) && isLog )
-               augs.Add( LoggerD( CreateLogger( mod ) ) );
-            // Mod info
-            else if ( pType == typeof( Func<string,ModEntry> ) )
-               augs.Add( (Func<string,ModEntry>) ModScanner.GetModById );
-            else if ( pType == typeof( ModMeta ) )
-               augs.Add( mod.Metadata );
-            else if ( pType == typeof( ModEntry ) )
-               augs.Add( mod );
-            // Settings
-            else if ( pType == typeof( string ) 
-                   && ( pName.IndexOf( "setting", StringComparison.InvariantCultureIgnoreCase ) >= 0 
-                     || pName.IndexOf( "conf"   , StringComparison.InvariantCultureIgnoreCase ) >= 0 ) )
-               augs.Add( ReadSettingText( path ) );
-            else if ( IsSettingParam( path, type, pType, out object settings ) )
-               augs.Add( settings );
-            // Defaults
-            else if ( aug.HasDefaultValue )
-               augs.Add( aug.RawDefaultValue );
-            else if ( pType.IsValueType )
-               augs.Add( Activator.CreateInstance( pType ) );
-            else
-               augs.Add( null );
-         }
+         foreach ( var aug in func.GetParameters() )
+            augs.Add( ParamValue( aug,  mod, path, type ) );
          Func<string> augTxt = () => string.Join( ", ", augs.Select( e => e?.GetType()?.Name ?? "null" ) );
          Log.Info( "Calling {1}.{2}({3}) in {0}", mod.Path, typeName, methodName, augTxt );
          object target = null;
@@ -293,6 +248,57 @@ namespace Sheepy.Modnix {
          }
          func.Invoke( target, augs.ToArray() );
       } catch ( Exception ex ) { Log.Error( ex ); } }
+
+      private static object ParamValue ( ParameterInfo aug, ModEntry mod, string path, Type type ) {
+         var pType = aug.ParameterType;
+         var pName = aug.Name;
+         var isLog =  pName.IndexOf( "log", StringComparison.InvariantCultureIgnoreCase ) >= 0;
+         // Paths
+         if ( pType == typeof( string ) && pName.Equals( "ModsRoot", StringComparison.InvariantCultureIgnoreCase ) )
+            return ModDirectory;
+         if ( pType == typeof( string ) && pName.Equals( "ModPath", StringComparison.InvariantCultureIgnoreCase ) )
+            return mod.Path;
+         if ( pType == typeof( string ) && pName.Equals( "AssemblyPath", StringComparison.InvariantCultureIgnoreCase ) )
+            return path;
+         // Version checkers
+         if ( pType == typeof( Func<string,Version> ) )
+            return (Func<string,Version>) ModScanner.GetVersionById;
+         if ( pType == typeof( Assembly ) )
+            return Assembly.GetExecutingAssembly();
+         // Loggers
+         if ( pType == typeof( Action<object> ) && isLog )
+            return LoggerA( CreateLogger( mod ) );
+         if ( pType == typeof( Action<object,object[]> ) && isLog )
+            return LoggerB( CreateLogger( mod ) );
+         if ( pType == typeof( Action<SourceLevels,object> ) && isLog )
+            return LoggerC( CreateLogger( mod ) );
+         if ( pType == typeof( Action<SourceLevels,object,object[]> ) && isLog )
+            return LoggerD( CreateLogger( mod ) );
+         // Mod info
+         if ( pType == typeof( Func<string,ModEntry> ) )
+            return (Func<string,ModEntry>) ModScanner.GetModById;
+         if ( pType == typeof( ModMeta ) )
+            return mod.Metadata;
+         if ( pType == typeof( ModEntry ) )
+            return mod;
+         // Settings
+         if ( pType == typeof( string ) 
+                  && ( pName.IndexOf( "setting", StringComparison.InvariantCultureIgnoreCase ) >= 0 
+                  || pName.IndexOf( "conf"   , StringComparison.InvariantCultureIgnoreCase ) >= 0 ) )
+            return ReadSettingText( path );
+         if ( IsSettingParam( path, type, pType, out object settings ) )
+            return settings;
+         return DefaultParamValue( aug, mod, path, type );
+      }
+
+      private static object DefaultParamValue ( ParameterInfo aug, ModEntry mod, string path, Type type ) {
+         if ( aug.HasDefaultValue )
+            return aug.RawDefaultValue;
+         var pType = aug.ParameterType;
+         if ( pType.IsValueType )
+            return Activator.CreateInstance( pType );
+         return null;
+      }
 
       private static Logger CreateLogger ( ModEntry mod ) { lock ( mod ) {
          if ( mod.Logger == null ) {
