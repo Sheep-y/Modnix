@@ -238,9 +238,17 @@ namespace Sheepy.Modnix {
          var augs = new List<object>();
          foreach ( var aug in func.GetParameters() ) {
             var pType = aug.ParameterType;
-            var isLog =  aug.Name.IndexOf( "log", StringComparison.InvariantCultureIgnoreCase ) >= 0;
+            var pName = aug.Name;
+            var isLog =  pName.IndexOf( "log", StringComparison.InvariantCultureIgnoreCase ) >= 0;
+            // Paths
+            if ( pType == typeof( string ) && pName.Equals( "ModsRoot", StringComparison.InvariantCultureIgnoreCase ) )
+               augs.Add( ModDirectory );
+            else if ( pType == typeof( string ) && pName.Equals( "ModPath", StringComparison.InvariantCultureIgnoreCase ) )
+               augs.Add( mod.Path );
+            else if ( pType == typeof( string ) && pName.Equals( "AssemblyPath", StringComparison.InvariantCultureIgnoreCase ) )
+               augs.Add( path );
             // Version checkers
-            if ( pType == typeof( Func<string,Version> ) )
+            else if ( pType == typeof( Func<string,Version> ) )
                augs.Add( (Func<string,Version>) ModScanner.GetVersionById );
             else if ( pType == typeof( Assembly ) )
                augs.Add( Assembly.GetExecutingAssembly() );
@@ -261,7 +269,9 @@ namespace Sheepy.Modnix {
             else if ( pType == typeof( ModEntry ) )
                augs.Add( mod );
             // Settings
-            else if ( pType == typeof( string ) )
+            else if ( pType == typeof( string ) 
+                   && ( pName.IndexOf( "setting", StringComparison.InvariantCultureIgnoreCase ) >= 0 
+                     || pName.IndexOf( "conf"   , StringComparison.InvariantCultureIgnoreCase ) >= 0 ) )
                augs.Add( ReadSettingText( path ) );
             else if ( IsSettingParam( path, type, pType, out object settings ) )
                augs.Add( settings );
