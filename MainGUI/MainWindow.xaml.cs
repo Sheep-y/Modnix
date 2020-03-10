@@ -285,6 +285,7 @@ namespace Sheepy.Modnix.MainGUI {
       private void ButtonRefreshMod_Click ( object sender, RoutedEventArgs e ) {
          SetModList( null );
          new Timer( ( _ ) => App.GetModList(), null, 100, Timeout.Infinite );
+         if ( SharedGui.IsGameRunning ) CheckGameRunning();
       }
 
       private void ButtonModOpenModDir_Click ( object sender, RoutedEventArgs e ) {
