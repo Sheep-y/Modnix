@@ -59,7 +59,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       public void SetInfo ( GuiInfo info, object value ) { this.Dispatch( () => { try {
          Log( $"Set {info} = {value}" );
-         string txt = value?.ToString();
+         var txt = value?.ToString();
          switch ( info ) {
             case GuiInfo.VISIBILITY : ShowWindow(); break;
             case GuiInfo.APP_UPDATE : Update = value; UpdateChecked(); RefreshUpdateStatus(); break;
@@ -85,7 +85,7 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       private void CheckGameRunning ( object _ = null ) {
-         bool IsRunning = AppControl.IsGameRunning();
+         var IsRunning = AppControl.IsGameRunning();
          this.Dispatch( () => SharedGui.IsGameRunning = IsRunning );
       }
 
@@ -182,7 +182,7 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       private void ButtonModDir_Click ( object sender, RoutedEventArgs e ) { try {
-         string arg = $"/select, \"{Path.Combine( App.ModFolder, App.ModGuiExe )}\"";
+         var arg = $"/select, \"{Path.Combine( App.ModFolder, App.ModGuiExe )}\"";
          Log( $"Launching explorer.exe {arg}" );
          Process.Start( "explorer.exe", arg );
       } catch ( Exception ex ) { Log( ex ); } }
@@ -288,21 +288,30 @@ namespace Sheepy.Modnix.MainGUI {
          App.AddMod( target );
       }
 
+      private Timer RefreshModTimer;
+
       private void ButtonRefreshMod_Click ( object sender, RoutedEventArgs e ) {
+         if ( RefreshModTimer != null ) return;
          SetModList( null );
-         new Timer( ( _ ) => App.GetModList(), null, 100, Timeout.Infinite );
+         RefreshModTimer = new Timer( ( _ ) => {
+            App.GetModList();
+            this.Dispatch( () => {
+               RefreshModTimer?.Dispose();
+               RefreshModTimer = null;
+            } );
+         }, null, 100, Timeout.Infinite );
          if ( SharedGui.IsGameRunning ) CheckGameRunning();
       }
 
       private void ButtonModOpenModDir_Click ( object sender, RoutedEventArgs e ) {
-         string path = CurrentMod?.Path;
+         var path = CurrentMod?.Path;
          if ( string.IsNullOrWhiteSpace( path ) ) return;
          AppControl.Explore( path );
       }
 
       private void ButtonModDelete_Click ( object sender, RoutedEventArgs e ) {
          if ( CurrentMod == null ) return;
-         ModActionType action = ModActionType.DELETE_FILE;
+         var action = ModActionType.DELETE_FILE;
          if ( (bool) CurrentMod.Query( ModQueryType.IS_FOLDER ) ) {
             var ans = MessageBox.Show( $"Delete {CurrentMod.Name} folder?\nSay no to delete just the file.", "Confirm",
                   MessageBoxButton.YesNoCancel, MessageBoxImage.Question, MessageBoxResult.Cancel );
