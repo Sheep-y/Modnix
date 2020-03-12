@@ -68,7 +68,8 @@ namespace Sheepy.Modnix.MainGUI {
          }
       } catch ( Exception ex ) { Log( ex ); } } ); }
 
-      private void Window_Activated ( object sender, EventArgs e ) => CheckGameRunning();
+      private void Window_Activated ( object sender, EventArgs e ) => GameStatusTimer.Change( 100, 3000 );
+      private void Window_Deactivated ( object sender, EventArgs e ) => GameStatusTimer.Change( Timeout.Infinite, Timeout.Infinite );
 
       private void ShowWindow () {
          Log( "Checking app status" );
@@ -83,7 +84,10 @@ namespace Sheepy.Modnix.MainGUI {
          RichModInfo.Document.PagePadding = empty;
       }
 
-      private void CheckGameRunning ( object _ = null ) => SharedGui.IsGameRunning = AppControl.IsGameRunning();
+      private void CheckGameRunning ( object _ = null ) {
+         bool IsRunning = AppControl.IsGameRunning();
+         this.Dispatch( () => SharedGui.IsGameRunning = IsRunning );
+      }
 
       private void RefreshAppButtons () { try {
          Log( "Refreshing app buttons, " + ( SharedGui.CanModify ? "can mod" : "cannot mod" ) );
@@ -209,13 +213,13 @@ namespace Sheepy.Modnix.MainGUI {
       private void ButtonOnline_Click  ( object sender, RoutedEventArgs e ) {
          App.LaunchGame( "online" );
          SetInfo( GuiInfo.GAME_RUNNING, true );
-         _ = new Timer( CheckGameRunning, null, 10_000, Timeout.Infinite );
+         GameStatusTimer.Change( Timeout.Infinite, 10_000 ); // Should be overrode by activate/deactivate, but just in case
       }
 
       private void ButtonOffline_Click ( object sender, RoutedEventArgs e ) {
          App.LaunchGame( "offline" );
          SetInfo( GuiInfo.GAME_RUNNING, true );
-         _ = new Timer( CheckGameRunning, null, 10_000, Timeout.Infinite );
+         GameStatusTimer.Change( Timeout.Infinite, 10_000 ); // Should be overrode by activate/deactivate, but just in case
       }
 
       private void ButtonCanny_Click   ( object sender, RoutedEventArgs e ) => OpenUrl( "canny", e );
