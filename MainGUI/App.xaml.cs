@@ -531,7 +531,6 @@ namespace Sheepy.Modnix.MainGUI {
                return;
             case AppActionType.DELETE_CONFIG :
                ModBridge.DeleteConfig( mod );
-               GUI.Prompt( AppActionType.DELETE_CONFIG );
                return;
             case AppActionType.RESET_CONFIG :
                ModBridge.ResetConfig( mod );

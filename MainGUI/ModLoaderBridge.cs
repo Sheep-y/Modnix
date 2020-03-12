@@ -83,10 +83,17 @@ namespace Sheepy.Modnix.MainGUI {
          RemoveEmptyFolders( path );
       }
 
-      internal void DeleteConfig ( ModInfo mod ) { // TODO
+      internal void DeleteConfig ( ModInfo mod ) {
+         var file = ModLoader.CheckSettingFile( mod.Path );
+         if ( file != null )
+            File.Delete( file );
       }
 
-      internal void ResetConfig ( ModInfo mod ) { // TODO
+      internal void ResetConfig ( ModInfo mod ) {
+         DeleteConfig( mod );
+         var str = ModLoader.ReadSettingText( ( mod as GridModItem ).Mod );
+         if ( str != null )
+            File.WriteAllText( ModLoader.GetSettingFile( mod.Path ), str );
       }
 
       private void RemoveEmptyFolders ( string path ) {
