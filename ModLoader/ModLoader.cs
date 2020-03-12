@@ -167,31 +167,19 @@ namespace Sheepy.Modnix {
       #region Mod settings
       private static string GetSettingFile ( string path ) {
          if ( path == null ) return null;
-         return Path.Combine( Path.GetDirectoryName( path ), Path.GetFileNameWithoutExtension( path ) + ".conf" );
+         return Path.Combine( Path.GetDirectoryName( path ), Path.GetFileNameWithoutExtension( path ) + ".json" );
       }
 
-      private static string ReadSettingText ( string path ) { try {
-         var confFile = GetSettingFile( path );
-         if ( confFile == null || ! File.Exists( confFile ) ) return null;
-         return File.ReadAllText( path, Encoding.UTF8 );
+      private static string ReadSettingText ( ModEntry mod ) { try {
+         var confFile = GetSettingFile( mod.Path );
+         if ( confFile == null || ! File.Exists( confFile ) ) 
+            confFile = Path.Combine( Path.GetDirectoryName( mod.Path ), "mod_config.json" );
+         if ( File.Exists( confFile ) )
+            return File.ReadAllText( confFile, Encoding.UTF8 );
+         if ( mod.Metadata.DefaultSettings != null )
+            return ModMetaJson.Stringify( mod.Metadata.DefaultSettings );
+         return null;
       } catch ( Exception ex ) { Log?.Error( ex ); return null; } }
-
-      private static bool IsSettingParam ( string path, Type owner, Type paramType, out object conf ) { conf = null; try {
-         var method = owner.GetMethods( ModScanner.INIT_METHOD_FLAGS )?.FirstOrDefault( e => e.Name.Equals( "GetDefaultSettings" ) );
-         if ( method != null && method.ReturnType.IsInstanceOfType( paramType ) )
-            return ReadSettingParam( path, method.ReturnType, out conf );
-         var prop = owner.GetProperty( "DefaultSettings", ModScanner.INIT_METHOD_FLAGS );
-         if ( prop != null && prop.PropertyType.IsInstanceOfType( paramType ) )
-            return ReadSettingParam( path, prop.PropertyType, out conf );
-         return false;
-      } catch ( Exception ex ) { Log?.Error( ex ); return false; } }
-
-      private static bool ReadSettingParam ( string path, Type settingType, out object conf ) { conf = null; try {
-         var txt = ReadSettingText( path );
-         if ( txt == null ) return false;
-         conf = JsonConvert.DeserializeObject( txt, settingType, ModMetaJson.JsonOptions );
-         return true;
-      } catch ( Exception ex ) { Log?.Error( ex ); return false; } }
       #endregion
 
       #region Loading Mods
@@ -282,14 +270,19 @@ namespace Sheepy.Modnix {
          if ( pType == typeof( ModEntry ) )
             return mod;
          // Settings
-         if ( pType == typeof( string ) 
-                  && ( pName.IndexOf( "setting", StringComparison.InvariantCultureIgnoreCase ) >= 0 
-                  || pName.IndexOf( "conf"   , StringComparison.InvariantCultureIgnoreCase ) >= 0 ) )
-            return ReadSettingText( path );
-         if ( IsSettingParam( path, type, pType, out object settings ) )
-            return settings;
+         if ( IsSetting( pName ) ) {
+            if ( pType == typeof( string ) )
+               return ReadSettingText( mod );
+            if ( IsSetting( pType.Name ) ) try {
+               return JsonConvert.DeserializeObject( ReadSettingText( mod ) );
+            } catch ( Exception e ) { Log.Warn( e ); }
+         }
          return DefaultParamValue( aug, mod, path, type );
       }
+
+      private static bool IsSetting ( string name ) =>
+         name.IndexOf( "setting", StringComparison.InvariantCultureIgnoreCase ) >= 0 ||
+         name.IndexOf( "conf"   , StringComparison.InvariantCultureIgnoreCase ) >= 0;
 
       private static object DefaultParamValue ( ParameterInfo aug, ModEntry mod, string path, Type type ) {
          if ( aug.HasDefaultValue )

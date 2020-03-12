@@ -93,10 +93,12 @@ namespace Sheepy.Modnix {
          if ( file.EndsWith( ".dll", StringComparison.InvariantCultureIgnoreCase ) ) {
             meta = ParseDllInfo( file );
             if ( meta == null ) return null;
-            var info = FindEmbeddedModInfo( file );
-            if ( info != null ) {
+            if ( FindEmbeddedModInfo( file, out string info, out string conf ) ) {
                Log.Verbo( "Parsing embedded mod_info" );
                meta.ImportFrom( ParseInfoJs( info )?.EraseModsAndDlls() );
+               if ( conf != null ) lock ( meta ) {
+                  meta.EmbeddedSettings = conf;
+               }
             }
          } else {
             Log.Verbo( $"Parsing as mod_info: {file}" );
@@ -154,25 +156,31 @@ namespace Sheepy.Modnix {
          }.Normalise();
       } catch ( Exception ex ) { Log.Warn( ex ); return null; } }
 
-      private static string FindEmbeddedModInfo ( string file ) { try {
+      private static bool FindEmbeddedModInfo ( string file, out string info, out string conf ) { info = conf = null; try {
          using ( var lib = AssemblyDefinition.ReadAssembly( file ) ) {
-            if ( ! lib.MainModule.HasResources ) return null;
-            var res = lib.MainModule?.Resources.FirstOrDefault() as EmbeddedResource;
-            if ( res == null || res.ResourceType != ResourceType.Embedded ) return null;
-            if ( res.Name.IndexOf( ".mod_info.js", StringComparison.InvariantCultureIgnoreCase ) >= 0 ) {
-               return Encoding.UTF8.GetString( res.GetResourceData() );
-            } else if ( res.Name.EndsWith( ".resources", StringComparison.InvariantCultureIgnoreCase ) ) {
-               using ( var reader = new ResourceReader( res.GetResourceStream() ) ) {
-                  var data = reader.GetEnumerator();
-                  while ( data.MoveNext() ) {
-                     if ( data.Key.ToString().Equals( "mod_info", StringComparison.InvariantCultureIgnoreCase ) )
-                        return data.Value?.ToString();
+            if ( ! lib.MainModule.HasResources ) return false;
+            foreach ( var resource in lib.MainModule.Resources ) {
+               if ( ! ( resource is EmbeddedResource res ) || res.ResourceType != ResourceType.Embedded ) continue;
+               if ( res.Name.IndexOf( ".mod_info.js", StringComparison.InvariantCultureIgnoreCase ) >= 0 )
+                  info = Encoding.UTF8.GetString( res.GetResourceData() );
+               else if ( res.Name.IndexOf( ".mod_config.js", StringComparison.InvariantCultureIgnoreCase ) >= 0 )
+                  conf = Encoding.UTF8.GetString( res.GetResourceData() );
+               else if ( res.Name.EndsWith( ".resources", StringComparison.InvariantCultureIgnoreCase ) ) {
+                  using ( var reader = new ResourceReader( res.GetResourceStream() ) ) {
+                     var data = reader.GetEnumerator();
+                     while ( data.MoveNext() ) {
+                        if ( data.Key.ToString().Equals( "mod_info", StringComparison.InvariantCultureIgnoreCase ) )
+                           info = data.Value?.ToString();
+                        else if ( data.Key.ToString().Equals( "mod_config", StringComparison.InvariantCultureIgnoreCase ) )
+                           conf = data.Value?.ToString();
+                     }
                   }
                }
+               if ( info != null && conf != null ) return true;
             }
          }
-         return null;
-      } catch ( Exception ex ) { Log.Warn( ex ); return null; } }
+         return info != null;
+      } catch ( Exception ex ) { Log.Warn( ex ); return false; } }
 
       private static DllEntryMeta ParseEntryPoints ( string file ) {
          DllEntryMeta result = null;

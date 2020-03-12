@@ -76,7 +76,9 @@ namespace Sheepy.Modnix {
 
       public string[] Mods;
       public DllMeta[] Dlls;
+
       public object    DefaultSettings;
+      public string    EmbeddedSettings;
 
       public bool HasContent => Mods == null && Dlls == null;
 
@@ -99,6 +101,7 @@ namespace Sheepy.Modnix {
             CopyNonNull( overrider.Mods, ref Mods );
             CopyNonNull( overrider.Dlls, ref Dlls );
             CopyNonNull( overrider.DefaultSettings, ref DefaultSettings );
+            CopyNonNull( overrider.EmbeddedSettings, ref EmbeddedSettings );
          } }
          return overrider;
       }
@@ -223,6 +226,7 @@ namespace Sheepy.Modnix {
       };
 
       public static T Parse<T> ( string json ) => JsonConvert.DeserializeObject<T>( json, JsonOptions );
+      public static string Stringify ( object val ) => JsonConvert.SerializeObject( val, Formatting.Indented, JsonOptions );
       public static ModMeta ParseMod ( string json ) => Parse<ModMeta>( json );
    }
 
@@ -254,10 +258,10 @@ namespace Sheepy.Modnix {
       private static AppVer   ParseAppVer ( JsonReader reader ) => ParseObject<AppVer>( reader, "id", AssignAppVerProp );
       private static AppVer[] ParseAppVerArray ( JsonReader reader ) => ParseArray<AppVer>( reader, ParseAppVer );
       private static AppVer   AssignAppVerProp ( AppVer e, string prop, object val ) {
-         string txt = val.ToString().Trim();
+         var txt = val.ToString().Trim();
          if ( txt.Length <= 0 ) return e;
          switch ( prop.ToLowerInvariant() ) {
-            case "id"  : e.Id  = txt; break;
+            case "id"  : e.Id = txt; break;
             case "min" : 
                if ( ! txt.Contains( '.' ) ) txt += ".0";
                Version.TryParse( txt, out e.Min );
@@ -293,7 +297,7 @@ namespace Sheepy.Modnix {
       private static TextSet[] ParseTextSetArray ( JsonReader reader ) => ParseArray<TextSet>( reader, ParseTextSet );
       private static TextSet   AssignTextSetProp ( TextSet e, string prop, object val ) {
          prop = prop.Trim();
-         string txt = val.ToString().Trim();
+         var txt = val.ToString().Trim();
          if ( prop.Length <= 0 || txt.Length <= 0 ) return e;
          if ( e.Default == null ) {
             e.Default = txt;
@@ -316,9 +320,9 @@ namespace Sheepy.Modnix {
          if ( token == JsonToken.String ) return new string[] { r.Value.ToString() };
          if ( token == JsonToken.StartArray ) {
             if ( r.ReadAndSkipComment() == JsonToken.EndArray ) return null;
-            List<string> result = new List<string>();
+            var result = new List<string>();
             do {
-               string node = ParseString( r );
+               var node = ParseString( r );
                if ( node != null ) result.Add( node );
                if ( r.ReadAndSkipComment() == JsonToken.EndArray )
                   return result.Count > 0 ? result.ToArray() : null;
@@ -334,7 +338,7 @@ namespace Sheepy.Modnix {
             return new T[] { objParser( r ) };
          if ( token == JsonToken.StartArray ) {
             if ( r.ReadAndSkipComment() == JsonToken.EndArray ) return null;
-            List<T> result = new List<T>();
+            var result = new List<T>();
             do {
                T node = objParser( r );
                if ( node != null ) result.Add( node );
