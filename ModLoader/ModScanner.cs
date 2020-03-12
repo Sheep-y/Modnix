@@ -163,7 +163,7 @@ namespace Sheepy.Modnix {
                if ( ! ( resource is EmbeddedResource res ) || res.ResourceType != ResourceType.Embedded ) continue;
                if ( res.Name.IndexOf( ".mod_info.js", StringComparison.InvariantCultureIgnoreCase ) >= 0 )
                   info = Encoding.UTF8.GetString( res.GetResourceData() );
-               else if ( res.Name.IndexOf( ".mod_config.js", StringComparison.InvariantCultureIgnoreCase ) >= 0 )
+               else if ( res.Name.IndexOf( ".mod_init.conf", StringComparison.InvariantCultureIgnoreCase ) >= 0 )
                   conf = Encoding.UTF8.GetString( res.GetResourceData() );
                else if ( res.Name.EndsWith( ".resources", StringComparison.InvariantCultureIgnoreCase ) ) {
                   using ( var reader = new ResourceReader( res.GetResourceStream() ) ) {
@@ -171,7 +171,7 @@ namespace Sheepy.Modnix {
                      while ( data.MoveNext() ) {
                         if ( data.Key.ToString().Equals( "mod_info", StringComparison.InvariantCultureIgnoreCase ) )
                            info = data.Value?.ToString();
-                        else if ( data.Key.ToString().Equals( "mod_config", StringComparison.InvariantCultureIgnoreCase ) )
+                        else if ( data.Key.ToString().Equals( "mod_init", StringComparison.InvariantCultureIgnoreCase ) )
                            conf = data.Value?.ToString();
                      }
                   }
