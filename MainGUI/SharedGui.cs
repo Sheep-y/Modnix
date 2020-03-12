@@ -19,7 +19,7 @@ namespace Sheepy.Modnix.MainGUI {
       public abstract string Type { get; }
    }
 
-   internal enum ModActionType { NONE, ENABLE, DISABLE, DELETE_DIR, DELETE_FILE, DELETE_SETTINGS }
+   internal enum ModActionType { NONE, ENABLE, DISABLE, DELETE_DIR, DELETE_FILE, DELETE_SETTINGS, RESET_CONFIG }
    internal enum ModQueryType { NONE, IS_FOLDER, IS_CHILD, HAS_SETTINGS }
 
    [Flags]

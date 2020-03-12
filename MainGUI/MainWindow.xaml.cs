@@ -98,6 +98,7 @@ namespace Sheepy.Modnix.MainGUI {
          ButtonModDir.IsEnabled = Directory.Exists( App.ModFolder );
          ButtonRefreshMod.IsEnabled = Directory.Exists( App.ModFolder ) && ! SharedGui.IsAppWorking;
          ButtonModOpenModDir.IsEnabled = CurrentMod != null;
+         ButtonModConf.IsEnabled = CurrentMod != null;
          ButtonModDelete.IsEnabled = SharedGui.CanModify && CurrentMod != null && ! (bool) CurrentMod.Query( ModQueryType.IS_CHILD );;
          ButtonLoaderLog.IsEnabled = File.Exists( LoaderLog );
 
@@ -307,6 +308,12 @@ namespace Sheepy.Modnix.MainGUI {
          var path = CurrentMod?.Path;
          if ( string.IsNullOrWhiteSpace( path ) ) return;
          AppControl.Explore( path );
+      }
+
+      private void ButtonModConf_Click ( object sender, RoutedEventArgs e ) {
+         if ( MessageBox.Show( $"Reset config of \"{CurrentMod.Name}\"?", "Reset Config", MessageBoxButton.OKCancel, MessageBoxImage.Warning, MessageBoxResult.Cancel )
+            != MessageBoxResult.OK ) return;
+         App.DoModActionAsync( ModActionType.RESET_CONFIG, CurrentMod );
       }
 
       private void ButtonModDelete_Click ( object sender, RoutedEventArgs e ) {
