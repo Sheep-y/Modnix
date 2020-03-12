@@ -107,17 +107,13 @@ namespace Sheepy.Modnix.MainGUI {
          }
       } catch ( Exception ex ) { Log( ex ); } }
 
-      public void Prompt ( PromptFlag parts, Exception ex = null ) {
-         this.Dispatch( () => { try {
-            Log( $"Prompt {parts}" );
-            if ( SharedGui.AppState == "modnix" || SharedGui.AppState == "both" )
-               EnableLaunch();
-            SharedGui.Prompt( parts, ex, () => {
-               AppControl.Explore( App.ModGuiExe );
-               Close();
-            } );
-         } catch ( Exception err ) { Log( err ); } } );
-      }
+      public void Prompt ( AppActionType action, PromptFlag flags = PromptFlag.NONE, Exception ex = null ) { this.Dispatch( () => { try {
+         Log( $"Prompt {action} {flags}" );
+         SharedGui.Prompt( action, flags, ex, () => {
+            AppControl.Explore( App.ModGuiExe );
+            Close();
+         } );
+      } catch ( Exception err ) { Log( err ); } } ); }
 
       public void Log ( object message ) {
          string time = DateTime.Now.ToString( "hh:mm:ss.ffff ", InvariantCulture );

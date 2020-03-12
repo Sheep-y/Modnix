@@ -187,10 +187,10 @@ namespace Sheepy.Modnix.MainGUI {
          Process.Start( "explorer.exe", arg );
       } catch ( Exception ex ) { Log( ex ); } }
 
-      public void Prompt ( PromptFlag parts, Exception ex = null ) { this.Dispatch( () => { try {
-         Log( $"Prompt {parts}" );
-         SharedGui.Prompt( parts, ex, () => AppControl.Explore( App.ModGuiExe ) );
-         if ( ( parts & ( PromptFlag.ADD_MOD | PromptFlag.DEL_MOD ) ) > PromptFlag.NONE )
+      public void Prompt ( AppActionType action, PromptFlag flags = PromptFlag.NONE, Exception ex = null ) { this.Dispatch( () => { try {
+         Log( $"Prompt {action} {flags}" );
+         SharedGui.Prompt( action, flags, ex, () => AppControl.Explore( App.ModGuiExe ) );
+         if ( action == AppActionType.ADD_MOD || action == AppActionType.DELETE_DIR || action == AppActionType.DELETE_FILE )
             ModListChanged.Invoke();
       } catch ( Exception err ) { Log( err ); } } ); }
 
@@ -312,29 +312,29 @@ namespace Sheepy.Modnix.MainGUI {
       private void ButtonModConf_Click ( object sender, RoutedEventArgs e ) {
          if ( MessageBox.Show( $"Reset config of \"{CurrentMod.Name}\"?", "Reset Config", MessageBoxButton.OKCancel, MessageBoxImage.Warning, MessageBoxResult.Cancel )
             != MessageBoxResult.OK ) return;
-         App.DoModActionAsync( ModActionType.RESET_CONFIG, CurrentMod );
+         App.DoModActionAsync( AppActionType.RESET_CONFIG, CurrentMod );
       }
 
       private void ButtonModDelete_Click ( object sender, RoutedEventArgs e ) {
          if ( CurrentMod == null ) return;
-         var action = ModActionType.DELETE_FILE;
+         var action = AppActionType.DELETE_FILE;
          if ( (bool) CurrentMod.Query( ModQueryType.IS_FOLDER ) ) {
             var ans = MessageBox.Show( $"Delete {CurrentMod.Name} folder?\nSay no to delete just the file.", "Confirm",
                   MessageBoxButton.YesNoCancel, MessageBoxImage.Question, MessageBoxResult.Cancel );
             if ( ans == MessageBoxResult.Cancel ) return;
             if ( ans == MessageBoxResult.Yes )
-               action = ModActionType.DELETE_DIR;
+               action = AppActionType.DELETE_DIR;
          } else {
             var ans = MessageBox.Show( $"Delete {CurrentMod.Name}?", "Confirm",
                   MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No );
             if ( ans == MessageBoxResult.No ) return;
          }
-         if ( action == ModActionType.DELETE_FILE && (bool) CurrentMod.Query( ModQueryType.HAS_CONFIG ) ) {
+         if ( action == AppActionType.DELETE_FILE && (bool) CurrentMod.Query( ModQueryType.HAS_CONFIG ) ) {
             var ans = MessageBox.Show( $"Delete {CurrentMod.Name} settings?", "Confirm",
                   MessageBoxButton.YesNoCancel, MessageBoxImage.Question, MessageBoxResult.Cancel );
             if ( ans == MessageBoxResult.Cancel ) return;
             if ( ans == MessageBoxResult.Yes )
-               App.DoModActionAsync( ModActionType.DELETE_CONFIG, CurrentMod );
+               App.DoModActionAsync( AppActionType.DELETE_CONFIG, CurrentMod );
          }
          ButtonModDelete.IsEnabled = false;
          App.DoModActionAsync( action, CurrentMod );

@@ -19,14 +19,15 @@ namespace Sheepy.Modnix.MainGUI {
       public abstract string Type { get; }
    }
 
-   internal enum ModActionType { NONE, ENABLE, DISABLE, DELETE_DIR, DELETE_FILE, DELETE_CONFIG, RESET_CONFIG }
    internal enum ModQueryType { NONE, IS_FOLDER, IS_CHILD, HAS_CONFIG }
 
+   public enum AppActionType { NONE,
+      SETUP, REVERT, LAUNCH_GAME, ADD_MOD, DELETE_DIR, DELETE_FILE,
+      ENABLE_MOD, DISABLE_MOD, DELETE_CONFIG, RESET_CONFIG }
+
    [Flags]
-   public enum PromptFlag { NONE, 
-      ERROR = 1,
-      SETUP = 2, REVERT = 4, ADD_MOD = 8, DEL_MOD = 16, DEL_CONF = 32,
-      SETUP_MOD_MOVED = 64, SETUP_SELF_COPY = 128, SETUP_PPML = 256,
+   public enum PromptFlag { NONE, ERROR = 1,
+      SETUP_MOD_MOVED = 2, SETUP_SELF_COPY = 4, SETUP_PPML = 8,
    }
 
    internal static class SharedGui {
@@ -93,43 +94,47 @@ namespace Sheepy.Modnix.MainGUI {
          }
       }
 
-      internal static void Prompt ( PromptFlag parts, Exception ex, Action OnRestart ) { try {
-         var action = "Action";
-         if ( parts.Has( PromptFlag.SETUP ) ) action = "Setup";
-         else if ( parts.Has( PromptFlag.REVERT ) ) action = "Revert";
-         else if ( parts.Has( PromptFlag.ADD_MOD ) ) action = "Add Mod";
-         else if ( parts.Has( PromptFlag.DEL_MOD ) ) action = "Delete Mod";
-         else if ( parts.Has( PromptFlag.DEL_CONF ) )
-            action = parts.Has( PromptFlag.SETUP_SELF_COPY ) ? "Reset config" : "Delete config";
+      internal static void Prompt ( AppActionType action, PromptFlag flags, Exception ex, Action OnRestart ) { try {
+         string actionTxt;
+         switch ( action ) {
+            case AppActionType.SETUP : actionTxt = "Setup"; break;
+            case AppActionType.REVERT : actionTxt = "Revert"; break;
+            case AppActionType.ADD_MOD : actionTxt = "Add Mod"; break;
+            case AppActionType.DELETE_DIR : actionTxt = "Delete Mod Folder"; break;
+            case AppActionType.DELETE_FILE : actionTxt = "Delete Mod"; break;
+            case AppActionType.DELETE_CONFIG : actionTxt = "Delete config"; break;
+            case AppActionType.RESET_CONFIG : actionTxt = "Reset config"; break;
+            default : actionTxt = "Action"; break;
+         }
 
          string txt;
-         if ( parts.Has( PromptFlag.ERROR ) ) {
-            txt = string.Format( "{0} failed.", action );
+         if ( ex != null || flags.Has( PromptFlag.ERROR ) ) {
+            txt = string.Format( "{0} failed.", actionTxt );
             if ( ex != null ) txt += "\r\rError: " + ex;
             else txt += "\r\rSee log for details.";
             MessageBox.Show(  txt , "Error", MessageBoxButton.OK, MessageBoxImage.Error );
             return;
          }
 
-         if ( parts.Has( PromptFlag.SETUP ) ) {
+         if ( action == AppActionType.SETUP ) {
             txt = $"Setup success.\nPlease re-setup after every game patch.\n\nMod folder:\nMy Documents\\{AppControl.MOD_PATH}\n";
-            if ( parts.Has( PromptFlag.SETUP_MOD_MOVED ) )
+            if ( flags.Has( PromptFlag.SETUP_MOD_MOVED ) )
                txt += "\nMods moved to new mod folder.";
-            if ( parts.Has( PromptFlag.SETUP_SELF_COPY ) )
+            if ( flags.Has( PromptFlag.SETUP_SELF_COPY ) )
                txt += "\nModnix installed to mod folder.";
-            if ( parts.Has( PromptFlag.SETUP_PPML ) )
+            if ( flags.Has( PromptFlag.SETUP_PPML ) )
                txt += "\nPPML renamed to prevent accidents.";
-            if ( parts.Has( PromptFlag.SETUP_SELF_COPY ) ) {
+            if ( flags.Has( PromptFlag.SETUP_SELF_COPY ) ) {
                txt += "\n\nThis setup file may be deleted.\nShowing Modnix location now.\nYou may pin it to Start or send it to Desktop.";
                if ( MessageBox.Show( txt, "Success", MessageBoxButton.OKCancel, MessageBoxImage.Information ) == MessageBoxResult.OK )
                   OnRestart();
             } else {
                MessageBox.Show( txt, "Success", MessageBoxButton.OK, MessageBoxImage.Information );
             }
-         } else if ( parts.Has( PromptFlag.REVERT ) ) {
+         } else if ( action == AppActionType.REVERT ) {
             MessageBox.Show( "Revert success.\nGame is now Modnix-free.", "Success" );
          } else {
-            MessageBox.Show( string.Format( "{0} success.", action ), "Success" );
+            MessageBox.Show( string.Format( "{0} success.", actionTxt ), "Success" );
          }
       } finally {
          IsAppWorking = false;

@@ -15,7 +15,7 @@ namespace Sheepy.Modnix.MainGUI {
 
    internal interface IAppGui {
       void SetInfo ( GuiInfo info, object value );
-      void Prompt ( PromptFlag v, Exception ex = null );
+      void Prompt ( AppActionType action, PromptFlag flags = PromptFlag.NONE, Exception ex = null );
       void Log ( object message );
    }
 
@@ -356,7 +356,7 @@ namespace Sheepy.Modnix.MainGUI {
          }
          throw new InvalidOperationException( $"Game is {CurrentGame.GameType}. Cannot launch as {type}." );
       } catch ( Exception ex ) {
-         GUI.Prompt( PromptFlag.ERROR, ex );
+         GUI.Prompt( AppActionType.LAUNCH_GAME, PromptFlag.ERROR, ex );
       } }
 
 
@@ -367,10 +367,10 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       private void DoSetup () { try {
-         PromptFlag prompt = PromptFlag.SETUP;
+         PromptFlag flags = PromptFlag.NONE;
          // Copy exe to mod folder
          if ( CopySelf( MyPath, ModGuiExe ) )
-            prompt |= PromptFlag.SETUP_SELF_COPY;
+            flags |= PromptFlag.SETUP_SELF_COPY;
          // Copy hook files
          CurrentGame.WriteCodeFile( HARM_DLL, MainGUI.Properties.Resources._0Harmony   );
          CurrentGame.WriteCodeFile( CECI_DLL, MainGUI.Properties.Resources.Mono_Cecil   );
@@ -381,19 +381,19 @@ namespace Sheepy.Modnix.MainGUI {
          if ( CurrentGame.Status == "modnix" ) {
             // Migrate mods
             if ( MigrateLegacy() )
-               prompt |= PromptFlag.SETUP_MOD_MOVED;
+               flags |= PromptFlag.SETUP_MOD_MOVED;
             // Disable PPML
             if ( HasLegacy() && CurrentGame.RenameCodeFile( PAST, PAST_BK ) )
-               prompt |= PromptFlag.SETUP_PPML;
+               flags |= PromptFlag.SETUP_PPML;
             // Cleanup - accident prevention. Old dlls at game base may override dlls in the managed folder.
             foreach ( var file in new string[] { PAST, PAST_DL1, PAST_DL2, INJECTOR, LOADER, HARM_DLL, CECI_DLL } )
                CurrentGame.DeleteRootFile( file );
-            GUI.Prompt( prompt );
+            GUI.Prompt( AppActionType.SETUP, flags );
          } else
             throw new ApplicationException( "Modnix injection failed" );
       } catch ( Exception ex ) {
          Log( ex );
-         GUI.Prompt( PromptFlag.ERROR | PromptFlag.SETUP, ex );
+         GUI.Prompt( AppActionType.SETUP, PromptFlag.ERROR, ex );
       } }
 
       internal bool CopySelf ( string me, string there ) { try {
@@ -488,12 +488,12 @@ namespace Sheepy.Modnix.MainGUI {
          if ( CurrentGame.Status == "none" ) {
             CurrentGame.DeleteCodeFile( INJECTOR );
             CurrentGame.DeleteCodeFile( LOADER );
-            GUI.Prompt( PromptFlag.REVERT );
+            GUI.Prompt( AppActionType.REVERT );
          } else
             throw new ApplicationException( "Modnix revert failed" );
       } catch ( Exception ex ) {
          Log( ex );
-         GUI.Prompt( PromptFlag.ERROR | PromptFlag.REVERT, ex );
+         GUI.Prompt( AppActionType.REVERT, PromptFlag.ERROR, ex );
       } }
 
       internal void CheckUpdateAsync () {
@@ -516,26 +516,26 @@ namespace Sheepy.Modnix.MainGUI {
          if ( list != null ) GUI.SetInfo( GuiInfo.MOD_LIST, list );
       } catch ( IOException ex ) { Log( ex ); } }
 
-      internal void DoModActionAsync ( ModActionType action, ModInfo mod ) {
+      internal void DoModActionAsync ( AppActionType action, ModInfo mod ) {
          Log( $"Queuing mod {action}" );
          Task.Run( () => DoModAction( action, mod ) );
       }
 
-      private void DoModAction ( ModActionType action, ModInfo mod ) { try {
+      private void DoModAction ( AppActionType action, ModInfo mod ) { try {
          if ( mod == null ) return;
          switch ( action ) {
-            case ModActionType.DELETE_FILE :
-            case ModActionType.DELETE_DIR :
+            case AppActionType.DELETE_FILE :
+            case AppActionType.DELETE_DIR :
                ModBridge.Delete( mod, action );
                GetModList();
                return;
-            case ModActionType.DELETE_CONFIG :
+            case AppActionType.DELETE_CONFIG :
                ModBridge.DeleteConfig( mod );
-               GUI.Prompt( PromptFlag.DEL_CONF );
+               GUI.Prompt( AppActionType.DELETE_CONFIG );
                return;
-            case ModActionType.RESET_CONFIG :
+            case AppActionType.RESET_CONFIG :
                ModBridge.ResetConfig( mod );
-               GUI.Prompt( PromptFlag.DEL_CONF | PromptFlag.SETUP_SELF_COPY );
+               GUI.Prompt( AppActionType.RESET_CONFIG );
                return;
             default :
                Log( $"Unknown command {action}" );
@@ -543,7 +543,7 @@ namespace Sheepy.Modnix.MainGUI {
          }
       } catch ( IOException ex ) {
          Log( ex );
-         GUI.Prompt( PromptFlag.ERROR | PromptFlag.DEL_MOD, ex );
+         GUI.Prompt( action, PromptFlag.ERROR, ex );
          GetModList();
       } }
 
@@ -563,7 +563,7 @@ namespace Sheepy.Modnix.MainGUI {
          }
       } catch ( IOException ex ) {
          Log( ex );
-         GUI.Prompt( PromptFlag.ERROR | PromptFlag.ADD_MOD, ex );
+         GUI.Prompt( AppActionType.ADD_MOD, PromptFlag.ERROR, ex );
       } }
       #endregion
 

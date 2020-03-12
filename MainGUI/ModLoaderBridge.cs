@@ -48,12 +48,12 @@ namespace Sheepy.Modnix.MainGUI {
          }
       }
 
-      internal void Delete ( ModInfo mod, ModActionType type ) {
+      internal void Delete ( ModInfo mod, AppActionType type ) {
          App.Log( $"{type} {mod.Name}" );
          switch ( type ) {
-            case ModActionType.DELETE_FILE : DeleteModFile( mod ); break;
-            case ModActionType.DELETE_CONFIG : break;
-            case ModActionType.DELETE_DIR : DeleteModFolder( mod ); break;
+            case AppActionType.DELETE_FILE : DeleteModFile( mod ); break;
+            case AppActionType.DELETE_CONFIG : break;
+            case AppActionType.DELETE_DIR : DeleteModFolder( mod ); break;
             default: throw new ArgumentException( $"Unknown mod deletion {type}" );
          }
       }
