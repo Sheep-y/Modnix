@@ -282,7 +282,7 @@ namespace Sheepy.Modnix {
             if ( pType == typeof( string ) )
                return ReadSettingText( mod );
             if ( IsSetting( pType.Name ) ) try {
-               return JsonConvert.DeserializeObject( ReadSettingText( mod ) );
+               return JsonConvert.DeserializeObject( ReadSettingText( mod ), pType, ModMetaJson.JsonOptions );
             } catch ( Exception e ) { Log.Warn( e ); }
          }
          return DefaultParamValue( aug, mod, path, type );
