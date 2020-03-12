@@ -310,7 +310,7 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       private void ButtonModConf_Click ( object sender, RoutedEventArgs e ) {
-         if ( MessageBox.Show( $"Reset config of \"{CurrentMod.Name}\"?", "Reset Config", MessageBoxButton.OKCancel, MessageBoxImage.Warning, MessageBoxResult.Cancel )
+         if ( MessageBox.Show( $"Reset config of \"{CurrentMod.Name}\" to defaults?", "Reset Config", MessageBoxButton.OKCancel, MessageBoxImage.Warning, MessageBoxResult.Cancel )
             != MessageBoxResult.OK ) return;
          App.DoModActionAsync( AppActionType.RESET_CONFIG, CurrentMod );
       }
@@ -329,7 +329,7 @@ namespace Sheepy.Modnix.MainGUI {
                   MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No );
             if ( ans == MessageBoxResult.No ) return;
          }
-         if ( action == AppActionType.DELETE_FILE && (bool) CurrentMod.Query( ModQueryType.HAS_CONFIG ) ) {
+         if ( action == AppActionType.DELETE_FILE && (bool) CurrentMod.Query( ModQueryType.HAS_CONFIG_FILE ) ) {
             var ans = MessageBox.Show( $"Delete {CurrentMod.Name} settings?", "Confirm",
                   MessageBoxButton.YesNoCancel, MessageBoxImage.Question, MessageBoxResult.Cancel );
             if ( ans == MessageBoxResult.Cancel ) return;

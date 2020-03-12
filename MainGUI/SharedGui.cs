@@ -19,7 +19,7 @@ namespace Sheepy.Modnix.MainGUI {
       public abstract string Type { get; }
    }
 
-   internal enum ModQueryType { NONE, IS_FOLDER, IS_CHILD, HAS_CONFIG }
+   internal enum ModQueryType { NONE, IS_FOLDER, IS_CHILD, HAS_CONFIG, HAS_CONFIG_FILE }
 
    public enum AppActionType { NONE,
       SETUP, REVERT, LAUNCH_GAME, ADD_MOD, DELETE_DIR, DELETE_FILE,

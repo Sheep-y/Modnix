@@ -123,6 +123,8 @@ namespace Sheepy.Modnix.MainGUI {
                return Mod.Parent != null;
             case ModQueryType.HAS_CONFIG :
                return Mod.HasConfig;
+            case ModQueryType.HAS_CONFIG_FILE :
+               return ModLoader.CheckSettingFile( Mod.Path ) != null;
             default:
                return null;
          }
