@@ -3,8 +3,8 @@
 # Version ??
 
 * New: Add mod button, automatically place mod in subfolder.
-* New: Dll mods may now receive a setting string, if a config file exists.
-* New: Dll mods may now export a setting class/struct and have the config file parsed by Modnix.
+* New: Reset button, which reset and recreate a mod's config file.
+* New: Dll mods may now receive a setting string or object, when a config is supplied.
 * New: Dll mods may get modsRoot, modPath, and assemblyPath as initialiser params.
 * New: Modnix settings now stored in Modnix.conf which can be edited easily.
 * New: Formatted app/game/mod info.  Mod info panel now shows all display info, plus file list and entry points.
@@ -18,6 +18,7 @@
 * Fix: Manual setup package should no longer run in setup mode. Thanks Zyxpsilon on Discord for reporting.
 * Fix: Typo on log label. Thanks javehaider on NexusMods for reporting.
 * In mod_info, Langs are changed to Lang, Urls changed to Url.  This make info fields consistent.
+* Improved app / injection / game status display and less unnecessary status checks.
 * Overloaded mod initialisers are now allowed and the first declared will be used.
 * Injector's game version check now returns only type of error, instead of full stacktrace, to keep returned text on one line.
 

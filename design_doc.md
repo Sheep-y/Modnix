@@ -207,17 +207,18 @@ Simple example:
 
 ### Mod Settings
 
-Each mod may have a settings file, either called / embedded as mod_config.json,
-or same file name as the mod but with a .json extension,
-or in the DefaultSettings file of mod_info.
+Each mod may have a settings file, either called / embedded as mod_init.conf,
+or same file name as the mod but with a .conf extension,
+or in the DefaultSettings section of mod_info.
 
 When a class's initialiser has a string parameter that contains either "config" or "setting",
 the file will be read as a string in UTF-8 and passed.
-(Or, in case of mod_info, the data will be deseralised as json.)
+(Or, if part of mod_info, the data will be deseralised into json.)
 
 If the parameter name match but is not string,
 Modnix will attempt to deseralise the string into a new instance of the type.
 
+Note that mod settings are by mod, not by dll.
 
 ### Loader Settings
 

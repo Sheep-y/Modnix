@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -98,7 +97,7 @@ namespace Sheepy.Modnix.MainGUI {
          ButtonModDir.IsEnabled = Directory.Exists( App.ModFolder );
          ButtonRefreshMod.IsEnabled = Directory.Exists( App.ModFolder ) && ! SharedGui.IsAppWorking;
          ButtonModOpenModDir.IsEnabled = CurrentMod != null;
-         ButtonModConf.IsEnabled = CurrentMod != null;
+         ButtonModConf.IsEnabled = CurrentMod != null && (bool) CurrentMod.Query( ModQueryType.HAS_CONFIG );
          ButtonModDelete.IsEnabled = SharedGui.CanModify && CurrentMod != null && ! (bool) CurrentMod.Query( ModQueryType.IS_CHILD );;
          ButtonLoaderLog.IsEnabled = File.Exists( LoaderLog );
 

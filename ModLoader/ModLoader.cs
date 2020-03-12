@@ -167,13 +167,16 @@ namespace Sheepy.Modnix {
       #region Mod settings
       private static string GetSettingFile ( string path ) {
          if ( path == null ) return null;
-         return Path.Combine( Path.GetDirectoryName( path ), Path.GetFileNameWithoutExtension( path ) + ".json" );
+         var name = Path.GetFileNameWithoutExtension( path );
+         if ( name.Equals( "mod_info", StringComparison.InvariantCultureIgnoreCase ) )
+            name = "mod_init";
+         return Path.Combine( Path.GetDirectoryName( path ), name + ".conf" );
       }
 
       internal static string CheckSettingFile ( string path ) {
          var confFile = GetSettingFile( path );
-         if ( confFile == null || ! File.Exists( confFile ) ) 
-            confFile = Path.Combine( Path.GetDirectoryName( path ), "mod_config.json" );
+         if ( confFile == null || ! File.Exists( confFile ) )
+            confFile = Path.Combine( Path.GetDirectoryName( path ), "mod_init.conf" );
          return File.Exists( confFile ) ? confFile : null;
       }
 
