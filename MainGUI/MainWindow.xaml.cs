@@ -21,6 +21,7 @@ namespace Sheepy.Modnix.MainGUI {
       private readonly AppControl App = AppControl.Instance;
 
       private event Action ModListChanged;
+      private Timer GameStatusTimer;
 
       public MainWindow () { try {
          InitializeComponent();
@@ -28,6 +29,7 @@ namespace Sheepy.Modnix.MainGUI {
               "Info and Red Cross icons from https://en.wikipedia.org/ under Public Domain\n" +
               "Other action icons from https://www.visualpharm.com/ (https://icons8.com/) under its Linkware License\n" +
               "Site icons belong to relevant sites." );
+         GameStatusTimer = new Timer( CheckGameRunning, null, Timeout.Infinite, Timeout.Infinite );
          SetupGUI();
          RefreshGUI();
       } catch ( Exception ex ) { Console.WriteLine( ex ); } }

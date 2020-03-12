@@ -63,6 +63,7 @@ namespace Sheepy.Modnix {
 
       public TextSet  Name;
       public string[] Lang;
+      public bool?    Taint;
       public TextSet  Description;
       public TextSet  Author;
       public TextSet  Url;
@@ -75,6 +76,7 @@ namespace Sheepy.Modnix {
 
       public string[] Mods;
       public DllMeta[] Dlls;
+      public object    DefaultSettings;
 
       public bool HasContent => Mods == null && Dlls == null;
 
@@ -85,6 +87,7 @@ namespace Sheepy.Modnix {
             CopyNonNull( overrider.Version, ref Version );
             CopyNonNull( overrider.Name, ref Name );
             CopyNonNull( overrider.Lang, ref Lang );
+            CopyNonNull( overrider.Taint, ref Taint );
             CopyNonNull( overrider.Description, ref Description );
             CopyNonNull( overrider.Author, ref Author );
             CopyNonNull( overrider.Url, ref Url );
@@ -95,6 +98,7 @@ namespace Sheepy.Modnix {
             CopyNonNull( overrider.Priority, ref Priority );
             CopyNonNull( overrider.Mods, ref Mods );
             CopyNonNull( overrider.Dlls, ref Dlls );
+            CopyNonNull( overrider.DefaultSettings, ref DefaultSettings );
          } }
          return overrider;
       }
