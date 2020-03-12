@@ -136,13 +136,13 @@ Nothing to lose; worse is same as PPML, reinstall after every patch.
 Aims:
 1. Load manually extracted PPML mods, e.g. Mods/MyMod-1-0-1234/My Mod/MyMod.1.0.dll (note the space in path)
 2. Does not load manually created folder e.g. Mods/Backup/MyMod.dll or Mods/Disabled/MyMod.dll
-3. Mods collection must explicitly specify mods, e.g. do not load Mod/Collection/AnUnlistedMod.json
+3. Mods collection must explicitly specify mods, e.g. do not load Mod/Collection/AnUnlistedMod.js
 
 Steps:
 1. The root mod folder is scanned for files and folders.
 2. Files in root folder are parsed as mods.
 3. If folders, and if mod_info.js(on) exists, it will be parsed as a mod. The folder will not be further processed.
-4. If non-root folders, and only one .js or .json match the folder name, it will be parsed as a mod. The folder will not be further processed.
+4. If non-root folders, and only one .js match the folder name, it will be parsed as a mod. The folder will not be further processed.
 5. Otherwise, files whose name match the containing folder's, are parsed as mods.
 6. If no file match the requirement, subfolders are scanned recursively up to a max depth.
 
@@ -153,7 +153,7 @@ See Mod Resolution.
 
 1. If file extension is .dll, parse mod metadata from assembly information which serve as a default.
 2. If file extension is .dll, find embedded "mod_info" and, if found, parse as .js and merge.
-3. If file extension is not .dll, parse as mod.js.  See format below.
+3. If file extension is not .dll, parse as mod_info.js.  See format below.
     1. If success, but mod does not specify any contents (Mods, Dlls, Alters, Assets), and is non-root, adds all dlls whose name match the folder (see above).
 4. Check built-in override list.  If any match, parse and merge.
 5. Check user override list.  If any match, parse and merge.
@@ -207,18 +207,17 @@ Simple example:
 
 ### Mod Settings
 
-Each mod and each dll may have a settings file, that has the same file name but with a .conf extension.
-It will be read as UTF-8 string and passed as the first String parameter of each initialiser.
+Each mod may have a settings file, either called / embedded as mod_config.json,
+or same file name as the mod but with a .json extension,
+or in the DefaultSettings file of mod_info.
 
-Mods may also expose a setting Type to Modnix.
+When a class's initialiser has a string parameter that contains either "config" or "setting",
+the file will be read as a string in UTF-8 and passed.
+(Or, in case of mod_info, the data will be deseralised as json.)
 
-Each class that has an initialiser will be scanned for a
-GetDefaultSettings public method or DefaultSettings public property.
-If exists, its value will be used as the default settings and setting type,
-used to deseralise .conf file when the type is required by an initialiser.
+If the parameter name match but is not string,
+Modnix will attempt to deseralise the string into a new instance of the type.
 
-The method or property will not be called when the mod is loaded;
-they are for the GUI to reset settings.
 
 ### Loader Settings
 
@@ -304,7 +303,7 @@ Post-build scripts in Injector and Loader will copy their assemblies and librari
 
 ### Add New Mods
 
-Support .js, .json, .dll, .zip, and .7z
+Support .js, .dll, .zip, and .7z
 
 - If single file, or archive has one file and no folder, create a folder from filename and put it there.
 - If archive has no file and one folder, extract to root.
