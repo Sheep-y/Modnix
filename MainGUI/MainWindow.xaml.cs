@@ -330,12 +330,12 @@ namespace Sheepy.Modnix.MainGUI {
                   MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No );
             if ( ans == MessageBoxResult.No ) return;
          }
-         if ( action == ModActionType.DELETE_FILE && (bool) CurrentMod.Query( ModQueryType.HAS_SETTINGS ) ) {
+         if ( action == ModActionType.DELETE_FILE && (bool) CurrentMod.Query( ModQueryType.HAS_CONFIG ) ) {
             var ans = MessageBox.Show( $"Delete {CurrentMod.Name} settings?", "Confirm",
                   MessageBoxButton.YesNoCancel, MessageBoxImage.Question, MessageBoxResult.Cancel );
             if ( ans == MessageBoxResult.Cancel ) return;
             if ( ans == MessageBoxResult.Yes )
-               App.DoModActionAsync( ModActionType.DELETE_SETTINGS, CurrentMod );
+               App.DoModActionAsync( ModActionType.DELETE_CONFIG, CurrentMod );
          }
          ButtonModDelete.IsEnabled = false;
          App.DoModActionAsync( action, CurrentMod );

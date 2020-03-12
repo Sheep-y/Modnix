@@ -8,9 +8,7 @@ using System.Threading.Tasks;
 using System.Windows.Documents;
 
 namespace Sheepy.Modnix.MainGUI {
-   // This class was created to separate ModLoader classes from the main program
-   // But as the integration become more tight, it become more and more difficult
-   // Expect the bridging classes to be simplified in the future.
+   // This class was created to separate ModLoader classes from the main program.
    internal class ModLoaderBridge {
       private readonly AppControl App = AppControl.Instance;
       private bool Loading;
@@ -54,7 +52,7 @@ namespace Sheepy.Modnix.MainGUI {
          App.Log( $"{type} {mod.Name}" );
          switch ( type ) {
             case ModActionType.DELETE_FILE : DeleteModFile( mod ); break;
-            case ModActionType.DELETE_SETTINGS : break;
+            case ModActionType.DELETE_CONFIG : break;
             case ModActionType.DELETE_DIR : DeleteModFolder( mod ); break;
             default: throw new ArgumentException( $"Unknown mod deletion {type}" );
          }
@@ -85,6 +83,12 @@ namespace Sheepy.Modnix.MainGUI {
          RemoveEmptyFolders( path );
       }
 
+      internal void DeleteConfig ( ModInfo mod ) { // TODO
+      }
+
+      internal void ResetConfig ( ModInfo mod ) { // TODO
+      }
+
       private void RemoveEmptyFolders ( string path ) {
          path = Path.GetDirectoryName( path );
          while ( path != ModLoader.ModDirectory && ! Directory.EnumerateFileSystemEntries( path ).Any() ) {
@@ -110,8 +114,8 @@ namespace Sheepy.Modnix.MainGUI {
                return path != AppControl.Instance.ModFolder && Directory.EnumerateFileSystemEntries( path ).Count() > 1;
             case ModQueryType.IS_CHILD :
                return Mod.Parent != null;
-            case ModQueryType.HAS_SETTINGS :
-               return false;
+            case ModQueryType.HAS_CONFIG :
+               return Mod.HasConfig;
             default:
                return null;
          }

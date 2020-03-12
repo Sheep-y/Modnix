@@ -529,8 +529,13 @@ namespace Sheepy.Modnix.MainGUI {
                ModBridge.Delete( mod, action );
                GetModList();
                return;
-            case ModActionType.DELETE_SETTINGS : // TODO: Implement
-               Log( new NotImplementedException() );
+            case ModActionType.DELETE_CONFIG :
+               ModBridge.DeleteConfig( mod );
+               GUI.Prompt( PromptFlag.DEL_CONF );
+               return;
+            case ModActionType.RESET_CONFIG :
+               ModBridge.ResetConfig( mod );
+               GUI.Prompt( PromptFlag.DEL_CONF | PromptFlag.SETUP_SELF_COPY );
                return;
             default :
                Log( $"Unknown command {action}" );

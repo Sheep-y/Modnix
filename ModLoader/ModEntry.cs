@@ -48,6 +48,11 @@ namespace Sheepy.Modnix {
       public List<ModEntry> Children;
       public List<LogEntry> Notices;
 
+      public bool HasConfig { get { lock ( Metadata ) {
+         return Metadata.DefaultSettings != null || Metadata.EmbeddedSettings != null ||
+                ModLoader.CheckSettingFile( Path ) != null;
+      } } }
+
       public long GetPriority () { lock ( Metadata ) { return Priority ?? Metadata.Priority; } }
 
       internal void AddNotice ( SourceLevels lv, string reason, params object[] augs ) { lock ( Metadata ) {

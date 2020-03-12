@@ -170,11 +170,16 @@ namespace Sheepy.Modnix {
          return Path.Combine( Path.GetDirectoryName( path ), Path.GetFileNameWithoutExtension( path ) + ".json" );
       }
 
-      private static string ReadSettingText ( ModEntry mod ) { try {
-         var confFile = GetSettingFile( mod.Path );
+      internal static string CheckSettingFile ( string path ) {
+         var confFile = GetSettingFile( path );
          if ( confFile == null || ! File.Exists( confFile ) ) 
-            confFile = Path.Combine( Path.GetDirectoryName( mod.Path ), "mod_config.json" );
-         if ( File.Exists( confFile ) )
+            confFile = Path.Combine( Path.GetDirectoryName( path ), "mod_config.json" );
+         return File.Exists( confFile ) ? confFile : null;
+      }
+
+      private static string ReadSettingText ( ModEntry mod ) { try {
+         var confFile = CheckSettingFile( mod.Path );
+         if ( confFile != null )
             return File.ReadAllText( confFile, Encoding.UTF8 );
          if ( mod.Metadata.DefaultSettings != null )
             return ModMetaJson.Stringify( mod.Metadata.DefaultSettings );

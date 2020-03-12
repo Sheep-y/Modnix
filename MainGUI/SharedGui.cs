@@ -19,14 +19,14 @@ namespace Sheepy.Modnix.MainGUI {
       public abstract string Type { get; }
    }
 
-   internal enum ModActionType { NONE, ENABLE, DISABLE, DELETE_DIR, DELETE_FILE, DELETE_SETTINGS, RESET_CONFIG }
-   internal enum ModQueryType { NONE, IS_FOLDER, IS_CHILD, HAS_SETTINGS }
+   internal enum ModActionType { NONE, ENABLE, DISABLE, DELETE_DIR, DELETE_FILE, DELETE_CONFIG, RESET_CONFIG }
+   internal enum ModQueryType { NONE, IS_FOLDER, IS_CHILD, HAS_CONFIG }
 
    [Flags]
    public enum PromptFlag { NONE, 
       ERROR = 1,
-      SETUP = 2, REVERT = 4, ADD_MOD = 8, DEL_MOD = 16,
-      SETUP_MOD_MOVED = 32, SETUP_SELF_COPY = 64, SETUP_PPML = 128,
+      SETUP = 2, REVERT = 4, ADD_MOD = 8, DEL_MOD = 16, DEL_CONF = 32,
+      SETUP_MOD_MOVED = 64, SETUP_SELF_COPY = 128, SETUP_PPML = 256,
    }
 
    internal static class SharedGui {
@@ -99,6 +99,8 @@ namespace Sheepy.Modnix.MainGUI {
          else if ( parts.Has( PromptFlag.REVERT ) ) action = "Revert";
          else if ( parts.Has( PromptFlag.ADD_MOD ) ) action = "Add Mod";
          else if ( parts.Has( PromptFlag.DEL_MOD ) ) action = "Delete Mod";
+         else if ( parts.Has( PromptFlag.DEL_CONF ) )
+            action = parts.Has( PromptFlag.SETUP_SELF_COPY ) ? "Reset config" : "Delete config";
 
          string txt;
          if ( parts.Has( PromptFlag.ERROR ) ) {
