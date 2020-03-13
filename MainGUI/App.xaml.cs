@@ -49,6 +49,7 @@ namespace Sheepy.Modnix.MainGUI {
       internal const string PAST_MOD = "Mods";
       internal const string HARM_DLL = "0Harmony.dll";
       internal const string CECI_DLL = "Mono.Cecil.dll";
+      internal const string JSON_DLL = "Newtonsoft.Json.dll";
       internal const string MOD_LOG  = "ModnixLoader.log";
 
       internal const string EPIC_DIR = ".egstore";
@@ -122,11 +123,11 @@ namespace Sheepy.Modnix.MainGUI {
             Log( $"Modnix resolving {dll.Name}" );
             AppDomain app = domain as AppDomain ?? AppDomain.CurrentDomain;
             if ( dll.Name.StartsWith( "ModnixLoader,", StringComparison.InvariantCultureIgnoreCase ) )
-               return app.Load( MainGUI.Properties.Resources.ModnixLoader );
+               return app.Load( GetResourceBytes( "Resources/" + LOADER ) );
             if ( dll.Name.StartsWith( "Mono.Cecil,", StringComparison.InvariantCultureIgnoreCase ) )
-               return app.Load( MainGUI.Properties.Resources.Mono_Cecil );
+               return app.Load( GetResourceBytes( "Resources/" + CECI_DLL ) );
             if ( dll.Name.StartsWith( "Newtonsoft.Json,", StringComparison.InvariantCultureIgnoreCase ) )
-               return app.Load( MainGUI.Properties.Resources.Newtonsoft_Json );
+               return app.Load( GetResourceBytes( "Resources/" + JSON_DLL ) );
             return null;
          };
 
@@ -378,10 +379,10 @@ namespace Sheepy.Modnix.MainGUI {
          if ( CopySelf( MyPath, ModGuiExe ) )
             flags |= PromptFlag.SETUP_SELF_COPY;
          // Copy hook files
-         CurrentGame.WriteCodeFile( HARM_DLL, MainGUI.Properties.Resources._0Harmony   );
-         CurrentGame.WriteCodeFile( CECI_DLL, MainGUI.Properties.Resources.Mono_Cecil   );
-         CurrentGame.WriteCodeFile( LOADER  , MainGUI.Properties.Resources.ModnixLoader  );
-         CurrentGame.WriteCodeFile( INJECTOR, MainGUI.Properties.Resources.ModnixInjector );
+         CurrentGame.WriteCodeFile( HARM_DLL, GetResource( "Resources/" + HARM_DLL ) );
+         CurrentGame.WriteCodeFile( CECI_DLL, GetResource( "Resources/" + CECI_DLL ) );
+         CurrentGame.WriteCodeFile( LOADER  , GetResource( "Resources/" + LOADER   ) );
+         CurrentGame.WriteCodeFile( INJECTOR, GetResource( "Resources/" + INJECTOR ) );
          CurrentGame.RunInjector( "/y" );
          CheckInjectionStatus();
          if ( CurrentGame.Status == "modnix" ) {
@@ -622,6 +623,18 @@ namespace Sheepy.Modnix.MainGUI {
          }
       }
 
+      internal static Stream GetResource ( string path ) {
+         return Application.GetResourceStream( new Uri( $"Modnix;component/{path}", UriKind.Relative ) ).Stream;
+      }
+
+      internal static byte[] GetResourceBytes ( string path ) {
+         var mem = new MemoryStream();
+         using ( var stream = GetResource( path ) ) {
+            stream.CopyTo( mem );
+         }
+         return mem.ToArray();
+      }
+
       private string _StartupLog = "Startup log:\n";
       private string StartupLog { get => Get( ref _StartupLog ); set => Set( ref _StartupLog, value ); }
 
@@ -680,6 +693,15 @@ namespace Sheepy.Modnix.MainGUI {
          string target = Path.Combine( CodeDir, file );
          App.Log( $"Writing {content.Length} bytes to {target}" );
          File.WriteAllBytes( target, content );
+      }
+
+      internal void WriteCodeFile ( string file, Stream source ) {
+         if ( source == null ) throw new ArgumentNullException( nameof( source ) );
+         string target = Path.Combine( CodeDir, file );
+         App.Log( $"Writing {source.Length} bytes to {target}" );
+         using ( var writer = new FileStream( target, FileMode.Create ) ) {
+            source.CopyTo( writer );
+         }
       }
 
       internal bool DeleteRootFile ( string file ) { try {

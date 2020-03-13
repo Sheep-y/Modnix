@@ -104,25 +104,15 @@
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
-    <EmbeddedResource Include="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\0Harmony.dll" />
+    <Resource Include="Resources\0Harmony.dll" />
     <Resource Include="Resources\License.txt" />
-    <None Include="Resources\ModnixInjector.exe" />
-    <None Include="Resources\ModnixLoader.dll" />
-    <None Include="Resources\Mono.Cecil.dll" />
-    <None Include="Resources\Newtonsoft.Json.dll" />
+    <Resource Include="Resources\ModnixInjector.exe" />
+    <Resource Include="Resources\ModnixLoader.dll" />
+    <Resource Include="Resources\Mono.Cecil.dll" />
+    <Resource Include="Resources\Newtonsoft.Json.dll" />
     <Resource Include="Resources\img\book.png" />
     <Resource Include="Resources\img\canny.png" />
     <Resource Include="Resources\img\cross.png" />

@@ -382,7 +382,7 @@ namespace Sheepy.Modnix.MainGUI {
       } catch ( Exception ex ) { Log( ex ); } }
 
       private void ButtonLicense_Click ( object sender, RoutedEventArgs e ) { try {
-         using ( var reader = new StreamReader( Application.GetResourceStream( new Uri( "Modnix;component/Resources/License.txt", UriKind.Relative ) ).Stream, Encoding.UTF8 ) ) {
+         using ( var reader = new StreamReader( AppControl.GetResource( "Resources/License.txt" ), Encoding.UTF8 ) ) {
             Log( reader.ReadToEnd() );
          }
       } catch ( Exception ex ) { Log( ex ); } }
