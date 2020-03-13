@@ -24,10 +24,6 @@ namespace Sheepy.Modnix.MainGUI {
 
       public MainWindow () { try {
          InitializeComponent();
-         Log( "Disclaimer:\nModnix icon made from Phoenix Point's Technicial icon\n" +
-              "Info and Red Cross icons from https://en.wikipedia.org/ under Public Domain\n" +
-              "Other action icons from https://www.visualpharm.com/ (https://icons8.com/) under its Linkware License\n" +
-              "Site icons belong to relevant sites." );
          GameStatusTimer = new Timer( CheckGameRunning, null, Timeout.Infinite, Timeout.Infinite );
          SetupGUI();
          RefreshGUI();
@@ -383,6 +379,12 @@ namespace Sheepy.Modnix.MainGUI {
          if ( result == MessageBoxResult.No ) return;
          if ( ! String.IsNullOrWhiteSpace( release.Html_Url ) )
             Process.Start( release.Html_Url );
+      } catch ( Exception ex ) { Log( ex ); } }
+
+      private void ButtonLicense_Click ( object sender, RoutedEventArgs e ) { try {
+         using ( var reader = new StreamReader( Application.GetResourceStream( new Uri( "Modnix;component/Resources/License.txt", UriKind.Relative ) ).Stream, Encoding.UTF8 ) ) {
+            Log( reader.ReadToEnd() );
+         }
       } catch ( Exception ex ) { Log( ex ); } }
       #endregion
 

@@ -118,19 +118,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\0Harmony.dll" />
+    <Resource Include="Resources\License.txt" />
     <None Include="Resources\ModnixInjector.exe" />
     <None Include="Resources\ModnixLoader.dll" />
     <None Include="Resources\Mono.Cecil.dll" />
     <None Include="Resources\Newtonsoft.Json.dll" />
-  </ItemGroup>
-  <ItemGroup>
-    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-  </ItemGroup>
-  <ItemGroup>
     <Resource Include="Resources\img\book.png" />
     <Resource Include="Resources\img\canny.png" />
     <Resource Include="Resources\img\cross.png" />
@@ -154,6 +146,13 @@
     <Resource Include="Resources\img\twitter.png" />
     <Resource Include="Resources\img\upgrade.png" />
     <Resource Include="Resources\img\www.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ModLoader\ModLoader.csproj">
