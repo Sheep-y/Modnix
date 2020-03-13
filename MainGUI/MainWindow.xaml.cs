@@ -383,22 +383,6 @@ namespace Sheepy.Modnix.MainGUI {
          if ( ! String.IsNullOrWhiteSpace( release.Html_Url ) )
             Process.Start( release.Html_Url );
       } catch ( Exception ex ) { Log( ex ); } }
-
-      private void ButtonLicense_Checked ( object sender, RoutedEventArgs e ) { try {
-         if ( ButtonLicense.IsChecked == true ) {
-            if ( string.IsNullOrEmpty( TextLicense.Text ) )
-               using ( var reader = new StreamReader( AppControl.GetResource( "License.txt" ), Encoding.UTF8 ) ) {
-                  TextLicense.Text = reader.ReadToEnd();
-               }
-            LabelLogTitle.Content = "License";
-            TextLog.Visibility = ButtonLogClear.Visibility = Visibility.Hidden;
-            TextLicense.Visibility = Visibility.Visible;
-         } else {
-            LabelLogTitle.Content = "Diagnostic Log";
-            TextLog.Visibility = ButtonLogClear.Visibility = Visibility.Visible;
-            TextLicense.Visibility = Visibility.Hidden;
-         }
-      } catch ( Exception ex ) { Log( ex ); } }
       #endregion
 
       #region Logging
@@ -441,6 +425,22 @@ namespace Sheepy.Modnix.MainGUI {
          TextLog.Clear();
          ButtonLogSave.IsEnabled = false;
       }
+
+      private void ButtonLicense_Checked ( object sender, RoutedEventArgs e ) { try {
+         if ( ButtonLicense.IsChecked == true ) {
+            if ( string.IsNullOrEmpty( TextLicense.Text ) )
+               using ( var reader = new StreamReader( AppControl.GetResource( "License.txt" ), Encoding.UTF8 ) ) {
+                  TextLicense.Text = reader.ReadToEnd();
+               }
+            LabelLogTitle.Content = "License";
+            TextLog.Visibility = ButtonLogClear.Visibility = Visibility.Hidden;
+            TextLicense.Visibility = Visibility.Visible;
+         } else {
+            LabelLogTitle.Content = "Diagnostic Log";
+            TextLog.Visibility = ButtonLogClear.Visibility = Visibility.Visible;
+            TextLicense.Visibility = Visibility.Hidden;
+         }
+      } catch ( Exception ex ) { Log( ex ); } }
       #endregion
 
       #region Helpers
