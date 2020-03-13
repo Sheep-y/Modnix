@@ -262,7 +262,7 @@ namespace Sheepy.Modnix.MainGUI {
             AppControl.GetResource( EXE ).CopyTo( writer );
          }
          Directory.CreateDirectory( destination );
-         AppControl.Instance.RunAndWait( destination, exe, $"x -y -bd \"{ArchivePath}\"" );
+         AppControl.Instance.RunAndWait( destination, exe, $"x -y -bd \"{ArchivePath}\" -xr!*.cs -xr!*.csprog" );
       }
 
       public static void Cleanup () { try {

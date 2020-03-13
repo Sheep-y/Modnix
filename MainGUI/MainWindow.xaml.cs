@@ -384,9 +384,19 @@ namespace Sheepy.Modnix.MainGUI {
             Process.Start( release.Html_Url );
       } catch ( Exception ex ) { Log( ex ); } }
 
-      private void ButtonLicense_Click ( object sender, RoutedEventArgs e ) { try {
-         using ( var reader = new StreamReader( AppControl.GetResource( "Resources/License.txt" ), Encoding.UTF8 ) ) {
-            Log( reader.ReadToEnd() );
+      private void ButtonLicense_Checked ( object sender, RoutedEventArgs e ) { try {
+         if ( ButtonLicense.IsChecked == true ) {
+            if ( string.IsNullOrEmpty( TextLicense.Text ) )
+               using ( var reader = new StreamReader( AppControl.GetResource( "License.txt" ), Encoding.UTF8 ) ) {
+                  TextLicense.Text = reader.ReadToEnd();
+               }
+            LabelLogTitle.Content = "License";
+            TextLog.Visibility = ButtonLogClear.Visibility = Visibility.Hidden;
+            TextLicense.Visibility = Visibility.Visible;
+         } else {
+            LabelLogTitle.Content = "Diagnostic Log";
+            TextLog.Visibility = ButtonLogClear.Visibility = Visibility.Visible;
+            TextLicense.Visibility = Visibility.Hidden;
          }
       } catch ( Exception ex ) { Log( ex ); } }
       #endregion
@@ -404,13 +414,16 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       private void ButtonLogSave_Click ( object sender, RoutedEventArgs e ) { try {
+         var name =  ButtonLicense.IsChecked == true
+               ? AppControl.LIVE_NAME + $" License"
+               : AppControl.LIVE_NAME + $" Log " + DateTime.Now.ToString( "u", InvariantCulture ).Replace( ':', '-' );
          var dialog = new Microsoft.Win32.SaveFileDialog {
-            FileName = AppControl.LIVE_NAME + " Log " + DateTime.Now.ToString( "u", InvariantCulture ).Replace( ':', '-' ),
+            FileName = name,
             DefaultExt = ".txt",
             Filter = "Log Files (.txt .log)|*.txt;*.log|All Files|*.*"
          };
          if ( dialog.ShowDialog().GetValueOrDefault() ) {
-            File.WriteAllText( dialog.FileName, TextLog.Text );
+            File.WriteAllText( dialog.FileName, ButtonLicense.IsChecked == true ? TextLicense.Text : TextLog.Text );
             AppControl.Explore( dialog.FileName );
          }
       } catch ( Exception ex ) { Log( ex ); } }

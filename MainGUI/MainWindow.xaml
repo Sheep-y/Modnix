@@ -262,12 +262,12 @@
                             <AccessText Text="Loader Log"/>
                         </StackPanel>
                     </Button>
-                    <Button x:Name="ButtonLicense" Padding="5" Grid.Column="2" TabIndex="2400" Click="ButtonLicense_Click">
+                    <ToggleButton x:Name="ButtonLicense" Padding="5" Grid.Column="2" TabIndex="2400" ForceCursor="True" Checked="ButtonLicense_Checked" Unchecked="ButtonLicense_Checked">
                         <StackPanel Orientation="Horizontal">
                             <Image Source="Resources/img/opensource.png" Width="16" Margin="0,0,5,0"/>
                             <AccessText Text="License"/>
                         </StackPanel>
-                    </Button>
+                    </ToggleButton>
                     <Button x:Name="ButtonCheckUpdate" Padding="5" Grid.Column="4" Click="ButtonCheckUpdate_Click" TabIndex="2400">
                         <StackPanel Orientation="Horizontal">
                             <Image Source="Resources/img/upgrade.png" Width="16" Margin="0,0,5,0"/>
@@ -275,7 +275,10 @@
                         </StackPanel>
                     </Button>
                 </Grid>
-                <TextBox x:Name="TextLog" Text="" VerticalScrollBarVisibility="Visible" DockPanel.Dock="Bottom" HorizontalScrollBarVisibility="Visible" IsReadOnly="True" IsReadOnlyCaretVisible="True" Margin="0,5" TabIndex="2300"/>
+                <Grid DockPanel.Dock="Bottom">
+                    <TextBox x:Name="TextLog" Text="" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Visible" IsReadOnly="True" IsReadOnlyCaretVisible="True" Margin="0,5" TabIndex="2300"/>
+                    <TextBox x:Name="TextLicense" Text="" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Visible" IsReadOnly="True" IsReadOnlyCaretVisible="True" Margin="0,5" TabIndex="2300" Visibility="Hidden" />
+                </Grid>
             </DockPanel>
         </TabItem>
     </TabControl>
