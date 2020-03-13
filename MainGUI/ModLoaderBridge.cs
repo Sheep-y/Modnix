@@ -226,36 +226,9 @@ namespace Sheepy.Modnix.MainGUI {
 
    internal class ZipArchiveReader : ArchiveReader {
       public ZipArchiveReader ( string path ) : base( path ) {}
-      /*
-      public override void ForEach ( Action<string,Action<string>> action ) {
-         using ( ZipArchive archive = ZipFile.OpenRead( ArchivePath ) ) {
-            foreach ( ZipArchiveEntry entry in archive.Entries ) {
-               var name = entry.FullName;
-               if ( name.Length == 0 || name[0] == '/' || name[0] == '\\' || name.Contains( "..\\" ) || name.Contains( "../" ) ) continue;
-               action.Invoke( name, ( path ) => entry.ExtractToFile( path, true ) );
-            }
-         }
-      }
-      */
 
       public override void Install ( string modFolder ) {
          Action<string> log = AppControl.Instance.Log;
-         /*
-         // Find common root folder
-         string CommonRoot = null;
-         ForEach( ( name, _ ) => {
-            if ( CommonRoot == null ) CommonRoot = Path.GetDirectoryName( name );
-            else while ( CommonRoot.Length > 0 ) {
-               if ( name.StartsWith( CommonRoot + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase ) ) return;
-               var pos = CommonRoot.LastIndexOf( Path.DirectorySeparatorChar );
-               if ( pos <= 0 ) CommonRoot = "";
-               else CommonRoot = CommonRoot.Substring( 0, pos );
-            }
-         } );
-         if ( ! string.IsNullOrWhiteSpace( CommonRoot ) )
-            log( $"Archive starts at {CommonRoot}" );
-         */
-         // Extract with overwrite
          var destination = modFolder + Path.DirectorySeparatorChar;
          log( $"Extracting {ArchivePath} to {destination}" );
          ZipFile.ExtractToDirectory( ArchivePath, destination );

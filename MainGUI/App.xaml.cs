@@ -26,9 +26,7 @@ namespace Sheepy.Modnix.MainGUI {
    public abstract class ArchiveReader {
       protected readonly string ArchivePath;
       public ArchiveReader ( string path ) { ArchivePath = path; }
-      //public abstract void ForEach ( Action<string,Action<string>> action );
       public abstract void Install ( string modFolder );
-      //protected string ModRoot => AppControl.Instance.ModFolder + Path.DirectorySeparatorChar;
    }
 
    public partial class AppControl : Application {
