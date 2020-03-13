@@ -231,7 +231,20 @@ namespace Sheepy.Modnix.MainGUI {
          Action<string> log = AppControl.Instance.Log;
          var destination = modFolder + Path.DirectorySeparatorChar;
          log( $"Extracting {ArchivePath} to {destination}" );
-         ZipFile.ExtractToDirectory( ArchivePath, destination );
+         using ( ZipArchive archive = ZipFile.OpenRead( ArchivePath ) ) {
+            foreach ( ZipArchiveEntry entry in archive.Entries ) {
+               var name = entry.FullName;
+               // Use regular expression if it gets any longer...
+               if ( name.Length == 0 || name[0] == '/' || name[0] == '\\' || name.Contains( "..\\" ) || name.Contains( "../" ) ) continue;
+               if ( name.EndsWith( "/", StringComparison.Ordinal ) || name.EndsWith( "\\", StringComparison.Ordinal ) ) continue;
+               if ( name.EndsWith( ".cs", StringComparison.OrdinalIgnoreCase ) || name.EndsWith( ".csproj", StringComparison.OrdinalIgnoreCase ) ) continue;
+               if ( entry.Length <= 0 ) continue;
+               var path = Path.Combine( modFolder, name );
+               log( path );
+               Directory.CreateDirectory( Path.GetDirectoryName( path ) );
+               entry.ExtractToFile( path, true );
+            }
+         }
       }
    }
 }

@@ -556,15 +556,14 @@ namespace Sheepy.Modnix.MainGUI {
       internal void AddMod ( string file ) { try {
          var ext = Path.GetExtension( file );
          var folder = Path.Combine( ModFolder, Path.GetFileNameWithoutExtension( file ) );
-         Log( $"Creating {folder}" );
-         Directory.CreateDirectory( folder );
          if ( ext.Equals( ".zip" ) || ext.Equals( ".7z" ) ) {
             new ZipArchiveReader( file ).Install( folder );
          } else {
+            Log( $"Creating {folder}" );
+            Directory.CreateDirectory( folder );
             var destination = Path.Combine( folder, Path.GetFileName( file ) );
-            File.Delete( destination );
             Log( $"Copying {file} to {destination}" );
-            File.Copy( file, destination );
+            File.Copy( file, destination, true );
          }
          GetModList();
       } catch ( IOException ex ) {
