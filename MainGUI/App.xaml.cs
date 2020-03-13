@@ -122,11 +122,11 @@ namespace Sheepy.Modnix.MainGUI {
          AppDomain.CurrentDomain.AssemblyResolve += ( domain, dll ) => {
             Log( $"Modnix resolving {dll.Name}" );
             AppDomain app = domain as AppDomain ?? AppDomain.CurrentDomain;
-            if ( dll.Name.StartsWith( "ModnixLoader,", StringComparison.InvariantCultureIgnoreCase ) )
+            if ( dll.Name.StartsWith( "ModnixLoader,", StringComparison.OrdinalIgnoreCase ) )
                return app.Load( GetResourceBytes( LOADER ) );
-            if ( dll.Name.StartsWith( "Mono.Cecil,", StringComparison.InvariantCultureIgnoreCase ) )
+            if ( dll.Name.StartsWith( "Mono.Cecil,", StringComparison.OrdinalIgnoreCase ) )
                return app.Load( GetResourceBytes( CECI_DLL ) );
-            if ( dll.Name.StartsWith( "Newtonsoft.Json,", StringComparison.InvariantCultureIgnoreCase ) )
+            if ( dll.Name.StartsWith( "Newtonsoft.Json,", StringComparison.OrdinalIgnoreCase ) )
                return app.Load( GetResourceBytes( JSON_DLL ) );
             return null;
          };
@@ -190,8 +190,8 @@ namespace Sheepy.Modnix.MainGUI {
          // Find running instances
          int myId = Process.GetCurrentProcess().Id;
          Process running = Array.Find( Process.GetProcesses(), e => ( e.ProcessName == LIVE_NAME ||
-                       e.ProcessName.StartsWith( LIVE_NAME+"Setup", StringComparison.InvariantCultureIgnoreCase ) ||
-                       e.ProcessName.StartsWith( LIVE_NAME+"Install", StringComparison.InvariantCultureIgnoreCase ) ) &&
+                       e.ProcessName.StartsWith( LIVE_NAME+"Setup", StringComparison.OrdinalIgnoreCase ) ||
+                       e.ProcessName.StartsWith( LIVE_NAME+"Install", StringComparison.OrdinalIgnoreCase ) ) &&
                        e.Id != myId && ( ParamIgnorePid == 0 || e.Id != ParamIgnorePid ) );
          if ( running == null ) return false;
          // Bring to foreground
@@ -221,7 +221,7 @@ namespace Sheepy.Modnix.MainGUI {
       } catch ( Exception ex ) { return Log( ex, false ); } }
 
       private bool IsInstaller =>
-         Path.GetFileName( MyPath ).IndexOf( "Installer", StringComparison.InvariantCultureIgnoreCase ) >= 0;
+         Path.GetFileName( MyPath ).IndexOf( "Installer", StringComparison.OrdinalIgnoreCase ) >= 0;
       #endregion
 
       #region Check Status
@@ -554,10 +554,12 @@ namespace Sheepy.Modnix.MainGUI {
       } }
 
       internal void AddMod ( string file ) { try {
-         var ext = Path.GetExtension( file );
+         var ext = Path.GetExtension( file ).ToLowerInvariant();
          var folder = Path.Combine( ModFolder, Path.GetFileNameWithoutExtension( file ) );
-         if ( ext.Equals( ".zip" ) || ext.Equals( ".7z" ) ) {
+         if ( ext.Equals( ".zip" ) ) {
             new ZipArchiveReader( file ).Install( folder );
+         } else if ( ext.Equals( ".7z" ) || ext.Equals( ".xz" ) ) {
+            new SevenZipArchiveReader( file ).Install( folder );
          } else {
             Log( $"Creating {folder}" );
             Directory.CreateDirectory( folder );

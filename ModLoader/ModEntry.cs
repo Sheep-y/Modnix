@@ -286,7 +286,7 @@ namespace Sheepy.Modnix {
          prop = prop.Trim();
          string txt = val.ToString().Trim();
          if ( prop.Length <= 0 || txt.Length <= 0 ) return e;
-         if ( prop.Equals( "path", StringComparison.InvariantCultureIgnoreCase ) ) {
+         if ( prop.Equals( "path", StringComparison.OrdinalIgnoreCase ) ) {
             e.Path = txt;
          } else {
             var methods = e.Methods;

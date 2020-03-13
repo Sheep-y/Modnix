@@ -76,7 +76,7 @@ namespace Sheepy.Modnix {
       private static Assembly GetGameAssembly () {
          if ( GameAssembly != null ) return GameAssembly;
          foreach ( var e in AppDomain.CurrentDomain.GetAssemblies() )
-            if ( e.FullName.StartsWith( "Assembly-CSharp, ", StringComparison.InvariantCultureIgnoreCase ) )
+            if ( e.FullName.StartsWith( "Assembly-CSharp, ", StringComparison.OrdinalIgnoreCase ) )
                return GameAssembly = e;
          return null;
       }
@@ -104,7 +104,7 @@ namespace Sheepy.Modnix {
       private static Assembly ModLoaderResolve  ( object domain, ResolveEventArgs dll ) { try {
          Log.Trace( "Resolving {0}", dll.Name );
          AppDomain app = domain as AppDomain ?? AppDomain.CurrentDomain;
-         if ( dll.Name.StartsWith( "PhoenixPointModLoader, Version=0.2.0.0, ", StringComparison.InvariantCultureIgnoreCase ) ) {
+         if ( dll.Name.StartsWith( "PhoenixPointModLoader, Version=0.2.0.0, ", StringComparison.OrdinalIgnoreCase ) ) {
             Log.Verbo( "Loading embedded PPML v0.2" );
             return app.Load( Properties.Resources.PPML_0_2 );
          }
@@ -169,7 +169,7 @@ namespace Sheepy.Modnix {
       public static string GetSettingFile ( string path ) {
          if ( path == null ) return null;
          var name = Path.GetFileNameWithoutExtension( path );
-         if ( name.Equals( "mod_info", StringComparison.InvariantCultureIgnoreCase ) )
+         if ( name.Equals( "mod_info", StringComparison.OrdinalIgnoreCase ) )
             name = "mod_init";
          return Path.Combine( Path.GetDirectoryName( path ), name + ".conf" );
       }
@@ -254,13 +254,13 @@ namespace Sheepy.Modnix {
       private static object ParamValue ( ParameterInfo aug, ModEntry mod, string path, Type type ) {
          var pType = aug.ParameterType;
          var pName = aug.Name;
-         var isLog =  pName.IndexOf( "log", StringComparison.InvariantCultureIgnoreCase ) >= 0;
+         var isLog =  pName.IndexOf( "log", StringComparison.OrdinalIgnoreCase ) >= 0;
          // Paths
-         if ( pType == typeof( string ) && pName.Equals( "ModsRoot", StringComparison.InvariantCultureIgnoreCase ) )
+         if ( pType == typeof( string ) && pName.Equals( "ModsRoot", StringComparison.OrdinalIgnoreCase ) )
             return ModDirectory;
-         if ( pType == typeof( string ) && pName.Equals( "ModPath", StringComparison.InvariantCultureIgnoreCase ) )
+         if ( pType == typeof( string ) && pName.Equals( "ModPath", StringComparison.OrdinalIgnoreCase ) )
             return mod.Path;
-         if ( pType == typeof( string ) && pName.Equals( "AssemblyPath", StringComparison.InvariantCultureIgnoreCase ) )
+         if ( pType == typeof( string ) && pName.Equals( "AssemblyPath", StringComparison.OrdinalIgnoreCase ) )
             return path;
          // Version checkers
          if ( pType == typeof( Func<string,Version> ) )
@@ -295,8 +295,8 @@ namespace Sheepy.Modnix {
       }
 
       private static bool IsSetting ( string name ) =>
-         name.IndexOf( "setting", StringComparison.InvariantCultureIgnoreCase ) >= 0 ||
-         name.IndexOf( "conf"   , StringComparison.InvariantCultureIgnoreCase ) >= 0;
+         name.IndexOf( "setting", StringComparison.OrdinalIgnoreCase ) >= 0 ||
+         name.IndexOf( "conf"   , StringComparison.OrdinalIgnoreCase ) >= 0;
 
       private static object DefaultParamValue ( ParameterInfo aug, ModEntry mod, string path, Type type ) {
          if ( aug.HasDefaultValue )

@@ -90,7 +90,7 @@ namespace Sheepy.Modnix {
 
       public static ModEntry ParseMod ( string file, string container ) { try {
          ModMeta meta;
-         if ( file.EndsWith( ".dll", StringComparison.InvariantCultureIgnoreCase ) ) {
+         if ( file.EndsWith( ".dll", StringComparison.OrdinalIgnoreCase ) ) {
             meta = ParseDllInfo( file );
             if ( meta == null ) return null;
             if ( FindEmbeddedModInfo( file, out string info, out string conf ) ) {
@@ -103,7 +103,7 @@ namespace Sheepy.Modnix {
          } else {
             Log.Verbo( $"Parsing as mod_info: {file}" );
             var default_id = Path.GetFileNameWithoutExtension( file );
-            if ( string.IsNullOrWhiteSpace( default_id ) || default_id.Equals( "mod_info", StringComparison.InvariantCultureIgnoreCase ) )
+            if ( string.IsNullOrWhiteSpace( default_id ) || default_id.Equals( "mod_info", StringComparison.OrdinalIgnoreCase ) )
                default_id = container;
             meta = ParseInfoJs( File.ReadAllText( file, Encoding.UTF8 ).Trim(), default_id );
             if ( meta == null ) return null;
@@ -161,17 +161,17 @@ namespace Sheepy.Modnix {
             if ( ! lib.MainModule.HasResources ) return false;
             foreach ( var resource in lib.MainModule.Resources ) {
                if ( ! ( resource is EmbeddedResource res ) || res.ResourceType != ResourceType.Embedded ) continue;
-               if ( res.Name.IndexOf( ".mod_info.js", StringComparison.InvariantCultureIgnoreCase ) >= 0 )
+               if ( res.Name.IndexOf( ".mod_info.js", StringComparison.OrdinalIgnoreCase ) >= 0 )
                   info = Encoding.UTF8.GetString( res.GetResourceData() );
-               else if ( res.Name.IndexOf( ".mod_init.conf", StringComparison.InvariantCultureIgnoreCase ) >= 0 )
+               else if ( res.Name.IndexOf( ".mod_init.conf", StringComparison.OrdinalIgnoreCase ) >= 0 )
                   conf = Encoding.UTF8.GetString( res.GetResourceData() );
-               else if ( res.Name.EndsWith( ".resources", StringComparison.InvariantCultureIgnoreCase ) ) {
+               else if ( res.Name.EndsWith( ".resources", StringComparison.OrdinalIgnoreCase ) ) {
                   using ( var reader = new ResourceReader( res.GetResourceStream() ) ) {
                      var data = reader.GetEnumerator();
                      while ( data.MoveNext() ) {
-                        if ( data.Key.ToString().Equals( "mod_info", StringComparison.InvariantCultureIgnoreCase ) )
+                        if ( data.Key.ToString().Equals( "mod_info", StringComparison.OrdinalIgnoreCase ) )
                            info = data.Value?.ToString();
-                        else if ( data.Key.ToString().Equals( "mod_init", StringComparison.InvariantCultureIgnoreCase ) )
+                        else if ( data.Key.ToString().Equals( "mod_init", StringComparison.OrdinalIgnoreCase ) )
                            conf = data.Value?.ToString();
                      }
                   }

@@ -89,7 +89,7 @@ namespace Sheepy.Modnix.MainGUI {
             if ( eVer <= update_from ) continue;
             foreach ( var a in e.Assets ) {
                App.Log( $"{a.Name} {a.State} {a.Size} bytes {a.Browser_Download_Url}" );
-               if ( a.State == "uploaded" && a.Name.EndsWith( ".exe", StringComparison.InvariantCultureIgnoreCase ) ) {
+               if ( a.State == "uploaded" && a.Name.EndsWith( ".exe", StringComparison.OrdinalIgnoreCase ) ) {
                   e.Assets = new GithubAsset[] { a };
                   release = e;
                   return true;
