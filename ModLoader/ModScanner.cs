@@ -77,7 +77,7 @@ namespace Sheepy.Modnix {
          return true;
       }
 
-      private static readonly Regex IgnoreInFolderName = new Regex( "\\W+", RegexOptions.Compiled );
+      private static readonly Regex IgnoreInFolderName = new Regex( "(^Phoenix[ -_]?P(?:oin)?t[ -_]?|\\W+)", RegexOptions.Compiled | RegexOptions.IgnoreCase );
 
       private static bool NameMatch ( string container, string subject ) {
          if ( container == null || subject == null ) return false;
