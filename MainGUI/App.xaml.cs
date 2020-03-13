@@ -117,6 +117,10 @@ namespace Sheepy.Modnix.MainGUI {
          }
       } }
 
+      internal void ApplicationCleanup ( object sender, ExitEventArgs  e ) { try {
+         SevenZipArchiveReader.Cleanup();
+      } catch ( Exception ex ) { Console.WriteLine( ex ); } }
+
       private void Init ( string[] args ) {
          // Dynamically load embedded dll
          AppDomain.CurrentDomain.AssemblyResolve += ( domain, dll ) => {
