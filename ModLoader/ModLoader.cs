@@ -1,5 +1,6 @@
 ﻿using Harmony;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Sheepy.Logging;
 using System;
 using System.Collections.Generic;
@@ -184,8 +185,13 @@ namespace Sheepy.Modnix {
          var confFile = CheckSettingFile( mod.Path );
          if ( confFile != null )
             return File.ReadAllText( confFile, Encoding.UTF8 );
-         if ( mod.Metadata.DefaultSettings != null )
-            return ModMetaJson.Stringify( mod.Metadata.DefaultSettings );
+         var meta = mod.Metadata;
+         lock ( meta ) {
+            if ( meta.EmbeddedSettings != null )
+               return meta.EmbeddedSettings;
+            if ( meta.DefaultSettings != null )
+               return meta.EmbeddedSettings = ModMetaJson.Stringify( meta.DefaultSettings );
+         }
          return null;
       } catch ( Exception ex ) { Log?.Error( ex ); return null; } }
       #endregion
@@ -281,7 +287,7 @@ namespace Sheepy.Modnix {
          if ( IsSetting( pName ) ) {
             if ( pType == typeof( string ) )
                return ReadSettingText( mod );
-            if ( IsSetting( pType.Name ) ) try {
+            if ( pType == typeof( JObject ) || IsSetting( pType.Name ) ) try {
                return JsonConvert.DeserializeObject( ReadSettingText( mod ), pType, ModMetaJson.JsonOptions );
             } catch ( Exception e ) { Log.Warn( e ); }
          }
