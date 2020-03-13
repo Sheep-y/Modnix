@@ -108,6 +108,7 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\0Harmony.dll" />
+    <Resource Include="Resources\7za.exe" />
     <Resource Include="Resources\License.txt" />
     <Resource Include="Resources\ModnixInjector.exe" />
     <Resource Include="Resources\ModnixLoader.dll" />

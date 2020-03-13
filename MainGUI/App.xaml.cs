@@ -123,11 +123,11 @@ namespace Sheepy.Modnix.MainGUI {
             Log( $"Modnix resolving {dll.Name}" );
             AppDomain app = domain as AppDomain ?? AppDomain.CurrentDomain;
             if ( dll.Name.StartsWith( "ModnixLoader,", StringComparison.InvariantCultureIgnoreCase ) )
-               return app.Load( GetResourceBytes( "Resources/" + LOADER ) );
+               return app.Load( GetResourceBytes( LOADER ) );
             if ( dll.Name.StartsWith( "Mono.Cecil,", StringComparison.InvariantCultureIgnoreCase ) )
-               return app.Load( GetResourceBytes( "Resources/" + CECI_DLL ) );
+               return app.Load( GetResourceBytes( CECI_DLL ) );
             if ( dll.Name.StartsWith( "Newtonsoft.Json,", StringComparison.InvariantCultureIgnoreCase ) )
-               return app.Load( GetResourceBytes( "Resources/" + JSON_DLL ) );
+               return app.Load( GetResourceBytes( JSON_DLL ) );
             return null;
          };
 
@@ -379,10 +379,10 @@ namespace Sheepy.Modnix.MainGUI {
          if ( CopySelf( MyPath, ModGuiExe ) )
             flags |= PromptFlag.SETUP_SELF_COPY;
          // Copy hook files
-         CurrentGame.WriteCodeFile( HARM_DLL, GetResource( "Resources/" + HARM_DLL ) );
-         CurrentGame.WriteCodeFile( CECI_DLL, GetResource( "Resources/" + CECI_DLL ) );
-         CurrentGame.WriteCodeFile( LOADER  , GetResource( "Resources/" + LOADER   ) );
-         CurrentGame.WriteCodeFile( INJECTOR, GetResource( "Resources/" + INJECTOR ) );
+         CurrentGame.WriteCodeFile( HARM_DLL, GetResource( HARM_DLL ) );
+         CurrentGame.WriteCodeFile( CECI_DLL, GetResource( CECI_DLL ) );
+         CurrentGame.WriteCodeFile( LOADER  , GetResource( LOADER   ) );
+         CurrentGame.WriteCodeFile( INJECTOR, GetResource( INJECTOR ) );
          CurrentGame.RunInjector( "/y" );
          CheckInjectionStatus();
          if ( CurrentGame.Status == "modnix" ) {
@@ -624,7 +624,7 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       internal static Stream GetResource ( string path ) {
-         return Application.GetResourceStream( new Uri( $"Modnix;component/{path}", UriKind.Relative ) ).Stream;
+         return Application.GetResourceStream( new Uri( $"Modnix;component/Resources/{path}", UriKind.Relative ) ).Stream;
       }
 
       internal static byte[] GetResourceBytes ( string path ) {

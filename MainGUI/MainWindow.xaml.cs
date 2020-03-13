@@ -269,7 +269,10 @@ namespace Sheepy.Modnix.MainGUI {
       private void ButtonAddMod_Click ( object sender, RoutedEventArgs e ) {
          var dialog = new Microsoft.Win32.OpenFileDialog {
             DefaultExt = "*.js;*.dll;*.zip;*.7z",
-            Filter = "All Mods|*.zip;*.7z;*.js;*.dll|Mod Packages|*.zip;*.7z|Single File Mods|*.js;*.dll|All Files|*.*",
+            Filter = "All Mods|*.7z;*.dll;*.js;*.xz;*.zip|"+
+                     "Mod Packages (.zip,.7z)|*.7z;*.xz;*.zip|"+
+                     "Single File Mods (.dll,.js)|*.dll;*.js|"+
+                     "All Files|*.*"
          };
          if ( ! dialog.ShowDialog().GetValueOrDefault() ) return;
          var target = dialog.FileName;
