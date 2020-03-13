@@ -23,6 +23,14 @@ namespace Sheepy.Modnix.MainGUI {
       APP_STATE, APP_VER, APP_UPDATE,
       GAME_RUNNING, GAME_PATH, GAME_VER }
 
+   public abstract class ArchiveReader {
+      protected readonly string ArchivePath;
+      public ArchiveReader ( string path ) { ArchivePath = path; }
+      //public abstract void ForEach ( Action<string,Action<string>> action );
+      public abstract void Install ( string modFolder );
+      //protected string ModRoot => AppControl.Instance.ModFolder + Path.DirectorySeparatorChar;
+   }
+
    public partial class AppControl : Application {
       public static AppControl Instance { get; private set; }
 
@@ -548,18 +556,18 @@ namespace Sheepy.Modnix.MainGUI {
 
       internal void AddMod ( string file ) { try {
          var ext = Path.GetExtension( file );
-         if ( ext.Equals( "zip" ) || ext.Equals( "7z" ) ) {
-            throw new NotSupportedException( "Not implemented" );
+         var folder = Path.Combine( ModFolder, Path.GetFileNameWithoutExtension( file ) );
+         Log( $"Creating {folder}" );
+         Directory.CreateDirectory( folder );
+         if ( ext.Equals( ".zip" ) || ext.Equals( ".7z" ) ) {
+            new ZipArchiveReader( file ).Install( folder );
          } else {
-            var folder = Path.Combine( ModFolder, Path.GetFileNameWithoutExtension( file ) );
-            Log( $"Creating {folder}" );
-            Directory.CreateDirectory( folder );
             var destination = Path.Combine( folder, Path.GetFileName( file ) );
             File.Delete( destination );
             Log( $"Copying {file} to {destination}" );
             File.Copy( file, destination );
-            GetModList();
          }
+         GetModList();
       } catch ( IOException ex ) {
          Log( ex );
          GUI.Prompt( AppActionType.ADD_MOD, PromptFlag.ERROR, ex );
