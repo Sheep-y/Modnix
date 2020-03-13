@@ -304,7 +304,7 @@ Post-build scripts in Injector and Loader will copy their assemblies and librari
 
 ### Add New Mods
 
-Support .js, .dll, .zip, and .7z
+Support .js, .dll, .zip, .7z, and .xz
 
 - If single file, or archive has one file and no folder, create a folder from filename and put it there.
 - If archive has no file and one folder, extract to root.

@@ -179,7 +179,7 @@ namespace Sheepy.Modnix.MainGUI {
       private Block BuildCopyright () {
          var txt = Mod.Metadata.Copyright?.ToString( "en" );
          if ( string.IsNullOrWhiteSpace( txt ) ) return null;
-         if ( ! txt.StartsWith( "Copyright", StringComparison.InvariantCultureIgnoreCase ) )
+         if ( ! txt.StartsWith( "Copyright", StringComparison.OrdinalIgnoreCase ) )
             txt = "Copyright: " + txt;
          return new Paragraph( new Run( txt ) );
       }
@@ -245,6 +245,24 @@ namespace Sheepy.Modnix.MainGUI {
                entry.ExtractToFile( path, true );
             }
          }
+      }
+   }
+
+   internal class SevenZipArchiveReader : ArchiveReader {
+      private const string EXE = "7za.exe";
+
+      public SevenZipArchiveReader ( string path ) : base( path ) {}
+
+      public override void Install ( string modFolder ) {
+         Action<string> log = AppControl.Instance.Log;
+         var destination = modFolder + Path.DirectorySeparatorChar;
+         string dir = Path.GetTempPath(), exe = Path.Combine( dir, EXE );
+         if ( ! File.Exists( exe ) ) using ( var writer = new FileStream( exe, FileMode.Create ) ) {
+            log( $"Creating {exe}" );
+            AppControl.GetResource( EXE ).CopyTo( writer );
+         }
+         Directory.CreateDirectory( destination );
+         AppControl.Instance.RunAndWait( destination, exe, $"x \"{ArchivePath}\"" );
       }
    }
 }
