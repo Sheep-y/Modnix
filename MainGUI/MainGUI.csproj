@@ -30,6 +30,7 @@
     <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
+    <ApplicationIcon>Resources\img\modnix.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>x64</PlatformTarget>
@@ -50,9 +51,6 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
-  <PropertyGroup>
-    <ApplicationIcon>Resources\img\modnix.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
@@ -103,8 +101,6 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -143,12 +139,14 @@
     <Resource Include="Resources\img\floppy.png" />
     <Resource Include="Resources\img\fandom.png" />
     <Resource Include="Resources\img\folder.png" />
+    <Resource Include="Resources\img\gear.png" />
     <Resource Include="Resources\img\info.png" />
     <Resource Include="Resources\img\log_file.png" />
     <Resource Include="Resources\img\modder.png" />
     <Resource Include="Resources\img\modnix.ico" />
     <Resource Include="Resources\img\nexusmods.png" />
     <Resource Include="Resources\img\offline.png" />
+    <Resource Include="Resources\img\opensource.png" />
     <Resource Include="Resources\img\phoenix_point.png" />
     <Resource Include="Resources\img\reddit.png" />
     <Resource Include="Resources\img\reload.png" />
@@ -165,6 +163,4 @@
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <PropertyGroup>
-  </PropertyGroup>
 </Project>
