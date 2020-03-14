@@ -258,7 +258,7 @@ namespace Sheepy.Modnix.MainGUI {
       private void RefreshModInfo () { try {
          if ( GridModList.SelectedItems.Count > 1 ) {
             Log( $"Showing mods summary" );
-            BkgdModeInfo.Opacity = 0.20;
+            BkgdModeInfo.Opacity = 0.06;
             BuildMultiModInfo();
             return;
          }
@@ -269,7 +269,7 @@ namespace Sheepy.Modnix.MainGUI {
             return;
          }
          Log( $"Refreshing mod {CurrentMod}" );
-         BkgdModeInfo.Opacity = 0;
+         BkgdModeInfo.Opacity = 0.03;
          CurrentMod.BuildDesc( RichModInfo.Document );
       } catch ( Exception ex ) { Log( ex ); } }
 

@@ -21,7 +21,7 @@
 * Fix: Manual setup package should no longer run in setup mode. Thanks Zyxpsilon on Discord for reporting.
 * Fix: Typo on log label. Thanks javehaider on NexusMods for reporting.
 * In mod_info, Langs are changed to Lang, Urls changed to Url.  This make info fields consistent.
-* Improved app / injection / game status display and less unnecessary status checks.
+* Improved app / injection / game status display and less unnecessary status checks.  Modnix keyvisual faintly visible.
 * Overloaded mod initialisers are now allowed and the first declared will be used.
 * Injector's game version check now returns only type of error, instead of full stacktrace, to keep returned text on one line.
 
