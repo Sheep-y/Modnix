@@ -15,6 +15,7 @@ namespace Sheepy.Modnix.MainGUI {
       public abstract string Status { get; }
       public abstract bool Is ( ModQuery prop );
       public abstract void BuildDesc ( FlowDocument doc );
+      public abstract void BuildSummary ( FlowDocument doc );
       public abstract string Path { get; }
       public abstract string Type { get; }
    }

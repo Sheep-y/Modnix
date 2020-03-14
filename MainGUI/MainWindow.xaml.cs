@@ -255,7 +255,12 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       private void RefreshModInfo () { try {
-         //if ( GridModList.SelectedItems.Count > 0 )
+         if ( GridModList.SelectedItems.Count > 1 ) {
+            Log( $"Showing mods summary" );
+            BkgdModeInfo.Opacity = 0.25;
+            BuildMultiModInfo();
+            return;
+         }
          if ( CurrentMod == null ) {
             Log( "Clearing mod info" );
             RichModInfo.TextRange().Text = "";
@@ -265,6 +270,14 @@ namespace Sheepy.Modnix.MainGUI {
          Log( $"Refreshing mod {CurrentMod}" );
          BkgdModeInfo.Opacity = 0;
          CurrentMod.BuildDesc( RichModInfo.Document );
+      } catch ( Exception ex ) { Log( ex ); } }
+
+      private void BuildMultiModInfo () { try {
+         var doc = RichModInfo.Document;
+         doc.Replace( new Paragraph() );
+         foreach ( var mod in GridModList.SelectedItems )
+            ( mod as ModInfo )?.BuildSummary( doc );
+         doc.Blocks.Add( new Paragraph( new Run( $"Total {GridModList.SelectedItems.Count} mods" ) ) );
       } catch ( Exception ex ) { Log( ex ); } }
 
       private void ButtonAddMod_Click ( object sender, RoutedEventArgs e ) {

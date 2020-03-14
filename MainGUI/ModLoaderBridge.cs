@@ -142,6 +142,12 @@ namespace Sheepy.Modnix.MainGUI {
          );
       } }
 
+      public override void BuildSummary ( FlowDocument doc ) { lock ( Mod ) {
+         var body = doc.Blocks.FirstBlock as Paragraph;
+         if ( body == null ) return;
+         body.Inlines.Add( new Run( Mod.Metadata.Name.ToString( "en" ) + "\r" ) );
+      } }
+
       private void BuildBasicDesc ( ModMeta meta, InlineCollection list ) {
          list.Add( new Bold( new Run( meta.Name.ToString( "en" ) ) ) );
          if ( meta.Version != null ) list.Add( $"\tVer {Version}" );
