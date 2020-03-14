@@ -369,7 +369,7 @@ namespace Sheepy.Modnix.MainGUI {
          ButtonModDelete.IsEnabled = false;
          App.DoModActionAsync( AppAction.DEL_MOD, mods ).ContinueWith( result => {
             if ( result.IsFaulted ) Prompt( AppAction.DEL_MOD, PromptFlag.ERROR, result.Exception );
-            ButtonRefreshMod_Click( sender, evt );
+            this.Dispatch( () => ButtonRefreshMod_Click( sender, evt ) );
          } );
       }
 
