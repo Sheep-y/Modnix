@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Sheepy.Modnix {
    using DllEntryMeta = Dictionary< string, HashSet< string > >;
@@ -59,7 +60,12 @@ namespace Sheepy.Modnix {
          if ( Notices == null ) Notices = new List<LogEntry>();
          Notices.Add( new LogEntry{ Level = lv, Message = reason, Args = augs } );
       } }
-      public override string ToString () { lock ( Metadata ) { return $"Mod {Metadata.Name}{(Disabled?" (Disabled)":"")}"; } }
+      public override string ToString () { lock ( Metadata ) {
+         var txt = "Mod " + Metadata.Name;
+         if ( Metadata.Version != null ) txt += " " + ModMetaJson.TrimVersion( Metadata.Version );
+         if ( Disabled ) txt += " (Disabled)";
+         return txt;
+      } }
    }
 
    public class ModMeta {
@@ -237,6 +243,10 @@ namespace Sheepy.Modnix {
          TraceWriter = JsonLogger as JsonTraceLogger,
          TypeNameHandling = TypeNameHandling.None
       };
+
+      private static Regex RegxVerTrim = new Regex( "(\\.0){1,2}$", RegexOptions.Compiled );
+      public static string TrimVersion ( Version ver ) => TrimVersion( ver.ToString() );
+      public static string TrimVersion ( string ver ) => RegxVerTrim.Replace( ver, "" );
 
       public static T Parse<T> ( string json ) => JsonConvert.DeserializeObject<T>( json, JsonOptions );
       public static string Stringify ( object val ) => JsonConvert.SerializeObject( val, Formatting.Indented, JsonOptions );
