@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using static System.Globalization.CultureInfo;
@@ -83,25 +84,23 @@ namespace Sheepy.Modnix.MainGUI {
          Instance = this;
          ModBridge = new ModLoaderBridge();
          Init( e?.Args );
-         lock ( Instance ) {
-            if ( ! ParamSkipStartupCheck ) {
-               Log( $"Running startup checks" );
-               if ( FoundRunningModnix() ) {
-                  Shutdown();
-                  return;
-               }
-               if ( IsInstaller ) {
-                  if ( FoundInstalledModnix() )
-                     GUI = new SetupWindow( "launch" );
-                  else
-                     GUI = new SetupWindow( "setup" );
-               }
+         if ( ! ParamSkipStartupCheck ) {
+            Log( $"Running startup checks" );
+            if ( FoundRunningModnix() ) {
+               Shutdown();
+               return;
             }
-            Log( $"Launching main window" );
-            if ( GUI == null )
-               GUI = new MainWindow();
-            MigrateSettings();
+            if ( IsInstaller ) {
+               if ( FoundInstalledModnix() )
+                  GUI = new SetupWindow( "launch" );
+               else
+                  GUI = new SetupWindow( "setup" );
+            }
          }
+         Log( $"Launching main window" );
+         if ( GUI == null )
+            GUI = new MainWindow();
+         MigrateSettings();
          Log( null ); // Send startup log to GUI
          GUI.SetInfo( GuiInfo.VISIBILITY, "true" );
       } catch ( Exception ex ) {
@@ -233,16 +232,14 @@ namespace Sheepy.Modnix.MainGUI {
       internal ModLoaderBridge ModBridge { get => Get( ref _ModBridge ); set => Set( ref _ModBridge, value ); }
 
       internal void CheckStatusAsync ( bool listMods ) {
-         lock ( Instance ) // Make sure GUI and ModBridge are both set
-            Log( "Queuing status check" );
+         Log( "Queuing status check" );
          if ( listMods )
             Task.Run( (Action) GetModList );
          Task.Run( (Action) CheckStatus );
       }
 
       private void CheckStatus () { try {
-         lock ( Instance ) // Make sure GUI is set
-            Log( "Checking app and game status" );
+         Log( "Checking app and game status on thread {Thread.CurrentThread.Name}" );
          GUI.SetInfo( GuiInfo.APP_VER, CheckAppVer() );
          if ( FoundGame( out string gamePath ) ) {
             Log( $"Found game at {gamePath}" );
@@ -379,6 +376,7 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       private void DoSetup () { try {
+         Log( $"Running setup on thread {Thread.CurrentThread.Name}" );
          PromptFlag flags = PromptFlag.NONE;
          // Copy exe to mod folder
          if ( CopySelf( MyPath, ModGuiExe ) )
@@ -495,6 +493,7 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       private void DoRestore () { try {
+         Log( $"Running restore on thread {Thread.CurrentThread.Name}" );
          CurrentGame.RunInjector( "/y /r" );
          CheckInjectionStatus();
          if ( CurrentGame.Status == "none" ) {
@@ -524,18 +523,20 @@ namespace Sheepy.Modnix.MainGUI {
 
       #region Mods
       public void GetModList () { try {
+         Log( "Rebuilding mod list on thread {Thread.CurrentThread.Name}" );
          var list = ModBridge.LoadModList();
          if ( list != null ) GUI.SetInfo( GuiInfo.MOD_LIST, list );
       } catch ( IOException ex ) { Log( ex ); } }
 
       internal Task DoModActionAsync ( AppAction action, IEnumerable<ModInfo> mods ) {
-         Log( $"Queuing mod {action} on {mods.Count()} mods" );
+         Log( $"Queuing {action} of {mods.Count()} mods" );
          return Task.WhenAll(
             mods.Select( mod => Task.Run( () => DoModAction( action, mod ) )
          ) );
       }
 
       private void DoModAction ( AppAction action, ModInfo mod ) {
+         Log( $"Running {action} of {mod} on thread {Thread.CurrentThread.Name}" );
          if ( mod == null ) return;
          switch ( action ) {
             case AppAction.DEL_MOD :
@@ -640,6 +641,7 @@ namespace Sheepy.Modnix.MainGUI {
       private string _StartupLog = "Startup log:\n";
       private string StartupLog { get => Get( ref _StartupLog ); set => Set( ref _StartupLog, value ); }
 
+      // Double as a memory barrier because of its GUI read
       internal void Log ( object message ) {
          if ( GUI != null ) {
             if ( StartupLog != null ) {

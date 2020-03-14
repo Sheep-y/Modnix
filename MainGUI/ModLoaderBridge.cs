@@ -16,7 +16,7 @@ namespace Sheepy.Modnix.MainGUI {
       private readonly AppControl App = AppControl.Instance;
       private bool Loading;
 
-      internal void CheckSetup () { lock ( App ) {
+      internal void CheckSetup () { lock ( this ) {
          if ( ModLoader.NeedSetup ) {
             App.Log( "Initiating ModLoader" );
             var logger = new GuiLogger( App );
@@ -38,14 +38,14 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       internal object LoadModList () {
-         lock ( App ) {
+         lock ( this ) {
             if ( Loading ) return null;
             Loading = true;
          }
          CheckSetup();
          App.Log( "Building mod list" );
          ModScanner.BuildModList();
-         lock ( App ) {
+         lock ( this ) {
             Loading = false;
             return ModScanner.AllMods.Select( e => new GridModItem( e ) );
          }
