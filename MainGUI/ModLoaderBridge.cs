@@ -159,7 +159,11 @@ namespace Sheepy.Modnix.MainGUI {
          list.Add( new Bold( new Run( meta.Name.ToString( "en" ) ) ) );
          if ( meta.Version != null ) list.Add( $"\tVer {Version}" );
          list.Add( $"\t{Type} mod" );
-         if ( meta.Author != null ) list.Add( $"\rAuthor\t{Author}" );
+         if ( meta.Lang != null )
+            list.Add( "\rLanguages\t" + string.Join( ", ", meta.Lang.Select( AppControl.LangIdToName ) ) );
+         if ( meta.Taint != null )
+            list.Add( "\rAffect Saves\t" + ( meta.Taint == true ? "Yes" : "No" ) );
+         if ( meta.Author != null ) list.Add( $"\rAuthor\t\t{Author}" );
          if ( Mod.Notices != null )
             foreach ( var notice in Mod.Notices ) {
                var txt = new Run();
