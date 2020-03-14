@@ -93,8 +93,8 @@ namespace Sheepy.Modnix.MainGUI {
          ButtonModDir.IsEnabled = Directory.Exists( App.ModFolder );
          ButtonRefreshMod.IsEnabled = Directory.Exists( App.ModFolder ) && ! SharedGui.IsAppWorking;
          ButtonModOpenModDir.IsEnabled = CurrentMod != null;
-         ButtonModConf.IsEnabled = SharedGui.CanModify && CurrentMod != null && ModList.Any( e => e.Is( ModQuery.HAS_CONFIG ) );
-         ButtonModDelete.IsEnabled = SharedGui.CanModify && CurrentMod != null && ! ModList.Any( e => e.Is( ModQuery.IS_CHILD ) );
+         ButtonModConf.IsEnabled = SharedGui.CanModify && CurrentMod != null && SelectedMods.Any( e => e.Is( ModQuery.HAS_CONFIG ) );
+         ButtonModDelete.IsEnabled = SharedGui.CanModify && CurrentMod != null && ! SelectedMods.Any( e => e.Is( ModQuery.IS_CHILD ) );
          ButtonLoaderLog.IsEnabled = File.Exists( LoaderLog );
 
          if ( SharedGui.IsGameRunning )
@@ -230,6 +230,7 @@ namespace Sheepy.Modnix.MainGUI {
       #region Mod Info Area
       private ModInfo CurrentMod;
       private IEnumerable<ModInfo> ModList;
+      private IEnumerable<ModInfo> SelectedMods => GridModList.SelectedItems.OfType<ModInfo>();
       //private bool IsSingleModSelected => CurrentMod != null && GridModList.SelectedItems.Count == 1;
 
       private void SetModList ( IEnumerable<ModInfo> list ) {
@@ -276,8 +277,8 @@ namespace Sheepy.Modnix.MainGUI {
          var doc = RichModInfo.Document;
          Paragraph body = new Paragraph();
          doc.Replace( body );
-         foreach ( var mod in GridModList.SelectedItems )
-            ( mod as ModInfo )?.BuildSummary( doc );
+         foreach ( var mod in SelectedMods )
+            mod.BuildSummary( doc );
          body.Inlines.Add( $"Total {GridModList.SelectedItems.Count} mods" );
       } catch ( Exception ex ) { Log( ex ); } }
 
@@ -322,8 +323,8 @@ namespace Sheepy.Modnix.MainGUI {
          if ( count > 3 &&
             MessageBoxResult.Yes != MessageBox.Show( $"Open {count} file explorer?", "Warning", MessageBoxButton.OKCancel, MessageBoxImage.Warning, MessageBoxResult.Cancel ) )
             return;
-         foreach ( var item in GridModList.SelectedItems ) {
-            var path = ( item as ModInfo )?.Path;
+         foreach ( var mod in SelectedMods ) {
+            var path = mod.Path;
             if ( string.IsNullOrWhiteSpace( path ) ) return;
             AppControl.Explore( path );
          }
@@ -331,7 +332,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void ButtonModConf_Click ( object sender, RoutedEventArgs evt ) {
          List<ModInfo> reset = new List<ModInfo>(), create = new List<ModInfo>();
-         foreach ( var mod in GridModList.SelectedItems.OfType<ModInfo>() ) {
+         foreach ( var mod in SelectedMods ) {
             if ( ! mod.Is( ModQuery.HAS_CONFIG ) ) continue;
             ( mod.Is( ModQuery.HAS_CONFIG_FILE ) ? reset : create ).Add( mod );
          }
