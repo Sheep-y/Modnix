@@ -92,9 +92,9 @@ namespace Sheepy.Modnix.MainGUI {
          ButtonAddMod.IsEnabled = SharedGui.CanModify && Directory.Exists( App.ModFolder );
          ButtonModDir.IsEnabled = Directory.Exists( App.ModFolder );
          ButtonRefreshMod.IsEnabled = Directory.Exists( App.ModFolder ) && ! SharedGui.IsAppWorking;
-         ButtonModOpenModDir.IsEnabled = CurrentMod != null;
-         ButtonModConf.IsEnabled = CurrentMod != null && (bool) CurrentMod.Query( ModQueryType.HAS_CONFIG );
-         ButtonModDelete.IsEnabled = SharedGui.CanModify && CurrentMod != null && ! (bool) CurrentMod.Query( ModQueryType.IS_CHILD );;
+         ButtonModOpenModDir.IsEnabled = IsSingleModSelected;
+         ButtonModConf.IsEnabled = SharedGui.CanModify && CurrentMod != null && ModList.Any( e => e.Is( ModQueryType.HAS_CONFIG ) );
+         ButtonModDelete.IsEnabled = SharedGui.CanModify && CurrentMod != null && ! ModList.Any( e => e.Is( ModQueryType.IS_CHILD ) );
          ButtonLoaderLog.IsEnabled = File.Exists( LoaderLog );
 
          if ( SharedGui.IsGameRunning )
@@ -230,6 +230,7 @@ namespace Sheepy.Modnix.MainGUI {
       #region Mod Info Area
       private ModInfo CurrentMod;
       private IEnumerable<ModInfo> ModList;
+      private bool IsSingleModSelected => CurrentMod != null && GridModList.SelectedItems.Count == 1;
 
       private void SetModList ( IEnumerable<ModInfo> list ) {
          ModList = list;
@@ -242,19 +243,19 @@ namespace Sheepy.Modnix.MainGUI {
          if ( GridModList.ItemsSource != ModList ) {
             Log( "New mod list, clearing selection" );
             GridModList.ItemsSource = ModList;
-            SetSelectedMod( null );
+            //SetSelectedMod( null );
          }
          GridModList.Items?.Refresh();
       } catch ( Exception ex ) { Log( ex ); } }
 
       private void SetSelectedMod ( ModInfo mod ) {
-         if ( mod == CurrentMod ) return;
          CurrentMod = mod;
          RefreshModInfo();
          RefreshAppButtons();
       }
 
       private void RefreshModInfo () { try {
+         //if ( GridModList.SelectedItems.Count > 0 )
          if ( CurrentMod == null ) {
             Log( "Clearing mod info" );
             RichModInfo.TextRange().Text = "";
@@ -309,7 +310,7 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       private void ButtonModConf_Click ( object sender, RoutedEventArgs e ) {
-         var msg = (bool) CurrentMod.Query( ModQueryType.HAS_CONFIG_FILE ) ? $"Reset config file of \"{CurrentMod.Name}\"?" : $"Create config file of \"{CurrentMod.Name}\"?";
+         var msg = CurrentMod.Is( ModQueryType.HAS_CONFIG_FILE ) ? $"Reset config file of \"{CurrentMod.Name}\"?" : $"Create config file of \"{CurrentMod.Name}\"?";
          if ( MessageBox.Show( msg, "Reset Config", MessageBoxButton.OKCancel, MessageBoxImage.Warning, MessageBoxResult.Cancel )
             != MessageBoxResult.OK ) return;
          App.DoModActionAsync( AppActionType.RESET_CONFIG, CurrentMod );
@@ -317,7 +318,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void ButtonModDelete_Click ( object sender, RoutedEventArgs e ) {
          if ( CurrentMod == null ) return;
-         if ( (bool) CurrentMod.Query( ModQueryType.HAS_CONFIG_FILE ) ) {
+         if ( CurrentMod.Is( ModQueryType.HAS_CONFIG_FILE ) ) {
             var ans = MessageBox.Show( $"Delete \"{CurrentMod.Name}\".\nKeep settings?", "Confirm",
                   MessageBoxButton.YesNoCancel, MessageBoxImage.Question, MessageBoxResult.Cancel );
             if ( ans == MessageBoxResult.Cancel ) return;
@@ -329,12 +330,12 @@ namespace Sheepy.Modnix.MainGUI {
             if ( ans == MessageBoxResult.Cancel ) return;
          }
          ButtonModDelete.IsEnabled = false;
-         App.DoModActionAsync( (bool) CurrentMod.Query( ModQueryType.IS_FOLDER ) ? AppActionType.DELETE_DIR : AppActionType.DELETE_FILE, CurrentMod );
+         App.DoModActionAsync( CurrentMod.Is( ModQueryType.IS_FOLDER ) ? AppActionType.DELETE_DIR : AppActionType.DELETE_FILE, CurrentMod );
       }
 
-      private void GridModList_CurrentCellChanged ( object sender, EventArgs e ) {
-         if ( GridModList.CurrentItem == null ) return;
-         SetSelectedMod( GridModList.CurrentItem as ModInfo );
+      private void GridModList_SelectionChanged ( object sender, SelectionChangedEventArgs e ) {
+         Log( $"Selection changed to {GridModList.SelectedItem}, total {GridModList.SelectedItems.Count}" );
+         SetSelectedMod( GridModList.SelectedItem as ModInfo );
       }
       #endregion
 

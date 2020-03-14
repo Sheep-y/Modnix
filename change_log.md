@@ -2,12 +2,13 @@
 
 # Version ??
 
-* New: Add mod button, automatically place mod in subfolder.
-* New: Reset button, which reset and recreate a mod's config file.
+* New: Add mod button, automatically place mod in subfolder. Supports .dll, .zip, .7z, .js (modnix mod; not ppdef mod) and skip .cs, .csproj
+* New: Reset button, which reset and recreate a compatible mod's config file.
 * New: Dll mods may now receive a setting string or object, when a config is supplied.
 * New: Dll mods may get modsRoot, modPath, and assemblyPath as initialiser params.
 * New: Modnix settings now stored in Modnix.conf which can be edited easily.
 * New: Formatted app/game/mod info.  Mod info panel now shows all display info, plus file list and entry points.
+* New: License button to display licenses of all images, parts, and libraries.
 * Fix: Mono.Cecil.dll is now deleted from Mods folder on setup, in addition to other loader dlls.
 * Fix: Lang of mod info now accepts a single string as intended.
 * Fix: Url and Contact no longer lowercase their keys.

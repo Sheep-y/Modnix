@@ -115,7 +115,7 @@ namespace Sheepy.Modnix.MainGUI {
       public override string Author => Mod.Metadata.Author?.ToString( "en" );
       public override string Status { get { lock ( Mod ) return Mod.Disabled ? "Disabled" : "Enabled"; } }
 
-      public override object Query ( ModQueryType prop ) { lock ( Mod ) {
+      public override bool Is ( ModQueryType prop ) { lock ( Mod ) {
          switch ( prop ) {
             case ModQueryType.IS_FOLDER :
                var path = System.IO.Path.GetDirectoryName( Path );
@@ -127,7 +127,7 @@ namespace Sheepy.Modnix.MainGUI {
             case ModQueryType.HAS_CONFIG_FILE :
                return ModLoader.CheckSettingFile( Mod.Path ) != null;
             default:
-               return null;
+               return false;
          }
       } }
 

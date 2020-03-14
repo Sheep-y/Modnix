@@ -205,7 +205,7 @@
                             </StackPanel>
                         </Button>
                     </Grid>
-                    <DataGrid x:Name="GridModList" VerticalScrollBarVisibility="Visible" AutoGenerateColumns="False" IsReadOnly="True" Margin="0,5" CurrentCellChanged="GridModList_CurrentCellChanged" SelectionMode="Single" >
+                    <DataGrid x:Name="GridModList" VerticalScrollBarVisibility="Visible" AutoGenerateColumns="False" IsReadOnly="True" Margin="0,5" SelectionChanged="GridModList_SelectionChanged" >
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Mod" Binding="{Binding Name}" ClipboardContentBinding="{x:Null}"/>
                             <DataGridTextColumn Header="Version" Binding="{Binding Version}" ClipboardContentBinding="{x:Null}"/>
