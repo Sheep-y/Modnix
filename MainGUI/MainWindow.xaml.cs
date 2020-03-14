@@ -481,6 +481,11 @@ namespace Sheepy.Modnix.MainGUI {
          Process.Start( url );
       }
       #endregion
+
+      private void Window_Closed ( object sender, EventArgs e ) {
+         GameStatusTimer.Change( Timeout.Infinite, Timeout.Infinite );
+         GameStatusTimer.Dispose();
+      }
    }
 
    public static class WpfHelper {
