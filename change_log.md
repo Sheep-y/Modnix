@@ -8,7 +8,8 @@
 * New: Dll mods may now receive a setting string or object, when a config is supplied.
 * New: Dll mods may get modsRoot, modPath, and assemblyPath as initialiser params.
 * New: Modnix settings now stored in Modnix.conf which can be edited easily.
-* New: Formatted app/game/mod info.  Mod info panel now shows all display info, plus file list and entry points.
+* New: Formatted app/game/mod info.  Mod info panel now shows all relevant mod info, including file list and entry points.
+* New: Show mod installation date on mod list.
 * New: License button to display licenses of all images, parts, and libraries.
 * Fix: Mono.Cecil.dll is now deleted from Mods folder on setup, in addition to other loader dlls.
 * Fix: Lang of mod info now accepts a single string as intended.

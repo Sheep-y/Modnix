@@ -105,6 +105,7 @@ namespace Sheepy.Modnix.MainGUI {
       public override string Version => Mod.Metadata.Version?.ToString();
       public override string Author => Mod.Metadata.Author?.ToString( "en" );
       public override string Status { get { lock ( Mod ) return Mod.Disabled ? "Disabled" : "Enabled"; } }
+      public override DateTime Installed { get { lock ( Mod ) return new FileInfo( Mod.Path ).CreationTime; } }
 
       public override bool Is ( ModQuery prop ) { lock ( Mod ) {
          switch ( prop ) {
@@ -146,7 +147,7 @@ namespace Sheepy.Modnix.MainGUI {
       private void BuildBasicDesc ( ModMeta meta, InlineCollection list ) {
          list.Add( new Bold( new Run( meta.Name.ToString( "en" ) ) ) );
          if ( meta.Version != null ) list.Add( $"\tVer {Version}" );
-         list.Add( $"\rType\t{Type}" );
+         list.Add( $"\t{Type} mod" );
          if ( meta.Author != null ) list.Add( $"\rAuthor\t{Author}" );
          if ( Mod.Notices != null )
             foreach ( var notice in Mod.Notices ) {

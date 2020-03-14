@@ -13,6 +13,7 @@ namespace Sheepy.Modnix.MainGUI {
       public abstract string Version { get; }
       public abstract string Author { get; }
       public abstract string Status { get; }
+      public abstract DateTime Installed { get; }
       public abstract bool Is ( ModQuery prop );
       public abstract void BuildDesc ( FlowDocument doc );
       public abstract void BuildSummary ( FlowDocument doc );
