@@ -1,6 +1,6 @@
 # Modnix Changelog
 
-# Version ??
+# Version 0.90, 2020-03-14
 
 * New: Add mod button, automatically place mod in subfolder. Supports .dll, .zip, .7z, .js (modnix mod; not ppdef mod) and skip .cs, .csproj
 * New: Reset button, which reset and recreate a compatible mod's config file.
