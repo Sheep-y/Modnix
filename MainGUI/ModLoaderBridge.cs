@@ -7,7 +7,10 @@ using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Controls;
 using System.Windows.Documents;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 
 namespace Sheepy.Modnix.MainGUI {
    // This class was created to separate ModLoader classes from the main program.
@@ -145,6 +148,14 @@ namespace Sheepy.Modnix.MainGUI {
       } }
 
       private void BuildBasicDesc ( ModMeta meta, InlineCollection list ) {
+         /* Experimental image code. Online image does not work, sadly.
+         BitmapImage img = new BitmapImage();
+         img.BeginInit();
+         //bi.UriSource = new Uri( "https://www.nexusmods.com/Contents/mods/3094/images/headers/17.jpg", UriKind.Absolute );
+         img.UriSource = new Uri( "pack://application:,,,/Resources/img/book.png", UriKind.Absolute );
+         img.EndInit();
+         list.Add( new Image(){ Source = img, Stretch = Stretch.UniformToFill } );
+         */
          list.Add( new Bold( new Run( meta.Name.ToString( "en" ) ) ) );
          if ( meta.Version != null ) list.Add( $"\tVer {Version}" );
          list.Add( $"\t{Type} mod" );
