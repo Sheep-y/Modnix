@@ -135,7 +135,7 @@ namespace Sheepy.Modnix {
          var meta = ModMetaJson.ParseMod( js ).Normalise();
          if ( meta.Id == null && default_id != null ) {
             meta.Id = default_id;
-            meta.Normalise(); // Fill in Name if null
+            meta.Normalise(); // Fill in Name
          }
          return meta;
       } catch ( Exception ex ) { Log.Warn( ex ); return null; } }

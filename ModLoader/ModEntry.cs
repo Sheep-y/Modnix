@@ -156,8 +156,14 @@ namespace Sheepy.Modnix {
       private static void NormTextSet ( ref TextSet val ) {
          if ( val == null ) return;
          var dict = val.Dict;
-         if ( dict != null && dict.Count <= 0 )
-            val.Dict = dict = null;
+         if ( dict != null ) {
+            foreach ( var pair in dict.ToArray() ) {
+               var txt = NormString( pair.Value );
+               if ( txt == null ) dict.Remove( txt );
+               dict[ pair.Value ] = txt;
+            }
+            if ( dict.Count <= 0 ) val.Dict = dict = null;
+         }
          val.Default = NormString( val.Default );
          if ( val.Default == null ) {
             val.Default = dict?.First().Value;

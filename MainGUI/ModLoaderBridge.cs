@@ -134,7 +134,7 @@ namespace Sheepy.Modnix.MainGUI {
       public override void BuildDesc ( FlowDocument doc ) { lock ( Mod ) {
          doc.Replace(
             BuildBlock( BuildBasicDesc ),
-            new Paragraph( new Run( Mod.Metadata.Description?.ToString( "en" ) ) ),
+            BuildBlock( BuildProvidedDesc ),
             BuildBlock( BuildLinks ),
             BuildBlock( BuildContacts ),
             BuildBlock( BuildFileList ),
@@ -157,6 +157,12 @@ namespace Sheepy.Modnix.MainGUI {
          if ( meta.Version != null ) list.Add( $"\tVer {Version}" );
          list.Add( $"\rType\t{Type}" );
          if ( meta.Author != null ) list.Add( $"\rAuthor\t{Author}" );
+      }
+
+      private void BuildProvidedDesc ( ModMeta meta, InlineCollection list ) {
+         string desc = meta.Description?.ToString( "en" );
+         if ( string.IsNullOrWhiteSpace( desc ) ) return;
+         list.Add( desc );
       }
 
       private static void BuildLinks ( ModMeta meta, InlineCollection list ) {
