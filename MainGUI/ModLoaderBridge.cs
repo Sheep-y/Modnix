@@ -164,30 +164,31 @@ namespace Sheepy.Modnix.MainGUI {
          if ( meta.Taint != null )
             list.Add( "\rAffect Saves\t" + ( meta.Taint == true ? "Yes" : "No" ) );
          if ( meta.Author != null ) list.Add( $"\rAuthor\t\t{Author}" );
-         if ( Mod.Notices != null )
+         if ( Mod.Notices != null ) {
             foreach ( var notice in Mod.Notices ) {
                var txt = new Run();
                switch ( notice.Message ) {
                   case "duplicate" :
                      txt.Text = string.Format( "\rDisabled: Using {0}", notice.Args[0]?.ToString() ); break;
-                  case "requires" :
+                  case "requires"  :
                      txt.Text = string.Format( "\rDisabled: Missing requirement {0}", notice.Args[0]?.ToString(), notice.Args[1], notice.Args[2] ); break;
-                  case "conflict" :
+                  case "conflict"  :
                      txt.Text = string.Format( "\rDisabled by {0}", notice.Args[0]?.ToString() ); break;
                   default:
                      txt.Text = "\r" + notice.Message.ToString(); break;
                }
                switch ( notice.Level ) {
                   case SourceLevels.Critical :
-                  case SourceLevels.Error :
+                  case SourceLevels.Error    :
                      txt.Foreground = Brushes.Red; break;
-                  case SourceLevels.Warning :
+                  case SourceLevels.Warning  :
                      txt.Foreground = Brushes.Orange; break;
                   default :
                      txt.Foreground = Brushes.Blue; break;
                }
                list.Add( txt );
             }
+         }
       }
 
       private void BuildProvidedDesc ( ModMeta meta, InlineCollection list ) {
