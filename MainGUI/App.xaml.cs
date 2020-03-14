@@ -527,35 +527,30 @@ namespace Sheepy.Modnix.MainGUI {
          if ( list != null ) GUI.SetInfo( GuiInfo.MOD_LIST, list );
       } catch ( IOException ex ) { Log( ex ); } }
 
-      internal void DoModActionAsync ( AppAction action, ModInfo mod ) {
+      internal Task DoModActionAsync ( AppAction action, IEnumerable<ModInfo> mods ) {
          Log( $"Queuing mod {action}" );
-         Task.Run( () => DoModAction( action, mod ) );
+         return Task.WhenAll(
+            mods.Select( mod => Task.Run( () => DoModAction( action, mod ) )
+         ) );
       }
 
-      private void DoModAction ( AppAction action, ModInfo mod ) { try {
+      private void DoModAction ( AppAction action, ModInfo mod ) {
          if ( mod == null ) return;
          switch ( action ) {
-            case AppAction.DELETE_FILE :
-            case AppAction.DELETE_DIR :
-               ModBridge.Delete( mod, action );
-               GetModList();
+            case AppAction.DEL_MOD :
+               ModBridge.DeleteMod( mod );
                return;
             case AppAction.DELETE_CONFIG :
                ModBridge.DeleteConfig( mod );
                return;
             case AppAction.RESET_CONFIG :
                ModBridge.ResetConfig( mod );
-               GUI.Prompt( AppAction.RESET_CONFIG );
                return;
             default :
                Log( $"Unknown command {action}" );
                return;
          }
-      } catch ( IOException ex ) {
-         Log( ex );
-         GUI.Prompt( action, PromptFlag.ERROR, ex );
-         GetModList();
-      } }
+      }
 
       internal void AddMod ( string file ) { try {
          var ext = Path.GetExtension( file ).ToLowerInvariant();

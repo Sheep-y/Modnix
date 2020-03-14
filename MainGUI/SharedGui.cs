@@ -23,7 +23,7 @@ namespace Sheepy.Modnix.MainGUI {
    internal enum ModQuery { NONE, IS_FOLDER, IS_CHILD, HAS_CONFIG, HAS_CONFIG_FILE }
 
    public enum AppAction { NONE,
-      SETUP, REVERT, LAUNCH_GAME, ADD_MOD, DELETE_DIR, DELETE_FILE,
+      SETUP, REVERT, LAUNCH_GAME, ADD_MOD, DEL_MOD,
       ENABLE_MOD, DISABLE_MOD, DELETE_CONFIG, RESET_CONFIG }
 
    [Flags]
@@ -101,8 +101,7 @@ namespace Sheepy.Modnix.MainGUI {
             case AppAction.SETUP : actionTxt = "Setup"; break;
             case AppAction.REVERT : actionTxt = "Revert"; break;
             case AppAction.ADD_MOD : actionTxt = "Add Mod"; break;
-            case AppAction.DELETE_DIR : actionTxt = "Delete Mod Folder"; break;
-            case AppAction.DELETE_FILE : actionTxt = "Delete Mod"; break;
+            case AppAction.DEL_MOD : actionTxt = "Delete Mod"; break;
             case AppAction.DELETE_CONFIG : actionTxt = "Delete config"; break;
             case AppAction.RESET_CONFIG : actionTxt = "Reset config"; break;
             default : actionTxt = "Action"; break;

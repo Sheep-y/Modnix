@@ -49,39 +49,29 @@ namespace Sheepy.Modnix.MainGUI {
          }
       }
 
-      internal void Delete ( ModInfo mod, AppAction type ) {
-         App.Log( $"{type} {mod.Name}" );
-         switch ( type ) {
-            case AppAction.DELETE_FILE : DeleteModFile( mod ); break;
-            case AppAction.DELETE_CONFIG : break;
-            case AppAction.DELETE_DIR : DeleteModFolder( mod ); break;
-            default: throw new ArgumentException( $"Unknown mod deletion {type}" );
-         }
-      }
-
-      private void DeleteModFile ( ModInfo mod ) {
-         string path = mod.Path;
-         App.Log( $"Deleting {path}" );
-         File.Delete( path );
-         RemoveEmptyFolders( path );
-      }
-
-      private void DeleteModFolder ( ModInfo mod ) {
+      internal void DeleteMod ( ModInfo mod ) {
          string path = Path.GetDirectoryName( mod.Path );
-         if ( path == ModLoader.ModDirectory ) throw new IOException( "Cannot delete mod folder" );
+         if ( path == ModLoader.ModDirectory ) {
+            App.Log( $"Deleting {mod.Path}" );
+            File.Delete( mod.Path );
+            return;
+         }
          RecurDelete( path );
          RemoveEmptyFolders( path );
       }
 
       private void RecurDelete ( string path ) {
          foreach ( var file in Directory.EnumerateFiles( path ) ) {
+            if ( Path.GetExtension( file ).Equals( ".conf", StringComparison.OrdinalIgnoreCase ) ) continue;
             App.Log( $"Deleting {file}" );
             File.Delete( file );
          }
          foreach ( var dir in Directory.EnumerateDirectories( path ) )
             RecurDelete( dir );
-         App.Log( $"Deleting {path}" );
-         Directory.Delete( path );
+         if ( ! Directory.EnumerateFileSystemEntries( path ).Any() ) {
+            App.Log( $"Deleting {path}" );
+            Directory.Delete( path );
+         }
       }
 
       internal void DeleteConfig ( ModInfo mod ) {
@@ -186,7 +176,7 @@ namespace Sheepy.Modnix.MainGUI {
          list.Add( selfRun );
          if ( Mod.HasConfig ) {
             var config = ModLoader.CheckSettingFile( Mod.Path );
-            list.Add( config != null ? $"\r{config} [Config]" : "\r(Can create config file)" );
+            list.Add( config != null ? $"\r{fileName(config)} [Config]" : "\r(Can create config file)" );
          }
          foreach ( var e in meta.Dlls ) {
             var path = fileName( e.Path );
