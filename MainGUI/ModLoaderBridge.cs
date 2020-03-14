@@ -145,7 +145,11 @@ namespace Sheepy.Modnix.MainGUI {
       public override void BuildSummary ( FlowDocument doc ) { lock ( Mod ) {
          var body = doc.Blocks.FirstBlock as Paragraph;
          if ( body == null ) return;
-         body.Inlines.Add( new Run( Mod.Metadata.Name.ToString( "en" ) + "\r" ) );
+         body.Inlines.Add( new Bold( new Run( Mod.Metadata.Name.ToString( "en" ) ) ) );
+         if ( Mod.HasConfig )
+            body.Inlines.Add( File.Exists( ModLoader.CheckSettingFile( Mod.Path ) )
+                  ? "\t[has config file]" : "\t[can create config]" );
+         body.Inlines.Add( "\r" );
       } }
 
       private void BuildBasicDesc ( ModMeta meta, InlineCollection list ) {
