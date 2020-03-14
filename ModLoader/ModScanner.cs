@@ -342,8 +342,8 @@ namespace Sheepy.Modnix {
                   if ( pass && req.Min != null && req.Min > ver ) pass = false;
                   if ( pass && req.Max != null && req.Max < ver ) pass = false;
                   if ( ! pass ) {
-                     DisableAndRemoveMod( mod, "requires", "Mod {0} requirement {1} [{2}-{3}] failed, found {4}",
-                        mod.Metadata.Id, req.Id, req.Min, req.Max, ver );
+                     DisableAndRemoveMod( mod, "requires", "Mod {4} requirement {0} [{1}-{2}] failed, found {3}",
+                        req.Id, req.Min, req.Max, ver, mod.Metadata.Id );
                      NeedAnotherLoop = true;
                   }
                }

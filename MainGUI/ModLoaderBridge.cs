@@ -1,6 +1,7 @@
 ﻿using Sheepy.Logging;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -147,6 +148,30 @@ namespace Sheepy.Modnix.MainGUI {
          if ( meta.Version != null ) list.Add( $"\tVer {Version}" );
          list.Add( $"\rType\t{Type}" );
          if ( meta.Author != null ) list.Add( $"\rAuthor\t{Author}" );
+         if ( Mod.Notices != null )
+            foreach ( var notice in Mod.Notices ) {
+               var txt = new Run();
+               switch ( notice.Message ) {
+                  case "duplicate" :
+                     txt.Text = string.Format( "\rDisabled: Duplicate of {0}", notice.Args[0]?.ToString() ); break;
+                  case "requires" :
+                     txt.Text = string.Format( "\rDisabled: Missing requirement {0} [{1}-{2}]", notice.Args[0]?.ToString(), notice.Args[1], notice.Args[2] ); break;
+                  case "conflict" :
+                     txt.Text = string.Format( "\rDisabled: Marked as conflict by {0}", notice.Args[0]?.ToString() ); break;
+                  default:
+                     txt.Text = "\r" + notice.Message.ToString(); break;
+               }
+               switch ( notice.Level ) {
+                  case SourceLevels.Critical :
+                  case SourceLevels.Error :
+                     txt.Foreground = System.Windows.Media.Brushes.Red; break;
+                  case SourceLevels.Warning :
+                     txt.Foreground = System.Windows.Media.Brushes.Orange; break;
+                  default :
+                     txt.Foreground = System.Windows.Media.Brushes.Blue; break;
+               }
+               list.Add( txt );
+            }
       }
 
       private void BuildProvidedDesc ( ModMeta meta, InlineCollection list ) {
