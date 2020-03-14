@@ -4,6 +4,7 @@
 
 * New: Add mod button, automatically place mod in subfolder. Supports .dll, .zip, .7z, .js (modnix mod; not ppdef mod) and skip .cs, .csproj
 * New: Reset button, which reset and recreate a compatible mod's config file.
+* New: Multiple mods may now be selected for group mod actions.
 * New: Dll mods may now receive a setting string or object, when a config is supplied.
 * New: Dll mods may get modsRoot, modPath, and assemblyPath as initialiser params.
 * New: Modnix settings now stored in Modnix.conf which can be edited easily.

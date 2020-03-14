@@ -187,10 +187,13 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       private Block BuildCopyright () {
-         var txt = Mod.Metadata.Copyright?.ToString( "en" );
-         if ( string.IsNullOrWhiteSpace( txt ) ) return null;
-         if ( ! txt.StartsWith( "Copyright", StringComparison.OrdinalIgnoreCase ) )
-            txt = "Copyright: " + txt;
+         var txt = $"Modnix Id: {Mod.Metadata.Id}";
+         var copy = Mod.Metadata.Copyright?.ToString( "en" );
+         if ( ! string.IsNullOrWhiteSpace( copy ) ) {
+            if ( ! copy.StartsWith( "Copyright", StringComparison.OrdinalIgnoreCase ) )
+               copy = "Copyright: " + copy;
+            txt += "\r" + copy;
+         }
          return new Paragraph( new Run( txt ) );
       }
 
