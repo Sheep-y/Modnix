@@ -21,7 +21,7 @@ namespace Sheepy.Modnix.MainGUI {
       public abstract string Type { get; }
    }
 
-   internal enum ModQuery { NONE, IS_FOLDER, IS_CHILD, HAS_CONFIG, HAS_CONFIG_FILE }
+   internal enum ModQuery { NONE, ENABLED, IS_FOLDER, IS_CHILD, HAS_CONFIG, HAS_CONFIG_FILE }
 
    public enum AppAction { NONE,
       SETUP, REVERT, LAUNCH_GAME, ADD_MOD, DEL_MOD,

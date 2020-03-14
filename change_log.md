@@ -1,6 +1,6 @@
 # Modnix Changelog
 
-# Version 0.90, 2020-03-14
+# Version 0.90 RC, 2020-03-14
 
 * New: Add mod button, automatically place mod in subfolder. Supports .dll, .zip, .7z, .js (modnix mod; not ppdef mod) and skip .cs, .csproj
 * New: Reset button, which reset and recreate a compatible mod's config file.
@@ -9,7 +9,7 @@
 * New: Dll mods may get modsRoot, modPath, and assemblyPath as initialiser params.
 * New: Modnix settings now stored in Modnix.conf which can be edited easily.
 * New: Formatted app/game/mod info.  Mod info panel now shows all relevant mod info, including file list and entry points.
-* New: Show mod installation date on mod list.
+* New: Show mod installation date on mod list.  Disabled mods are greyed.
 * New: License button to display licenses of all images, parts, and libraries.
 * Fix: Mono.Cecil.dll is now deleted from Mods folder on setup, in addition to other loader dlls.
 * Fix: Lang of mod info now accepts a single string as intended.
@@ -25,7 +25,7 @@
 * Overloaded mod initialisers are now allowed and the first declared will be used.
 * Injector's game version check now returns only type of error, instead of full stacktrace, to keep returned text on one line.
 
-# Version 0.81, 2020-03-01
+# Version 0.81 Beta Patch, 2020-03-01
 
 * New: Faster startup - Scan mod list in parallel with startup checks.
 * New: Faster startup - Check game version in parallel with injection status.
@@ -40,7 +40,7 @@
 * Installer no longer scan for mods.
 * All log messages are duplicated to standard out, instead of silence after GUI shows up.
 
-# Version 0.80, 2020-02-29
+# Version 0.80 Beta, 2020-02-29
 
 * First public beta.
 * One-click install.

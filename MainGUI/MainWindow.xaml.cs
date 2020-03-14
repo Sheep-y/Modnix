@@ -514,6 +514,12 @@ namespace Sheepy.Modnix.MainGUI {
          GameStatusTimer.Change( Timeout.Infinite, Timeout.Infinite );
          GameStatusTimer.Dispose();
       }
+
+      private void GridModList_LoadingRow ( object sender, DataGridRowEventArgs e ) {
+         var row = e.Row;
+         row.Foreground = ( ( row.Item as ModInfo )?.Is( ModQuery.ENABLED ) == true )
+            ? Brushes.Navy : Brushes.Gray;
+      }
    }
 
    public static class WpfHelper {

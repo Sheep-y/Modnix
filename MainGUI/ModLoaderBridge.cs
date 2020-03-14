@@ -110,6 +110,8 @@ namespace Sheepy.Modnix.MainGUI {
 
       public override bool Is ( ModQuery prop ) { lock ( Mod ) {
          switch ( prop ) {
+            case ModQuery.ENABLED :
+               return ! Mod.Disabled;
             case ModQuery.IS_FOLDER :
                var path = System.IO.Path.GetDirectoryName( Path );
                return path != AppControl.Instance.ModFolder && Directory.EnumerateFileSystemEntries( path ).Count() > 1;
