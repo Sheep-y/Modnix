@@ -92,7 +92,7 @@ namespace Sheepy.Modnix.MainGUI {
          ButtonAddMod.IsEnabled = SharedGui.CanModify && Directory.Exists( App.ModFolder );
          ButtonModDir.IsEnabled = Directory.Exists( App.ModFolder );
          ButtonRefreshMod.IsEnabled = Directory.Exists( App.ModFolder ) && ! SharedGui.IsAppWorking;
-         ButtonModOpenModDir.IsEnabled = IsSingleModSelected;
+         ButtonModOpenModDir.IsEnabled = CurrentMod != null;
          ButtonModConf.IsEnabled = SharedGui.CanModify && CurrentMod != null && ModList.Any( e => e.Is( ModQuery.HAS_CONFIG ) );
          ButtonModDelete.IsEnabled = SharedGui.CanModify && CurrentMod != null && ! ModList.Any( e => e.Is( ModQuery.IS_CHILD ) );
          ButtonLoaderLog.IsEnabled = File.Exists( LoaderLog );
@@ -230,7 +230,7 @@ namespace Sheepy.Modnix.MainGUI {
       #region Mod Info Area
       private ModInfo CurrentMod;
       private IEnumerable<ModInfo> ModList;
-      private bool IsSingleModSelected => CurrentMod != null && GridModList.SelectedItems.Count == 1;
+      //private bool IsSingleModSelected => CurrentMod != null && GridModList.SelectedItems.Count == 1;
 
       private void SetModList ( IEnumerable<ModInfo> list ) {
          ModList = list;
@@ -317,9 +317,15 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       private void ButtonModOpenModDir_Click ( object sender, RoutedEventArgs e ) {
-         var path = CurrentMod?.Path;
-         if ( string.IsNullOrWhiteSpace( path ) ) return;
-         AppControl.Explore( path );
+         int count = GridModList.SelectedItems.Count;
+         if ( count > 4 &&
+            MessageBoxResult.Yes != MessageBox.Show( $"Open {count} file explorer?", "Warning", MessageBoxButton.OKCancel, MessageBoxImage.Warning, MessageBoxResult.Cancel ) )
+            return;
+         foreach ( var item in GridModList.SelectedItems ) {
+            var path = ( item as ModInfo )?.Path;
+            if ( string.IsNullOrWhiteSpace( path ) ) return;
+            AppControl.Explore( path );
+         }
       }
 
       private void ButtonModConf_Click ( object sender, RoutedEventArgs e ) {
