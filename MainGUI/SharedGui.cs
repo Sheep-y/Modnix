@@ -13,15 +13,15 @@ namespace Sheepy.Modnix.MainGUI {
       public abstract string Version { get; }
       public abstract string Author { get; }
       public abstract string Status { get; }
-      public abstract bool Is ( ModQueryType prop );
+      public abstract bool Is ( ModQuery prop );
       public abstract void BuildDesc ( FlowDocument doc );
       public abstract string Path { get; }
       public abstract string Type { get; }
    }
 
-   internal enum ModQueryType { NONE, IS_FOLDER, IS_CHILD, HAS_CONFIG, HAS_CONFIG_FILE }
+   internal enum ModQuery { NONE, IS_FOLDER, IS_CHILD, HAS_CONFIG, HAS_CONFIG_FILE }
 
-   public enum AppActionType { NONE,
+   public enum AppAction { NONE,
       SETUP, REVERT, LAUNCH_GAME, ADD_MOD, DELETE_DIR, DELETE_FILE,
       ENABLE_MOD, DISABLE_MOD, DELETE_CONFIG, RESET_CONFIG }
 
@@ -94,16 +94,16 @@ namespace Sheepy.Modnix.MainGUI {
          }
       }
 
-      internal static void Prompt ( AppActionType action, PromptFlag flags, Exception ex, Action OnRestart ) { try {
+      internal static void Prompt ( AppAction action, PromptFlag flags, Exception ex, Action OnRestart ) { try {
          string actionTxt;
          switch ( action ) {
-            case AppActionType.SETUP : actionTxt = "Setup"; break;
-            case AppActionType.REVERT : actionTxt = "Revert"; break;
-            case AppActionType.ADD_MOD : actionTxt = "Add Mod"; break;
-            case AppActionType.DELETE_DIR : actionTxt = "Delete Mod Folder"; break;
-            case AppActionType.DELETE_FILE : actionTxt = "Delete Mod"; break;
-            case AppActionType.DELETE_CONFIG : actionTxt = "Delete config"; break;
-            case AppActionType.RESET_CONFIG : actionTxt = "Reset config"; break;
+            case AppAction.SETUP : actionTxt = "Setup"; break;
+            case AppAction.REVERT : actionTxt = "Revert"; break;
+            case AppAction.ADD_MOD : actionTxt = "Add Mod"; break;
+            case AppAction.DELETE_DIR : actionTxt = "Delete Mod Folder"; break;
+            case AppAction.DELETE_FILE : actionTxt = "Delete Mod"; break;
+            case AppAction.DELETE_CONFIG : actionTxt = "Delete config"; break;
+            case AppAction.RESET_CONFIG : actionTxt = "Reset config"; break;
             default : actionTxt = "Action"; break;
          }
 
@@ -116,7 +116,7 @@ namespace Sheepy.Modnix.MainGUI {
             return;
          }
 
-         if ( action == AppActionType.SETUP ) {
+         if ( action == AppAction.SETUP ) {
             txt = $"Setup success.\nPlease re-setup after every game patch.\n\nMod folder:\nMy Documents\\{AppControl.MOD_PATH}\n";
             if ( flags.Has( PromptFlag.SETUP_MOD_MOVED ) )
                txt += "\nMods moved to new mod folder.";
@@ -131,7 +131,7 @@ namespace Sheepy.Modnix.MainGUI {
             } else {
                MessageBox.Show( txt, "Success", MessageBoxButton.OK, MessageBoxImage.Information );
             }
-         } else if ( action == AppActionType.REVERT ) {
+         } else if ( action == AppAction.REVERT ) {
             MessageBox.Show( "Revert success.\nGame is now Modnix-free.", "Success" );
          } else {
             MessageBox.Show( string.Format( "{0} success.", actionTxt ), "Success" );

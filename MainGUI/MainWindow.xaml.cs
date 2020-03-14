@@ -93,8 +93,8 @@ namespace Sheepy.Modnix.MainGUI {
          ButtonModDir.IsEnabled = Directory.Exists( App.ModFolder );
          ButtonRefreshMod.IsEnabled = Directory.Exists( App.ModFolder ) && ! SharedGui.IsAppWorking;
          ButtonModOpenModDir.IsEnabled = IsSingleModSelected;
-         ButtonModConf.IsEnabled = SharedGui.CanModify && CurrentMod != null && ModList.Any( e => e.Is( ModQueryType.HAS_CONFIG ) );
-         ButtonModDelete.IsEnabled = SharedGui.CanModify && CurrentMod != null && ! ModList.Any( e => e.Is( ModQueryType.IS_CHILD ) );
+         ButtonModConf.IsEnabled = SharedGui.CanModify && CurrentMod != null && ModList.Any( e => e.Is( ModQuery.HAS_CONFIG ) );
+         ButtonModDelete.IsEnabled = SharedGui.CanModify && CurrentMod != null && ! ModList.Any( e => e.Is( ModQuery.IS_CHILD ) );
          ButtonLoaderLog.IsEnabled = File.Exists( LoaderLog );
 
          if ( SharedGui.IsGameRunning )
@@ -183,10 +183,10 @@ namespace Sheepy.Modnix.MainGUI {
          Process.Start( "explorer.exe", arg );
       } catch ( Exception ex ) { Log( ex ); } }
 
-      public void Prompt ( AppActionType action, PromptFlag flags = PromptFlag.NONE, Exception ex = null ) { this.Dispatch( () => { try {
+      public void Prompt ( AppAction action, PromptFlag flags = PromptFlag.NONE, Exception ex = null ) { this.Dispatch( () => { try {
          Log( $"Prompt {action} {flags}" );
          SharedGui.Prompt( action, flags, ex, () => AppControl.Explore( App.ModGuiExe ) );
-         if ( action == AppActionType.ADD_MOD || action == AppActionType.DELETE_DIR || action == AppActionType.DELETE_FILE )
+         if ( action == AppAction.ADD_MOD || action == AppAction.DELETE_DIR || action == AppAction.DELETE_FILE )
             ModListChanged.Invoke();
       } catch ( Exception err ) { Log( err ); } } ); }
 
@@ -310,27 +310,27 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       private void ButtonModConf_Click ( object sender, RoutedEventArgs e ) {
-         var msg = CurrentMod.Is( ModQueryType.HAS_CONFIG_FILE ) ? $"Reset config file of \"{CurrentMod.Name}\"?" : $"Create config file of \"{CurrentMod.Name}\"?";
+         var msg = CurrentMod.Is( ModQuery.HAS_CONFIG_FILE ) ? $"Reset config file of \"{CurrentMod.Name}\"?" : $"Create config file of \"{CurrentMod.Name}\"?";
          if ( MessageBox.Show( msg, "Reset Config", MessageBoxButton.OKCancel, MessageBoxImage.Warning, MessageBoxResult.Cancel )
             != MessageBoxResult.OK ) return;
-         App.DoModActionAsync( AppActionType.RESET_CONFIG, CurrentMod );
+         App.DoModActionAsync( AppAction.RESET_CONFIG, CurrentMod );
       }
 
       private void ButtonModDelete_Click ( object sender, RoutedEventArgs e ) {
          if ( CurrentMod == null ) return;
-         if ( CurrentMod.Is( ModQueryType.HAS_CONFIG_FILE ) ) {
+         if ( CurrentMod.Is( ModQuery.HAS_CONFIG_FILE ) ) {
             var ans = MessageBox.Show( $"Delete \"{CurrentMod.Name}\".\nKeep settings?", "Confirm",
                   MessageBoxButton.YesNoCancel, MessageBoxImage.Question, MessageBoxResult.Cancel );
             if ( ans == MessageBoxResult.Cancel ) return;
             if ( ans == MessageBoxResult.No )
-               App.DoModActionAsync( AppActionType.DELETE_CONFIG, CurrentMod );
+               App.DoModActionAsync( AppAction.DELETE_CONFIG, CurrentMod );
          } else {
             var ans = MessageBox.Show( $"Delete \"{CurrentMod.Name}\"?", "Confirm",
                   MessageBoxButton.OKCancel, MessageBoxImage.Question, MessageBoxResult.Cancel );
             if ( ans == MessageBoxResult.Cancel ) return;
          }
          ButtonModDelete.IsEnabled = false;
-         App.DoModActionAsync( CurrentMod.Is( ModQueryType.IS_FOLDER ) ? AppActionType.DELETE_DIR : AppActionType.DELETE_FILE, CurrentMod );
+         App.DoModActionAsync( CurrentMod.Is( ModQuery.IS_FOLDER ) ? AppAction.DELETE_DIR : AppAction.DELETE_FILE, CurrentMod );
       }
 
       private void GridModList_SelectionChanged ( object sender, SelectionChangedEventArgs e ) {

@@ -49,12 +49,12 @@ namespace Sheepy.Modnix.MainGUI {
          }
       }
 
-      internal void Delete ( ModInfo mod, AppActionType type ) {
+      internal void Delete ( ModInfo mod, AppAction type ) {
          App.Log( $"{type} {mod.Name}" );
          switch ( type ) {
-            case AppActionType.DELETE_FILE : DeleteModFile( mod ); break;
-            case AppActionType.DELETE_CONFIG : break;
-            case AppActionType.DELETE_DIR : DeleteModFolder( mod ); break;
+            case AppAction.DELETE_FILE : DeleteModFile( mod ); break;
+            case AppAction.DELETE_CONFIG : break;
+            case AppAction.DELETE_DIR : DeleteModFolder( mod ); break;
             default: throw new ArgumentException( $"Unknown mod deletion {type}" );
          }
       }
@@ -115,16 +115,16 @@ namespace Sheepy.Modnix.MainGUI {
       public override string Author => Mod.Metadata.Author?.ToString( "en" );
       public override string Status { get { lock ( Mod ) return Mod.Disabled ? "Disabled" : "Enabled"; } }
 
-      public override bool Is ( ModQueryType prop ) { lock ( Mod ) {
+      public override bool Is ( ModQuery prop ) { lock ( Mod ) {
          switch ( prop ) {
-            case ModQueryType.IS_FOLDER :
+            case ModQuery.IS_FOLDER :
                var path = System.IO.Path.GetDirectoryName( Path );
                return path != AppControl.Instance.ModFolder && Directory.EnumerateFileSystemEntries( path ).Count() > 1;
-            case ModQueryType.IS_CHILD :
+            case ModQuery.IS_CHILD :
                return Mod.Parent != null;
-            case ModQueryType.HAS_CONFIG :
+            case ModQuery.HAS_CONFIG :
                return Mod.HasConfig;
-            case ModQueryType.HAS_CONFIG_FILE :
+            case ModQuery.HAS_CONFIG_FILE :
                return ModLoader.CheckSettingFile( Mod.Path ) != null;
             default:
                return false;

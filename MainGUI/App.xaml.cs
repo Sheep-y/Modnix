@@ -15,7 +15,7 @@ namespace Sheepy.Modnix.MainGUI {
 
    internal interface IAppGui {
       void SetInfo ( GuiInfo info, object value );
-      void Prompt ( AppActionType action, PromptFlag flags = PromptFlag.NONE, Exception ex = null );
+      void Prompt ( AppAction action, PromptFlag flags = PromptFlag.NONE, Exception ex = null );
       void Log ( object message );
    }
 
@@ -367,7 +367,7 @@ namespace Sheepy.Modnix.MainGUI {
          }
          throw new InvalidOperationException( $"Game is {CurrentGame.GameType}. Cannot launch as {type}." );
       } catch ( Exception ex ) {
-         GUI.Prompt( AppActionType.LAUNCH_GAME, PromptFlag.ERROR, ex );
+         GUI.Prompt( AppAction.LAUNCH_GAME, PromptFlag.ERROR, ex );
       } }
 
 
@@ -399,12 +399,12 @@ namespace Sheepy.Modnix.MainGUI {
             // Cleanup - accident prevention. Old dlls at game base may override dlls in the managed folder.
             foreach ( var file in new string[] { PAST, PAST_DL1, PAST_DL2, INJECTOR, LOADER, HARM_DLL, CECI_DLL } )
                CurrentGame.DeleteRootFile( file );
-            GUI.Prompt( AppActionType.SETUP, flags );
+            GUI.Prompt( AppAction.SETUP, flags );
          } else
             throw new ApplicationException( "Modnix injection failed" );
       } catch ( Exception ex ) {
          Log( ex );
-         GUI.Prompt( AppActionType.SETUP, PromptFlag.ERROR, ex );
+         GUI.Prompt( AppAction.SETUP, PromptFlag.ERROR, ex );
       } }
 
       internal bool CopySelf ( string me, string there ) { try {
@@ -499,12 +499,12 @@ namespace Sheepy.Modnix.MainGUI {
          if ( CurrentGame.Status == "none" ) {
             CurrentGame.DeleteCodeFile( INJECTOR );
             CurrentGame.DeleteCodeFile( LOADER );
-            GUI.Prompt( AppActionType.REVERT );
+            GUI.Prompt( AppAction.REVERT );
          } else
             throw new ApplicationException( "Modnix revert failed" );
       } catch ( Exception ex ) {
          Log( ex );
-         GUI.Prompt( AppActionType.REVERT, PromptFlag.ERROR, ex );
+         GUI.Prompt( AppAction.REVERT, PromptFlag.ERROR, ex );
       } }
 
       internal void CheckUpdateAsync () {
@@ -527,25 +527,25 @@ namespace Sheepy.Modnix.MainGUI {
          if ( list != null ) GUI.SetInfo( GuiInfo.MOD_LIST, list );
       } catch ( IOException ex ) { Log( ex ); } }
 
-      internal void DoModActionAsync ( AppActionType action, ModInfo mod ) {
+      internal void DoModActionAsync ( AppAction action, ModInfo mod ) {
          Log( $"Queuing mod {action}" );
          Task.Run( () => DoModAction( action, mod ) );
       }
 
-      private void DoModAction ( AppActionType action, ModInfo mod ) { try {
+      private void DoModAction ( AppAction action, ModInfo mod ) { try {
          if ( mod == null ) return;
          switch ( action ) {
-            case AppActionType.DELETE_FILE :
-            case AppActionType.DELETE_DIR :
+            case AppAction.DELETE_FILE :
+            case AppAction.DELETE_DIR :
                ModBridge.Delete( mod, action );
                GetModList();
                return;
-            case AppActionType.DELETE_CONFIG :
+            case AppAction.DELETE_CONFIG :
                ModBridge.DeleteConfig( mod );
                return;
-            case AppActionType.RESET_CONFIG :
+            case AppAction.RESET_CONFIG :
                ModBridge.ResetConfig( mod );
-               GUI.Prompt( AppActionType.RESET_CONFIG );
+               GUI.Prompt( AppAction.RESET_CONFIG );
                return;
             default :
                Log( $"Unknown command {action}" );
@@ -574,7 +574,7 @@ namespace Sheepy.Modnix.MainGUI {
          GetModList();
       } catch ( IOException ex ) {
          Log( ex );
-         GUI.Prompt( AppActionType.ADD_MOD, PromptFlag.ERROR, ex );
+         GUI.Prompt( AppAction.ADD_MOD, PromptFlag.ERROR, ex );
       } }
       #endregion
 

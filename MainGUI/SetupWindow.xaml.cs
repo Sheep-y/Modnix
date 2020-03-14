@@ -107,7 +107,7 @@ namespace Sheepy.Modnix.MainGUI {
          }
       } catch ( Exception ex ) { Log( ex ); } }
 
-      public void Prompt ( AppActionType action, PromptFlag flags = PromptFlag.NONE, Exception ex = null ) { this.Dispatch( () => { try {
+      public void Prompt ( AppAction action, PromptFlag flags = PromptFlag.NONE, Exception ex = null ) { this.Dispatch( () => { try {
          Log( $"Prompt {action} {flags}" );
          SharedGui.Prompt( action, flags, ex, () => {
             AppControl.Explore( App.ModGuiExe );
