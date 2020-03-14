@@ -210,8 +210,8 @@
                             <DataGridTextColumn Header="Mod" Binding="{Binding Name}" ClipboardContentBinding="{x:Null}"/>
                             <DataGridTextColumn Header="Version" Binding="{Binding Version}" ClipboardContentBinding="{x:Null}"/>
                             <DataGridTextColumn Header="Author" Binding="{Binding Author}" ClipboardContentBinding="{x:Null}"/>
-                            <DataGridTextColumn Header="Type" Binding="{Binding Type}" ClipboardContentBinding="{x:Null}"/>
                             <DataGridTextColumn Header="Status" Binding="{Binding Status}" ClipboardContentBinding="{x:Null}"/>
+                            <DataGridTextColumn Header="Type" Binding="{Binding Type}" ClipboardContentBinding="{x:Null}"/>
                             <DataGridTextColumn Header="Installed" Binding="{Binding Installed}" ClipboardContentBinding="{x:Null}"/>
                         </DataGrid.Columns>
                     </DataGrid>

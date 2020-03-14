@@ -258,7 +258,7 @@ namespace Sheepy.Modnix.MainGUI {
       private void RefreshModInfo () { try {
          if ( GridModList.SelectedItems.Count > 1 ) {
             Log( $"Showing mods summary" );
-            BkgdModeInfo.Opacity = 0.25;
+            BkgdModeInfo.Opacity = 0.20;
             BuildMultiModInfo();
             return;
          }
@@ -279,7 +279,7 @@ namespace Sheepy.Modnix.MainGUI {
          doc.Replace( body );
          foreach ( var mod in SelectedMods )
             mod.BuildSummary( doc );
-         body.Inlines.Add( $"Total {GridModList.SelectedItems.Count} mods" );
+         body.Inlines.Add( $"\rTotal {GridModList.SelectedItems.Count} mods" );
       } catch ( Exception ex ) { Log( ex ); } }
 
       private void ButtonAddMod_Click ( object sender, RoutedEventArgs evt ) {

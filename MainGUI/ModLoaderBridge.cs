@@ -104,7 +104,7 @@ namespace Sheepy.Modnix.MainGUI {
       public override string Name => Mod.Metadata.Name?.ToString( "en" );
       public override string Version => Mod.Metadata.Version?.ToString();
       public override string Author => Mod.Metadata.Author?.ToString( "en" );
-      public override string Status { get { lock ( Mod ) return Mod.Disabled ? "Disabled" : "Enabled"; } }
+      public override string Status { get { lock ( Mod ) return Mod.Disabled ? "Off" : "On"; } }
       public override DateTime Installed { get { lock ( Mod ) return new FileInfo( Mod.Path ).CreationTime; } }
 
       public override bool Is ( ModQuery prop ) { lock ( Mod ) {
