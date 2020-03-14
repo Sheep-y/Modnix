@@ -274,10 +274,11 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void BuildMultiModInfo () { try {
          var doc = RichModInfo.Document;
-         doc.Replace( new Paragraph() );
+         Paragraph body = new Paragraph();
+         doc.Replace( body );
          foreach ( var mod in GridModList.SelectedItems )
             ( mod as ModInfo )?.BuildSummary( doc );
-         doc.Blocks.Add( new Paragraph( new Run( $"Total {GridModList.SelectedItems.Count} mods" ) ) );
+         body.Inlines.Add( $"Total {GridModList.SelectedItems.Count} mods" );
       } catch ( Exception ex ) { Log( ex ); } }
 
       private void ButtonAddMod_Click ( object sender, RoutedEventArgs e ) {

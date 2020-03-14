@@ -147,7 +147,7 @@ namespace Sheepy.Modnix.MainGUI {
          if ( body == null ) return;
          body.Inlines.Add( new Bold( new Run( Mod.Metadata.Name.ToString( "en" ) ) ) );
          if ( Mod.HasConfig )
-            body.Inlines.Add( File.Exists( ModLoader.CheckSettingFile( Mod.Path ) )
+            body.Inlines.Add( ModLoader.CheckSettingFile( Mod.Path ) != null
                   ? "\t[has config file]" : "\t[can create config]" );
          body.Inlines.Add( "\r" );
       } }
@@ -178,6 +178,10 @@ namespace Sheepy.Modnix.MainGUI {
          var self = fileName( Path );
          var selfRun = new Run( "\r" + self );
          list.Add( selfRun );
+         if ( Mod.HasConfig ) {
+            var config = ModLoader.CheckSettingFile( Mod.Path );
+            list.Add( config != null ? $"\r{config} [Config]" : "\r(Can create config file)" );
+         }
          foreach ( var e in meta.Dlls ) {
             var path = fileName( e.Path );
             var txt = "\r" + path + " [" + string.Join( ", ", e.Methods.Keys ) + "]";
