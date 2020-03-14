@@ -162,8 +162,8 @@ namespace Sheepy.Modnix.MainGUI {
          List<string> param = args.ToList();
 
          if ( ParamIndex( param, "reset", "reset" ) >= 0 ) {
-            var file = Path.Combine( ModFolder, ModLoader.CONF_FILE );
             try {
+               var file = Path.Combine( ModFolder, ModLoader.CONF_FILE );
                Log( $"Deleting {file}" );
                File.Delete( file );
             } catch ( IOException ex ) { Log( ex ); }
@@ -325,6 +325,7 @@ namespace Sheepy.Modnix.MainGUI {
       } catch ( IOException ex ) { gamePath = null; return Log( ex, false ); } }
 
       private string SearchRegistry () { try {
+         Log( "Checking GameConfigStore registry" );
          using ( RegistryKey key = Registry.CurrentUser.OpenSubKey( "System\\GameConfigStore\\Children\\acd774ad-4030-4091-8b74-e50749daefd8" ) ) {
             if ( key == null ) return null;
             var val = key.GetValue( "MatchedExeFullPath" )?.ToString();
@@ -528,7 +529,7 @@ namespace Sheepy.Modnix.MainGUI {
       } catch ( IOException ex ) { Log( ex ); } }
 
       internal Task DoModActionAsync ( AppAction action, IEnumerable<ModInfo> mods ) {
-         Log( $"Queuing mod {action}" );
+         Log( $"Queuing mod {action} on {mods.Count()} mods" );
          return Task.WhenAll(
             mods.Select( mod => Task.Run( () => DoModAction( action, mod ) )
          ) );
@@ -624,13 +625,14 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       internal static Stream GetResource ( string path ) {
-         return Application.GetResourceStream( new Uri( $"Modnix;component/Resources/{path}", UriKind.Relative ) ).Stream;
+         return Application.GetResourceStream( new Uri( $"/Resources/{path}", UriKind.Relative ) ).Stream;
       }
 
-      internal static byte[] GetResourceBytes ( string path ) {
+      internal byte[] GetResourceBytes ( string path ) {
          var mem = new MemoryStream();
          using ( var stream = GetResource( path ) ) {
             stream.CopyTo( mem );
+            Log( string.Format( "Extracted {0}, {1:n0} bytes", path, mem.Length ) );
          }
          return mem.ToArray();
       }
