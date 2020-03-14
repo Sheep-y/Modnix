@@ -6,11 +6,9 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
 
 namespace Sheepy.Modnix.MainGUI {
    // This class was created to separate ModLoader classes from the main program.
@@ -165,22 +163,22 @@ namespace Sheepy.Modnix.MainGUI {
                var txt = new Run();
                switch ( notice.Message ) {
                   case "duplicate" :
-                     txt.Text = string.Format( "\rDisabled: Duplicate of {0}", notice.Args[0]?.ToString() ); break;
+                     txt.Text = string.Format( "\rDisabled: Using {0}", notice.Args[0]?.ToString() ); break;
                   case "requires" :
-                     txt.Text = string.Format( "\rDisabled: Missing requirement {0} [{1}-{2}]", notice.Args[0]?.ToString(), notice.Args[1], notice.Args[2] ); break;
+                     txt.Text = string.Format( "\rDisabled: Missing requirement {0}", notice.Args[0]?.ToString(), notice.Args[1], notice.Args[2] ); break;
                   case "conflict" :
-                     txt.Text = string.Format( "\rDisabled: Marked as conflict by {0}", notice.Args[0]?.ToString() ); break;
+                     txt.Text = string.Format( "\rDisabled by {0}", notice.Args[0]?.ToString() ); break;
                   default:
                      txt.Text = "\r" + notice.Message.ToString(); break;
                }
                switch ( notice.Level ) {
                   case SourceLevels.Critical :
                   case SourceLevels.Error :
-                     txt.Foreground = System.Windows.Media.Brushes.Red; break;
+                     txt.Foreground = Brushes.Red; break;
                   case SourceLevels.Warning :
-                     txt.Foreground = System.Windows.Media.Brushes.Orange; break;
+                     txt.Foreground = Brushes.Orange; break;
                   default :
-                     txt.Foreground = System.Windows.Media.Brushes.Blue; break;
+                     txt.Foreground = Brushes.Blue; break;
                }
                list.Add( txt );
             }
