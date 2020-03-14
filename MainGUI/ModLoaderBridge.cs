@@ -211,7 +211,7 @@ namespace Sheepy.Modnix.MainGUI {
          foreach ( var e in data.Dict ) {
             string name = e.Key, link = e.Value;
             if ( string.IsNullOrWhiteSpace( name ) || string.IsNullOrWhiteSpace( link ) ) continue;
-            list.Add( "\r" + name + "\t" ); 
+            list.Add( "\r" + name + "\t" );
             list.Add( new Hyperlink( new Run( link ) ){ NavigateUri = new Uri( link ) } );
          }
       }

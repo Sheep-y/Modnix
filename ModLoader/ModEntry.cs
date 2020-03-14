@@ -158,9 +158,11 @@ namespace Sheepy.Modnix {
          var dict = val.Dict;
          if ( dict != null ) {
             foreach ( var pair in dict.ToArray() ) {
-               var txt = NormString( pair.Value );
-               if ( txt == null ) dict.Remove( txt );
-               dict[ pair.Value ] = txt;
+               string key = NormString( pair.Key ), txt = NormString( pair.Value );
+               if ( key == null || txt == null ) dict.Remove( pair.Key );
+               if ( pair.Key == key && pair.Value == txt ) continue;
+               dict.Remove( pair.Key );
+               dict[ key ] = txt;
             }
             if ( dict.Count <= 0 ) val.Dict = dict = null;
          }
