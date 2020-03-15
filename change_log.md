@@ -1,6 +1,6 @@
 # Modnix Changelog
 
-# Version 0.90 RC, 2020-03-14
+# Version 0.90 RC, 2020-03-15
 
 * New: Add mod button, automatically place mod in subfolder. Supports .dll, .zip, .7z, .js (modnix mod; not ppdef mod) and skip .cs, .csproj
 * New: Reset button, which reset and recreate a compatible mod's config file.
@@ -15,9 +15,10 @@
 * Fix: Lang of mod info now accepts a single string as intended.
 * Fix: Url and Contact no longer lowercase their keys.
 * Fix: Embedded mod_info now have their Url, Contact, and Copyright applied.
-* Fix: Mod loading order should now be consistent.
+* Fix: Mod loading order should now be consistent. (But subject to change in the future.)
 * Fix: Parameter defaults are now used for unrecognised initialiser parameters.
 * Fix: Game is now detected when Modnix is placed in one to two levels of subfolder, in addition to root.
+* Fix: Game is now offline-launched in its folder, instead of Modnix folder.
 * Fix: Manual setup package should no longer run in setup mode. Thanks Zyxpsilon on Discord for reporting.
 * Fix: Typo on log label. Thanks javehaider on NexusMods for reporting.
 * In mod_info, Langs are changed to Lang, Urls changed to Url.  This make info fields consistent.

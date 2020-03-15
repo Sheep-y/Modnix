@@ -360,7 +360,12 @@ namespace Sheepy.Modnix.MainGUI {
          } else {
             string exe = Path.Combine( CurrentGame.GameDir, GAME_EXE );
             Log( $"Launching {exe}" );
-            Process.Start( exe );
+            using ( Process p = new Process() ) {
+               p.StartInfo.UseShellExecute = false;
+               p.StartInfo.FileName = exe;
+               p.StartInfo.WorkingDirectory = CurrentGame.GameDir;
+               p.Start();
+            }
             return;
          }
          throw new InvalidOperationException( $"Game is {CurrentGame.GameType}. Cannot launch as {type}." );
