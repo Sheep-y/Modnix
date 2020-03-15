@@ -560,25 +560,26 @@ namespace Sheepy.Modnix.MainGUI {
          }
       }
 
-      internal void AddMod ( string file ) {
-         try {
-            var ext = Path.GetExtension( file ).ToLowerInvariant();
-            var folder = Path.Combine( ModFolder, Path.GetFileNameWithoutExtension( file ) );
-            if ( ext.Equals( ".zip" ) ) {
-               new ZipArchiveReader( file ).Install( folder );
-            } else if ( ext.Equals( ".7z" ) || ext.Equals( ".xz" ) ) {
-               new SevenZipArchiveReader( file ).Install( folder );
-            } else {
-               Log( $"Creating {folder}" );
-               Directory.CreateDirectory( folder );
-               var destination = Path.Combine( folder, Path.GetFileName( file ) );
-               Log( $"Copying {file} to {destination}" );
-               File.Copy( file, destination, true );
-            }
-            GetModList();
-         } catch ( IOException ex ) {
-            Log( ex );
-            GUI.Prompt( AppAction.ADD_MOD, PromptFlag.ERROR, ex );
+      internal Task AddModAsync ( string[] files ) {
+         Log( $"Queuing add mod of {string.Join( "\n", files )}" );
+         return Task.WhenAll( files.Select( file => Task.Run( () => AddMod( file ) ) ) );
+      }
+
+      private void AddMod ( string file ) {
+         var ext = Path.GetExtension( file ).ToLowerInvariant();
+         var folder = Path.Combine( ModFolder, Path.GetFileNameWithoutExtension( file ) );
+         if ( ext.Equals( ".zip" ) ) {
+            Log( $"Extracting {file} as a zipped mod" );
+            new ZipArchiveReader( file ).Install( folder );
+         } else if ( ext.Equals( ".7z" ) || ext.Equals( ".xz" ) ) {
+            Log( $"Extracting {file} as a 7z mod" );
+            new SevenZipArchiveReader( file ).Install( folder );
+         } else {
+            Log( $"Adding {file} as a single file mod" );
+            Directory.CreateDirectory( folder );
+            var destination = Path.Combine( folder, Path.GetFileName( file ) );
+            Log( $"Copying {file} to {destination}" );
+            File.Copy( file, destination, true );
          }
       }
 

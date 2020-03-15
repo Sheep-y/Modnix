@@ -290,17 +290,21 @@ namespace Sheepy.Modnix.MainGUI {
                      "Single File Mods (.dll,.js)|*.dll;*.js|"+
                      "All Files|*.*"
          };
-         if ( ! dialog.ShowDialog().GetValueOrDefault() ) return;
-         var target = dialog.FileName;
-         if ( target.StartsWith( App.ModFolder ) ) {
+         dialog.Multiselect = true;
+         dialog.Title = "Add Mod";
+         if ( ! dialog.ShowDialog().GetValueOrDefault() || dialog.FileNames.Length == 0 ) return;
+         if ( dialog.FileNames.Any( e => e.StartsWith( App.ModFolder ) ) ) {
             MessageBox.Show( "Add Mod failed.\rFile is already in mod folder.", "Error", MessageBoxButton.OK, MessageBoxImage.Exclamation );
             return;
          }
-         if ( App.CurrentGame != null && target.StartsWith( App.CurrentGame.GameDir ) ) {
+         if ( dialog.FileNames.Any( e => e.StartsWith( App.CurrentGame.GameDir ) ) ) {
             MessageBox.Show( "Add Mod failed.\rFile is in game folder.", "Error", MessageBoxButton.OK, MessageBoxImage.Exclamation );
             return;
          }
-         App.AddMod( target );
+         App.AddModAsync( dialog.FileNames ).ContinueWith( result => {
+            if ( result.IsFaulted ) Prompt( AppAction.ADD_MOD, PromptFlag.ERROR, result.Exception );
+            this.Dispatch( () => ButtonRefreshMod_Click( sender, evt ) );
+         } );
       }
 
       private Timer RefreshModTimer;
