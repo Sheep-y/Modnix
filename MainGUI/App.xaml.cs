@@ -644,7 +644,7 @@ namespace Sheepy.Modnix.MainGUI {
          Process.Start( "explorer.exe", $"/select, \"{filename}\"" );
       }
 
-      internal string RunAndWait ( string path, string exe, string param = null, bool asAdmin = false ) {
+      internal string RunAndWait ( string path, string exe, string param = null, bool asAdmin = false, bool suppressLog = false ) {
          Log( $"Running{( asAdmin ? " as admin" : "" )} at {path} : {exe} {param}" );
          try {
             using ( Process p = new Process() ) {
@@ -661,7 +661,8 @@ namespace Sheepy.Modnix.MainGUI {
                string output = "";
                if ( ! asAdmin ) {
                   output = p.StandardOutput.ReadToEnd()?.Trim();
-                  Log( $"Standard out: {output}" );
+                  if ( ! suppressLog )
+                     Log( $"Standard out: {output}" );
                }
                p.WaitForExit( 30_000 );
                return output;

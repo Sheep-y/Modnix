@@ -513,7 +513,6 @@ namespace Sheepy.Modnix.MainGUI {
             case "guide"  : url = "https://github.com/Sheep-y/Modnix/wiki/"; break;
             case "home"   : url = "https://github.com/Sheep-y/Modnix"; break;
             case "manual" : url = "https://drive.google.com/open?id=1n8ORQeDtBkWcnn5Es4LcWBxif7NsXqet"; break;
-            case "my_doc" : url = "https://github.com/Sheep-y/Modnix/wiki/Manual-Setup#wiki-wrapper"; break;
             case "nexus"  : url = "https://www.nexusmods.com/phoenixpoint/mods/?BH=0"; break;
             case "reddit" : url = "https://www.reddit.com/r/PhoenixPoint/"; break;
             case "twitter": url = "https://twitter.com/Phoenix_Point"; break;
