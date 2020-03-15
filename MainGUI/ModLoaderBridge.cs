@@ -159,8 +159,16 @@ namespace Sheepy.Modnix.MainGUI {
          list.Add( new Bold( new Run( meta.Name.ToString( "en" ) ) ) );
          if ( meta.Version != null ) list.Add( $"\tVer {Version}" );
          list.Add( $"\t{Type} mod" );
-         if ( meta.Lang != null )
-            list.Add( "\rLanguages\t" + string.Join( ", ", meta.Lang.Select( AppControl.LangIdToName ) ) );
+         if ( meta.Lang != null ) {
+            string lang;
+            if ( meta.Lang.Contains( "*" ) )
+               lang = AppControl.LangIdToName( "*" );
+            else if ( meta.Lang.Any( e => e == "-" || e == "--" ) )
+               lang = AppControl.LangIdToName( "-" );
+            else
+               lang = string.Join( ", ", meta.Lang.Select( AppControl.LangIdToName ) );
+            list.Add( $"\rLanguages\t{lang}" );
+         }
          if ( meta.Author != null ) list.Add( $"\rAuthor\t\t{Author}" );
          switch ( meta.Duration ) {
             case "temp"    : list.Add( "\rMod claims to be temporary and not break saves." ); break;
