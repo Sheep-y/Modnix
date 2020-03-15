@@ -50,8 +50,8 @@ namespace Sheepy.Modnix {
       public List<LogEntry> Notices;
 
       public bool HasConfig { get { lock ( Metadata ) {
-         return Metadata.DefaultSettings != null || Metadata.EmbeddedSettings != null ||
-                ModLoader.CheckSettingFile( Path ) != null;
+         return Metadata.DefaultConfig != null || Metadata.ConfigText != null ||
+                ModLoader.CheckConfigFile( Path ) != null;
       } } }
 
       public long GetPriority () { lock ( Metadata ) { return Priority ?? Metadata.Priority; } }
@@ -88,8 +88,8 @@ namespace Sheepy.Modnix {
       public string[] Mods;
       public DllMeta[] Dlls;
 
-      public object    DefaultSettings;
-      internal string  EmbeddedSettings;
+      public object    DefaultConfig;
+      internal string  ConfigText;
 
       internal bool HasContent => Mods == null && Dlls == null;
 
@@ -111,8 +111,8 @@ namespace Sheepy.Modnix {
             CopyNonNull( overrider.Priority, ref Priority );
             CopyNonNull( overrider.Mods, ref Mods );
             CopyNonNull( overrider.Dlls, ref Dlls );
-            CopyNonNull( overrider.DefaultSettings, ref DefaultSettings );
-            CopyNonNull( overrider.EmbeddedSettings, ref EmbeddedSettings );
+            CopyNonNull( overrider.DefaultConfig, ref DefaultConfig );
+            CopyNonNull( overrider.ConfigText, ref ConfigText );
          } }
          return overrider;
       }

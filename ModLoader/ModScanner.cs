@@ -97,7 +97,7 @@ namespace Sheepy.Modnix {
                Log.Verbo( "Parsing embedded mod_info" );
                meta.ImportFrom( ParseInfoJs( info )?.EraseModsAndDlls() );
                if ( conf != null ) lock ( meta ) {
-                  meta.EmbeddedSettings = conf;
+                  meta.ConfigText = conf;
                }
             }
          } else {

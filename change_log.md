@@ -8,10 +8,10 @@
 * New: Formatted app/game/mod info.  Mod info panel now shows all relevant mod info, including file list, entry points, reason of disable etc.
 * New: Show mod installation date on mod list.
 * New: Disabled mods are greyed.
-* New: mod_info.js now have Taint and DefaultSettings.
+* New: mod_info.js now have Taint and DefaultConfig.
 * New: Dll mods may now receive a setting string or object, when a config is supplied.
 * New: Dll mods may get modsRoot, modPath, and assemblyPath as initialiser params.
-* New: Modnix settings now stored in Modnix.conf which can be edited easily.
+* New: Modnix config now stored in Modnix.conf which can be edited easily.
 * New: License button to display licenses of all images, parts, and libraries.
 * Fix: Game is now offline-launched in its folder, instead of Modnix folder.
 * Fix: Game is now detected when Modnix is placed in one to two levels of subfolder, in addition to root.

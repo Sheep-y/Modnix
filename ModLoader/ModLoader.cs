@@ -165,8 +165,8 @@ namespace Sheepy.Modnix {
       } } catch ( Exception ex ) { Log?.Error( ex ); } }
       #endregion
 
-      #region Mod settings
-      public static string GetSettingFile ( string path ) {
+      #region Mod config
+      public static string GetConfigFile ( string path ) {
          if ( path == null ) return null;
          var name = Path.GetFileNameWithoutExtension( path );
          if ( name.Equals( "mod_info", StringComparison.OrdinalIgnoreCase ) )
@@ -174,23 +174,23 @@ namespace Sheepy.Modnix {
          return Path.Combine( Path.GetDirectoryName( path ), name + ".conf" );
       }
 
-      public static string CheckSettingFile ( string path ) {
-         var confFile = GetSettingFile( path );
+      public static string CheckConfigFile ( string path ) {
+         var confFile = GetConfigFile( path );
          if ( confFile == null || ! File.Exists( confFile ) )
             confFile = Path.Combine( Path.GetDirectoryName( path ), "mod_init.conf" );
          return File.Exists( confFile ) ? confFile : null;
       }
 
-      public static string ReadSettingText ( ModEntry mod ) { try {
-         var confFile = CheckSettingFile( mod.Path );
+      public static string ReadConfigText ( ModEntry mod ) { try {
+         var confFile = CheckConfigFile( mod.Path );
          if ( confFile != null )
             return File.ReadAllText( confFile, Encoding.UTF8 );
          var meta = mod.Metadata;
          lock ( meta ) {
-            if ( meta.EmbeddedSettings != null )
-               return meta.EmbeddedSettings;
-            if ( meta.DefaultSettings != null )
-               return meta.EmbeddedSettings = ModMetaJson.Stringify( meta.DefaultSettings );
+            if ( meta.ConfigText != null )
+               return meta.ConfigText;
+            if ( meta.DefaultConfig != null )
+               return meta.ConfigText = ModMetaJson.Stringify( meta.DefaultConfig );
          }
          return null;
       } catch ( Exception ex ) { Log?.Error( ex ); return null; } }
@@ -286,9 +286,9 @@ namespace Sheepy.Modnix {
          // Settings
          if ( IsSetting( pName ) ) {
             if ( pType == typeof( string ) )
-               return ReadSettingText( mod );
+               return ReadConfigText( mod );
             if ( pType == typeof( JObject ) || IsSetting( pType.Name ) ) try {
-               return JsonConvert.DeserializeObject( ReadSettingText( mod ), pType, ModMetaJson.JsonOptions );
+               return JsonConvert.DeserializeObject( ReadConfigText( mod ), pType, ModMetaJson.JsonOptions );
             } catch ( Exception e ) { Log.Warn( e ); }
          }
          return DefaultParamValue( aug, mod, path, type );

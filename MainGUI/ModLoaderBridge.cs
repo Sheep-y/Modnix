@@ -77,16 +77,16 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       internal void DeleteConfig ( ModInfo mod ) {
-         var file = ModLoader.CheckSettingFile( mod.Path );
+         var file = ModLoader.CheckConfigFile( mod.Path );
          if ( file != null )
             File.Delete( file );
       }
 
       internal void ResetConfig ( ModInfo mod ) {
          DeleteConfig( mod );
-         var str = ModLoader.ReadSettingText( ( mod as GridModItem ).Mod );
+         var str = ModLoader.ReadConfigText( ( mod as GridModItem ).Mod );
          if ( str != null )
-            File.WriteAllText( ModLoader.GetSettingFile( mod.Path ), str );
+            File.WriteAllText( ModLoader.GetConfigFile( mod.Path ), str );
       }
 
       private void RemoveEmptyFolders ( string path ) {
@@ -120,7 +120,7 @@ namespace Sheepy.Modnix.MainGUI {
             case ModQuery.HAS_CONFIG :
                return Mod.HasConfig;
             case ModQuery.HAS_CONFIG_FILE :
-               return ModLoader.CheckSettingFile( Mod.Path ) != null;
+               return ModLoader.CheckConfigFile( Mod.Path ) != null;
             default:
                return false;
          }
@@ -142,7 +142,7 @@ namespace Sheepy.Modnix.MainGUI {
          if ( body == null ) return;
          body.Inlines.Add( new Bold( new Run( Mod.Metadata.Name.ToString( "en" ) ) ) );
          if ( Mod.HasConfig )
-            body.Inlines.Add( ModLoader.CheckSettingFile( Mod.Path ) != null
+            body.Inlines.Add( ModLoader.CheckConfigFile( Mod.Path ) != null
                   ? "\t[has config file]" : "\t[can create config]" );
          body.Inlines.Add( "\r" );
       } }
@@ -217,7 +217,7 @@ namespace Sheepy.Modnix.MainGUI {
          var selfRun = new Run( "\r" + self );
          list.Add( selfRun );
          if ( Mod.HasConfig ) {
-            var config = ModLoader.CheckSettingFile( Mod.Path );
+            var config = ModLoader.CheckConfigFile( Mod.Path );
             list.Add( config != null ? $"\r{fileName(config)} [Config]" : "\r(Can create config file)" );
          }
          foreach ( var e in meta.Dlls ) {
