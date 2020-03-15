@@ -330,9 +330,11 @@ namespace Sheepy.Modnix.MainGUI {
 
       private string Create7z () {
          string dir = Path.GetTempPath(), exe = Path.Combine( dir, EXE );
-         if ( ! File.Exists( exe ) ) using ( var writer = new FileStream( exe, FileMode.Create ) ) {
-            Log( $"Creating {exe}" );
-            AppControl.GetResource( EXE ).CopyTo( writer );
+         lock ( EXE ) {
+            if ( ! File.Exists( exe ) ) using ( var writer = new FileStream( exe, FileMode.Create ) ) {
+               Log( $"Creating {exe}" );
+               AppControl.GetResource( EXE ).CopyTo( writer );
+            }
          }
          return exe;
       }
@@ -341,7 +343,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       public override string[] ListFiles () {
          string exe = Create7z();
-         string stdout = AppControl.Instance.RunAndWait( Path.GetDirectoryName( ArchivePath ), exe, $"l \"{ArchivePath}\" -ba -bd -sccUTF-8 -xr!*.cs -xr!*.csprog", false, false );
+         string stdout = AppControl.Instance.RunAndWait( Path.GetDirectoryName( ArchivePath ), exe, $"l \"{ArchivePath}\" -ba -bd -sccUTF-8 -xr!*.cs -xr!*.csprog", false, true );
          return stdout.Split( '\n' )
             .Where( e => ! e.Contains( " D..." ) ) // Ignore folders, e.g. empty folders result from ignoring *.cs
             .Select( e => RemoveSize.Replace( e.Substring( 25 ).Trim(), "" ) ).ToArray();
