@@ -28,6 +28,7 @@ namespace Sheepy.Modnix.MainGUI {
       protected readonly string ArchivePath;
       public ArchiveReader ( string path ) { ArchivePath = path; }
       public abstract void Install ( string modFolder );
+      protected void Log ( object msg ) => AppControl.Instance.Log( msg );
    }
 
    public partial class AppControl : Application {
@@ -580,9 +581,13 @@ namespace Sheepy.Modnix.MainGUI {
          return Task.WhenAll( files.Select( file => Task.Run( () => AddMod( file ) ) ) );
       }
 
+      private static Regex IgnoreInAddMod = new Regex( "-\\d{6,}$", RegexOptions.Compiled );
+
       private void AddMod ( string file ) {
          var ext = Path.GetExtension( file ).ToLowerInvariant();
-         var folder = Path.Combine( ModFolder, Path.GetFileNameWithoutExtension( file ) );
+         var modname = IgnoreInAddMod.Replace( Path.GetFileNameWithoutExtension( file ), "" );
+         if ( string.IsNullOrWhiteSpace( modname ) ) modname = Path.GetFileNameWithoutExtension( file );
+         var folder = Path.Combine( ModFolder, modname );
          if ( ext.Equals( ".zip" ) ) {
             Log( $"Extracting {file} as a zipped mod" );
             new ZipArchiveReader( file ).Install( folder );
