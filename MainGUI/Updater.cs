@@ -43,7 +43,7 @@ namespace Sheepy.Modnix.MainGUI {
       private bool Checking;
 
       internal GithubRelease FindUpdate ( Version update_from ) { try {
-         lock ( App ) {
+         lock ( RELEASE ) {
             if ( Checking ) return null;
             Checking = true;
          }
@@ -72,7 +72,7 @@ namespace Sheepy.Modnix.MainGUI {
       } catch ( Exception ex ) {
          return App.Log<GithubRelease>( ex, null );
       } finally {
-         lock( App ) { Checking = false; }
+         lock( RELEASE ) { Checking = false; }
       } }
 
       private bool HasNewRelease ( GithubRelease[] releases, Version update_from, out GithubRelease release ) {

@@ -409,7 +409,8 @@ namespace Sheepy.Modnix.MainGUI {
       private void ButtonCheckUpdate_Click ( object sender, RoutedEventArgs e ) => CheckUpdate( true );
 
       private void RefreshUpdateStatus () { try {
-         Log( $"Update is {(Update ?? "null")}" );
+         if ( Update != null )
+            Log( $"Update is {Update}" );
          if ( Object.Equals( "checking", Update ) ) {
             ButtonCheckUpdate.IsEnabled = false;
             BtnTextCheckUpdate.Text = "Checking...";
