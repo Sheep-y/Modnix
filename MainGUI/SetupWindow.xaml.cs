@@ -22,11 +22,11 @@ namespace Sheepy.Modnix.MainGUI {
       public SetupWindow ( string mode ) { try {
          Mode = mode;
          InitializeComponent();
-         SharedGui.AppStateChanged += RefreshInfo;
-         SharedGui.GamePathChanged += RefreshInfo;
-         SharedGui.VersionChanged += RefreshInfo;
-         SharedGui.AppWorkingChanged += RefreshInfo;
-         SharedGui.GameRunningChanged += RefreshInfo;
+         SharedGui.AppStateChanged    += this.Dispatcher( RefreshInfo );
+         SharedGui.GamePathChanged    += this.Dispatcher( RefreshInfo );
+         SharedGui.VersionChanged     += this.Dispatcher( RefreshInfo );
+         SharedGui.AppWorkingChanged  += this.Dispatcher( RefreshInfo );
+         SharedGui.GameRunningChanged += this.Dispatcher( RefreshInfo );
       } catch ( Exception ex ) { Console.WriteLine( ex ); } }
 
       private void Window_Activated ( object sender, EventArgs e ) {

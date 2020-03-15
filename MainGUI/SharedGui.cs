@@ -169,6 +169,8 @@ namespace Sheepy.Modnix.MainGUI {
             win.Dispatcher.Invoke( task );
       }
 
+      internal static Action Dispatcher ( this Window win, Action task ) => () => win.Dispatch( task );
+
       internal static bool Has ( this PromptFlag haysack, PromptFlag needle ) => ( haysack & needle ) == needle;
    }
 }

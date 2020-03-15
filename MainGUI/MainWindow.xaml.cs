@@ -31,16 +31,16 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void SetupGUI () {
          Log( "Setting up GUI" );
-         SharedGui.AppStateChanged += RefreshAppInfo;
-         SharedGui.AppStateChanged += RefreshAppButtons;
-         SharedGui.GamePathChanged += RefreshGameInfo;
-         SharedGui.VersionChanged += RefreshAppInfo;
-         SharedGui.VersionChanged += RefreshGameInfo;
-         SharedGui.AppWorkingChanged += RefreshAppInfo;
-         SharedGui.AppWorkingChanged += RefreshAppButtons;
-         SharedGui.GameRunningChanged += RefreshAppButtons;
-         ModListChanged += RefreshModList;
-         ModListChanged += RefreshAppButtons;
+         SharedGui.AppStateChanged += this.Dispatcher( RefreshAppInfo );
+         SharedGui.AppStateChanged += this.Dispatcher( RefreshAppButtons );
+         SharedGui.GamePathChanged += this.Dispatcher( RefreshGameInfo );
+         SharedGui.VersionChanged  += this.Dispatcher( RefreshAppInfo );
+         SharedGui.VersionChanged  += this.Dispatcher( RefreshGameInfo );
+         SharedGui.AppWorkingChanged  += this.Dispatcher( RefreshAppInfo );
+         SharedGui.AppWorkingChanged  += this.Dispatcher( RefreshAppButtons );
+         SharedGui.GameRunningChanged += this.Dispatcher( RefreshAppButtons );
+         ModListChanged += this.Dispatcher( RefreshModList );
+         ModListChanged += this.Dispatcher( RefreshAppButtons );
       }
 
       private void RefreshGUI () { try {
