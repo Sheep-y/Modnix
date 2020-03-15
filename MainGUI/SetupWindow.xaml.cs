@@ -97,22 +97,8 @@ namespace Sheepy.Modnix.MainGUI {
       } catch ( Exception ex ) { Log( ex ); } }
 
       private void BrowseGame () {
-         var dialog = new Microsoft.Win32.OpenFileDialog{
-            DefaultExt = "PhoenixPointWin64.exe",
-            Filter = "PhoenixPointWin64.exe|PhoenixPointWin64.exe",
-            Title = "Find Phoenix Point",
-         };
-         if ( ! dialog.ShowDialog().GetValueOrDefault() ) return;
-         string exe = dialog.FileName, dir = Path.GetDirectoryName( exe );
-         if ( ! App.IsGamePath( dir ) ) {
-            MessageBox.Show( $"Game not found at {dir}", "Error", MessageBoxButton.OK, MessageBoxImage.Error );
-            return;
-         }
-         ButtonAction.IsEnabled = false;
-         App.SetGamePath( dir );
-         SharedGui.AppState = null;
-         RefreshInfo();
-         App.CheckStatusAsync( false );
+         if ( SharedGui.BrowseGame( App ) )
+            App.CheckStatusAsync( false );
       }
 
       private void DoSetup () {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows;
@@ -83,7 +84,7 @@ namespace Sheepy.Modnix.MainGUI {
       internal static event Action AppWorkingChanged;
       internal static event Action GameRunningChanged;
 
-      public static void SetInfo ( GuiInfo info, object value ) {
+      internal static void SetInfo ( GuiInfo info, object value ) {
          string txt = value?.ToString();
          switch ( info ) {
             case GuiInfo.APP_VER : AppVer = txt; break;
@@ -94,6 +95,24 @@ namespace Sheepy.Modnix.MainGUI {
             default :
                throw new InvalidOperationException( $"Unknown info {info}" );
          }
+      }
+
+      internal static bool BrowseGame ( AppControl app ) {
+         app.Log( "Prompting for game path" );
+         var dialog = new Microsoft.Win32.OpenFileDialog{
+            DefaultExt = "PhoenixPointWin64.exe",
+            Filter = "PhoenixPointWin64.exe|PhoenixPointWin64.exe",
+            Title = "Find Phoenix Point",
+         };
+         if ( ! dialog.ShowDialog().GetValueOrDefault() ) return false;
+         string exe = dialog.FileName, dir = Path.GetDirectoryName( exe );
+         if ( ! app.IsGamePath( dir ) ) {
+            MessageBox.Show( $"Game not found at {dir}", "Error", MessageBoxButton.OK, MessageBoxImage.Error );
+            return false;
+         }
+         app.SetGamePath( dir );
+         AppState = null;
+         return true;
       }
 
       internal static void Prompt ( AppAction action, PromptFlag flags, Exception ex, Action OnRestart ) { try {

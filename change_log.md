@@ -2,7 +2,7 @@
 
 # Version 0.90 RC, 2020-03-15
 
-* New: Game in non-standard paths may now be browsed and selected for setup.
+* New: Game in non-standard paths may now be browsed and selected for setup and launch.
 * New: Add mod button, automatically place mod in subfolder. Supports .dll, .zip, .7z, .js (modnix mod; not ppdef mod) and skip .cs, .csproj
 * New: Reset button, which reset and recreate a compatible mod's config file.
 * New: Multiple mods may now be selected for group mod actions.

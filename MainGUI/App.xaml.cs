@@ -154,6 +154,10 @@ namespace Sheepy.Modnix.MainGUI {
          _ = ModBridge.GetSettings();
       }
 
+      internal void SaveSettings () {
+         ModBridge.SaveSettings();
+      }
+
       // Parse command line arguments.
       // -i --ignore-pid (id)    Ignore given pid in running process check
       // -s --skip-launch-check  Skip checking running process, modnix installation, and setting migration
@@ -402,7 +406,7 @@ namespace Sheepy.Modnix.MainGUI {
          CurrentGame.RunInjector( "/y" );
          CheckInjectionStatus();
          if ( CurrentGame.Status == "modnix" ) {
-            ModBridge.SaveSettings();
+            SaveSettings();
             // Migrate mods
             if ( MigrateLegacy() )
                flags |= PromptFlag.SETUP_MOD_MOVED;

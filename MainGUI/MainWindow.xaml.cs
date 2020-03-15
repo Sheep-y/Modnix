@@ -99,6 +99,8 @@ namespace Sheepy.Modnix.MainGUI {
 
          if ( SharedGui.IsGameRunning )
             BtnTxtSetup.Text = "Refresh";
+         else if ( SharedGui.AppState == "no_game" )
+            BtnTxtSetup.Text = "Browse";
          else if ( SharedGui.AppState == "modnix" )
             BtnTxtSetup.Text = "Revert";
          else
@@ -130,8 +132,8 @@ namespace Sheepy.Modnix.MainGUI {
                case "both"   : txt = "PPML found, can remove"; break;
                case "modnix" : txt = "Injected"; break;
                case "none"   : txt = "Requires Setup"; break;
-               case "no_game": txt = "Game not found; Please do Manual Setup"; break;
-               default: txt = "Unknown state; see log"; break;
+               case "no_game": txt = "Game not found"; break;
+               default: txt = $"Unknown injection state {SharedGui.AppState}"; break;
             }
          var state = new Run( txt );
          if ( SharedGui.AppState != "modnix" ) state.Foreground = Brushes.Red;
@@ -157,8 +159,14 @@ namespace Sheepy.Modnix.MainGUI {
                if ( MessageBox.Show( "Remove Modnix from Phoenix Poing?", "Revert", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No ) == MessageBoxResult.Yes )
                   DoRestore();
                break;
+            case "no_game" :
+               if ( SharedGui.BrowseGame( App ) ) {
+                  App.SaveSettings();
+                  App.CheckStatusAsync( false );
+               }
+               break;
             default:
-               DoManualSetup();
+               MessageBox.Show( $"Unknown injection state {SharedGui.AppState}", "Error", MessageBoxButton.OK, MessageBoxImage.Error );
                break;
          }
       } catch ( Exception ex ) { Log( ex ); } }
@@ -168,8 +176,6 @@ namespace Sheepy.Modnix.MainGUI {
          SharedGui.IsAppWorking = true;
          App.DoSetupAsync();
       }
-
-      private void DoManualSetup () => OpenUrl( "my_doc", null );
 
       private void DoRestore () {
          Log( "Calling restore" );
