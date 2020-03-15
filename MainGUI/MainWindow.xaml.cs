@@ -430,7 +430,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       #region Logging
       public void Log ( object message ) {
-         var txt = message?.ToString();
+         var txt = ( Dispatcher.CheckAccess() ? "GUI┊" : "" ) + message?.ToString();
          Console.WriteLine( txt );
          string time = DateTime.Now.ToString( "hh:mm:ss.ffff ", InvariantCulture );
          this.Dispatch( () => { try {

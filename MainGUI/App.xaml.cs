@@ -100,7 +100,7 @@ namespace Sheepy.Modnix.MainGUI {
          Log( $"Launching main window" );
          if ( GUI == null )
             GUI = new MainWindow();
-         MigrateSettings();
+         LoadSettings();
          Log( null ); // Send startup log to GUI
          GUI.SetInfo( GuiInfo.VISIBILITY, "true" );
       } catch ( Exception ex ) {
@@ -122,17 +122,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void Init ( string[] args ) {
          // Dynamically load embedded dll
-         AppDomain.CurrentDomain.AssemblyResolve += ( domain, dll ) => {
-            Log( $"Modnix resolving {dll.Name}" );
-            AppDomain app = domain as AppDomain ?? AppDomain.CurrentDomain;
-            if ( dll.Name.StartsWith( "ModnixLoader,", StringComparison.OrdinalIgnoreCase ) )
-               return app.Load( GetResourceBytes( LOADER ) );
-            if ( dll.Name.StartsWith( "Mono.Cecil,", StringComparison.OrdinalIgnoreCase ) )
-               return app.Load( GetResourceBytes( CECI_DLL ) );
-            if ( dll.Name.StartsWith( "Newtonsoft.Json,", StringComparison.OrdinalIgnoreCase ) )
-               return app.Load( GetResourceBytes( JSON_DLL ) );
-            return null;
-         };
+         AppDomain.CurrentDomain.AssemblyResolve += AssemblyResolve;
 
          // Build important paths and self information
          ModGuiExe = Path.Combine( ModFolder, LIVE_NAME + APP_EXT );
@@ -147,9 +137,21 @@ namespace Sheepy.Modnix.MainGUI {
             ProcessParams( args );
       }
 
-      private void MigrateSettings () {
-         // Do nothing for now
-         // var settings = ModBridge.GetSettings();
+      private Assembly AssemblyResolve ( object domain, ResolveEventArgs dll ) {
+         Log( $"Modnix resolving {dll.Name}" );
+         AppDomain app = domain as AppDomain ?? AppDomain.CurrentDomain;
+         if ( dll.Name.StartsWith( "ModnixLoader,", StringComparison.OrdinalIgnoreCase ) )
+            return app.Load( GetResourceBytes( LOADER ) );
+         if ( dll.Name.StartsWith( "Mono.Cecil,", StringComparison.OrdinalIgnoreCase ) )
+            return app.Load( GetResourceBytes( CECI_DLL ) );
+         if ( dll.Name.StartsWith( "Newtonsoft.Json,", StringComparison.OrdinalIgnoreCase ) )
+            return app.Load( GetResourceBytes( JSON_DLL ) );
+         return null;
+      }
+
+      private void LoadSettings () {
+         // Make sure settings is loaded before other processes
+         _ = ModBridge.GetSettings();
       }
 
       // Parse command line arguments.
@@ -239,7 +241,7 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       private void CheckStatus () { try {
-         Log( "Checking app and game status on thread {Thread.CurrentThread.Name}" );
+         Log( $"Checking app and game status" );
          GUI.SetInfo( GuiInfo.APP_VER, CheckAppVer() );
          if ( FoundGame( out string gamePath ) ) {
             Log( $"Found game at {gamePath}" );
@@ -380,7 +382,7 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       private void DoSetup () { try {
-         Log( $"Running setup on thread {Thread.CurrentThread.Name}" );
+         Log( $"Running setup" );
          PromptFlag flags = PromptFlag.NONE;
          // Copy exe to mod folder
          if ( CopySelf( MyPath, ModGuiExe ) )
@@ -497,7 +499,7 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       private void DoRestore () { try {
-         Log( $"Running restore on thread {Thread.CurrentThread.Name}" );
+         Log( $"Running restore" );
          CurrentGame.RunInjector( "/y /r" );
          CheckInjectionStatus();
          if ( CurrentGame.Status == "none" ) {
@@ -527,7 +529,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       #region Mods
       public void GetModList () { try {
-         Log( "Rebuilding mod list on thread {Thread.CurrentThread.Name}" );
+         Log( $"Rebuilding mod list" );
          var list = ModBridge.LoadModList();
          if ( list != null ) GUI.SetInfo( GuiInfo.MOD_LIST, list );
       } catch ( IOException ex ) { Log( ex ); } }
@@ -540,7 +542,7 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       private void DoModAction ( AppAction action, ModInfo mod ) {
-         Log( $"Running {action} of {mod} on thread {Thread.CurrentThread.Name}" );
+         Log( $"Running {action} of {mod}" );
          if ( mod == null ) return;
          switch ( action ) {
             case AppAction.DEL_MOD :
@@ -666,16 +668,18 @@ namespace Sheepy.Modnix.MainGUI {
 
       // Double as a memory barrier because of its GUI read
       internal void Log ( object message ) {
+         var id = Thread.CurrentThread.ManagedThreadId;
+         var txt = ( id <= 1 ? "" : $"Thread{Thread.CurrentThread.ManagedThreadId}┊" ) + message?.ToString();
          if ( GUI != null ) {
             if ( StartupLog != null ) {
                GUI.Log( StartupLog.Trim() );
                StartupLog = null;
                if ( message == null ) return;
             }
-            GUI.Log( message?.ToString() );
+            GUI.Log( txt );
          } else {
-            StartupLog += message + "\n";
-            Console.WriteLine( message );
+            StartupLog += txt + "\n";
+            Console.WriteLine( txt );
          }
       }
 
