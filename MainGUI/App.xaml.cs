@@ -30,6 +30,7 @@ namespace Sheepy.Modnix.MainGUI {
       public abstract string[] ListFiles ();
       public abstract void Install ( string modFolder );
       protected void Log ( object msg ) => AppControl.Instance.Log( msg );
+      public bool AssumeRoot => ListFiles().Any( e => e.StartsWith( "PPDefModifier", StringComparison.Ordinal ) && e != "PPDefModifier.dll" );
    }
 
    public partial class AppControl : Application {
@@ -589,17 +590,15 @@ namespace Sheepy.Modnix.MainGUI {
          var modname = IgnoreInAddMod.Replace( Path.GetFileNameWithoutExtension( file ), "" );
          if ( string.IsNullOrWhiteSpace( modname ) ) modname = Path.GetFileNameWithoutExtension( file );
          var folder = Path.Combine( ModFolder, modname );
-         if ( ext.Equals( ".zip" ) ) {
-            Log( $"Extracting {file} as a zipped mod" );
-            new ZipArchiveReader( file ).Install( folder );
-         } else if ( ext.Equals( ".7z" ) || ext.Equals( ".xz" ) ) {
-            Log( $"Extracting {file} as a 7z mod" );
-            new SevenZipArchiveReader( file ).Install( folder );
+         if ( ext.Equals( ".zip" ) || ext.Equals( ".7z" ) || ext.Equals( ".xz" ) ) {
+            Log( $"Adding {file} as a packed mod" );
+            var reader = ext.Equals( ".zip" ) ? (ArchiveReader) new ZipArchiveReader( file ) : new SevenZipArchiveReader( file );
+            reader.Install( reader.AssumeRoot ? ModFolder : folder );
          } else {
             Log( $"Adding {file} as a single file mod" );
             Directory.CreateDirectory( folder );
             var destination = Path.Combine( folder, Path.GetFileName( file ) );
-            Log( $"Copying {file} to {destination}" );
+            Log( destination );
             File.Copy( file, destination, true );
          }
       }

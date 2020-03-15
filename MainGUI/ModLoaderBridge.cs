@@ -303,32 +303,12 @@ namespace Sheepy.Modnix.MainGUI {
          }
       }
 
-      private string FindSharedDir ( ZipArchive archive ) { try {
-         string commonPath = archive.Entries.FirstOrDefault()?.FullName;
-         if ( commonPath == null ) return "";
-         commonPath = Path.GetDirectoryName( commonPath );
-         while ( ! string.IsNullOrEmpty( commonPath ) ) {
-            string a = commonPath + "/", b = commonPath + "\\";
-            if ( archive.Entries.All( e => e.FullName.StartsWith( a, StringComparison.Ordinal ) || e.FullName.StartsWith( a, StringComparison.Ordinal ) ) )
-               return commonPath;
-            int i = commonPath.LastIndexOf( '/' ), j = commonPath.LastIndexOf( '\\' );
-            if ( i <= 0 && j <= 0 ) return "";
-            commonPath = commonPath.Substring( 0, Math.Max( i, j ) );
-         }
-         return "";
-      } catch ( SystemException ex ) { Log( ex ); return ""; } }
-
       public override void Install ( string modFolder ) {
          var destination = modFolder + Path.DirectorySeparatorChar;
          Log( $"Extracting {ArchivePath} to {destination}" );
          using ( ZipArchive archive = ZipFile.OpenRead( ArchivePath ) ) {
-            string commonPath = FindSharedDir( archive );
-            if ( ! string.IsNullOrEmpty( commonPath ) ) {
-               Log( $"Using {commonPath} as archive root" );
-               commonPath += "/";
-            }
             foreach ( ZipArchiveEntry entry in archive.Entries ) {
-               var name = entry.FullName.Substring( commonPath.Length );
+               var name = entry.FullName;
                // Use regular expression if it gets any longer...
                if ( name.Length == 0 || name[0] == '/' || name[0] == '\\' || name.Contains( "..\\" ) || name.Contains( "../" ) ) continue;
                if ( name.EndsWith( "/", StringComparison.Ordinal ) || name.EndsWith( "\\", StringComparison.Ordinal ) ) continue;
@@ -371,7 +351,7 @@ namespace Sheepy.Modnix.MainGUI {
          var destination = modFolder + Path.DirectorySeparatorChar;
          string exe = Create7z();
          Directory.CreateDirectory( destination );
-         AppControl.Instance.RunAndWait( destination, exe, $"l \"{ArchivePath}\" -y -bb1 -ba -bd -sccUTF-8 -xr!*.cs -xr!*.csprog" );
+         AppControl.Instance.RunAndWait( destination, exe, $"x \"{ArchivePath}\" -y -bb1 -ba -bd -sccUTF-8 -xr!*.cs -xr!*.csprog" );
       }
 
       public static void Cleanup () { try {
