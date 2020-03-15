@@ -72,35 +72,35 @@ namespace Sheepy.Modnix {
       public string   Id;
       public Version  Version;
 
-      public TextSet  Name;
-      public string[] Lang;
-      public bool?    Taint;
-      public TextSet  Description;
-      public TextSet  Author;
-      public TextSet  Url;
-      public TextSet  Contact;
-      public TextSet  Copyright;
+      public TextSet   Name;
+      public string[]  Lang;
+      public string    Duration;
+      public TextSet   Description;
+      public TextSet   Author;
+      public TextSet   Url;
+      public TextSet   Contact;
+      public TextSet   Copyright;
+                       
+      public AppVer[]  Requires;
+      public AppVer[]  Conflicts;
+      public long      Priority;
 
-      public AppVer[] Requires;
-      public AppVer[] Conflicts;
-      public long Priority;
-
-      public string[] Mods;
+      public string[]  Mods;
       public DllMeta[] Dlls;
 
-      public object    DefaultConfig;
+      public   object  DefaultConfig;
       internal string  ConfigText;
 
       internal bool HasContent => Mods == null && Dlls == null;
 
       internal ModMeta ImportFrom ( ModMeta overrider ) {
-         if ( overrider == null ) return this;
-         lock ( this ) { lock ( overrider ) {
+         lock ( this ) if ( overrider == null ) return this;
+         lock ( overrider ) {
             CopyNonNull( overrider.Id, ref Id );
             CopyNonNull( overrider.Version, ref Version );
             CopyNonNull( overrider.Name, ref Name );
             CopyNonNull( overrider.Lang, ref Lang );
-            CopyNonNull( overrider.Taint, ref Taint );
+            CopyNonNull( overrider.Duration, ref Duration );
             CopyNonNull( overrider.Description, ref Description );
             CopyNonNull( overrider.Author, ref Author );
             CopyNonNull( overrider.Url, ref Url );
@@ -113,15 +113,15 @@ namespace Sheepy.Modnix {
             CopyNonNull( overrider.Dlls, ref Dlls );
             CopyNonNull( overrider.DefaultConfig, ref DefaultConfig );
             CopyNonNull( overrider.ConfigText, ref ConfigText );
-         } }
-         return overrider;
+         }
+         lock ( this ) return this;
       }
 
-      internal ModMeta EraseModsAndDlls () {
+      internal ModMeta EraseModsAndDlls () { lock ( this ) {
          Mods = null;
          Dlls = null;
          return this;
-      }
+      } }
 
       private static void CopyNonNull<T> ( T from, ref T to ) {
          if ( from != null ) to = from;
@@ -134,6 +134,7 @@ namespace Sheepy.Modnix {
          if ( Name == null && Id != null )
             Name = new TextSet{ Default = Id };
          NormStringArray( ref Lang );
+         Duration = NormString( Duration );
          NormTextSet( ref Description );
          NormTextSet( ref Author );
          NormTextSet( ref Url );
@@ -149,14 +150,14 @@ namespace Sheepy.Modnix {
       private static string NormString ( string val ) {
          if ( val == null ) return null;
          val = val.Trim();
-         if ( val.Length <= 0 ) return null;
+         if ( val.Length == 0 ) return null;
          return val;
       }
 
       private static void NormStringArray ( ref string[] val ) {
          if ( val == null ) return;
          val = val.Select( NormString ).Where( e => e != null ).ToArray();
-         if ( val.Length <= 0 ) val = null;
+         if ( val.Length == 0 ) val = null;
       }
 
       private static void NormTextSet ( ref TextSet val ) {
@@ -170,7 +171,7 @@ namespace Sheepy.Modnix {
                dict.Remove( pair.Key );
                dict[ key ] = txt;
             }
-            if ( dict.Count <= 0 ) val.Dict = dict = null;
+            if ( dict.Count == 0 ) val.Dict = dict = null;
          }
          val.Default = NormString( val.Default );
          if ( val.Default == null ) {
@@ -187,7 +188,7 @@ namespace Sheepy.Modnix {
          }
          if ( val.Any( e => e == null ) )
             val = val.Where( e => e != null ).ToArray();
-         if ( val.Length <= 0 ) val = null;
+         if ( val.Length == 0 ) val = null;
       }
       
       private void NormDllMeta ( ref DllMeta[] val ) {
@@ -197,8 +198,8 @@ namespace Sheepy.Modnix {
             if ( val[i].Path == null ) val[i] = null;
          }
          if ( val.Any( e => e == null || e.Path == null ) )
-            val = val.Where( e => e != null && e.Path != null ).ToArray();
-         if ( val.Length <= 0 ) val = null;
+            val = val.Where( e => e?.Path != null ).ToArray();
+         if ( val.Length == 0 ) val = null;
       }
       #endregion
    }

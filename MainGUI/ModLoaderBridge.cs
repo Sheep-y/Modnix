@@ -161,9 +161,14 @@ namespace Sheepy.Modnix.MainGUI {
          list.Add( $"\t{Type} mod" );
          if ( meta.Lang != null )
             list.Add( "\rLanguages\t" + string.Join( ", ", meta.Lang.Select( AppControl.LangIdToName ) ) );
-         if ( meta.Taint != null )
-            list.Add( "\rAffect Saves\t" + ( meta.Taint == true ? "Yes" : "No" ) );
          if ( meta.Author != null ) list.Add( $"\rAuthor\t\t{Author}" );
+         switch ( meta.Duration ) {
+            case "temp"    : list.Add( "\rMod claims to be temporary and not break saves." ); break;
+            //case "instant" : list.Add( "\rMod claims to be instantaneous and not break saves." ); break;
+            case "newgame" : list.Add( "\rMod claims to affect new game and not break saves." ); break;
+            case "dlc"     : list.Add( "\rMod claims to not affect existing campaigns." ); break;
+            case "perm"    : list.Add( "\rSaves made with this mod on may become dependent on this mod." ); break;
+         }
          if ( Mod.Notices != null ) {
             foreach ( var notice in Mod.Notices ) {
                var txt = new Run();
