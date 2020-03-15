@@ -245,7 +245,7 @@ namespace Sheepy.Modnix {
          TypeNameHandling = TypeNameHandling.None
       };
 
-      private static Regex RegxVerTrim = new Regex( "(\\.0){1,2}$", RegexOptions.Compiled );
+      public static Regex RegxVerTrim = new Regex( "(\\.0){1,2}$", RegexOptions.Compiled );
       public static string TrimVersion ( Version ver ) => TrimVersion( ver.ToString() );
       public static string TrimVersion ( string ver ) => RegxVerTrim.Replace( ver, "" );
 

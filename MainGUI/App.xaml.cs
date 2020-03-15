@@ -299,7 +299,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       internal string CheckAppVer () { try {
          string version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
-         return new Regex( "(\\.0){1,2}$" ).Replace( version, "" );
+         return ModMetaJson.RegxVerTrim.Replace( version, "" );
       } catch ( Exception ex ) { return Log( ex, "error" ); } }
 
       internal string CheckGameVer () { try {

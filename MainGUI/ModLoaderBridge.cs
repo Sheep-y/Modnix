@@ -159,8 +159,9 @@ namespace Sheepy.Modnix.MainGUI {
          list.Add( new Image(){ Source = img, Stretch = Stretch.UniformToFill } );
          */
          list.Add( new Bold( new Run( meta.Name.ToString( "en" ) ) ) );
-         if ( meta.Version != null ) list.Add( $"\tVer {Version}" );
-         list.Add( $"\t{Type} mod" );
+         if ( meta.Version != null ) list.Add( $" \tVer {ModMetaJson.RegxVerTrim.Replace( Version.ToString(), "" )}" );
+         list.Add( $" \t{Type} mod" );
+         if ( Is( ModQuery.HAS_CONFIG ) ) list.Add( ", can config" );
          if ( meta.Lang != null ) {
             string lang;
             if ( meta.Lang.Contains( "*" ) )
