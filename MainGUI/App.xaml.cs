@@ -27,6 +27,7 @@ namespace Sheepy.Modnix.MainGUI {
    public abstract class ArchiveReader {
       protected readonly string ArchivePath;
       public ArchiveReader ( string path ) { ArchivePath = path; }
+      public abstract string[] ListFiles ();
       public abstract void Install ( string modFolder );
       protected void Log ( object msg ) => AppControl.Instance.Log( msg );
    }

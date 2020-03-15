@@ -6,6 +6,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Media;
@@ -296,6 +297,12 @@ namespace Sheepy.Modnix.MainGUI {
    internal class ZipArchiveReader : ArchiveReader {
       public ZipArchiveReader ( string path ) : base( path ) {}
 
+      public override string[] ListFiles () {
+         using ( ZipArchive archive = ZipFile.OpenRead( ArchivePath ) ) {
+            return archive.Entries.Select( e => e.FullName ).ToArray();
+         }
+      }
+
       private string FindSharedDir ( ZipArchive archive ) { try {
          string commonPath = archive.Entries.FirstOrDefault()?.FullName;
          if ( commonPath == null ) return "";
@@ -341,15 +348,30 @@ namespace Sheepy.Modnix.MainGUI {
 
       public SevenZipArchiveReader ( string path ) : base( path ) {}
 
-      public override void Install ( string modFolder ) {
-         var destination = modFolder + Path.DirectorySeparatorChar;
+      private string Create7z () {
          string dir = Path.GetTempPath(), exe = Path.Combine( dir, EXE );
          if ( ! File.Exists( exe ) ) using ( var writer = new FileStream( exe, FileMode.Create ) ) {
             Log( $"Creating {exe}" );
             AppControl.GetResource( EXE ).CopyTo( writer );
          }
+         return exe;
+      }
+
+      private static Regex RemoveSize = new Regex( "^\\d+\\s+\\d+\\s+", RegexOptions.Compiled );
+
+      public override string[] ListFiles () {
+         string exe = Create7z();
+         string stdout = AppControl.Instance.RunAndWait( Path.GetDirectoryName( ArchivePath ), exe, $"l \"{ArchivePath}\" -ba -bd -sccUTF-8 -xr!*.cs -xr!*.csprog", false, false );
+         return stdout.Split( '\n' )
+            .Where( e => ! e.Contains( " D..." ) ) // Ignore folders, e.g. empty folders result from ignoring *.cs
+            .Select( e => RemoveSize.Replace( e.Substring( 25 ).Trim(), "" ) ).ToArray();
+      }
+
+      public override void Install ( string modFolder ) {
+         var destination = modFolder + Path.DirectorySeparatorChar;
+         string exe = Create7z();
          Directory.CreateDirectory( destination );
-         AppControl.Instance.RunAndWait( destination, exe, $"x \"{ArchivePath}\" -y -aoa -bd -scc -spe UTF-8 -xr!*.cs -xr!*.csprog" );
+         AppControl.Instance.RunAndWait( destination, exe, $"l \"{ArchivePath}\" -y -bb1 -ba -bd -sccUTF-8 -xr!*.cs -xr!*.csprog" );
       }
 
       public static void Cleanup () { try {
