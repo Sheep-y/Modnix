@@ -4,7 +4,4 @@
              xmlns:local="clr-namespace:Sheepy.Modnix.MainGUI"
              Startup="ApplicationStartup"
              Exit="ApplicationCleanup">
-    <Application.Resources>
-         
-    </Application.Resources>
 </Application>

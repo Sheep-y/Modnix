@@ -66,7 +66,7 @@ namespace Sheepy.Modnix.MainGUI {
             return App.Log<GithubRelease>( ReadAsString( wex.Response ), null );
          }
 
-         if ( HasNewRelease( JsonConvert.DeserializeObject<GithubRelease[]>( json, JsonOptions ), update_from, out GithubRelease release ) ) 
+         if ( HasNewRelease( JsonConvert.DeserializeObject<GithubRelease[]>( json, JsonOptions ), update_from, out GithubRelease release ) )
             return release;
          return null;
       } catch ( Exception ex ) {
@@ -95,7 +95,7 @@ namespace Sheepy.Modnix.MainGUI {
                   return true;
                }
             }
-         } catch ( Exception ex ) { App.Log( ex ); } 
+         } catch ( Exception ex ) { App.Log( ex ); }
          return false;
       }
 

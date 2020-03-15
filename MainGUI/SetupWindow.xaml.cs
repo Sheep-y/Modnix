@@ -136,6 +136,5 @@ namespace Sheepy.Modnix.MainGUI {
                LogContent += line;
          } catch ( Exception ex ) { Console.WriteLine( ex ); } } );
       }
-
    }
 }

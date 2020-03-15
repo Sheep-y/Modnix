@@ -33,20 +33,20 @@ namespace Sheepy.Logging {
 
       public static string Stacktrace => new StackTrace( true ).ToString();
 
-      /// Logger level. Only calls on or above the level will pass.
+      // Logger level. Only calls on or above the level will pass.
       public SourceLevels Level {
          get { using( _Reader.Lock ) { return _Level;  } }
          set { using( _Writer.Lock ) { _Level = value; } } }
 
-      /// Datetime format string, default to "u" 
+      // Datetime format string, default to "u"
       public string TimeFormat {
          get { using( _Reader.Lock ) { return _TimeFormat;  } }
          set { using( _Writer.Lock ) { _TimeFormat = value; } } }
 
-      /// Filters for processing log entries.
+      // Filters for processing log entries.
       public IList< LogFilter > Filters => _Filters;
 
-      /// Handles loggging errors such as filter exception or failure in writing to log.
+      // Handles loggging errors such as filter exception or failure in writing to log.
       public Action<Exception> OnError {
          get { using( _Reader.Lock ) { return _OnError;  } }
          set { using( _Writer.Lock ) { _OnError = value; } } }
@@ -82,15 +82,15 @@ namespace Sheepy.Logging {
       public void Warn  ( object message, params object[] args ) => Log( SourceLevels.Warning, message, args );
       public void Error ( object message, params object[] args ) => Log( SourceLevels.Error, message, args );
 
-      /// Clear the log.
+      // Clear the log.
       public abstract void Clear ();
 
-      /// Immediately process all queued messages. The call blocks until they finish processing on this thread.
+      // Immediately process all queued messages. The call blocks until they finish processing on this thread.
       public abstract void Flush ();
 
       // ============ Implementations ============
 
-      /// Internal method to convert an entry to string. Return null if any filter says no or input/result is null.
+      // Internal method to convert an entry to string. Return null if any filter says no or input/result is null.
       protected virtual string EntryToString ( LogEntry entry, IEnumerable<LogFilter> filters = null ) {
          if ( entry == null ) return null;
          if ( filters == null ) filters = _Filters;
@@ -107,10 +107,10 @@ namespace Sheepy.Logging {
          return txt;
       }
 
-      /// Internal method to queue an entry for processing
+      // Internal method to queue an entry for processing
       protected abstract void _Log ( LogEntry entry );
 
-      /// Called on exception. If no error handler, throw the exception by default.
+      // Called on exception. If no error handler, throw the exception by default.
       protected virtual void CallOnError ( Exception ex ) {
          if ( ex == null ) return;
          var err = OnError;
@@ -129,7 +129,7 @@ namespace Sheepy.Logging {
       public override string ToString () => GetType().ToString();
    }
 
-   /// A base logger that queue and process log entries in the background.
+   // A base logger that queue and process log entries in the background.
    public abstract class BackgroundLogger : Logger {
       protected BackgroundLogger ( int writeDelay = 100 ) {
          _WriteDelay = Math.Max( 0, writeDelay );
@@ -144,7 +144,7 @@ namespace Sheepy.Logging {
       protected readonly List< LogEntry > _Queue;
       protected Timer _Timer;
 
-      /// Delay in ms to start loggging. Set to 0 to disable threading - all loggin happens immediately
+      // Delay in ms to start loggging. Set to 0 to disable threading - all loggin happens immediately
       public int WriteDelay {
          get { using( _Reader.Lock ) { return _WriteDelay;  } }
          set { using( _Writer.Lock ) { _WriteDelay = value; } } }
@@ -176,7 +176,7 @@ namespace Sheepy.Logging {
 
       private void TimerCallback ( object State ) => ProcessQueue();
 
-      /// Process entry queue. Entries and states are copied and processed out of common locks.
+      // Process entry queue. Entries and states are copied and processed out of common locks.
       protected virtual void ProcessQueue () {
          string timeFormat;
          LogEntry[] entries;
@@ -206,17 +206,17 @@ namespace Sheepy.Logging {
          }
       }
 
-      /// Called before queue is processed.
+      // Called before queue is processed.
       protected virtual void StartProcess () { }
 
-      /// Process each log entry.
+      // Process each log entry.
       protected abstract void ProcessEntry ( LogEntry entry, string txt, string timeFormat );
 
-      /// Called after queue is processed. Will always be called even with exceptions.
+      // Called after queue is processed. Will always be called even with exceptions.
       protected virtual void EndProcess () { }
    }
 
-   /// Log to file.  Log is processed and written in a threadpool thread.
+   // Log to file.  Log is processed and written in a threadpool thread.
    public class FileLogger : BackgroundLogger {
       public FileLogger ( string file, int writeDelay = 500 ) : base ( writeDelay ) {
          if ( string.IsNullOrWhiteSpace( file ) ) throw new ArgumentNullException( "file" );
@@ -269,7 +269,7 @@ namespace Sheepy.Logging {
       public override string ToString () => $"{GetType().ToString()}({LogFile},{WriteDelay})";
    }
 
-   /// A Logger that forwards messages to one or more loggers.  The proxy itself does not run in background.  TimeFormat is ignored.
+   // A Logger that forwards messages to one or more loggers.  The proxy itself does not run in background.  TimeFormat is ignored.
    public class LoggerProxy : Logger {
       private bool _AllowClear;
       private readonly RwlsList< Logger > _Masters;
@@ -308,7 +308,7 @@ namespace Sheepy.Logging {
       }
    }
 
-   /// Represents a log entry, to be queued for processing or forwarded to another logger.
+   // Represents a log entry, to be queued for processing or forwarded to another logger.
    public class LogEntry {
       public DateTime Time;
       public SourceLevels Level;
@@ -316,12 +316,12 @@ namespace Sheepy.Logging {
       public object[] Args;
    }
 
-   /// Process a log entry, converting it and optionally reject it by returning false.  Returning true to keep it.
+   // Process a log entry, converting it and optionally reject it by returning false.  Returning true to keep it.
    public delegate bool LogFilter ( LogEntry entry );
 
    public class LogFilters {
 
-      /// If message is not string, and there are multiple params, the message is converted to a list of params
+      // If message is not string, and there are multiple params, the message is converted to a list of params
       public static bool AutoMultiParam ( LogEntry entry ) {
          if ( entry.Args == null || entry.Args.Length <= 0 ) return true;
          if ( entry.Message is string txt && txt.Contains( '{' ) && txt.Contains( '}' ) ) return true;
@@ -342,7 +342,7 @@ namespace Sheepy.Logging {
       }
 
 
-      /// Expand enumerables and convert null (value) to "null" (string)
+      // Expand enumerables and convert null (value) to "null" (string)
       public static bool FormatParams ( LogEntry entry ) {
          entry.Message = RecurFormatParam( entry.Message );
          if ( entry.Args != null )
@@ -363,7 +363,7 @@ namespace Sheepy.Logging {
       }
 
 
-      /// Expand Func< string > to their results.
+      // Expand Func< string > to their results.
       public static bool ResolveLazy ( LogEntry entry ) {
          ResolveLazyFunc( ref entry.Message );
          var args = entry.Args;
@@ -378,7 +378,7 @@ namespace Sheepy.Logging {
             param = lazy();
       }
 
-      /// Log each exception once.  Exceptions are the same if their ToString are same.
+      // Log each exception once.  Exceptions are the same if their ToString are same.
       public static LogFilter IgnoreDuplicateExceptions { get {
          HashSet< string > ignored = new HashSet<string>();
          return ( entry ) => {
@@ -410,13 +410,13 @@ namespace Sheepy.Logging {
    }
 
    #region Lock helpers
-   /// Helper class to allow locks to be used with the using keyword
+   // Helper class to allow locks to be used with the using keyword
    public abstract class LockHelper : IDisposable {
       public abstract IDisposable Lock { get; }
       public abstract void Dispose ();
    }
 
-   /// Helper to allow the read lock of a ReaderWriterLockSlim to be used with the using keyword
+   // Helper to allow the read lock of a ReaderWriterLockSlim to be used with the using keyword
    public class LoggerReadLockHelper : LockHelper {
       public readonly ReaderWriterLockSlim RwLock;
       public LoggerReadLockHelper ( ReaderWriterLockSlim rwlock ) { RwLock = rwlock; }
@@ -424,7 +424,7 @@ namespace Sheepy.Logging {
       public override void Dispose () => RwLock.ExitReadLock();
    }
 
-   /// Helper to allow the read lock of a ReaderWriterLockSlim to be used with the using keyword
+   // Helper to allow the read lock of a ReaderWriterLockSlim to be used with the using keyword
    public class LoggerWriteLockHelper : LockHelper {
       public readonly ReaderWriterLockSlim RwLock;
       public LoggerWriteLockHelper ( ReaderWriterLockSlim rwlock ) { RwLock = rwlock; }
@@ -441,7 +441,7 @@ namespace Sheepy.Logging {
          _Writer = writer ?? throw new ArgumentNullException( "writer" );
       }
 
-      public T this[ int index ] { 
+      public T this[ int index ] {
          get { using ( _Reader.Lock ) { return _List[ index ]; } }
          set { using ( _Writer.Lock ) { _List[ index ] = value; } } }
       public int Count { get { using ( _Reader.Lock ) { return _List.Count; } } }

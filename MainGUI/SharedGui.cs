@@ -8,7 +8,7 @@ using System.Windows.Documents;
 using static System.StringComparison;
 
 namespace Sheepy.Modnix.MainGUI {
-   
+
    internal abstract class ModInfo {
       public abstract string Name { get; }
       public abstract string Version { get; }
@@ -41,7 +41,7 @@ namespace Sheepy.Modnix.MainGUI {
          _AppVer = value;
          VersionChanged.Invoke();
       } }
-      
+
       internal static string AppState { get => _AppState; set {
          if ( _AppState == value ) return;
          _AppState = value;

@@ -306,7 +306,7 @@ namespace Sheepy.Modnix.MainGUI {
          Log( "Detecting game version." );
          try {
             string logFile = Path.Combine( ModFolder, MOD_LOG );
-            if ( File.Exists( logFile ) && 
+            if ( File.Exists( logFile ) &&
                  File.GetLastWriteTime( logFile ) > File.GetLastWriteTime( Path.Combine( CurrentGame.CodeDir, GAME_DLL ) ) ) {
                Log( $"Parsing {logFile}" );
                var line = File.ReadLines( logFile ).ElementAtOrDefault( 1 );
@@ -502,7 +502,7 @@ namespace Sheepy.Modnix.MainGUI {
       private bool HasLegacy () { try {
          return File.Exists( Path.Combine( CurrentGame.CodeDir, PAST ) );
       } catch ( Exception ex ) { return Log( ex, false ); } }
-      
+
 
       internal void CreateShortcut () {
          string name = Path.Combine( CurrentGame.GameDir, PAST_MOD );

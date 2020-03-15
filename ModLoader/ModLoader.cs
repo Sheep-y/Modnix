@@ -29,7 +29,7 @@ namespace Sheepy.Modnix {
 
       #region Initialisation
       private static bool RunMainPhaseOnInit;
-      private static object harmony; // Type is not HarmonyInstance to avoid hard crash when harmony is missing 
+      private static object harmony; // Type is not HarmonyInstance to avoid hard crash when harmony is missing
       private static Assembly GameAssembly;
 
       public static void Init () { try {

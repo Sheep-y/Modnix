@@ -80,7 +80,7 @@ namespace Sheepy.Modnix {
       public TextSet   Url;
       public TextSet   Contact;
       public TextSet   Copyright;
-                       
+
       public AppVer[]  Requires;
       public AppVer[]  Conflicts;
       public long      Priority;
@@ -190,7 +190,7 @@ namespace Sheepy.Modnix {
             val = val.Where( e => e != null ).ToArray();
          if ( val.Length == 0 ) val = null;
       }
-      
+
       private void NormDllMeta ( ref DllMeta[] val ) {
          if ( val == null ) return;
          for ( int i = val.Length - 1 ; i >= 0 ; i-- ) {
@@ -286,7 +286,7 @@ namespace Sheepy.Modnix {
          if ( txt.Length <= 0 ) return e;
          switch ( prop.ToLowerInvariant() ) {
             case "id"  : e.Id = txt; break;
-            case "min" : 
+            case "min" :
                if ( ! txt.Contains( '.' ) ) txt += ".0";
                Version.TryParse( txt, out e.Min );
                break;

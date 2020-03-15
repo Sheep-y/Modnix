@@ -369,7 +369,7 @@ namespace Sheepy.Modnix {
       }
 
       internal InjectionState CheckInjection () => CheckInjectionOf( Target );
-      
+
       internal InjectionState CheckInjectionOf ( string target ) {
          using ( var dll = ModuleDefinition.ReadModule( target ) ) {
             foreach ( var type in dll.Types ) {
