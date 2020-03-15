@@ -296,20 +296,39 @@ namespace Sheepy.Modnix.MainGUI {
    internal class ZipArchiveReader : ArchiveReader {
       public ZipArchiveReader ( string path ) : base( path ) {}
 
+      private string FindSharedDir ( ZipArchive archive ) { try {
+         string commonPath = archive.Entries.FirstOrDefault()?.FullName;
+         if ( commonPath == null ) return "";
+         commonPath = Path.GetDirectoryName( commonPath );
+         while ( ! string.IsNullOrEmpty( commonPath ) ) {
+            string a = commonPath + "/", b = commonPath + "\\";
+            if ( archive.Entries.All( e => e.FullName.StartsWith( a, StringComparison.Ordinal ) || e.FullName.StartsWith( a, StringComparison.Ordinal ) ) )
+               return commonPath;
+            int i = commonPath.LastIndexOf( '/' ), j = commonPath.LastIndexOf( '\\' );
+            if ( i <= 0 && j <= 0 ) return "";
+            commonPath = commonPath.Substring( 0, Math.Max( i, j ) );
+         }
+         return "";
+      } catch ( SystemException ex ) { Log( ex ); return ""; } }
+
       public override void Install ( string modFolder ) {
-         Action<string> log = AppControl.Instance.Log;
          var destination = modFolder + Path.DirectorySeparatorChar;
-         log( $"Extracting {ArchivePath} to {destination}" );
+         Log( $"Extracting {ArchivePath} to {destination}" );
          using ( ZipArchive archive = ZipFile.OpenRead( ArchivePath ) ) {
+            string commonPath = FindSharedDir( archive );
+            if ( ! string.IsNullOrEmpty( commonPath ) ) {
+               Log( $"Using {commonPath} as archive root" );
+               commonPath += "/";
+            }
             foreach ( ZipArchiveEntry entry in archive.Entries ) {
-               var name = entry.FullName;
+               var name = entry.FullName.Substring( commonPath.Length );
                // Use regular expression if it gets any longer...
                if ( name.Length == 0 || name[0] == '/' || name[0] == '\\' || name.Contains( "..\\" ) || name.Contains( "../" ) ) continue;
                if ( name.EndsWith( "/", StringComparison.Ordinal ) || name.EndsWith( "\\", StringComparison.Ordinal ) ) continue;
                if ( name.EndsWith( ".cs", StringComparison.OrdinalIgnoreCase ) || name.EndsWith( ".csproj", StringComparison.OrdinalIgnoreCase ) ) continue;
                if ( entry.Length <= 0 ) continue;
                var path = Path.Combine( modFolder, name );
-               log( path );
+               Log( path );
                Directory.CreateDirectory( Path.GetDirectoryName( path ) );
                entry.ExtractToFile( path, true );
             }
@@ -323,15 +342,14 @@ namespace Sheepy.Modnix.MainGUI {
       public SevenZipArchiveReader ( string path ) : base( path ) {}
 
       public override void Install ( string modFolder ) {
-         Action<string> log = AppControl.Instance.Log;
          var destination = modFolder + Path.DirectorySeparatorChar;
          string dir = Path.GetTempPath(), exe = Path.Combine( dir, EXE );
          if ( ! File.Exists( exe ) ) using ( var writer = new FileStream( exe, FileMode.Create ) ) {
-            log( $"Creating {exe}" );
+            Log( $"Creating {exe}" );
             AppControl.GetResource( EXE ).CopyTo( writer );
          }
          Directory.CreateDirectory( destination );
-         AppControl.Instance.RunAndWait( destination, exe, $"x -y -bd \"{ArchivePath}\" -xr!*.cs -xr!*.csprog" );
+         AppControl.Instance.RunAndWait( destination, exe, $"x \"{ArchivePath}\" -y -aoa -bd -scc -spe UTF-8 -xr!*.cs -xr!*.csprog" );
       }
 
       public static void Cleanup () { try {
