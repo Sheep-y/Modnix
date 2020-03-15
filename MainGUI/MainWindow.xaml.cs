@@ -116,7 +116,11 @@ namespace Sheepy.Modnix.MainGUI {
             LabelModList.Content = "NOT INSTALLED";
             LabelModList.Foreground = Brushes.Red;
          } else {
-            LabelModList.Content = $"{ModList.Count()} Mods";
+            int total = ModList.Count(), enabled = ModList.Count( e => e.Is( ModQuery.ENABLED ) );
+            if ( total == enabled )
+               LabelModList.Content = $"{total} Mods";
+            else
+               LabelModList.Content = $"{total} Mods, {enabled} On / {total-enabled} Off";
          }
       } catch ( Exception ex ) { Log( ex ); } }
 
