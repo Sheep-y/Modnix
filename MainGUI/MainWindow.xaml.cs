@@ -307,8 +307,10 @@ namespace Sheepy.Modnix.MainGUI {
             MessageBox.Show( "Add Mod failed.\rFile is in game folder.", "Error", MessageBoxButton.OK, MessageBoxImage.Exclamation );
             return;
          }
+         SharedGui.IsAppWorking = true;
          App.AddModAsync( dialog.FileNames ).ContinueWith( result => {
             if ( result.IsFaulted ) Prompt( AppAction.ADD_MOD, PromptFlag.ERROR, result.Exception );
+            SharedGui.IsAppWorking = false;
             this.Dispatch( () => ButtonRefreshMod_Click( sender, evt ) );
          } );
       }
@@ -351,7 +353,9 @@ namespace Sheepy.Modnix.MainGUI {
          if ( create.Count > 0 ) msg += "\nCreate config of:\r" + string.Join( "\r", create.Select( e => e.Name ) );
          if ( MessageBoxResult.OK != MessageBox.Show( msg.Trim(), "Reset Config", MessageBoxButton.OKCancel, MessageBoxImage.Warning, MessageBoxResult.Cancel ) )
             return;
+         SharedGui.IsAppWorking = true;
          App.DoModActionAsync( AppAction.RESET_CONFIG, create.Concat( reset ) ).ContinueWith( result => {
+            SharedGui.IsAppWorking = false;
             Prompt( AppAction.RESET_CONFIG, result.IsFaulted ? PromptFlag.ERROR : PromptFlag.NONE, result.Exception );
          } );
       }
@@ -377,8 +381,9 @@ namespace Sheepy.Modnix.MainGUI {
                   MessageBoxButton.OKCancel, MessageBoxImage.Question, MessageBoxResult.Cancel );
             if ( ans == MessageBoxResult.Cancel ) return;
          }
-         ButtonModDelete.IsEnabled = false;
+         SharedGui.IsAppWorking = true;
          App.DoModActionAsync( AppAction.DEL_MOD, mods ).ContinueWith( result => {
+            SharedGui.IsAppWorking = false;
             if ( result.IsFaulted ) Prompt( AppAction.DEL_MOD, PromptFlag.ERROR, result.Exception );
             this.Dispatch( () => ButtonRefreshMod_Click( sender, evt ) );
          } );
