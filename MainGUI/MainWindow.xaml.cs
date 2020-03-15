@@ -284,14 +284,14 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void ButtonAddMod_Click ( object sender, RoutedEventArgs evt ) {
          var dialog = new Microsoft.Win32.OpenFileDialog {
-            DefaultExt = "*.js;*.dll;*.zip;*.7z",
+            DefaultExt = "*.7z;*.dll;*.js;*.xz;*.zip",
             Filter = "All Mods|*.7z;*.dll;*.js;*.xz;*.zip|"+
                      "Mod Packages (.zip,.7z)|*.7z;*.xz;*.zip|"+
                      "Single File Mods (.dll,.js)|*.dll;*.js|"+
-                     "All Files|*.*"
+                     "All Files|*.*",
+            Multiselect = true,
+            Title = "Add Mod",
          };
-         dialog.Multiselect = true;
-         dialog.Title = "Add Mod";
          if ( ! dialog.ShowDialog().GetValueOrDefault() || dialog.FileNames.Length == 0 ) return;
          if ( dialog.FileNames.Any( e => e.StartsWith( App.ModFolder ) ) ) {
             MessageBox.Show( "Add Mod failed.\rFile is already in mod folder.", "Error", MessageBoxButton.OK, MessageBoxImage.Exclamation );

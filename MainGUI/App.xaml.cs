@@ -171,10 +171,8 @@ namespace Sheepy.Modnix.MainGUI {
          }
 
          int pid = ParamIndex( param, "i", "ignore-pid" );
-         if ( pid >= 0 && param.Count > pid+1 ) {
-            if ( int.TryParse( param[ pid + 1 ], out int id ) )
-               ParamIgnorePid = id;
-         }
+         if ( pid >= 0 && param.Count > pid+1 && int.TryParse( param[ pid + 1 ], out int id ) )
+            ParamIgnorePid = id;
 
          /// -o --open-mod-dir        Open mod folder on launch, once used as part of setup
          //if ( ParamIndex( param, "o", "open-mod-dir" ) >= 0 )
@@ -313,6 +311,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       // Try to detect game path
       private bool FoundGame ( out string gamePath ) { gamePath = null; try {
+         if ( IsGamePath( gamePath = ModBridge.GetSettings().GamePath ) ) return true;
          foreach ( var path in new string[] { ".", "..", Path.Combine( "..", ".." ) } )
             if ( IsGamePath( gamePath = path ) ) return true;
          gamePath = SearchRegistry();
@@ -345,7 +344,8 @@ namespace Sheepy.Modnix.MainGUI {
          return null;
       } catch ( Exception ex ) { return Log< string >( ex, null ); } }
 
-      private bool IsGamePath ( string path ) { try {
+      internal bool IsGamePath ( string path ) { try {
+         if ( string.IsNullOrWhiteSpace( path ) ) return false;
          string exe = Path.Combine( path, GAME_EXE ), dll = Path.Combine( path, DLL_PATH, GAME_DLL );
          Log( $"Detecting game at {path}" );
          return File.Exists( exe ) && File.Exists( dll );
@@ -376,6 +376,13 @@ namespace Sheepy.Modnix.MainGUI {
       } }
 
       #region Setup / Restore
+      internal void SetGamePath ( string path ) {
+         Log( $"Setting game path to {path}" );
+         var conf = ModBridge.GetSettings();
+         lock ( conf ) conf.GamePath = path;
+         CurrentGame = new GameInstallation( path );
+      }
+
       internal void DoSetupAsync () {
          Log( "Queuing setup" );
          Task.Run( (Action) DoSetup );
@@ -395,6 +402,7 @@ namespace Sheepy.Modnix.MainGUI {
          CurrentGame.RunInjector( "/y" );
          CheckInjectionStatus();
          if ( CurrentGame.Status == "modnix" ) {
+            ModBridge.SaveSettings();
             // Migrate mods
             if ( MigrateLegacy() )
                flags |= PromptFlag.SETUP_MOD_MOVED;

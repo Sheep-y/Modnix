@@ -133,8 +133,10 @@ namespace Sheepy.Modnix {
 
       public static void SaveSettings () {
          var confFile = Path.Combine( ModDirectory, CONF_FILE );
-         if ( Settings.SettingVersion == null )
-            Settings.SettingVersion = LoaderVersion.ToString();
+         lock ( Settings ) {
+            if ( Settings.SettingVersion == null )
+               Settings.SettingVersion = LoaderVersion.ToString();
+         }
          var json = JsonConvert.SerializeObject( Settings, Formatting.Indented, ModMetaJson.JsonOptions );
          if ( string.IsNullOrWhiteSpace( json ) ) return;
          if ( ! Directory.Exists( ModDirectory ) )

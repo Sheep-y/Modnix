@@ -29,11 +29,12 @@ namespace Sheepy.Modnix.MainGUI {
 
       internal LoaderSettings GetSettings () {
          CheckSetup();
-         return ModLoader.Settings;
+         lock ( ModLoader.Settings ) return ModLoader.Settings;
       }
 
       internal void SaveSettings () {
          CheckSetup();
+         App.Log( "Saving Modnix settings" );
          ModLoader.SaveSettings();
       }
 
