@@ -426,7 +426,6 @@ namespace Sheepy.Modnix.MainGUI {
          } else
             throw new ApplicationException( "Modnix injection failed" );
       } catch ( Exception ex ) {
-         Log( ex );
          GUI.Prompt( AppAction.SETUP, PromptFlag.ERROR, ex );
       } }
 
@@ -527,7 +526,6 @@ namespace Sheepy.Modnix.MainGUI {
          } else
             throw new ApplicationException( "Modnix revert failed" );
       } catch ( Exception ex ) {
-         Log( ex );
          GUI.Prompt( AppAction.REVERT, PromptFlag.ERROR, ex );
       } }
 

@@ -97,7 +97,7 @@ namespace Sheepy.Modnix.MainGUI {
       } catch ( Exception ex ) { Log( ex ); } }
 
       private void BrowseGame () {
-         if ( SharedGui.BrowseGame( App ) )
+         if ( SharedGui.BrowseGame() )
             App.CheckStatusAsync( false );
       }
 

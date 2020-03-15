@@ -97,7 +97,8 @@ namespace Sheepy.Modnix.MainGUI {
          }
       }
 
-      internal static bool BrowseGame ( AppControl app ) {
+      internal static bool BrowseGame () {
+         var app = AppControl.Instance;
          app.Log( "Prompting for game path" );
          var dialog = new Microsoft.Win32.OpenFileDialog{
             DefaultExt = "PhoenixPointWin64.exe",
@@ -129,6 +130,7 @@ namespace Sheepy.Modnix.MainGUI {
 
          string txt;
          if ( ex != null || flags.Has( PromptFlag.ERROR ) ) {
+            AppControl.Instance.Log( ex );
             txt = string.Format( "{0} failed.", actionTxt );
             if ( ex != null ) txt += "\r\rError: " + ex;
             else txt += "\r\rSee log for details.";
