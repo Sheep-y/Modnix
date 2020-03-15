@@ -395,7 +395,12 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void CheckUpdate ( bool manual ) { try {
          if ( ! manual ) {
-            var lastCheck = App.ModBridge.GetSettings().LastCheckUpdate;
+            var settings = App.ModBridge.GetSettings();
+            DateTime? lastCheck;
+            lock ( settings ) {
+               if ( ! settings.CheckUpdate ) return;
+               lastCheck = settings.LastCheckUpdate;
+            } 
             if ( ! lastCheck.HasValue )
                Log( "Last update check was never" );
             else {
