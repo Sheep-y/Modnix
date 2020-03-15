@@ -212,7 +212,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       private bool FoundInstalledModnix () { try {
          if ( ! File.Exists( ModGuiExe ) ) return false;
-         ModGuiExe = new FileInfo( ModGuiExe ).FullName; // Normalise path - e.g. My Documents to Documents
+         Set( ref _ModGuiExe, new FileInfo( ModGuiExe ).FullName ); // Normalise path - e.g. My Documents to Documents
          if ( MyPath == ModGuiExe ) return false;
 
          Log( $"Found {ModGuiExe}" );
