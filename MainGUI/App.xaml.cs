@@ -101,7 +101,6 @@ namespace Sheepy.Modnix.MainGUI {
          if ( GUI == null )
             GUI = new MainWindow();
          LoadSettings();
-         Log( null ); // Send startup log to GUI
          GUI.SetInfo( GuiInfo.VISIBILITY, "true" );
       } catch ( Exception ex ) {
          Console.WriteLine( ex );
@@ -247,6 +246,10 @@ namespace Sheepy.Modnix.MainGUI {
          GUI.SetInfo( GuiInfo.APP_VER, CheckAppVer() );
          if ( FoundGame( out string gamePath ) ) {
             Log( $"Found game at {gamePath}" );
+            if ( gamePath != ModBridge.GetSettings().GamePath ) {
+               ModBridge.GetSettings().GamePath = gamePath;
+               SaveSettings();
+            }
             CurrentGame = new GameInstallation( gamePath );
             GUI.SetInfo( GuiInfo.GAME_PATH, gamePath );
             CheckInjectionStatus( true );
@@ -684,14 +687,15 @@ namespace Sheepy.Modnix.MainGUI {
          var id = Thread.CurrentThread.ManagedThreadId;
          var txt = ( id <= 1 ? "" : $"Thread{Thread.CurrentThread.ManagedThreadId}┊" ) + message?.ToString();
          if ( GUI != null ) {
-            if ( StartupLog != null ) {
-               GUI.Log( StartupLog.Trim() );
-               StartupLog = null;
-               if ( message == null ) return;
+            lock ( SynGetSet ) {
+               if ( StartupLog != null ) {
+                  GUI.Log( StartupLog.Trim() );
+                  StartupLog = null;
+               }
             }
             GUI.Log( txt );
          } else {
-            StartupLog += txt + "\n";
+            lock ( SynGetSet ) StartupLog += txt + "\n";
             Console.WriteLine( txt );
          }
       }

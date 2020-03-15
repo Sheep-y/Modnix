@@ -400,7 +400,7 @@ namespace Sheepy.Modnix.MainGUI {
             lock ( settings ) {
                if ( ! settings.CheckUpdate ) return;
                lastCheck = settings.LastCheckUpdate;
-            } 
+            }
             if ( ! lastCheck.HasValue )
                Log( "Last update check was never" );
             else {
@@ -503,7 +503,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       #region Helpers
       private void OpenUrl ( string type, RoutedEventArgs e = null ) {
-         Log( "OpenUrl " + type );
+         Log( $"OpenUrl {type}" );
          if ( e?.Source is UIElement src ) src.Focus();
          string url;
          switch ( type ) {
