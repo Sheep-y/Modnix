@@ -89,9 +89,9 @@ namespace Sheepy.Modnix {
       public DllMeta[] Dlls;
 
       public object    DefaultSettings;
-      public string    EmbeddedSettings;
+      internal string  EmbeddedSettings;
 
-      public bool HasContent => Mods == null && Dlls == null;
+      internal bool HasContent => Mods == null && Dlls == null;
 
       internal ModMeta ImportFrom ( ModMeta overrider ) {
          if ( overrider == null ) return this;

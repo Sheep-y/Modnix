@@ -5,21 +5,23 @@
 * New: Add mod button, automatically place mod in subfolder. Supports .dll, .zip, .7z, .js (modnix mod; not ppdef mod) and skip .cs, .csproj
 * New: Reset button, which reset and recreate a compatible mod's config file.
 * New: Multiple mods may now be selected for group mod actions.
+* New: Formatted app/game/mod info.  Mod info panel now shows all relevant mod info, including file list, entry points, reason of disable etc.
+* New: Show mod installation date on mod list.
+* New: Disabled mods are greyed.
+* New: mod_info.js now have Taint and DefaultSettings.
 * New: Dll mods may now receive a setting string or object, when a config is supplied.
 * New: Dll mods may get modsRoot, modPath, and assemblyPath as initialiser params.
 * New: Modnix settings now stored in Modnix.conf which can be edited easily.
-* New: Formatted app/game/mod info.  Mod info panel now shows all relevant mod info, including file list and entry points.
-* New: Show mod installation date on mod list.  Disabled mods are greyed.
 * New: License button to display licenses of all images, parts, and libraries.
-* Fix: Mono.Cecil.dll is now deleted from Mods folder on setup, in addition to other loader dlls.
-* Fix: Lang of mod info now accepts a single string as intended.
-* Fix: Url and Contact no longer lowercase their keys.
-* Fix: Embedded mod_info now have their Url, Contact, and Copyright applied.
-* Fix: Mod loading order should now be consistent. (But subject to change in the future.)
-* Fix: Parameter defaults are now used for unrecognised initialiser parameters.
-* Fix: Game is now detected when Modnix is placed in one to two levels of subfolder, in addition to root.
 * Fix: Game is now offline-launched in its folder, instead of Modnix folder.
+* Fix: Game is now detected when Modnix is placed in one to two levels of subfolder, in addition to root.
 * Fix: Manual setup package should no longer run in setup mode. Thanks Zyxpsilon on Discord for reporting.
+* Fix: Mod loading order should now be consistent. (But subject to change in the future.)
+* Fix: Lang of mod info now accepts a single string as intended.
+* Fix: Embedded mod_info now have their Url, Contact, and Copyright applied.
+* Fix: Url and Contact no longer lowercase their keys.
+* Fix: Parameter defaults are now used for unrecognised initialiser parameters.
+* Fix: Mono.Cecil.dll is now deleted from Mods folder on setup, in addition to other loader dlls.
 * Fix: Typo on log label. Thanks javehaider on NexusMods for reporting.
 * In mod_info, Langs are changed to Lang, Urls changed to Url.  This make info fields consistent.
 * Improved app / injection / game status display and less unnecessary status checks.  Modnix keyvisual faintly visible.
