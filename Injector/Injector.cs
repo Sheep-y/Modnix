@@ -373,7 +373,7 @@ namespace Sheepy.Modnix {
       internal InjectionState CheckInjectionOf ( string target ) {
          using ( var dll = ModuleDefinition.ReadModule( target ) ) {
             foreach ( var type in dll.Types ) {
-               if ( type.IsNotPublic ) continue;
+               if ( type.IsNotPublic || type.IsInterface || type.IsAbstract || type.IsEnum ) continue;
                var result = CheckInjection( type );
                if ( result != InjectionState.NONE ) {
                   if ( Target.Equals( target ) ) lock ( this )
@@ -396,12 +396,12 @@ namespace Sheepy.Modnix {
       private static readonly string PPML01InjectCheck = $"System.Void {Injector.PPML01_INJECTOR_TYPE}::{Injector.PPML01_INJECTOR_METHOD}(";
       private static readonly string PPML02InjectCheck = $"System.Void {Injector.PPML02_INJECTOR_TYPE}::{Injector.PPML02_INJECTOR_METHOD}(";
 
-      private InjectionState CheckInjection ( MethodDefinition methodDefinition ) {
+      private static InjectionState CheckInjection ( MethodDefinition methodDefinition ) {
          if ( methodDefinition.Body == null )
             return InjectionState.NONE;
          foreach ( var instruction in methodDefinition.Body.Instructions ) {
             if ( ! instruction.OpCode.Equals( OpCodes.Call ) ) continue;
-            string op = instruction.Operand.ToString();
+            var op = instruction.Operand.ToString();
             if ( op.StartsWith( ModnixInjectCheck ) )
                return InjectionState.MODNIX;
             else if ( op.StartsWith( PPML01InjectCheck ) || op.StartsWith( PPML02InjectCheck ) )
@@ -423,7 +423,7 @@ namespace Sheepy.Modnix {
          }
       }
 
-      private bool InjectModHookPoint ( ModuleDefinition game, ModuleDefinition injecting ) {
+      private static bool InjectModHookPoint ( ModuleDefinition game, ModuleDefinition injecting ) {
          // get the methods that we're hooking and injecting
          var injectedMethod = injecting.GetType( Injector.INJECT_TYPE ).Methods.Single( x => x.Name == Injector.INJECT_METHOD );
          var hookedMethod = game.GetType( Injector.HOOK_TYPE ).Methods.First( x => x.Name == Injector.HOOK_METHOD );
@@ -502,14 +502,14 @@ namespace Sheepy.Modnix {
          if ( method == null || ! method.HasBody ) return "ERR ver method not found";
 
          try {
-            int[] version = new int[2];
-            int ldcCount = 0;
+            var version = new int[2];
+            var ldcCount = 0;
             foreach ( var code in method.Body.Instructions ) {
-               string op = code.OpCode.ToString();
+               var op = code.OpCode.ToString();
                if ( ! op.StartsWith( "ldc.i4" ) ) continue;
                if ( ldcCount >= 2 ) return "ERR too many vers";
 
-               int ver = 0;
+               var ver = 0;
                if ( code.Operand is int num ) ver = num;
                else if ( code.Operand is sbyte num2 ) ver = num2;
                else if ( code.OpCode.Code.Equals( Code.Ldc_I4_M1 ) ) ver = -1;
