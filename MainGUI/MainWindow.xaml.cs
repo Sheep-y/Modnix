@@ -307,7 +307,7 @@ namespace Sheepy.Modnix.MainGUI {
             MessageBox.Show( "Add Mod failed.\rFile is already in mod folder.", "Error", MessageBoxButton.OK, MessageBoxImage.Exclamation );
             return;
          }
-         if ( dialog.FileNames.Any( e => e.StartsWith( App.CurrentGame.GameDir ) ) ) {
+         if ( App.CurrentGame != null && dialog.FileNames.Any( e => e.StartsWith( App.CurrentGame.GameDir ) ) ) {
             MessageBox.Show( "Add Mod failed.\rFile is in game folder.", "Error", MessageBoxButton.OK, MessageBoxImage.Exclamation );
             return;
          }
