@@ -80,15 +80,19 @@ namespace Sheepy.Modnix.MainGUI {
 
       internal void DeleteConfig ( ModInfo mod ) {
          var file = ModLoader.CheckConfigFile( mod.Path );
-         if ( file != null )
+         if ( file != null ) {
+            App.Log( $"Deleting {file}" );
             File.Delete( file );
+         }
       }
 
       internal void ResetConfig ( ModInfo mod ) {
-         DeleteConfig( mod );
          var str = ModLoader.ReadConfigText( ( mod as GridModItem ).Mod );
-         if ( str != null )
-            File.WriteAllText( ModLoader.GetConfigFile( mod.Path ), str );
+         if ( str != null ) {
+            var path = ModLoader.GetConfigFile( mod.Path );
+            App.Log( $"Writing {str.Length} bytes to {path}" );
+            File.WriteAllText( path, str );
+         }
       }
 
       private void RemoveEmptyFolders ( string path ) {
