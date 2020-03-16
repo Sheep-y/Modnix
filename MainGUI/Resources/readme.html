@@ -1,3 +1,4 @@
+<title>Manual Modnix Setup</title>
 <h1>
 Manual Setup Package for Modnix
 </h1>
@@ -8,13 +9,13 @@ Manual Setup Package for Modnix
 </p>
 <p>
    Generally, you should use the <a href="https://github.com/Sheep-y/Modnix/releases">Installer</a> first.
-   But when things don't work out, follow these steps for a manual setup:
+   But when things don't work out, follow these steps to manually "reset" Phoenix Point and setup Modnix:
 </p>
 <ol>
    <li>
       Reboot computer.
    <li>
-      Find "game code folder".
+      Find the game's "code folder".
       Default to <pre>C:\Program Files\Epic Games\PhoenixPoint\PhoenixPointWin64_Data\Managed</pre>
       You can find <pre>Assembly-CSharp.dll</pre> in it.
    <li>
@@ -23,27 +24,27 @@ Manual Setup Package for Modnix
       again deleting all files.
       (Leave the folders alone.)
    <li>
-      From the game launcher (EGS or Steam), do Verify Files.
+      Open Epic Game Launcher, do Verify Files.
    <li>
-      Launch the game and make sure it works.  Exit game.
+      Launch the game and make sure it works.  Exit game.  Temporary disable anti-virus, if any.
    <li>
-      Explore <pre>%UserProfile%\Documents</pre>, and creates the folders <pre>My Games\Phoenix Point\Mods</pre>.
-      This is the "mod folder".
-   <li>
-      Move the <pre>Modnix.exe</pre> from this package to "mod folder".
-   <li>
-      Find the <pre>Managed</pre> folder from this package, move its files to "game code folder".
+      Find the <pre>Managed</pre> folder in this package, move its files to "code folder" (step 2).
       Nothing should be overwritten if you cleared the folder in step 3.
    <li>
       Double-click <pre>ModnixInjector.exe</pre>, which has just been moved.
       It should says "Injection complete!"
    <li>
-      Basic setup complete.  Launch the moved <pre>Modnix.exe</pre> and see how it goes.
+      Explore <pre>%UserProfile%\Documents</pre>, and creates the folders <pre>My Games\Phoenix Point\Mods</pre>.
+      This is the "mod folder".
+   <li>
+      Move the <pre>Modnix.exe</pre> in this package to "mod folder".
+   <li>
+      Basic setup complete.  Launch <pre>Modnix.exe</pre> and enjoy!.
 </ol>
 <p>
    Some mods may not work with a basic setup.
    See <a href="https://github.com/Sheep-y/Modnix/wiki/Manual-Setup">wiki</a>
-   for how to solve them, and/or other troubleshoot guides.
+   for how to solve them, and/or in-depth troubleshooting guides.
 </p>
 <style>
    html { background: #CCC; }
