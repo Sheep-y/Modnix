@@ -32,10 +32,11 @@ namespace Sheepy.Modnix {
       // PPML Late injection goes here
       //internal const string HOOK_TYPE     = "PhoenixPoint.Common.Game.PhoenixGame";
       //internal const string HOOK_METHOD   = "BootCrt";
-      internal const string HOOK_TYPE     = "Cinemachine.CinemachineBrain";
-      internal const string HOOK_METHOD   = "OnEnable";
-      internal const string INJECT_TYPE   = "Sheepy.Modnix.ModLoader";
-      internal const string INJECT_METHOD = "Init";
+      internal const string PPML_HOOK_TYPE  = "PhoenixPoint.Common.Game.PhoenixGame";
+      internal const string HOOK_TYPE       = "Cinemachine.CinemachineBrain";
+      internal const string HOOK_METHOD     = "OnEnable";
+      internal const string INJECT_TYPE     = "Sheepy.Modnix.ModLoader";
+      internal const string INJECT_METHOD   = "Init";
       //internal const string INJECT_CALL   = "MenuCrt";
 
       internal const string PPML_INJECTOR_EXE      = "PhoenixPointModLoaderInjector.exe";
@@ -372,8 +373,9 @@ namespace Sheepy.Modnix {
 
       internal InjectionState CheckInjectionOf ( string target ) {
          using ( var dll = ModuleDefinition.ReadModule( target ) ) {
-            foreach ( var type in dll.Types ) {
-               if ( type.IsNotPublic || type.IsInterface || type.IsAbstract || type.IsEnum ) continue;
+            foreach ( var typeName in new string[]{ Injector.HOOK_TYPE, Injector.PPML_HOOK_TYPE } ) {
+               var type = dll.GetType( typeName );
+               if ( type == null ) continue;
                var result = CheckInjection( type );
                if ( result != InjectionState.NONE ) {
                   if ( Target.Equals( target ) ) lock ( this )
