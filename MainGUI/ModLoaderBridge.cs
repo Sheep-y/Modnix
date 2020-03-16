@@ -304,17 +304,16 @@ namespace Sheepy.Modnix.MainGUI {
          }
       }
 
+      private static Regex MalformPaths = new Regex( "(?:^[/\\]|\\.\\.[/\\])", RegexOptions.Compiled );
+      private static Regex IgnoreFiles = new Regex( "(?:\\.(?:conf|cs|csproj)|[/\\])$", RegexOptions.Compiled | RegexOptions.IgnoreCase );
+
       public override void Install ( string modFolder ) {
          var destination = modFolder + Path.DirectorySeparatorChar;
          Log( $"Extracting {ArchivePath} to {destination}" );
          using ( ZipArchive archive = ZipFile.OpenRead( ArchivePath ) ) {
             foreach ( ZipArchiveEntry entry in archive.Entries ) {
                var name = entry.FullName;
-               // Use regular expression if it gets any longer...
-               if ( name.Length == 0 || name[0] == '/' || name[0] == '\\' || name.Contains( "..\\" ) || name.Contains( "../" ) ) continue;
-               if ( name.EndsWith( "/", StringComparison.Ordinal ) || name.EndsWith( "\\", StringComparison.Ordinal ) ) continue;
-               if ( name.EndsWith( ".cs", StringComparison.OrdinalIgnoreCase ) || name.EndsWith( ".csproj", StringComparison.OrdinalIgnoreCase ) ) continue;
-               if ( entry.Length <= 0 ) continue;
+               if ( entry.Length <= 0 || MalformPaths.IsMatch( name ) || IgnoreFiles.IsMatch( name ) ) continue;
                var path = Path.Combine( modFolder, name );
                Log( path );
                Directory.CreateDirectory( Path.GetDirectoryName( path ) );
@@ -344,17 +343,17 @@ namespace Sheepy.Modnix.MainGUI {
 
       public override string[] ListFiles () {
          var exe = Create7z();
-         var stdout = AppControl.Instance.RunAndWait( Path.GetDirectoryName( ArchivePath ), exe, $"l \"{ArchivePath}\" -ba -bd -sccUTF-8 -xr!*.cs -xr!*.csprog", false, true );
+         var stdout = AppControl.Instance.RunAndWait( Path.GetDirectoryName( ArchivePath ), exe, $"l \"{ArchivePath}\" -ba -bd -sccUTF-8 -xr!*.conf -xr!*.cs -xr!*.csprog", suppressLog: true );
          return stdout.Split( '\n' )
             .Where( e => ! e.Contains( " D..." ) ) // Ignore folders, e.g. empty folders result from ignoring *.cs
             .Select( e => RemoveSize.Replace( e.Substring( 25 ).Trim(), "" ) ).ToArray();
       }
 
       public override void Install ( string modFolder ) {
-         var destination = modFolder + Path.DirectorySeparatorChar;
          var exe = Create7z();
+         var destination = modFolder + Path.DirectorySeparatorChar;
          Directory.CreateDirectory( destination );
-         var stdout = AppControl.Instance.RunAndWait( destination, exe, $"x \"{ArchivePath}\" -y -bb1 -ba -bd -sccUTF-8 -xr!*.cs -xr!*.csprog" );
+         var stdout = AppControl.Instance.RunAndWait( destination, exe, $"x \"{ArchivePath}\" -y -bb1 -ba -bd -sccUTF-8 -xr!*.conf -xr!*.cs -xr!*.csprog" );
          if ( ! stdout.Contains( "Everything is Ok" ) ) throw new ApplicationException( stdout );
       }
 
