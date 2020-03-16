@@ -20,7 +20,7 @@ namespace Sheepy.Modnix.MainGUI {
       internal void CheckSetup () { lock ( this ) {
          if ( ModLoader.NeedSetup ) {
             App.Log( "Initiating ModLoader" );
-            var logger = new GuiLogger( App );
+            var logger = new GuiLogger();
             ModLoader.SetLog( logger );
             logger.Filters.Add( LogFilters.AddPrefix( "Loader┊" ) );
             App.Log( "Setup ModLoader" );
@@ -187,7 +187,7 @@ namespace Sheepy.Modnix.MainGUI {
                   case "duplicate" :
                      txt.Text = string.Format( "\rDisabled: Using {0}", notice.Args[0]?.ToString() ); break;
                   case "requires"  :
-                     txt.Text = string.Format( "\rDisabled: Missing requirement {0}", notice.Args[0]?.ToString(), notice.Args[1], notice.Args[2] ); break;
+                     txt.Text = string.Format( "\rDisabled: Missing requirement {0}", notice.Args[0]?.ToString() ); break;
                   case "conflict"  :
                      txt.Text = string.Format( "\rDisabled by {0}", notice.Args[0]?.ToString() ); break;
                   default:
@@ -213,7 +213,7 @@ namespace Sheepy.Modnix.MainGUI {
          list.Add( desc );
       }
 
-      private static void BuildLinks ( ModMeta meta, InlineCollection list ) {
+      private void BuildLinks ( ModMeta meta, InlineCollection list ) {
          if ( meta.Url == null ) return;
          list.Add( "Link(s)" );
          BuildDict( meta.Url, list );
@@ -288,11 +288,9 @@ namespace Sheepy.Modnix.MainGUI {
    }
 
    internal class GuiLogger : Logger {
-      private readonly AppControl App;
-      public GuiLogger ( AppControl app ) => App = app;
       public override void Clear () { }
       public override void Flush () { }
-      protected override void _Log ( LogEntry entry ) => App.Log( EntryToString( entry ) );
+      protected override void _Log ( LogEntry entry ) => AppControl.Instance.Log( EntryToString( entry ) );
    }
 
    internal class ZipArchiveReader : ArchiveReader {
