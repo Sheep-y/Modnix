@@ -1,6 +1,6 @@
 # Modnix Changelog
 
-# Version 0.90 RC, 2020-03-15
+# Version 0.90 RC, 2020-03-16
 
 * New: Game in non-standard paths may now be browsed and selected for setup and launch.
 * New: Add mod button, placing mods in subfolder. Supports .dll, .zip, .7z, .js while skipping skip .cs, .csproj and putting PPDef mods at root.
@@ -9,7 +9,7 @@
 * New: Formatted app/game/mod info.  Mod info panel now shows all relevant mod info, including file list, entry points, reason of disable etc.
 * New: Show mod installation date on mod list.
 * New: Disabled mods are greyed.
-* New: mod_info.js now have Taint and DefaultConfig.
+* New: mod_info.js now have Duration and DefaultConfig.
 * New: Dll mods may now receive a setting string or object, when a config is supplied.
 * New: Dll mods may get modsRoot, modPath, and assemblyPath as initialiser params.
 * New: Modnix config now stored in Modnix.conf which can be edited easily.
@@ -24,6 +24,7 @@
 * Fix: Parameter defaults are now used for unrecognised initialiser parameters.
 * Fix: Mono.Cecil.dll is now deleted from Mods folder on setup, in addition to other loader dlls.
 * Fix: Typo on log label. Thanks javehaider on NexusMods for reporting.
+* Fix: Typo on button. Thanks javehaider and Lunazathoth on NexusMods for reporting.
 * In mod_info, Langs are changed to Lang, Urls changed to Url.  This make info fields consistent.
 * Improved app / injection / game status display and less unnecessary status checks.  Modnix keyvisual faintly visible.
 * Overloaded mod initialisers are now allowed and the first declared will be used.
