@@ -1,5 +1,10 @@
 # Modnix Changelog
 
+# Version 1.0, ????
+
+* Fix: Deleting configured mods with their config no longer hands the manager.
+* Faster mod scanning because of skipping non-public classes, abstract classes, interfaces, and enums.
+
 # Version 0.90 RC, 2020-03-16
 
 * New: Game in non-standard paths may now be browsed and selected for setup and launch.
