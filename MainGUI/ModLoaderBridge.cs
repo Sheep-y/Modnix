@@ -306,8 +306,8 @@ namespace Sheepy.Modnix.MainGUI {
          }
       }
 
-      private static Regex MalformPaths = new Regex( "(?:^[/\\]|\\.\\.[/\\])", RegexOptions.Compiled );
-      private static Regex IgnoreFiles = new Regex( "(?:\\.(?:conf|cs|csproj)|[/\\])$", RegexOptions.Compiled | RegexOptions.IgnoreCase );
+      private static Regex MalformPaths = new Regex( "(?:^[/\\\\]|\\.\\.[/\\\\])", RegexOptions.Compiled );
+      private static Regex IgnoreFiles = new Regex( "(?:\\.(?:conf|cs|csproj)|[/\\\\])$", RegexOptions.Compiled | RegexOptions.IgnoreCase );
 
       public override void Install ( string modFolder ) {
          var destination = modFolder + Path.DirectorySeparatorChar;

@@ -88,7 +88,8 @@ namespace Sheepy.Modnix.MainGUI {
          Log( "Refreshing app buttons, " + ( SharedGui.CanModify ? "can mod" : "cannot mod" ) );
          ButtonSetup .IsEnabled = ! SharedGui.IsAppWorking && SharedGui.AppState != null;
          ButtonRunOnline.IsEnabled  = ButtonRunOffline.IsEnabled  = SharedGui.CanModify && SharedGui.IsGameFound;
-         ButtonRunOnline.Foreground = ButtonRunOffline.Foreground = SharedGui.AppState != null && ! SharedGui.IsInjected ? Brushes.Red : Brushes.Black;
+         ButtonRunOnline.Foreground = ButtonRunOffline.Foreground = 
+            ButtonRunOnline.IsEnabled && SharedGui.AppState != null && ! SharedGui.IsInjected ? Brushes.Red : Brushes.Black;
          ButtonAddMod.IsEnabled = SharedGui.CanModify && Directory.Exists( App.ModFolder );
          ButtonModDir.IsEnabled = Directory.Exists( App.ModFolder );
          ButtonRefreshMod.IsEnabled = Directory.Exists( App.ModFolder ) && ! SharedGui.IsAppWorking;
