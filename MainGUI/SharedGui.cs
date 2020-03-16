@@ -166,7 +166,7 @@ namespace Sheepy.Modnix.MainGUI {
          if ( win.Dispatcher.CheckAccess() )
             task();
          else
-            win.Dispatcher.Invoke( task );
+            win.Dispatcher.InvokeAsync( task );
       }
 
       internal static Action Dispatcher ( this Window win, Action task ) => () => win.Dispatch( task );

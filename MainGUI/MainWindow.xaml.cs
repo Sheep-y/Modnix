@@ -366,8 +366,8 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       private void ButtonModDelete_Click ( object sender, RoutedEventArgs evt ) {
-         IEnumerable<ModInfo> mods = GridModList.SelectedItems.OfType<ModInfo>();
-         List<ModInfo> reset = mods.Where( e => e.Is( ModQuery.HAS_CONFIG_FILE ) ).ToList();
+         var mods = GridModList.SelectedItems.OfType<ModInfo>();
+         var reset = mods.Where( e => e.Is( ModQuery.HAS_CONFIG_FILE ) ).ToList();
          var msg = "Delete Mods:\r\r" + string.Join( "\r", mods.Select( e => e.Name + ( e.Is( ModQuery.HAS_CONFIG_FILE ) ? " (Delete config?)" : "" ) ) );
          if ( reset.Count > 0 ) {
             var ans = MessageBox.Show( msg + "\r\r(No to delete mods but keep configs)", "Delete Mod",
@@ -457,7 +457,7 @@ namespace Sheepy.Modnix.MainGUI {
       public void Log ( object message ) {
          var txt = ( Dispatcher.CheckAccess() ? "GUI┊" : "" ) + message?.ToString();
          Console.WriteLine( txt );
-         string time = DateTime.Now.ToString( "hh:mm:ss.ffff ", InvariantCulture );
+         var time = DateTime.Now.ToString( "hh:mm:ss.ffff ", InvariantCulture );
          this.Dispatch( () => { try {
             TextLog.AppendText( time + txt + "\n" );
             TextLog.ScrollToEnd();
