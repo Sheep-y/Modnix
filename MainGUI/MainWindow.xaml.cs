@@ -375,9 +375,8 @@ namespace Sheepy.Modnix.MainGUI {
             if ( ans == MessageBoxResult.Cancel ) return;
             if ( ans == MessageBoxResult.Yes ) {
                var delConf = App.DoModActionAsync( AppAction.DELETE_CONFIG, reset );
-               delConf.Wait();
-               if ( delConf.IsFaulted ) {
-                  Prompt( AppAction.DELETE_CONFIG, PromptFlag.ERROR, delConf.Exception );
+               if ( ! delConf.Wait( 30_000 ) || delConf.IsFaulted ) {
+                  Prompt( AppAction.DELETE_CONFIG, PromptFlag.ERROR, (Exception) delConf.Exception ?? new TimeoutException() );
                   return;
                }
             }
