@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Controls;
@@ -364,5 +365,10 @@ namespace Sheepy.Modnix.MainGUI {
          if ( File.Exists( exe ) )
             File.Delete( exe );
       } catch ( SystemException ) { } }
+   }
+
+   public static class NativeMethods {
+      [DllImport( "USER32.DLL" )]
+      internal static extern bool SetForegroundWindow ( IntPtr hWnd );
    }
 }
