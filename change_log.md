@@ -3,8 +3,8 @@
 # Version 1.0, ????
 
 * New: Enable verbose logging in config file and GUI.
-* Fix: Deleting configured mods with their config no longer hands the manager.
-* Faster mod scanning because of skipping non-public classes, abstract classes, interfaces, and enums.
+* Fix: Deleting configured mods with their config no longer hangs the manager.
+* Faster mod scanning because of skipping abstract classes, interfaces, enums, and system-generated classes.
 * Faster injection status detection by checking only known classes.
 
 # Version 0.90 RC, 2020-03-16
