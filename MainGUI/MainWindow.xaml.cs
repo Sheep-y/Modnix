@@ -29,6 +29,11 @@ namespace Sheepy.Modnix.MainGUI {
          RefreshGUI();
       } catch ( Exception ex ) { Console.WriteLine( ex ); } }
 
+      private void Window_Closed ( object sender, EventArgs e ) {
+         GameStatusTimer?.Change( Timeout.Infinite, Timeout.Infinite );
+         GameStatusTimer?.Dispose();
+      }
+
       private void SetupGUI () {
          Log( "Setting up GUI" );
          SharedGui.AppStateChanged += this.Dispatcher( RefreshAppInfo );
@@ -63,8 +68,8 @@ namespace Sheepy.Modnix.MainGUI {
          }
       } catch ( Exception ex ) { Log( ex ); } } ); }
 
-      private void Window_Activated ( object sender, EventArgs e ) => GameStatusTimer.Change( 100, 3000 );
-      private void Window_Deactivated ( object sender, EventArgs e ) => GameStatusTimer.Change( Timeout.Infinite, Timeout.Infinite );
+      private void Window_Activated ( object sender, EventArgs e ) => GameStatusTimer?.Change( 100, 3000 );
+      private void Window_Deactivated ( object sender, EventArgs e ) => GameStatusTimer?.Change( Timeout.Infinite, Timeout.Infinite );
 
       private void ShowWindow () {
          Log( "Checking app status" );
@@ -220,13 +225,13 @@ namespace Sheepy.Modnix.MainGUI {
       private void ButtonOnline_Click  ( object sender, RoutedEventArgs e ) {
          App.LaunchGame( "online" );
          SetInfo( GuiInfo.GAME_RUNNING, true );
-         GameStatusTimer.Change( Timeout.Infinite, 10_000 ); // Should be overrode by activate/deactivate, but just in case
+         GameStatusTimer?.Change( Timeout.Infinite, 10_000 ); // Should be overrode by activate/deactivate, but just in case
       }
 
       private void ButtonOffline_Click ( object sender, RoutedEventArgs e ) {
          App.LaunchGame( "offline" );
          SetInfo( GuiInfo.GAME_RUNNING, true );
-         GameStatusTimer.Change( Timeout.Infinite, 10_000 ); // Should be overrode by activate/deactivate, but just in case
+         GameStatusTimer?.Change( Timeout.Infinite, 10_000 ); // Should be overrode by activate/deactivate, but just in case
       }
 
       private void ButtonCanny_Click   ( object sender, RoutedEventArgs e ) => OpenUrl( "canny", e );
@@ -397,6 +402,12 @@ namespace Sheepy.Modnix.MainGUI {
          Log( $"Selection changed to {GridModList.SelectedItem}, total {GridModList.SelectedItems.Count}" );
          SetSelectedMod( GridModList.SelectedItem as ModInfo );
       }
+
+      private void GridModList_LoadingRow ( object sender, DataGridRowEventArgs e ) {
+         var row = e.Row;
+         row.Foreground = ( ( row.Item as ModInfo )?.Is( ModQuery.ENABLED ) == true )
+            ? Brushes.Navy : Brushes.Gray;
+      }
       #endregion
 
       #region Updater
@@ -533,20 +544,9 @@ namespace Sheepy.Modnix.MainGUI {
          Process.Start( url );
       }
       #endregion
+    }
 
-      private void Window_Closed ( object sender, EventArgs e ) {
-         GameStatusTimer.Change( Timeout.Infinite, Timeout.Infinite );
-         GameStatusTimer.Dispose();
-      }
-
-      private void GridModList_LoadingRow ( object sender, DataGridRowEventArgs e ) {
-         var row = e.Row;
-         row.Foreground = ( ( row.Item as ModInfo )?.Is( ModQuery.ENABLED ) == true )
-            ? Brushes.Navy : Brushes.Gray;
-      }
-   }
-
-   public static class WpfHelper {
+    public static class WpfHelper {
       public static TextRange TextRange ( this RichTextBox box ) {
          return new TextRange( box.Document.ContentStart, box.Document.ContentEnd );
       }
