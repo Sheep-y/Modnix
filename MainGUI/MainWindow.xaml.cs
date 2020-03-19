@@ -30,8 +30,8 @@ namespace Sheepy.Modnix.MainGUI {
       } catch ( Exception ex ) { Console.WriteLine( ex ); } }
 
       private void Window_Closed ( object sender, EventArgs e ) {
-         GameStatusTimer?.Change( Timeout.Infinite, Timeout.Infinite );
-         GameStatusTimer?.Dispose();
+         GameStatusTimer.Change( Timeout.Infinite, Timeout.Infinite );
+         GameStatusTimer.Dispose();
       }
 
       private void SetupGUI () {
@@ -68,8 +68,8 @@ namespace Sheepy.Modnix.MainGUI {
          }
       } catch ( Exception ex ) { Log( ex ); } } ); }
 
-      private void Window_Activated ( object sender, EventArgs e ) => GameStatusTimer?.Change( 100, 3000 );
-      private void Window_Deactivated ( object sender, EventArgs e ) => GameStatusTimer?.Change( Timeout.Infinite, Timeout.Infinite );
+      private void Window_Activated ( object sender, EventArgs e ) => GameStatusTimer.Change( 100, 3000 );
+      private void Window_Deactivated ( object sender, EventArgs e ) => GameStatusTimer.Change( Timeout.Infinite, Timeout.Infinite );
 
       private void ShowWindow () {
          Log( "Checking app status" );
@@ -226,13 +226,13 @@ namespace Sheepy.Modnix.MainGUI {
       private void ButtonOnline_Click  ( object sender, RoutedEventArgs e ) {
          App.LaunchGame( "online" );
          SetInfo( GuiInfo.GAME_RUNNING, true );
-         GameStatusTimer?.Change( Timeout.Infinite, 10_000 ); // Should be overrode by activate/deactivate, but just in case
+         GameStatusTimer.Change( Timeout.Infinite, 10_000 ); // Should be overrode by activate/deactivate, but just in case
       }
 
       private void ButtonOffline_Click ( object sender, RoutedEventArgs e ) {
          App.LaunchGame( "offline" );
          SetInfo( GuiInfo.GAME_RUNNING, true );
-         GameStatusTimer?.Change( Timeout.Infinite, 10_000 ); // Should be overrode by activate/deactivate, but just in case
+         GameStatusTimer.Change( Timeout.Infinite, 10_000 ); // Should be overrode by activate/deactivate, but just in case
       }
 
       private void ButtonCanny_Click   ( object sender, RoutedEventArgs e ) => OpenUrl( "canny", e );
@@ -261,9 +261,19 @@ namespace Sheepy.Modnix.MainGUI {
          if ( GridModList.ItemsSource != ModList ) {
             Log( "New mod list, clearing selection" );
             GridModList.ItemsSource = ModList;
-            //SetSelectedMod( null );
          }
          GridModList.Items?.Refresh();
+         GridModList.UpdateLayout();
+         if ( ModList != null && NewMods != null && NewMods.Count > 0 ) {
+            foreach ( var mod in ModList.OfType<ModInfo>() ) {
+               if ( NewMods.Contains( mod.Path ) ) {
+                  GridModList.SelectedItem = mod;
+                  GridModList.ScrollIntoView( mod );
+                  break;
+               }
+            }
+            NewMods = null;
+         }
       } catch ( Exception ex ) { Log( ex ); } }
 
       private void SetSelectedMod ( ModInfo mod ) {
@@ -292,7 +302,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void BuildMultiModInfo () { try {
          var doc = RichModInfo.Document;
-         Paragraph body = new Paragraph();
+         var body = new Paragraph();
          doc.Replace( body );
          foreach ( var mod in SelectedMods )
             mod.BuildSummary( doc );
@@ -319,18 +329,21 @@ namespace Sheepy.Modnix.MainGUI {
             return;
          }
          SharedGui.IsAppWorking = true;
-         App.AddModAsync( dialog.FileNames ).ContinueWith( result => {
-            if ( result.IsFaulted ) Prompt( AppAction.ADD_MOD, PromptFlag.ERROR, result.Exception );
+         App.AddModAsync( dialog.FileNames ).ContinueWith( task => {
+            if ( task.IsFaulted ) Prompt( AppAction.ADD_MOD, PromptFlag.ERROR, task.Exception );
+            NewMods = new HashSet<string>( task.Result.SelectMany( e => e ) );
             SharedGui.IsAppWorking = false;
             this.Dispatch( () => ButtonRefreshMod_Click( sender, evt ) );
          } );
       }
 
+      private HashSet<string> NewMods; // Not thread safe! Same below! Fix!
       private Timer RefreshModTimer;
 
       private void ButtonRefreshMod_Click ( object sender, RoutedEventArgs evt ) {
          if ( RefreshModTimer != null ) return;
          SetModList( null );
+         // Add new mod can happens without visible refresh, and if the mod is not new it'd look like Modnix did nothing. So we need a delay.
          RefreshModTimer = new Timer( ( _ ) => {
             App.GetModList();
             this.Dispatch( () => {
@@ -342,7 +355,7 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       private void ButtonModOpenModDir_Click ( object sender, RoutedEventArgs evt ) {
-         int count = GridModList.SelectedItems.Count;
+         var count = GridModList.SelectedItems.Count;
          if ( count > 3 &&
             MessageBoxResult.Yes != MessageBox.Show( $"Open {count} file explorer?", "Warning", MessageBoxButton.OKCancel, MessageBoxImage.Warning, MessageBoxResult.Cancel ) )
             return;
@@ -549,9 +562,9 @@ namespace Sheepy.Modnix.MainGUI {
          Process.Start( url );
       }
       #endregion
-    }
+   }
 
-    public static class WpfHelper {
+   public static class WpfHelper {
       public static TextRange TextRange ( this RichTextBox box ) {
          return new TextRange( box.Document.ContentStart, box.Document.ContentEnd );
       }
