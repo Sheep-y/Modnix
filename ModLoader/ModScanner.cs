@@ -186,7 +186,7 @@ namespace Sheepy.Modnix {
          DllEntryMeta result = null;
          using ( var lib = AssemblyDefinition.ReadAssembly( file ) ) {
             foreach ( var type in lib.MainModule.GetTypes() ) {
-               if ( type.IsNested || type.IsNotPublic || type.IsInterface || type.IsAbstract || type.IsEnum || type.Name.IndexOf( '<' ) >= 0 ) continue;
+               if ( type.IsNested || type.IsNotPublic || type.IsInterface || ( type.IsAbstract && ! type.IsSealed ) || type.IsEnum || type.Name.IndexOf( '<' ) >= 0 ) continue;
                var count = 0;
                foreach ( var method in type.Methods ) {
                   if ( ! method.IsPublic ) continue;
