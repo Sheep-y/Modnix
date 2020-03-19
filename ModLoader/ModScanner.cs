@@ -186,11 +186,13 @@ namespace Sheepy.Modnix {
          DllEntryMeta result = null;
          using ( var lib = AssemblyDefinition.ReadAssembly( file ) ) {
             foreach ( var type in lib.MainModule.GetTypes() ) {
-               if ( type.IsInterface || type.IsAbstract || type.IsEnum || type.Name.IndexOf( '<' ) >= 0 ) continue;
-               Log.Verbo( "Scanning {0}", type.FullName );
+               if ( type.IsNested || type.IsNotPublic || type.IsInterface || type.IsAbstract || type.IsEnum || type.Name.IndexOf( '<' ) >= 0 ) continue;
+               var count = 0;
                foreach ( var method in type.Methods ) {
+                  if ( ! method.IsPublic ) continue;
+                  ++count;
                   var name = method.Name;
-                  if ( Array.IndexOf( ModLoader.PHASES, name ) < 0 ) continue;
+                  if ( name.Length == 0 || name[0] == 'P' || Array.IndexOf( ModLoader.PHASES, name ) < 0 ) continue; // Skip Prefix/Postfix, then check phase
                   if ( method.CustomAttributes.Any( e => e.AttributeType.FullName.Equals( "System.ObsoleteAttribute" ) ) ) continue;
                   if ( name == "Initialize" && ! type.Interfaces.Any( e => e.InterfaceType.FullName == "PhoenixPointModLoader.IPhoenixPointMod" ) ) {
                      Log.Verbo( "Ignoring {0}.Initialize because not IPhoenixPointMod", type.FullName );
@@ -204,6 +206,7 @@ namespace Sheepy.Modnix {
                      Log.Verbo( "Found {0}.{1}", type.FullName, name );
                   }
                }
+               Log.Verbo( "Scanned public {0}, {1} public methods", type.FullName, count );
             }
          }
          // Remove Init from Modnix DLLs, so that they will not be initiated twice

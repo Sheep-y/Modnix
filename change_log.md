@@ -4,8 +4,9 @@
 
 * New: Enable verbose logging in config file and GUI.
 * Fix: Deleting configured mods with their config no longer hangs the manager.
-* Faster mod scanning because of skipping abstract classes, interfaces, enums, and system-generated classes.
-* Faster injection status detection by checking only known classes.
+* Faster mod scanning by skipping nested classes, non-public classes, abstract classes, interfaces, enums, and system-generated classes.
+* Faster mod scanning by skipping non-public methods and shortcut Prefix/Postfix.
+* Faster injection status detection by checking only known injection points.
 
 # Version 0.90 RC, 2020-03-16
 
