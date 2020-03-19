@@ -310,8 +310,9 @@ namespace Sheepy.Modnix.MainGUI {
       private static Regex MalformPaths = new Regex( "(?:^[/\\\\]|\\.\\.[/\\\\])", RegexOptions.Compiled );
       private static Regex IgnoreFiles = new Regex( "(?:\\.(?:conf|cs|csproj)|[/\\\\])$", RegexOptions.Compiled | RegexOptions.IgnoreCase );
 
-      public override void Install ( string modFolder ) {
+      public override string[] Install ( string modFolder ) {
          var destination = modFolder + Path.DirectorySeparatorChar;
+         var result = new List<string>();
          Log( $"Extracting {ArchivePath} to {destination}" );
          using ( ZipArchive archive = ZipFile.OpenRead( ArchivePath ) ) {
             foreach ( ZipArchiveEntry entry in archive.Entries ) {
@@ -321,8 +322,10 @@ namespace Sheepy.Modnix.MainGUI {
                Log( path );
                Directory.CreateDirectory( Path.GetDirectoryName( path ) );
                entry.ExtractToFile( path, true );
+               result.Add( path );
             }
          }
+         return result.ToArray();
       }
    }
 
@@ -352,12 +355,14 @@ namespace Sheepy.Modnix.MainGUI {
             .Select( e => RemoveSize.Replace( e.Substring( 25 ).Trim(), "" ) ).ToArray();
       }
 
-      public override void Install ( string modFolder ) {
+      public override string[] Install ( string modFolder ) {
          var exe = Create7z();
          var destination = modFolder + Path.DirectorySeparatorChar;
          Directory.CreateDirectory( destination );
          var stdout = AppControl.Instance.RunAndWait( destination, exe, $"x \"{ArchivePath}\" -y -bb1 -ba -bd -sccUTF-8 -xr!*.conf -xr!*.cs -xr!*.csprog" );
          if ( ! stdout.Contains( "Everything is Ok" ) ) throw new ApplicationException( stdout );
+         return stdout.Split( '\n' ).Where( e => e.Length > 2 && e.StartsWith( "- ", StringComparison.Ordinal ) )
+            .Select( e => Path.Combine( modFolder, e.Substring( 2 ).Trim() ) ).ToArray();
       }
 
       public static void Cleanup () { try {

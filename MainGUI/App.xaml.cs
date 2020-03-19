@@ -28,7 +28,7 @@ namespace Sheepy.Modnix.MainGUI {
       protected readonly string ArchivePath;
       public ArchiveReader ( string path ) { ArchivePath = path; }
       public abstract string[] ListFiles ();
-      public abstract void Install ( string modFolder );
+      public abstract string[] Install ( string modFolder );
       protected void Log ( object msg ) => AppControl.Instance.Log( msg );
       public bool AssumeRoot => ListFiles().Any( e => e.StartsWith( "PPDefModifier", StringComparison.Ordinal ) && e != "PPDefModifier.dll" );
    }
@@ -584,14 +584,14 @@ namespace Sheepy.Modnix.MainGUI {
          }
       }
 
-      internal Task AddModAsync ( string[] files ) {
+      internal Task<string[][]> AddModAsync ( string[] files ) {
          Log( $"Queuing add mod of {string.Join( "\n", files )}" );
          return Task.WhenAll( files.Select( file => Task.Run( () => AddMod( file ) ) ) );
       }
 
       private static Regex IgnoreInAddMod = new Regex( "-\\d{6,}$", RegexOptions.Compiled );
 
-      private void AddMod ( string file ) {
+      private string[] AddMod ( string file ) {
          var ext = Path.GetExtension( file ).ToLowerInvariant();
          var modname = IgnoreInAddMod.Replace( Path.GetFileNameWithoutExtension( file ), "" );
          if ( string.IsNullOrWhiteSpace( modname ) ) modname = Path.GetFileNameWithoutExtension( file );
@@ -599,13 +599,14 @@ namespace Sheepy.Modnix.MainGUI {
          if ( ext.Equals( ".zip" ) || ext.Equals( ".7z" ) || ext.Equals( ".xz" ) ) {
             Log( $"Adding {file} as a packed mod" );
             var reader = ext.Equals( ".zip" ) ? (ArchiveReader) new ZipArchiveReader( file ) : new SevenZipArchiveReader( file );
-            reader.Install( reader.AssumeRoot ? ModFolder : folder );
+            return reader.Install( reader.AssumeRoot ? ModFolder : folder );
          } else {
             Log( $"Adding {file} as a single file mod" );
             Directory.CreateDirectory( folder );
             var destination = Path.Combine( folder, Path.GetFileName( file ) );
             Log( destination );
             File.Copy( file, destination, true );
+            return new string[] { destination };
          }
       }
 
