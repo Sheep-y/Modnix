@@ -148,6 +148,7 @@ namespace Sheepy.Modnix.MainGUI {
          var state = new Run( txt );
          if ( SharedGui.AppState != "modnix" ) state.Foreground = Brushes.Red;
          RichAppInfo.Document.Replace( P( new Bold( new Run( AppControl.LIVE_NAME ) ), new Run( $"\tVer {SharedGui.AppVer}\rStatus: " ), state ) );
+         CheckLogVerbo.IsChecked = ( App.ModBridge.GetSettings().LogLevel & SourceLevels.Verbose ) == SourceLevels.Verbose;
       } catch ( Exception ex ) { Log( ex ); } }
 
       private void ButtonWiki_Click ( object sender, RoutedEventArgs e ) => OpenUrl( "wiki", e );
@@ -475,6 +476,10 @@ namespace Sheepy.Modnix.MainGUI {
          } catch ( Exception ex ) { Console.WriteLine( ex ); } } );
       }
 
+      private void CheckLogVerbo_Checked ( object sender, RoutedEventArgs e ) {
+         App.SetLogLevel( CheckLogVerbo.IsChecked == true ? SourceLevels.Verbose : SourceLevels.Information );
+      }
+
       private void ButtonLogSave_Click ( object sender, RoutedEventArgs e ) { try {
          var name =  ButtonLicense.IsChecked == true
                ? AppControl.LIVE_NAME + $" License"
@@ -511,11 +516,11 @@ namespace Sheepy.Modnix.MainGUI {
                   TextLicense.Text = reader.ReadToEnd();
                }
             LabelLogTitle.Content = "License";
-            TextLog.Visibility = ButtonLogClear.Visibility = Visibility.Hidden;
+            TextLog.Visibility = CheckLogVerbo.Visibility = ButtonLogClear.Visibility = Visibility.Hidden;
             TextLicense.Visibility = Visibility.Visible;
          } else {
             LabelLogTitle.Content = "Diagnostic Log";
-            TextLog.Visibility = ButtonLogClear.Visibility = Visibility.Visible;
+            TextLog.Visibility = CheckLogVerbo.Visibility = ButtonLogClear.Visibility = Visibility.Visible;
             TextLicense.Visibility = Visibility.Hidden;
          }
       } catch ( Exception ex ) { Log( ex ); } }

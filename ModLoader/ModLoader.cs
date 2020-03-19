@@ -129,14 +129,11 @@ namespace Sheepy.Modnix {
             Log.Info( $"Using default settings, because cannot find or parse {confFile}" );
             Settings = new LoaderSettings();
          }
+         SetLogLevel( Settings.LogLevel );
       }
 
       public static void SaveSettings () {
          var confFile = Path.Combine( ModDirectory, CONF_FILE );
-         lock ( Settings ) {
-            if ( Settings.SettingVersion == null )
-               Settings.SettingVersion = LoaderVersion.ToString();
-         }
          var json = JsonConvert.SerializeObject( Settings, Formatting.Indented, ModMetaJson.JsonOptions );
          if ( string.IsNullOrWhiteSpace( json ) ) return;
          if ( ! Directory.Exists( ModDirectory ) )
@@ -144,18 +141,22 @@ namespace Sheepy.Modnix {
          File.WriteAllText( confFile, json, Encoding.UTF8 );
       }
 
-      public static void SetLog ( Logger logger, bool clear = false ) { lock (  MOD_PATH ) {
+      public static void SetLog ( Logger logger, bool clear = false ) { lock ( MOD_PATH ) {
          if ( Log != null ) throw new InvalidOperationException();
          Log = logger ?? throw new NullReferenceException( nameof( logger ) );
          logger.Filters.Clear();
          logger.Filters.Add( LogFilters.FormatParams );
          logger.Filters.Add( LogFilters.ResolveLazy );
-         //logger.Level = SourceLevels.All;
          if ( clear ) Log.Clear();
          LoaderVersion = Assembly.GetExecutingAssembly().GetName().Version;
          Log.Info( "{0}/{1}; {2}", typeof( ModLoader ).FullName, LoaderVersion, DateTime.Now.ToString( "u" ) );
          ModMetaJson.JsonLogger.Masters.Clear();
          ModMetaJson.JsonLogger.Masters.Add( Log );
+      } }
+
+      public static void SetLogLevel ( SourceLevels level ) { lock ( MOD_PATH ) {
+         if ( Log == null ) throw new InvalidOperationException( "Log not set" );
+         Log.Level = level;
       } }
 
       public static void LogGameVersion () { try { lock ( MOD_PATH ) {

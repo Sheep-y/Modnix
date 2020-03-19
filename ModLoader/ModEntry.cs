@@ -13,7 +13,8 @@ namespace Sheepy.Modnix {
    using DllEntryMeta = Dictionary< string, HashSet< string > >;
 
    public class LoaderSettings {
-      public string SettingVersion = null;
+      public int SettingVersion = 20200319;
+      public SourceLevels LogLevel = SourceLevels.Information;
       // For mod manager
       public bool CheckUpdate = true;
       public DateTime? LastCheckUpdate = null;

@@ -141,7 +141,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       private Assembly AssemblyResolve ( object domain, ResolveEventArgs dll ) {
          Log( $"Modnix resolving {dll.Name}" );
-         AppDomain app = domain as AppDomain ?? AppDomain.CurrentDomain;
+         var app = domain as AppDomain ?? AppDomain.CurrentDomain;
          if ( dll.Name.StartsWith( "ModnixLoader,", StringComparison.OrdinalIgnoreCase ) )
             return app.Load( GetResourceBytes( LOADER ) );
          if ( dll.Name.StartsWith( "Mono.Cecil,", StringComparison.OrdinalIgnoreCase ) )
@@ -160,13 +160,21 @@ namespace Sheepy.Modnix.MainGUI {
          ModBridge.SaveSettings();
       }
 
+      internal void SetLogLevel ( SourceLevels level ) {
+         var settings = ModBridge.GetSettings();
+         if ( settings.LogLevel == level ) return;
+         ModLoader.SetLogLevel( level );
+         settings.LogLevel = level;
+         ModBridge.SaveSettings();
+      }
+
       // Parse command line arguments.
       // -i --ignore-pid (id)    Ignore given pid in running process check
       // -s --skip-launch-check  Skip checking running process, modnix installation, and setting migration
       // -reset --reset          Clear and reset App settings
       private void ProcessParams ( string[] args ) {
          if ( args == null || args.Length <= 0 ) return;
-         List<string> param = args.ToList();
+         var param = args.ToList();
 
          if ( ParamIndex( param, "reset", "reset" ) >= 0 ) {
             try {
@@ -505,7 +513,7 @@ namespace Sheepy.Modnix.MainGUI {
 
 
       internal void CreateShortcut () {
-         string name = Path.Combine( CurrentGame.GameDir, PAST_MOD );
+         var name = Path.Combine( CurrentGame.GameDir, PAST_MOD );
          Log( "Creating Mods shortcut to support legacy mods." );
          RunAndWait( CurrentGame.GameDir, "cmd", $"/c mklink /d \"{name}\" \"{ModFolder}\"", true );
       }
