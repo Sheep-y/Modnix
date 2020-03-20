@@ -312,7 +312,7 @@ namespace Sheepy.Modnix {
 
       private static Logger CreateLogger ( ModEntry mod ) { lock ( mod ) {
          if ( mod.Logger == null ) {
-            var logger = mod.Logger = new LoggerProxy( Log );
+            var logger = mod.Logger = new LoggerProxy( Log ){ Level = Log.Level };
             var filters = logger.Filters;
             filters.Add( LogFilters.IgnoreDuplicateExceptions );
             filters.Add( LogFilters.AutoMultiParam );
