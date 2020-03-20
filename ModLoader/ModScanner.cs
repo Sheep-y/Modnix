@@ -114,7 +114,7 @@ namespace Sheepy.Modnix {
             if ( meta.Dlls != null ) {
                foreach ( var dll in meta.Dlls ) {
                   if ( dll.Methods == null || dll.Methods.Count == 0 )
-                     dll.Methods = ParseEntryPoints( dll.Path );
+                     dll.Methods = ParseEntryPoints( dll.Path, true );
                }
             }
          }
@@ -142,7 +142,7 @@ namespace Sheepy.Modnix {
 
       private static ModMeta ParseDllInfo ( string file ) { try {
          Log.Verbo( $"Parsing as dll: {file}" );
-         var methods = ParseEntryPoints( file );
+         var methods = ParseEntryPoints( file, false );
          if ( methods == null ) return null;
          var info = FileVersionInfo.GetVersionInfo( file );
          return new ModMeta{
@@ -182,7 +182,7 @@ namespace Sheepy.Modnix {
          return info != null;
       } catch ( Exception ex ) { Log.Warn( ex ); return false; } }
 
-      private static DllEntryMeta ParseEntryPoints ( string file ) {
+      private static DllEntryMeta ParseEntryPoints ( string file, bool active ) {
          DllEntryMeta result = null;
          using ( var lib = AssemblyDefinition.ReadAssembly( file ) ) {
             foreach ( var type in lib.MainModule.GetTypes() ) {
@@ -211,15 +211,12 @@ namespace Sheepy.Modnix {
          }
          // Remove Init from Modnix DLLs, so that they will not be initiated twice
          if ( result != null ) {
-            if ( result.Count > 1 )
+            if ( result.Count > 1 ) // Ignore PPML+ first to prevent giving the wrong signal, because we are only partially compatible
                result.Remove( "Initialize" );
             if ( result.Count > 1 )
                result.Remove( "Init" );
-            else if ( result.Count <= 0 ) {
-               Log.Warn( "Mod initialisers not found in {0}", file );
-               return null;
-            }
-         }
+         } else if ( active )
+            Log.Warn( "Mod initialisers not found in {0}", file );
          return result;
       }
 
