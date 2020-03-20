@@ -189,7 +189,7 @@ namespace Sheepy.Modnix {
                if ( type.IsNested || type.IsNotPublic || type.IsInterface || ( type.IsAbstract && ! type.IsSealed ) || type.IsEnum || type.Name.IndexOf( '<' ) >= 0 ) continue;
                var count = 0;
                foreach ( var method in type.Methods ) {
-                  if ( ! method.IsPublic ) continue;
+                  if ( ! method.IsPublic || method.IsConstructor || method.IsAbstract || method.ContainsGenericParameter ) continue;
                   ++count;
                   var name = method.Name;
                   if ( name.Length == 0 || name[0] == 'P' || Array.IndexOf( ModLoader.PHASES, name ) < 0 ) continue; // Skip Prefix/Postfix, then check phase
@@ -206,7 +206,7 @@ namespace Sheepy.Modnix {
                      Log.Verbo( "Found {0}.{1}", type.FullName, name );
                   }
                }
-               Log.Verbo( "Scanned public {0}, {1} public methods", type.FullName, count );
+               Log.Verbo( "Scanned {1} public methods on {0}", type.FullName, count );
             }
          }
          // Remove Init from Modnix DLLs, so that they will not be initiated twice
