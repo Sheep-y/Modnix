@@ -193,9 +193,9 @@ namespace Sheepy.Modnix {
                   ++count;
                   var name = method.Name;
                   if ( name.Length == 0 || name[0] == 'P' || Array.IndexOf( ModLoader.PHASES, name ) < 0 ) continue; // Skip Prefix/Postfix, then check phase
-                  if ( method.CustomAttributes.Any( e => e.AttributeType.FullName.Equals( "System.ObsoleteAttribute" ) ) ) continue;
+                  // if ( method.CustomAttributes.Any( e => e.AttributeType.FullName.Equals( "System.ObsoleteAttribute" ) ) ) continue;
                   if ( name == "Initialize" && ! type.Interfaces.Any( e => e.InterfaceType.FullName == "PhoenixPointModLoader.IPhoenixPointMod" ) ) {
-                     Log.Verbo( "Ignoring {0}.Initialize because not IPhoenixPointMod", type.FullName );
+                     Log.Info( "Ignoring {0}.Initialize because not IPhoenixPointMod", type.FullName );
                      continue;
                   }
                   if ( result == null ) result = new DllEntryMeta();
