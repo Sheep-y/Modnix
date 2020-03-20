@@ -4,9 +4,12 @@
 
 * New: Enable verbose logging in config file and GUI.
 * Fix: Deleting configured mods with their config no longer hangs the manager.
-* Faster mod scanning by skipping nested classes, non-public classes, abstract classes, interfaces, enums, and system-generated classes.
-* Faster mod scanning by skipping non-public methods and shortcut Prefix/Postfix.
-* Faster injection status detection by checking only known injection points.
+* Fix: Obsolete methods are no longer skipped.  Also speed up mod scanning.
+* Gui: When selecting multiple mods, no longer bold disabled mods.
+* Gui: Faster injection status detection by checking only known injection points.
+* Mod: Faster mod scanning by skipping nested classes, non-public classes, abstract classes, interfaces, enums, and system-generated classes.
+* Mod: Faster mod scanning by skipping non-public methods and shortcut Prefix/Postfix.
+* Mod: Log a warning when mod_info specifies a dll that has no initialiser.
 
 # Version 0.90 RC, 2020-03-16
 
@@ -33,9 +36,9 @@
 * Fix: Mono.Cecil.dll is now deleted from Mods folder on setup, in addition to other loader dlls.
 * Fix: Typo on log label. Thanks javehaider on NexusMods for reporting.
 * Fix: Typo on button. Thanks javehaider and Lunazathoth on NexusMods for reporting.
-* In mod_info, Langs are changed to Lang, Urls changed to Url.  This make info fields consistent.
-* Improved app / injection / game status display and less unnecessary status checks.  Modnix keyvisual faintly visible.
-* Overloaded mod initialisers are now allowed and the first declared will be used.
+* Gui: Improved app / injection / game status display and less unnecessary status checks.  Modnix keyvisual faintly visible.
+* Mod: In mod_info, Langs are changed to Lang, Urls changed to Url.  This make info fields consistent.
+* Mod: Overloaded mod initialisers are now allowed and the first declared will be used.
 * Injector's game version check now returns only type of error, instead of full stacktrace, to keep returned text on one line.
 
 # Version 0.81 Beta Patch, 2020-03-01
@@ -50,8 +53,8 @@
 * New: If mod is in a subfolder, prompt and delete whole subfolder.
 * New: Remove empty folders left by deleting a mod.
 * Fix: Mod list refresh button now works.
-* Installer no longer scan for mods.
-* All log messages are duplicated to standard out, instead of silence after GUI shows up.
+* Gui: Installer no longer scan for mods.
+* Gui: All log messages are duplicated to standard out, instead of silence after GUI shows up.
 
 # Version 0.80 Beta, 2020-02-29
 

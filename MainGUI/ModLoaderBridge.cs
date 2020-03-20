@@ -147,7 +147,8 @@ namespace Sheepy.Modnix.MainGUI {
       public override void BuildSummary ( FlowDocument doc ) { lock ( Mod ) {
          var body = doc.Blocks.FirstBlock as Paragraph;
          if ( body == null ) return;
-         body.Inlines.Add( new Bold( new Run( Mod.Metadata.Name.ToString( "en" ) ) ) );
+         var name = new Run( Mod.Metadata.Name.ToString( "en" ) );
+         body.Inlines.Add( Mod.Disabled ? (Inline) name : new Bold( name ) );
          if ( Mod.HasConfig )
             body.Inlines.Add( ModLoader.CheckConfigFile( Mod.Path ) != null
                   ? "\t[has config file]" : "\t[can create config]" );
