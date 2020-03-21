@@ -250,6 +250,11 @@ namespace Sheepy.Modnix {
       public static string TrimVersion ( Version ver ) => TrimVersion( ver.ToString() );
       public static string TrimVersion ( string ver ) => RegxVerTrim.Replace( ver, "" );
 
+      public static string ReadAsText ( Stream input ) {
+         using ( var stream = new StreamReader( input, Encoding.UTF8, true ) ) {
+            return stream.ReadToEnd();
+         }
+      }
       public static T Parse<T> ( string json ) => JsonConvert.DeserializeObject<T>( json, JsonOptions );
       public static string Stringify ( object val ) => JsonConvert.SerializeObject( val, Formatting.Indented, JsonOptions );
       public static ModMeta ParseMod ( string json ) => Parse<ModMeta>( json );

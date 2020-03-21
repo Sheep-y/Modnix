@@ -58,12 +58,12 @@ namespace Sheepy.Modnix.MainGUI {
          string json = null;
          try {
             using ( WebResponse response = request.GetResponse() ) {
-               json = ReadAsString( request.GetResponse() );
+               json = ModMetaJson.ReadAsText( request.GetResponse().GetResponseStream() );
                App.Log( json );
             }
          } catch ( WebException wex ) {
             App.Log( wex );
-            return App.Log<GithubRelease>( ReadAsString( wex.Response ), null );
+            return App.Log<GithubRelease>( ModMetaJson.ReadAsText( wex.Response.GetResponseStream() ), null );
          }
 
          if ( HasNewRelease( JsonConvert.DeserializeObject<GithubRelease[]>( json, JsonOptions ), update_from, out GithubRelease release ) )
@@ -97,12 +97,6 @@ namespace Sheepy.Modnix.MainGUI {
             }
          } catch ( Exception ex ) { App.Log( ex ); }
          return false;
-      }
-
-      private static string ReadAsString ( WebResponse response ) {
-         using ( StreamReader reader = new StreamReader( response.GetResponseStream() ) ) {
-            return reader.ReadToEnd ();
-         }
       }
    }
 

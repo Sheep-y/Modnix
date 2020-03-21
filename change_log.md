@@ -4,6 +4,7 @@
 
 * New: Enable verbose logging in config file and GUI.
 * Fix: Deleting configured mods with their config no longer hangs the manager.
+* Fix: Files embedded with the "Resource" build action are now detected.
 * Fix: Obsolete methods are no longer skipped.  Also speed up mod scanning.
 * Gui: When selecting multiple mods, no longer bold disabled mods.
 * Gui: Faster injection status detection by checking only known injection points.

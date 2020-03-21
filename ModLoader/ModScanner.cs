@@ -169,10 +169,13 @@ namespace Sheepy.Modnix {
                   using ( var reader = new ResourceReader( res.GetResourceStream() ) ) {
                      var data = reader.GetEnumerator();
                      while ( data.MoveNext() ) {
-                        if ( data.Key.ToString().Equals( "mod_info", StringComparison.OrdinalIgnoreCase ) )
-                           info = data.Value?.ToString();
-                        else if ( data.Key.ToString().Equals( "mod_init", StringComparison.OrdinalIgnoreCase ) )
-                           conf = data.Value?.ToString();
+                        var name = data.Key.ToString();
+                        if ( ! name.StartsWith( "mod_", StringComparison.OrdinalIgnoreCase ) ) continue;
+                        if ( name.Equals( "mod_info", StringComparison.OrdinalIgnoreCase ) || name.EndsWith( "mod_info.js", StringComparison.OrdinalIgnoreCase ) ) {
+                           info = data.Value is Stream stream ? ModMetaJson.ReadAsText( stream ) : data.Value?.ToString();
+                        } else if ( name.Equals( "mod_init", StringComparison.OrdinalIgnoreCase ) || name.EndsWith( "mod_init.conf", StringComparison.OrdinalIgnoreCase ) ) {
+                           conf = data.Value is Stream stream ? ModMetaJson.ReadAsText( stream ) : data.Value?.ToString();
+                        }
                      }
                   }
                }

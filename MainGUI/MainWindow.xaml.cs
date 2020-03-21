@@ -525,9 +525,7 @@ namespace Sheepy.Modnix.MainGUI {
       private void ButtonLicense_Checked ( object sender, RoutedEventArgs e ) { try {
          if ( ButtonLicense.IsChecked == true ) {
             if ( string.IsNullOrEmpty( TextLicense.Text ) )
-               using ( var reader = new StreamReader( AppControl.GetResource( "License.txt" ), Encoding.UTF8 ) ) {
-                  TextLicense.Text = reader.ReadToEnd();
-               }
+               TextLicense.Text = ModMetaJson.ReadAsText( AppControl.GetResource( "License.txt" ) );
             LabelLogTitle.Content = "License";
             TextLog.Visibility = CheckLogVerbo.Visibility = ButtonLogClear.Visibility = Visibility.Hidden;
             TextLicense.Visibility = Visibility.Visible;
