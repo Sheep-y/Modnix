@@ -6,6 +6,7 @@
 * Fix: Deleting configured mods with their config no longer hangs the manager.
 * Fix: Files embedded with the "Resource" build action are now detected.
 * Fix: Obsolete methods are no longer skipped.  Also speed up mod scanning.
+* Fix: Partial versions are now completely zero-filled, instead of partially.
 * Gui: When selecting multiple mods, no longer bold disabled mods.
 * Gui: Faster injection status detection by checking only known injection points.
 * Mod: Faster mod scanning by skipping nested classes, non-public classes, abstract classes, interfaces, enums, and system-generated classes.

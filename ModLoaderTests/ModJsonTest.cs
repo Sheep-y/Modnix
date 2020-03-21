@@ -7,10 +7,30 @@ namespace Sheepy.Modnix.Tests {
    [TestClass()]
    public class ModJsonTest {
 
+      [TestMethod()] public void ParseVersionTest () {
+         AssertVer( false, null );
+         AssertVer( false, "" );
+         AssertVer( false, " " );
+         AssertVer( false, "a" );
+         AssertVer( true, "1", new Version( 1, 0, 0, 0 ) );
+         AssertVer( true, "1.2", new Version( 1, 2, 0, 0 ) );
+         AssertVer( true, "1.2.3", new Version( 1, 2, 3, 0 ) );
+         AssertVer( true, "1.2.3.4", new Version( 1, 2, 3, 4 ) );
+         AssertVer( false, "1...4" );
+         AssertVer( false, "1.2.3.4.5" );
+         AssertVer( false, "1.2a.3.4" );
+      }
+
+      private void AssertVer ( bool canParse, string input, Version expected = null ) {
+         var actual = ModMetaJson.ParseVersion( input, out Version parsed );
+         Assert.AreEqual( canParse, actual, input );
+         Assert.AreEqual( parsed, expected, input );
+      }
+
       [TestMethod()] public void AppVerTest () {
          var appver = ModMetaJson.Parse<AppVer>( @"null" );
          Assert.IsNull( appver, "null" );
-         
+
          appver = ModMetaJson.Parse<AppVer>( @"{}" );
          Assert.IsNull( appver, "empty" );
 
@@ -21,7 +41,7 @@ namespace Sheepy.Modnix.Tests {
          AssertAppVer( "simple", appver );
 
          appver = ModMetaJson.Parse<AppVer>( @"/*A*/ { /*B*/ Id : /*C*/ ""full"" /*D*/, /*E*/ Min: 1, Max: 2.1, NonExist: 12 /*F*/ } /*G*/" );
-         AssertAppVer( "full", appver, new Version( 1, 0 ), new Version( 2, 1 ) );
+         AssertAppVer( "full", appver, new Version( 1, 0, 0, 0 ), new Version( 2, 1, 0, 0 ) );
       }
 
       [TestMethod()] public void AppVerArrayTest () {
@@ -48,7 +68,7 @@ namespace Sheepy.Modnix.Tests {
          appver = ModMetaJson.Parse<AppVer[]>( @"/*A*/ [ /*B*/ ""one"" /*C*/, null, /*D*/ { /*E*/ id: ""two"", min: ""1.2.3.4"" /*F*/ } /*G*/, /*H*/ ""three"" ]" );
          Assert.AreEqual( 3, appver.Length, "three => 3 elements"  );
          AssertAppVer( "one", appver[0] );
-         AssertAppVer( "two", appver[1], new Version( 1, 2, 3, 4 ) );
+         AssertAppVer( "two", appver[1], new Version( 1,2,3,4 ) );
          AssertAppVer( "three", appver[2] );
       }
 
@@ -103,10 +123,10 @@ namespace Sheepy.Modnix.Tests {
          Assert.AreEqual( new Version( 1,2,3,4 ), appver, "1.2.3.4" );
 
          appver = ModMetaJson.Parse<Version>( @"1" );
-         Assert.AreEqual( new Version( 1, 0 ), appver, "1" );
+         Assert.AreEqual( new Version( 1,0,0,0 ), appver, "1" );
 
          appver = ModMetaJson.Parse<Version>( @"1234.5678" );
-         Assert.AreEqual( new Version( 1234, 5678 ), appver, "1" );
+         Assert.AreEqual( new Version( 1234, 5678, 0, 0 ), appver, "1" );
       }
 
       [TestMethod()] public void ModMetaNormTest () {

@@ -255,12 +255,26 @@ namespace Sheepy.Modnix {
             return stream.ReadToEnd();
          }
       }
+
+      public static bool ParseVersion ( string txt, out Version result ) {
+         result = null;
+         if ( string.IsNullOrWhiteSpace( txt ) ) return false;
+         var nums = new int[]{ 0, 0, 0, 0 };
+         var parts = txt.Trim().Split( new char[]{ '.' }, 4 );
+         for ( int i = 0 ; i < 4 ; i++ )
+            if ( parts.Length > i )
+               if ( ! int.TryParse( parts[ i ], out nums[ i ] ) )
+                  return false;
+         result = new Version( nums[0], nums[1], nums[2], nums[3] );
+         return true;
+      }
+
       public static T Parse<T> ( string json ) => JsonConvert.DeserializeObject<T>( json, JsonOptions );
       public static string Stringify ( object val ) => JsonConvert.SerializeObject( val, Formatting.Indented, JsonOptions );
       public static ModMeta ParseMod ( string json ) => Parse<ModMeta>( json );
    }
 
-   internal class ModMetaReader : JsonConverter {
+   public class ModMetaReader : JsonConverter {
       public override bool CanWrite => false;
 
       private static readonly Type[] TYPES = new Type[]{
@@ -293,12 +307,10 @@ namespace Sheepy.Modnix {
          switch ( prop.ToLowerInvariant() ) {
             case "id"  : e.Id = txt; break;
             case "min" :
-               if ( ! txt.Contains( '.' ) ) txt += ".0";
-               Version.TryParse( txt, out e.Min );
+               ModMetaJson.ParseVersion( txt, out e.Min );
                break;
             case "max" :
-               if ( ! txt.Contains( '.' ) ) txt += ".0";
-               Version.TryParse( txt, out e.Max );
+               ModMetaJson.ParseVersion( txt, out e.Max );
                break;
             default: break;
          }
@@ -414,12 +426,12 @@ namespace Sheepy.Modnix {
          if ( token == JsonToken.Null || token == JsonToken.Undefined )
             result = null;
          else if ( token == JsonToken.String ) {
-            if ( ! Version.TryParse( r.Value.ToString(), out result ) )
+            if ( ! ModMetaJson.ParseVersion( r.Value.ToString(), out result ) )
                result = null;
          } else if ( token == JsonToken.Integer ) {
-            result = new Version( (int) (long) r.Value, 0 );
+            result = new Version( (int) (long) r.Value, 0, 0, 0 );
          } else if ( token == JsonToken.Float ) {
-            if ( ! Version.TryParse( FloatToString( r.Value ), out result ) )
+            if ( ! ModMetaJson.ParseVersion( FloatToString( r.Value ), out result ) )
                result = null;
          } else
             throw new JsonException( $"String or number expected for Version" );
@@ -430,7 +442,6 @@ namespace Sheepy.Modnix {
       public override void WriteJson ( JsonWriter writer, object value, JsonSerializer serializer ) {
          throw new InvalidOperationException();
       }
-
    }
 
    internal static class JsonReaderExtension {
