@@ -120,7 +120,7 @@ namespace Sheepy.Modnix.Tests {
             Description = new TextSet{ Default = "a", Dict = new Dictionary<string, string>() },
             Author = new TextSet{ Default = " ", Dict = dict },
             Requires = new AppVer[0],
-            Conflicts = new AppVer[]{ new AppVer{ Id = "" } },
+            Disables = new AppVer[]{ new AppVer{ Id = "" } },
             Dlls = new DllMeta[]{ new DllMeta{ Path = "" } },
          };
          meta.Normalise();
@@ -131,7 +131,7 @@ namespace Sheepy.Modnix.Tests {
          Assert.IsNull( meta.Description.Dict, "Description" );
          Assert.AreEqual( "def", meta.Author.Default, "Author.Default" );
          Assert.IsNull( meta.Requires, "Requires" );
-         Assert.IsNull( meta.Conflicts, "Conflicts" );
+         Assert.IsNull( meta.Disables, "Disables" );
          Assert.IsNull( meta.Dlls, "Dlls" );
 
          meta.Id = "Abc";

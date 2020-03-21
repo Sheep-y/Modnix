@@ -83,7 +83,7 @@ namespace Sheepy.Modnix {
       public TextSet   Copyright;
 
       public AppVer[]  Requires;
-      public AppVer[]  Conflicts;
+      public AppVer[]  Disables;
       public long      Priority;
 
       public string[]  Mods;
@@ -108,7 +108,7 @@ namespace Sheepy.Modnix {
             CopyNonNull( overrider.Contact, ref Contact );
             CopyNonNull( overrider.Copyright, ref Copyright );
             CopyNonNull( overrider.Requires, ref Requires );
-            CopyNonNull( overrider.Conflicts, ref Conflicts );
+            CopyNonNull( overrider.Disables, ref Disables );
             CopyNonNull( overrider.Priority, ref Priority );
             CopyNonNull( overrider.Mods, ref Mods );
             CopyNonNull( overrider.Dlls, ref Dlls );
@@ -142,7 +142,7 @@ namespace Sheepy.Modnix {
          NormTextSet( ref Contact );
          NormTextSet( ref Copyright );
          NormAppVer( ref Requires );
-         NormAppVer( ref Conflicts );
+         NormAppVer( ref Disables );
          NormStringArray( ref Mods );
          NormDllMeta( ref Dlls );
          return this;

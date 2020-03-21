@@ -9,6 +9,7 @@
 * Gui: Faster injection status detection by checking only known injection points.
 * Mod: Faster mod scanning by skipping nested classes, non-public classes, abstract classes, interfaces, enums, and system-generated classes.
 * Mod: Faster mod scanning by skipping non-public methods and shortcut Prefix/Postfix.
+* Mod: Rename Conflicts to Disables to better reflect its purpose.
 * Mod: Log a warning when mod_info specifies a dll that has no initialiser.
 
 # Version 0.90 RC, 2020-03-16

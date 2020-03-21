@@ -192,9 +192,9 @@ namespace Sheepy.Modnix.MainGUI {
                switch ( notice.Message ) {
                   case "duplicate" :
                      txt.Text = string.Format( "\rDisabled: Using {0}", notice.Args[0]?.ToString() ); break;
-                  case "requires"  :
+                  case "require"  :
                      txt.Text = string.Format( "\rDisabled: Missing requirement {0}", notice.Args[0]?.ToString() ); break;
-                  case "conflict"  :
+                  case "disable"  :
                      txt.Text = string.Format( "\rDisabled by {0}", notice.Args[0]?.ToString() ); break;
                   default:
                      txt.Text = "\r" + notice.Message.ToString(); break;
