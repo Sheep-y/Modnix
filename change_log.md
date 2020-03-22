@@ -10,6 +10,7 @@
 * Fix: Partial versions are now completely zero-filled, instead of partially.
 * Gui: When selecting multiple mods, no longer bold disabled mods.
 * Gui: Loader Log button now shows log in-panel, good for a quick check.  Diagnostic Log renamed to Manager Log.
+* Gui: Rewrote post-setup message to be less intimidating and mention where to resetup.
 * Gui: Faster injection status detection by checking only known injection points.
 * Mod: Faster mod scanning by skipping nested classes, non-public classes, abstract classes, interfaces, enums, and system-generated classes.
 * Mod: Faster mod scanning by skipping non-public methods and shortcut Prefix/Postfix.

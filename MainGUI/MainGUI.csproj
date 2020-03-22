@@ -153,6 +153,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy /y "$(TargetPath)" "$(SolutionDir)"</PostBuildEvent>
+    <PostBuildEvent>copy /y "$(TargetPath)" "$(SolutionDir)"
+copy /y "$(TargetPath)" "$(SolutionDir)ModnixInstaller.exe"</PostBuildEvent>
   </PropertyGroup>
 </Project>

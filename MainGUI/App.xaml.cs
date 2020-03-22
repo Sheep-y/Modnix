@@ -230,10 +230,11 @@ namespace Sheepy.Modnix.MainGUI {
          Log( $"Found {ModGuiExe}" );
          var ver = Version.Parse( FileVersionInfo.GetVersionInfo( ModGuiExe ).ProductVersion );
          Log( $"Their version: {ver}" );
-         if ( ver >= Myself.Version ) {
+         if ( ver > Myself.Version ) {
             GUI?.SetInfo( GuiInfo.APP_VER, ver.ToString() );
             return true;
-         }
+         } else if ( ver == Myself.Version )
+            return new FileInfo( ModGuiExe ).Length == new FileInfo( Assembly.GetExecutingAssembly().Location ).Length;
          return false;
       } catch ( Exception ex ) { return Log( ex, false ); } }
 
