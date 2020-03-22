@@ -167,7 +167,7 @@ namespace Sheepy.Modnix.MainGUI {
                DoSetup();
                break;
             case "modnix" :
-               if ( MessageBox.Show( "Remove Modnix from Phoenix Poing?", "Revert", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No ) == MessageBoxResult.Yes )
+               if ( MessageBox.Show( "Remove Modnix from Phoenix Point?", "Revert", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No ) == MessageBoxResult.Yes )
                   DoRestore();
                break;
             case "no_game" :

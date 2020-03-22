@@ -254,6 +254,7 @@ namespace Sheepy.Modnix {
             target = mod.Instance;
          }
          func.Invoke( target, augs.ToArray() );
+         Log.Verbo( "Done calling {0}", mod.Path );
       } catch ( Exception ex ) { Log.Error( ex ); } }
 
       private static object ParamValue ( ParameterInfo aug, ModEntry mod ) {

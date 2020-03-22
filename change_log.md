@@ -8,6 +8,7 @@
 * Fix: Files embedded with the "Resource" build action are now detected.
 * Fix: Obsolete methods are no longer skipped.
 * Fix: Partial versions are now completely zero-filled, instead of partially.
+* Fix: Typo in revert injection message.
 * Gui: When selecting multiple mods, no longer bold disabled mods.
 * Gui: Loader Log button now shows log in-panel, good for a quick check.  Diagnostic Log renamed to Manager Log.
 * Gui: Rewrote post-setup message to be less intimidating and mention where to resetup.
