@@ -7,12 +7,13 @@ namespace Sheepy.Modnix.Tests {
    [TestClass()]
    public class ModLoaderTest {
 
-      [ClassInitializeAttribute] public static void TestInitialize ( TestContext _ ) => ModLoader.Setup();
-
-      [TestCleanup] public void TestCleanup () {
+      [ClassInitializeAttribute] public static void TestInitialize ( TestContext _ = null ) {
+         ModLoader.Setup();
          ModScanner.AllMods.Clear();
          ModScanner.EnabledMods.Clear();
       }
+
+      [TestCleanup] public void TestCleanup () => TestInitialize();
 
       private static void ResolveMods () => 
          typeof( ModScanner ).GetMethod( "ResolveMods", NonPublic | Static ).Invoke( null, new object[0] );

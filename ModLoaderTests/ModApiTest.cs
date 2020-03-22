@@ -16,6 +16,7 @@ namespace Sheepy.Modnix.Tests {
 
       [ClassInitializeAttribute] public static void TestInitialize ( TestContext _ ) {
          ModLoader.Setup();
+         ModScanner.AllMods.Clear();
          ModScanner.AllMods.Add( ModA );
          ModScanner.AllMods.Add( ModB );
          ModScanner.AllMods.Add( ModC );
