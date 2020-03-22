@@ -210,7 +210,7 @@ namespace Sheepy.Modnix {
                var lib = LoadDll( dll.Path );
                if ( lib == null ) continue;
                foreach ( var type in entries )
-                  CallInit( mod, lib, dll.Path, type, phase );
+                  CallInit( mod, lib, type, phase );
             }
          }
          Log.Flush();
@@ -221,7 +221,7 @@ namespace Sheepy.Modnix {
          return Assembly.LoadFrom( path );
       } catch ( Exception ex ) { Log.Error( ex ); return null; } }
 
-      public static void CallInit ( ModEntry mod, Assembly dll, string path, string typeName, string methodName ) { try {
+      public static void CallInit ( ModEntry mod, Assembly dll, string typeName, string methodName ) { try {
          var type = dll.GetType( typeName );
          if ( type == null ) {
             Log.Error( "Cannot find type {1} in {0}", dll.Location, typeName );
@@ -235,7 +235,7 @@ namespace Sheepy.Modnix {
          }
          var augs = new List<object>();
          foreach ( var aug in func.GetParameters() )
-            augs.Add( ParamValue( aug,  mod, path, type ) );
+            augs.Add( ParamValue( aug, mod ) );
          Func<string> augTxt = () => string.Join( ", ", augs.Select( e => e?.GetType()?.Name ?? "null" ) );
          Log.Info( "Calling {1}.{2}({3}) in {0}", mod.Path, typeName, methodName, augTxt );
          object target = null;
@@ -247,35 +247,30 @@ namespace Sheepy.Modnix {
          func.Invoke( target, augs.ToArray() );
       } catch ( Exception ex ) { Log.Error( ex ); } }
 
-      private static object ParamValue ( ParameterInfo aug, ModEntry mod, string path, Type type ) {
+      private static object ParamValue ( ParameterInfo aug, ModEntry mod ) {
          var pType = aug.ParameterType;
          var pName = aug.Name;
          var isLog =  pName.IndexOf( "log", StringComparison.OrdinalIgnoreCase ) >= 0;
-         // APT
+         // API
          if ( pType == typeof( Func<string,object,object> ) )
             return (Func<string,object,object>) mod.ModAPI;
-         // Paths
-         if ( pType == typeof( Assembly ) )
-            return Assembly.GetExecutingAssembly();
-         // Legacy
-         if ( pType == typeof( Action<SourceLevels,object,object[]> ) && isLog )
+         // Legacy logger and config
+         if ( pType == typeof( Action<SourceLevels,object,object[]> ) && isLog ) {
+            Log.Warn( "Mod {0} uses a legacy log parameter, which will be removed in next major Modnix relese." );
             return mod.ModAPI( "logger", typeof( SourceLevels ) );
-         // Settings
-         if ( IsSetting( pName ) ) {
-            if ( pType == typeof( string ) )
-               return ReadConfigText( mod );
-            if ( pType == typeof( JObject ) || IsSetting( pType.Name ) ) try {
-               return JsonConvert.DeserializeObject( ReadConfigText( mod ), pType, ModMetaJson.JsonOptions );
-            } catch ( Exception e ) { Log.Warn( e ); }
          }
-         return DefaultParamValue( aug, mod, path, type );
+         if ( IsSetting( pName ) && ( pType == typeof( string ) || pType == typeof( JObject ) || IsSetting( pType.Name ) ) ) {
+            Log.Warn( "Mod {0} uses a legacy config parameter, which will be removed in next major Modnix relese." );
+            return mod.ModAPI( "config", pType );
+         }
+         return DefaultParamValue( aug );
       }
 
       private static bool IsSetting ( string name ) =>
          name.IndexOf( "setting", StringComparison.OrdinalIgnoreCase ) >= 0 ||
          name.IndexOf( "conf"   , StringComparison.OrdinalIgnoreCase ) >= 0;
 
-      private static object DefaultParamValue ( ParameterInfo aug, ModEntry mod, string path, Type type ) {
+      private static object DefaultParamValue ( ParameterInfo aug ) {
          if ( aug.HasDefaultValue )
             return aug.RawDefaultValue;
          var pType = aug.ParameterType;

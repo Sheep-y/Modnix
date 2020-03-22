@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using Sheepy.Logging;
 using System;
@@ -50,7 +51,7 @@ namespace Sheepy.Modnix {
             case "mod"      : return GetMod( param );
             case "mod_info" : return GetMod( param )?.Metadata;
             case "mod_list" : return ListMods( param );
-            //case "setting"  : return LoadSettings( param );
+            case "config"   : return LoadSettings( param );
             case "logger"   : return GetLogFunc( param );
          }
          return null;
@@ -87,15 +88,28 @@ namespace Sheepy.Modnix {
          return null;
       }
 
-      private void CreateLogger () {
+      private object LoadSettings ( object param ) { try {
+         if ( param == null ) param = typeof( JObject );
+         var txt = ModLoader.ReadConfigText( this );
+         if ( param is Type type ) {
+            if ( type == typeof( string ) )
+               return txt;
+            return JsonConvert.DeserializeObject( txt, type, ModMetaJson.JsonOptions );
+         }
+         JsonConvert.PopulateObject( txt, param, ModMetaJson.JsonOptions );
+         return param;
+      } catch ( Exception e ) { CreateLogger().Warn( e ); return null; } }
+
+      private Logger CreateLogger () {
          lock ( this ) {
-            if ( Logger != null ) return;
+            if ( Logger != null ) return Logger;
             Logger = new LoggerProxy( ModLoader.Log ){ Level = LogLevel };
          }
          var filters = Logger.Filters;
          filters.Add( LogFilters.IgnoreDuplicateExceptions );
          filters.Add( LogFilters.AutoMultiParam );
          filters.Add( LogFilters.AddPrefix( Metadata.Id + "┊" ) );
+         return Logger;
       }
 
       private Delegate GetLogFunc ( object param ) {
