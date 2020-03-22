@@ -53,6 +53,7 @@ namespace Sheepy.Modnix {
             case "mod_list" : return ListMods( param );
             case "config"   : return LoadSettings( param );
             case "logger"   : return GetLogFunc( param );
+            case "log"      : DoLog( param ); return null;
          }
          return null;
       }
@@ -125,6 +126,8 @@ namespace Sheepy.Modnix {
          }
          return null;
       }
+
+      private void DoLog ( object param ) => CreateLogger().Log( param is Exception ? TraceEventType.Error : TraceEventType.Information, param );
 
       internal DateTime? LastModified => Path == null ? (DateTime?) null : new FileInfo( Path ).LastWriteTime;
       internal LoggerProxy Logger; // Created when and only when an initialiser accepts a logging function
