@@ -47,7 +47,7 @@ namespace Sheepy.Modnix {
       } } catch ( Exception ex ) { Log.Error( ex ); } }
 
       public static void ScanFolderForMods ( string path, bool isRoot ) {
-         Log.Log( isRoot ? SourceLevels.Information : SourceLevels.Verbose, "Scanning for mods: {0}", path );
+         Log.Log( isRoot ? TraceEventType.Information : TraceEventType.Verbose, "Scanning for mods: {0}", path );
          var container = Path.GetFileName( path );
          if ( ! isRoot ) {
             var file = Path.Combine( path, "mod_info.js" );

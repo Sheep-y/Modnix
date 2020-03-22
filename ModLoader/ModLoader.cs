@@ -221,12 +221,7 @@ namespace Sheepy.Modnix {
          return Assembly.LoadFrom( path );
       } catch ( Exception ex ) { Log.Error( ex ); return null; } }
 
-      private static Action<object> LoggerA ( Logger log ) => ( msg ) =>
-         log.Log( msg is Exception ? SourceLevels.Error : SourceLevels.Information, msg, null );
-      private static Action<object,object[]> LoggerB ( Logger log ) => ( msg, augs ) =>
-         log.Log( msg is Exception ? SourceLevels.Error : SourceLevels.Information, msg, augs );
-      private static Action<SourceLevels,object> LoggerC ( Logger log ) => ( lv, msg ) => log.Log( lv, msg, null );
-      private static Action<SourceLevels,object,object[]> LoggerD ( Logger log ) => ( lv, msg, augs ) => log.Log( lv, msg, augs );
+      private static Action<SourceLevels,object,object[]> LoggerFunc ( Logger log ) => ( lv, msg, augs ) => log.Log( lv, msg, augs );
 
       public static void CallInit ( ModEntry mod, Assembly dll, string path, string typeName, string methodName ) { try {
          var type = dll.GetType( typeName );
@@ -270,15 +265,9 @@ namespace Sheepy.Modnix {
             return (Func<string,Version>) ModScanner.GetVersionById;
          if ( pType == typeof( Assembly ) )
             return Assembly.GetExecutingAssembly();
-         // Loggers
-         if ( pType == typeof( Action<object> ) && isLog )
-            return LoggerA( CreateLogger( mod ) );
-         if ( pType == typeof( Action<object,object[]> ) && isLog )
-            return LoggerB( CreateLogger( mod ) );
-         if ( pType == typeof( Action<SourceLevels,object> ) && isLog )
-            return LoggerC( CreateLogger( mod ) );
+         // Legacy
          if ( pType == typeof( Action<SourceLevels,object,object[]> ) && isLog )
-            return LoggerD( CreateLogger( mod ) );
+            return LoggerFunc( CreateLogger( mod ) );
          // Mod info
          if ( pType == typeof( Func<string,ModEntry> ) )
             return (Func<string,ModEntry>) ModScanner.GetModById;

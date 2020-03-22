@@ -90,11 +90,11 @@ namespace Sheepy.Logging {
          _Log( entry );
       }
 
-      public void Trace ( object message, params object[] args ) => Log( SourceLevels.ActivityTracing, message, args );
-      public void Verbo ( object message, params object[] args ) => Log( SourceLevels.Verbose, message, args );
-      public void Info  ( object message, params object[] args ) => Log( SourceLevels.Information, message, args );
-      public void Warn  ( object message, params object[] args ) => Log( SourceLevels.Warning, message, args );
-      public void Error ( object message, params object[] args ) => Log( SourceLevels.Error, message, args );
+      public void Trace ( object message, params object[] args ) => Log( TraceEventType.Transfer, message, args );
+      public void Verbo ( object message, params object[] args ) => Log( TraceEventType.Verbose, message, args );
+      public void Info  ( object message, params object[] args ) => Log( TraceEventType.Information, message, args );
+      public void Warn  ( object message, params object[] args ) => Log( TraceEventType.Warning, message, args );
+      public void Error ( object message, params object[] args ) => Log( TraceEventType.Error, message, args );
 
       // Clear the log.
       public abstract void Clear ();
