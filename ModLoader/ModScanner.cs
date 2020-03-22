@@ -231,8 +231,8 @@ namespace Sheepy.Modnix {
             return false;
          }
          switch ( key ) {
-            case "modnix" :
-            case "phoenixpoint" : case "phoenix point" :
+            case "modnix" : case "loader" :
+            case "phoenixpoint" : case "phoenix point" : case "game" :
             case "ppml" : case "ppml+" : case "phoenixpointmodloader" : case "phoenix point mod loader" :
             case "non-modnix" : case "nonmodnix" :
                Log.Warn( "{0} is a reserved mod id.", meta.Id );
@@ -253,9 +253,9 @@ namespace Sheepy.Modnix {
          if ( string.IsNullOrEmpty( key ) ) return ModLoader.LoaderVersion;
          key = NormaliseModId( key );
          switch ( key ) {
-            case "modnix" : case "":
+            case "modnix" : case "loader" : case "":
                return ModLoader.LoaderVersion;
-            case "phoenixpoint" : case "phoenix point" :
+            case "phoenixpoint" : case "phoenix point" : case "game" :
                return ModLoader.GameVersion;
             case "ppml" : case "ppml+" : case "phoenixpointmodloader" : case "phoenix point mod loader" :
                return ModLoader.PPML_COMPAT;
