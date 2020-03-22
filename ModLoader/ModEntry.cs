@@ -44,7 +44,7 @@ namespace Sheepy.Modnix {
          Metadata = meta ?? throw new ArgumentNullException( nameof( meta ) );
       }
 
-      public object ModAPI ( string query, object param = null ) {
+      public object ModAPI ( string query, object param = null ) { try {
          switch ( query ) {
             case "version"  : return GetVersion( param );
             case "path"     : return GetPath( param );
@@ -56,7 +56,7 @@ namespace Sheepy.Modnix {
             case "log"      : DoLog( param ); return null;
          }
          return null;
-      }
+      } catch ( Exception ex ) { ModLoader.Log.Error( ex ); return null; } }
 
       private Version GetVersion ( object target ) {
          var id = target?.ToString();
