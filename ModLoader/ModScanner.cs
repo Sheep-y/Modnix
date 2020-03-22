@@ -123,7 +123,10 @@ namespace Sheepy.Modnix {
             return null;
          }
          Log.Info( "Found mod {0} at {1} ({2} dlls)", meta.Id, file, meta.Dlls?.Length ?? 0 );
-         return new ModEntry( file, meta );
+         var result = new ModEntry( file, meta );
+         if ( result.LogLevel < ModLoader.Settings.LogLevel )
+            result.LogLevel = ModLoader.Settings.LogLevel;
+         return result;
       } catch ( Exception ex ) { Log.Warn( ex ); return null; } }
 
       private static ModMeta ParseInfoJs ( string js, string default_id = null ) { try {

@@ -51,7 +51,7 @@ namespace Sheepy.Modnix {
             case "mod_info" : return GetMod( param )?.Metadata;
             case "mod_list" : return ListMods( param );
             //case "setting"  : return LoadSettings( param );
-            //case "logger"   : return CreateLogger( param );
+            case "logger"   : return GetLogFunc( param );
          }
          return null;
       }
@@ -73,6 +73,8 @@ namespace Sheepy.Modnix {
          if ( string.IsNullOrWhiteSpace( id ) ) return Path;
          switch ( id ) {
             case "mods_root" : return ModLoader.ModDirectory;
+            case "phoenixpoint" : case "phoenix point" : case "game" :
+               return null; // TODO: implemented
          }
          return ModScanner.GetModById( id )?.Path;
       }
@@ -82,6 +84,31 @@ namespace Sheepy.Modnix {
          if ( target == null ) return list;
          if ( target is string txt ) return list.Where( e => e.IndexOf( txt, StringComparison.OrdinalIgnoreCase ) >= 0 );
          if ( target is Regex reg ) return list.Where( e => reg.IsMatch( e ) );
+         return null;
+      }
+
+      private void CreateLogger () {
+         lock ( this ) {
+            if ( Logger != null ) return;
+            Logger = new LoggerProxy( ModLoader.Log ){ Level = LogLevel };
+         }
+         var filters = Logger.Filters;
+         filters.Add( LogFilters.IgnoreDuplicateExceptions );
+         filters.Add( LogFilters.AutoMultiParam );
+         filters.Add( LogFilters.AddPrefix( Metadata.Id + "┊" ) );
+      }
+
+      private Delegate GetLogFunc ( object param ) {
+         string txt = null;
+         if ( param is Type t ) txt = t.Name;
+         else if ( param is string s ) txt = s;
+         else return null;
+         CreateLogger();
+         switch ( txt ) {
+            case "TraceEventType" : return (Action<TraceEventType,object,object[]>) Logger.Log;
+            case "SourceLevels"   : return (Action<SourceLevels,object,object[]>) Logger.Log;
+            case "TraceLevel"     : return (Action<TraceLevel,object,object[]>) Logger.Log;
+         }
          return null;
       }
 

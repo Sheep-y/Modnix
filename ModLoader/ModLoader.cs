@@ -221,8 +221,6 @@ namespace Sheepy.Modnix {
          return Assembly.LoadFrom( path );
       } catch ( Exception ex ) { Log.Error( ex ); return null; } }
 
-      private static Action<SourceLevels,object,object[]> LoggerFunc ( Logger log ) => ( lv, msg, augs ) => log.Log( lv, msg, augs );
-
       public static void CallInit ( ModEntry mod, Assembly dll, string path, string typeName, string methodName ) { try {
          var type = dll.GetType( typeName );
          if ( type == null ) {
@@ -261,7 +259,7 @@ namespace Sheepy.Modnix {
             return Assembly.GetExecutingAssembly();
          // Legacy
          if ( pType == typeof( Action<SourceLevels,object,object[]> ) && isLog )
-            return LoggerFunc( CreateLogger( mod ) );
+            return mod.ModAPI( "logger", typeof( SourceLevels ) );
          // Settings
          if ( IsSetting( pName ) ) {
             if ( pType == typeof( string ) )
@@ -285,17 +283,6 @@ namespace Sheepy.Modnix {
             return Activator.CreateInstance( pType );
          return null;
       }
-
-      private static Logger CreateLogger ( ModEntry mod ) { lock ( mod ) {
-         if ( mod.Logger == null ) {
-            var logger = mod.Logger = new LoggerProxy( Log ){ Level = Log.Level };
-            var filters = logger.Filters;
-            filters.Add( LogFilters.IgnoreDuplicateExceptions );
-            filters.Add( LogFilters.AutoMultiParam );
-            filters.Add( LogFilters.AddPrefix( mod.Metadata.Id + "┊" ) );
-         }
-         return mod.Logger;
-      } }
       #endregion
    }
 
