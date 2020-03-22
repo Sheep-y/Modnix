@@ -244,15 +244,14 @@ namespace Sheepy.Modnix {
       #endregion
 
       #region Mod Query
-      internal static ModEntry GetModById ( string key ) {
-         key = NormaliseModId( key );
-         return EnabledMods.Find( e => e.Key == key && ! e.Disabled );
-      }
+      private static ModEntry _GetModById ( string key ) => EnabledMods.Find( e => e.Key == key && ! e.Disabled );
 
-      internal static Version GetVersionById ( string key ) {
-         if ( string.IsNullOrEmpty( key ) ) return ModLoader.LoaderVersion;
-         key = NormaliseModId( key );
-         switch ( key ) {
+      internal static ModEntry GetModById ( string id ) => _GetModById( NormaliseModId( id ) );
+
+      internal static Version GetVersionById ( string id ) {
+         if ( string.IsNullOrEmpty( id ) ) return ModLoader.LoaderVersion;
+         id = NormaliseModId( id );
+         switch ( id ) {
             case "modnix" : case "loader" : case "":
                return ModLoader.LoaderVersion;
             case "phoenixpoint" : case "phoenix point" : case "game" :
@@ -262,13 +261,13 @@ namespace Sheepy.Modnix {
             case "non-modnix" : case "nonmodnix" :
                return null;
             default:
-               return GetVersionFromMod( GetModById( key ) );
+               return GetVersionFromMod( _GetModById( id ) );
          }
       }
 
       private static Version GetVersionFromMod ( ModEntry mod ) {
          if ( mod == null ) return null;
-         return mod.Metadata.Version ?? new Version( 0, 0 );
+         return mod.Metadata.Version ?? new Version( 0, 0, 0, 0 );
       }
 
       private static ModEntry FindLatestMod ( ModEntry[] clones ) {
