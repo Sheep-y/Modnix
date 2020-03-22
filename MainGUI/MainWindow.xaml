@@ -248,7 +248,7 @@
                         </StackPanel>
                     </Button>
                     <CheckBox x:Name="CheckLogVerbo" VerticalAlignment="Center" DockPanel.Dock="Right" Content="Verbose" Margin="0,0,5,0" Checked="CheckLogVerbo_Checked" Unchecked="CheckLogVerbo_Checked" TabIndex="2250" />
-                    <Label x:Name="LabelLogTitle" Content="Diagnostic Log" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <Label x:Name="LabelLogTitle" Content="Manager Log" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                 </DockPanel>
                 <Grid DockPanel.Dock="Bottom" Margin="0">
                     <Grid.ColumnDefinitions>
@@ -258,12 +258,12 @@
                         <ColumnDefinition Width="10"/>
                         <ColumnDefinition/>
                     </Grid.ColumnDefinitions>
-                    <Button x:Name="ButtonLoaderLog" Padding="5" Click="ButtonLoaderLog_Click" TabIndex="2400">
+                    <ToggleButton x:Name="ButtonLoaderLog" Padding="5" Checked="ButtonLoaderLog_Checked" Unchecked="ButtonLoaderLog_Checked" TabIndex="2400">
                         <StackPanel Orientation="Horizontal">
                             <Image Source="Resources/img/log_file.png" Width="16" Margin="0,0,5,0"/>
                             <AccessText Text="Loader Log"/>
                         </StackPanel>
-                    </Button>
+                    </ToggleButton>
                     <ToggleButton x:Name="ButtonLicense" Padding="5" Grid.Column="2" TabIndex="2400" ForceCursor="True" Checked="ButtonLicense_Checked" Unchecked="ButtonLicense_Checked">
                         <StackPanel Orientation="Horizontal">
                             <Image Source="Resources/img/opensource.png" Width="16" Margin="0,0,5,0"/>

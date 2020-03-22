@@ -503,38 +503,53 @@ namespace Sheepy.Modnix.MainGUI {
             Filter = "Log Files (.txt .log)|*.txt;*.log|All Files|*.*"
          };
          if ( dialog.ShowDialog().GetValueOrDefault() ) {
-            File.WriteAllText( dialog.FileName, ButtonLicense.IsChecked == true ? TextLicense.Text : TextLog.Text );
+            File.WriteAllText( dialog.FileName, ButtonLoaderLog.IsChecked == true || ButtonLicense.IsChecked == true ? TextLicense.Text : TextLog.Text );
             AppControl.Explore( dialog.FileName );
          }
       } catch ( Exception ex ) { Log( ex ); } }
 
       private string LoaderLog => Path.Combine( App.ModFolder, "ModnixLoader.log" );
 
-      private void ButtonLoaderLog_Click ( object sender, RoutedEventArgs e ) {
-         if ( ! File.Exists( LoaderLog ) )
-            MessageBox.Show( "Launch the game at least once to create loader log." );
-         else
-            AppControl.Explore( LoaderLog );
-      }
-
       private void ButtonLogClear_Click ( object sender, RoutedEventArgs e ) {
          TextLog.Clear();
          ButtonLogSave.IsEnabled = false;
       }
 
+      private void ButtonLoaderLog_Checked ( object sender, RoutedEventArgs e ) {
+         if ( ButtonLoaderLog.IsChecked == true )
+            ShowLog( "loader" );
+         else if ( ButtonLicense.IsChecked == true )
+            return;
+         else
+            ShowLog( "gui" );
+      }
+
       private void ButtonLicense_Checked ( object sender, RoutedEventArgs e ) { try {
-         if ( ButtonLicense.IsChecked == true ) {
-            if ( string.IsNullOrEmpty( TextLicense.Text ) )
-               TextLicense.Text = ModMetaJson.ReadAsText( AppControl.GetResource( "License.txt" ) );
-            LabelLogTitle.Content = "License";
-            TextLog.Visibility = CheckLogVerbo.Visibility = ButtonLogClear.Visibility = Visibility.Hidden;
-            TextLicense.Visibility = Visibility.Visible;
-         } else {
-            LabelLogTitle.Content = "Diagnostic Log";
-            TextLog.Visibility = CheckLogVerbo.Visibility = ButtonLogClear.Visibility = Visibility.Visible;
-            TextLicense.Visibility = Visibility.Hidden;
-         }
+         if ( ButtonLicense.IsChecked == true )
+            ShowLog( "license" );
+         else if ( ButtonLoaderLog.IsChecked == true )
+            return;
+         else
+            ShowLog( "gui" );
       } catch ( Exception ex ) { Log( ex ); } }
+
+      private void ShowLog ( string type ) {
+         bool isGui = false, isLoader = false, isLicense = false;
+         switch ( type ) {
+            case "gui"    : LabelLogTitle.Content = "Manager Log"; isGui = true; break;
+            case "loader" : LabelLogTitle.Content = "Loader Log"; isLoader = true; break;
+            case "license": LabelLogTitle.Content = "License"; isLicense = true; break;
+         }
+         TextLog.Visibility = isGui ? Visibility.Visible : Visibility.Collapsed;
+         TextLicense.Visibility = isGui ? Visibility.Collapsed : Visibility.Visible;
+         CheckLogVerbo.Visibility = ! isLicense ? Visibility.Visible : Visibility.Hidden;
+         ButtonLogClear.Visibility = isGui ? Visibility.Visible : Visibility.Hidden;
+         ButtonLoaderLog.IsChecked = isLoader;
+         ButtonLicense.IsChecked = isLicense;
+         if ( isGui ) TextLicense.Text = "";
+         else if ( isLoader ) TextLicense.Text = File.ReadAllText( LoaderLog );
+         else if ( isLicense ) TextLicense.Text = ModMetaJson.ReadAsText( AppControl.GetResource( "License.txt" ) );
+      }
       #endregion
 
       #region Helpers
