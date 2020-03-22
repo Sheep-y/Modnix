@@ -12,6 +12,7 @@ using System.Text.RegularExpressions;
 namespace Sheepy.Modnix {
    using DllEntryMeta = Dictionary< string, HashSet< string > >;
 
+   #region Loader settings
    public class LoaderSettings {
       public int SettingVersion = 20200319;
       public SourceLevels LogLevel = SourceLevels.Information;
@@ -29,7 +30,9 @@ namespace Sheepy.Modnix {
       public SourceLevels LogLevel = SourceLevels.Information;
       public long? Priority;
    }
+   #endregion
 
+   #region Mod Entry and Meta
    public class ModEntry : ModSettings {
       public readonly string Path;
       public readonly ModMeta Metadata;
@@ -39,6 +42,48 @@ namespace Sheepy.Modnix {
          Path = path;
          if ( path != null ) LastModified = new FileInfo( path ).LastWriteTime;
          Metadata = meta ?? throw new ArgumentNullException( nameof( meta ) );
+      }
+
+      public object ModAPI ( string query, object param = null ) {
+         switch ( query ) {
+            case "version"  : return GetVersion( param );
+            case "path"     : return GetPath( param );
+            case "mod"      : return GetMod( param );
+            case "mod_info" : return GetMod( param )?.Metadata;
+            case "mod_list" : return ListMods( param );
+            //case "setting"  : return LoadSettings( param );
+            //case "logger"   : return CreateLogger( param );
+         }
+         return null;
+      }
+
+      private Version GetVersion ( object target ) {
+         var id = target?.ToString();
+         if ( string.IsNullOrEmpty( id ) ) return Metadata.Version;
+         return ModScanner.GetVersionById( id );
+      }
+
+      private ModEntry GetMod ( object target ) {
+         var id = target?.ToString();
+         if ( string.IsNullOrWhiteSpace( id ) ) return this;
+         return ModScanner.GetModById( id );
+      }
+
+      private string GetPath ( object target ) {
+         var id = target?.ToString();
+         if ( string.IsNullOrEmpty( id ) ) return Path;
+         switch ( id ) {
+            case "mods_root" : return ModLoader.ModDirectory;
+         }
+         return ModScanner.GetModById( id )?.Path;
+      }
+
+      private IEnumerable<string> ListMods ( object target ) {
+         var list = ModScanner.EnabledMods.Select( e => e.Metadata.Id );
+         if ( target == null ) return list;
+         if ( target is string txt ) return list.Where( e => e.IndexOf( txt, StringComparison.OrdinalIgnoreCase ) >= 0 );
+         if ( target is Regex reg ) return list.Where( e => reg.IsMatch( e ) );
+         return null;
       }
 
       internal readonly DateTime LastModified;
@@ -229,7 +274,9 @@ namespace Sheepy.Modnix {
       public string Path;
       public DllEntryMeta Methods;
    }
+   #endregion
 
+   #region Mod Data Parsing
    public static class ModMetaJson {
       public readonly static LoggerProxy JsonLogger = new JsonTraceLogger();
       public readonly static JsonSerializerSettings JsonOptions = new JsonSerializerSettings{
@@ -463,5 +510,5 @@ namespace Sheepy.Modnix {
          Log( level, message );
       }
    }
-
+   #endregion
 }

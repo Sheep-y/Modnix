@@ -253,28 +253,15 @@ namespace Sheepy.Modnix {
          var pType = aug.ParameterType;
          var pName = aug.Name;
          var isLog =  pName.IndexOf( "log", StringComparison.OrdinalIgnoreCase ) >= 0;
+         // APT
+         if ( pType == typeof( Func<string,object,object> ) )
+            return (Func<string,object,object>) mod.ModAPI;
          // Paths
-         if ( pType == typeof( string ) && pName.Equals( "ModsRoot", StringComparison.OrdinalIgnoreCase ) )
-            return ModDirectory;
-         if ( pType == typeof( string ) && pName.Equals( "ModPath", StringComparison.OrdinalIgnoreCase ) )
-            return mod.Path;
-         if ( pType == typeof( string ) && pName.Equals( "AssemblyPath", StringComparison.OrdinalIgnoreCase ) )
-            return path;
-         // Version checkers
-         if ( pType == typeof( Func<string,Version> ) )
-            return (Func<string,Version>) ModScanner.GetVersionById;
          if ( pType == typeof( Assembly ) )
             return Assembly.GetExecutingAssembly();
          // Legacy
          if ( pType == typeof( Action<SourceLevels,object,object[]> ) && isLog )
             return LoggerFunc( CreateLogger( mod ) );
-         // Mod info
-         if ( pType == typeof( Func<string,ModEntry> ) )
-            return (Func<string,ModEntry>) ModScanner.GetModById;
-         if ( pType == typeof( ModMeta ) )
-            return mod.Metadata;
-         if ( pType == typeof( ModEntry ) )
-            return mod;
          // Settings
          if ( IsSetting( pName ) ) {
             if ( pType == typeof( string ) )
