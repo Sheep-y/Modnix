@@ -184,10 +184,7 @@ namespace Sheepy.Modnix {
          return File.Exists( confFile ) ? confFile : null;
       }
 
-      public static string ReadConfigText ( ModEntry mod ) { try {
-         var confFile = CheckConfigFile( mod.Path );
-         if ( confFile != null )
-            return File.ReadAllText( confFile, Encoding.UTF8 );
+      public static string ReadDefaultConfigText ( ModEntry mod ) { try {
          var meta = mod.Metadata;
          lock ( meta ) {
             if ( meta.ConfigText != null )
@@ -196,6 +193,14 @@ namespace Sheepy.Modnix {
                return meta.ConfigText = ModMetaJson.Stringify( meta.DefaultConfig );
          }
          return null;
+
+      } catch ( Exception ex ) { Log?.Error( ex ); return null; } }
+
+      public static string ReadConfigText ( ModEntry mod ) { try {
+         var confFile = CheckConfigFile( mod.Path );
+         if ( confFile != null )
+            return File.ReadAllText( confFile, Encoding.UTF8 );
+         return ReadDefaultConfigText( mod );
       } catch ( Exception ex ) { Log?.Error( ex ); return null; } }
       #endregion
 

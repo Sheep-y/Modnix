@@ -349,7 +349,7 @@ namespace Sheepy.Modnix {
                   if ( pass && req.Min != null && req.Min > ver ) pass = false;
                   if ( pass && req.Max != null && req.Max < ver ) pass = false;
                   if ( ! pass ) {
-                     DisableAndRemoveMod( mod, "require", "Mod {4} requirement {0} [{1}-{2}] failed, found {3}",
+                     DisableAndRemoveMod( mod, "require", "Mod {4} requirement {0} [{1},{2}] failed, found {3}",
                         req.Id, req.Min, req.Max, ver, mod.Metadata.Id );
                      NeedAnotherLoop = true;
                   }
@@ -370,7 +370,7 @@ namespace Sheepy.Modnix {
                var ver = GetVersionFromMod( target );
                if ( req.Min != null && req.Min > ver ) continue;
                if ( req.Max != null && req.Max < ver ) continue;
-               DisableAndRemoveMod( target, "disable", "Mod {1} (v{3}) is disabled by {2} [{4}-{5}]",
+               DisableAndRemoveMod( target, "disable", "Mod {1} (v{3}) is disabled by {2} [{4},{5}]",
                   mod, target.Metadata.Id, mod.Metadata.Id, ver, req.Min, req.Max );
             }
          }

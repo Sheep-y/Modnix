@@ -88,7 +88,7 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       internal void ResetConfig ( ModInfo mod ) {
-         var str = ModLoader.ReadConfigText( ( mod as GridModItem ).Mod );
+         var str = ModLoader.ReadDefaultConfigText( ( mod as GridModItem ).Mod );
          if ( str != null ) {
             var path = ModLoader.GetConfigFile( mod.Path );
             App.Log( $"Writing {str.Length} bytes to {path}" );
