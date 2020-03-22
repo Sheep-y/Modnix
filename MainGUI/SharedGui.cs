@@ -139,15 +139,18 @@ namespace Sheepy.Modnix.MainGUI {
          }
 
          if ( action == AppAction.SETUP ) {
-            txt = $"Setup success.\nPlease re-setup after every game patch.\n\nMod folder:\nMy Documents\\{AppControl.MOD_PATH}\n";
-            if ( flags.Has( PromptFlag.SETUP_MOD_MOVED ) )
-               txt += "\nMods moved to new mod folder.";
+            txt = $"Setup success.";
             if ( flags.Has( PromptFlag.SETUP_SELF_COPY ) )
                txt += "\nModnix installed to mod folder.";
+            else
+               txt += "\nPlease re-setup after every game patch.";
+            if ( flags.Has( PromptFlag.SETUP_MOD_MOVED ) )
+               txt += "\nMods moved to new mod folder.";
             if ( flags.Has( PromptFlag.SETUP_PPML ) )
                txt += "\nPPML renamed to prevent accidents.";
             if ( flags.Has( PromptFlag.SETUP_SELF_COPY ) ) {
-               txt += "\n\nThis setup file may be deleted.\nShowing Modnix location now.\nYou may pin it to Start or send it to Desktop.";
+               txt += "\n\nThis setup file may be deleted.\nRe-setup can be done in Modnix,\nplease re-setup after every game patch."+
+                      "\n\nShowing Modnix location now.\nRight click it to pin to Start or send to Desktop.";
                if ( MessageBox.Show( txt, "Success", MessageBoxButton.OKCancel, MessageBoxImage.Information ) == MessageBoxResult.OK )
                   OnRestart();
             } else {
