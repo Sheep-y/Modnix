@@ -58,6 +58,7 @@
   <ItemGroup>
     <Compile Include="ModJsonTest.cs" />
     <Compile Include="LoggerTests.cs" />
+    <Compile Include="ModApiTest.cs" />
     <Compile Include="ModLoaderTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
