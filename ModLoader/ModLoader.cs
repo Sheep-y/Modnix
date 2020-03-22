@@ -172,15 +172,19 @@ namespace Sheepy.Modnix {
       public static string GetConfigFile ( string path ) {
          if ( path == null ) return null;
          var name = Path.GetFileNameWithoutExtension( path );
+         /*
          if ( name.Equals( "mod_info", StringComparison.OrdinalIgnoreCase ) )
             name = "mod_init";
+         */
          return Path.Combine( Path.GetDirectoryName( path ), name + ".conf" );
       }
 
       public static string CheckConfigFile ( string path ) {
          var confFile = GetConfigFile( path );
+         /*
          if ( confFile == null || ! File.Exists( confFile ) )
             confFile = Path.Combine( Path.GetDirectoryName( path ), "mod_init.conf" );
+         */
          return File.Exists( confFile ) ? confFile : null;
       }
 

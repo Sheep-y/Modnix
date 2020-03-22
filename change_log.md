@@ -4,6 +4,7 @@
 
 * New: Enable verbose logging in config file and GUI. Also extends to mods that log through Modnix.
 * Fix: Deleting configured mods with their config no longer hangs the manager.
+* Fix: Reset config now really reset to default config, instead of rewriting current config.
 * Fix: Files embedded with the "Resource" build action are now detected.
 * Fix: Obsolete methods are no longer skipped.
 * Fix: Partial versions are now completely zero-filled, instead of partially.
@@ -14,6 +15,7 @@
 * Mod: Faster mod scanning by skipping non-public methods and shortcut Prefix/Postfix.
 * Mod: Rename Conflicts to Disables to better reflect its purpose.
 * Mod: Replace all mod initialiser params with a single mod api delegate param.
+* Mod: Disable mod_init parsing, may be redesigned.
 * Mod: Log a warning when mod_info specifies a dll that has no initialiser.
 
 # Version 0.90 RC, 2020-03-16

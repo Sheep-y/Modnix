@@ -166,8 +166,8 @@ namespace Sheepy.Modnix {
                if ( ! ( resource is EmbeddedResource res ) || res.ResourceType != ResourceType.Embedded ) continue;
                if ( res.Name.IndexOf( ".mod_info.js", StringComparison.OrdinalIgnoreCase ) >= 0 )
                   info = Encoding.UTF8.GetString( res.GetResourceData() );
-               else if ( res.Name.IndexOf( ".mod_init.conf", StringComparison.OrdinalIgnoreCase ) >= 0 )
-                  conf = Encoding.UTF8.GetString( res.GetResourceData() );
+               //else if ( res.Name.IndexOf( ".mod_init.conf", StringComparison.OrdinalIgnoreCase ) >= 0 )
+               //   conf = Encoding.UTF8.GetString( res.GetResourceData() );
                else if ( res.Name.EndsWith( ".resources", StringComparison.OrdinalIgnoreCase ) ) {
                   using ( var reader = new ResourceReader( res.GetResourceStream() ) ) {
                      var data = reader.GetEnumerator();
@@ -176,8 +176,8 @@ namespace Sheepy.Modnix {
                         if ( ! name.StartsWith( "mod_", StringComparison.OrdinalIgnoreCase ) ) continue;
                         if ( name.Equals( "mod_info", StringComparison.OrdinalIgnoreCase ) || name.EndsWith( "mod_info.js", StringComparison.OrdinalIgnoreCase ) ) {
                            info = data.Value is Stream stream ? ModMetaJson.ReadAsText( stream ) : data.Value?.ToString();
-                        } else if ( name.Equals( "mod_init", StringComparison.OrdinalIgnoreCase ) || name.EndsWith( "mod_init.conf", StringComparison.OrdinalIgnoreCase ) ) {
-                           conf = data.Value is Stream stream ? ModMetaJson.ReadAsText( stream ) : data.Value?.ToString();
+                        //} else if ( name.Equals( "mod_init", StringComparison.OrdinalIgnoreCase ) || name.EndsWith( "mod_init.conf", StringComparison.OrdinalIgnoreCase ) ) {
+                        //   conf = data.Value is Stream stream ? ModMetaJson.ReadAsText( stream ) : data.Value?.ToString();
                         }
                      }
                   }
