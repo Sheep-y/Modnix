@@ -1,6 +1,6 @@
 # Modnix Changelog
 
-# Version 1.0, ????
+# Version 1.0, 2020-03-22
 
 * New: Enable verbose logging in config file and GUI. Also extends to mods that log through Modnix.
 * Fix: Deleting configured mods with their config no longer hangs the manager.

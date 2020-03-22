@@ -256,11 +256,11 @@ namespace Sheepy.Modnix {
             return (Func<string,object,object>) mod.ModAPI;
          // Legacy logger and config
          if ( pType == typeof( Action<SourceLevels,object,object[]> ) && isLog ) {
-            Log.Warn( "Mod {0} uses a legacy log parameter, which will be removed in next major Modnix relese." );
+            Log.Warn( "Mod {0} uses a legacy log parameter, which will be removed in next major Modnix relese.", mod.Metadata.Id );
             return mod.ModAPI( "logger", typeof( SourceLevels ) );
          }
          if ( IsSetting( pName ) && ( pType == typeof( string ) || pType == typeof( JObject ) || IsSetting( pType.Name ) ) ) {
-            Log.Warn( "Mod {0} uses a legacy config parameter, which will be removed in next major Modnix relese." );
+            Log.Warn( "Mod {0} uses a legacy config parameter, which will be removed in next major Modnix relese.", mod.Metadata.Id );
             return mod.ModAPI( "config", pType );
          }
          return DefaultParamValue( aug );
