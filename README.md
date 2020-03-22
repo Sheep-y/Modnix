@@ -13,7 +13,7 @@ I try my best, but if you find bugs, please report on [GitHub](https://github.co
 
 ## User Features
 
-1. Easy to use.  One-click setup, simple mod manager, detailed diagnostic Log.
+1. Easy to use.  One-click setup, simple mod manager, detailed diagnostic log.
 2. Advanced mods, such as *real* Skip Intro, and can load *both* PPML 0.1 and 0.2 mods.
 3. Create and reset mod configs for compatible mods.
 4. Quick access to mod files, communities, resources, and of course the game.
@@ -28,7 +28,7 @@ and [Troubleshooting](https://github.com/Sheep-y/Modnix/wiki/Troubleshooting-Mod
 2. Display mod information to users, such as author and links, with embedded or stand-alone info file.
 3. Mod are placed in their own folder, with optinal config file managed by Modnix.
 4. Declarative mod dependencies and conflicts.  Opt-in pre-splash loading.
-5. Unified background logger. Query function for game version, loader version, and mod versions.
+5. Non-binding api for mod config, unified background logger, query game versions, get mod list etc.
 
 See the [Wiki](https://github.com/Sheep-y/Modnix/wiki#wiki-wrapper) for mod specs.
 

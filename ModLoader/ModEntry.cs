@@ -20,7 +20,7 @@ namespace Sheepy.Modnix {
       // For mod manager
       public bool CheckUpdate = true;
       public DateTime? LastCheckUpdate = null;
-      public string UpdateChannel = "dev";
+      public string UpdateChannel = "release";
       public string GamePath = null;
       // For mod loader, set by manager
       public Dictionary< string, ModSettings > Mods;
