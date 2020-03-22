@@ -2,10 +2,10 @@
 
 # Version 1.0, ????
 
-* New: Enable verbose logging in config file and GUI.
+* New: Enable verbose logging in config file and GUI. Also extends to mods that log through Modnix.
 * Fix: Deleting configured mods with their config no longer hangs the manager.
 * Fix: Files embedded with the "Resource" build action are now detected.
-* Fix: Obsolete methods are no longer skipped.  Also speed up mod scanning.
+* Fix: Obsolete methods are no longer skipped.
 * Fix: Partial versions are now completely zero-filled, instead of partially.
 * Gui: When selecting multiple mods, no longer bold disabled mods.
 * Gui: Faster injection status detection by checking only known injection points.

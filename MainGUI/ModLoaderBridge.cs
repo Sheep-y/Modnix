@@ -200,10 +200,10 @@ namespace Sheepy.Modnix.MainGUI {
                      txt.Text = "\r" + notice.Message.ToString(); break;
                }
                switch ( notice.Level ) {
-                  case SourceLevels.Critical :
-                  case SourceLevels.Error    :
+                  case TraceEventType.Critical :
+                  case TraceEventType.Error    :
                      txt.Foreground = Brushes.Red; break;
-                  case SourceLevels.Warning  :
+                  case TraceEventType.Warning  :
                      txt.Foreground = Brushes.Orange; break;
                   default :
                      txt.Foreground = Brushes.Blue; break;

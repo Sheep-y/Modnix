@@ -53,26 +53,40 @@ namespace Sheepy.Logging {
 
       // ============ API ============
 
-      public virtual void Log ( SourceLevels level, object message, params object[] args ) {
-         if ( ( level & Level ) != level ) return;
+      public virtual void Log ( TraceEventType level, object message, params object[] args ) {
+         if ( ( level & (TraceEventType) Level ) != level ) return;
          if ( args != null && args.Length <= 0 ) args = null;
          _Log( new LogEntry(){ Time = DateTime.Now, Level = level, Message = message, Args = args } );
       }
 
-      public void Log ( TraceLevel level, object message, params object[] args ) {
-         SourceLevels logLevel;
+      public virtual void Log ( TraceLevel level, object message, params object[] args ) {
+         TraceEventType logLevel;
          switch ( level ) {
-            case TraceLevel.Error   : logLevel = SourceLevels.Critical; break;
-            case TraceLevel.Warning : logLevel = SourceLevels.Warning; break;
-            case TraceLevel.Info    : logLevel = SourceLevels.Information; break;
-            case TraceLevel.Verbose : logLevel = SourceLevels.Verbose; break;
-            default: return; // TraceLevel.Off
+            case TraceLevel.Off     : return;
+            case TraceLevel.Error   : logLevel = TraceEventType.Error; break;
+            case TraceLevel.Warning : logLevel = TraceEventType.Warning; break;
+            case TraceLevel.Info    : logLevel = TraceEventType.Information; break;
+            case TraceLevel.Verbose : logLevel = TraceEventType.Verbose; break;
+            default: return;
+         }
+         Log( logLevel, message, args );
+      }
+
+      public void Log ( SourceLevels level, object message, params object[] args ) {
+         TraceEventType logLevel;
+         switch ( level ) {
+            case SourceLevels.Critical    : logLevel = TraceEventType.Critical; break;
+            case SourceLevels.Error       : logLevel = TraceEventType.Error; break;
+            case SourceLevels.Warning     : logLevel = TraceEventType.Warning; break;
+            case SourceLevels.Information : logLevel = TraceEventType.Information; break;
+            case SourceLevels.Verbose     : logLevel = TraceEventType.Verbose; break;
+            default                       : logLevel = TraceEventType.Transfer; break;
          }
          Log( logLevel, message, args );
       }
 
       public virtual void Log ( LogEntry entry ) {
-         if ( ( entry.Level & Level ) != entry.Level ) return;
+         if ( ( entry.Level & (TraceEventType) Level ) != entry.Level ) return;
          _Log( entry );
       }
 
@@ -249,14 +263,15 @@ namespace Sheepy.Logging {
          if ( ! string.IsNullOrEmpty( timeFormat ) )
             buf.Append( entry.Time.ToString( timeFormat ) );
 
-         SourceLevels level = entry.Level;
          string levelText;
-         if      ( level <= SourceLevels.Error       ) levelText = "EROR ";
-         else if ( level <= SourceLevels.Warning     ) levelText = "WARN ";
-         else if ( level <= SourceLevels.Information ) levelText = "INFO ";
-         else if ( level <= SourceLevels.Verbose     ) levelText = "FINE ";
-         else levelText = "TRAC ";
-
+         switch ( entry.Level ) {
+            case TraceEventType.Critical    :  levelText = "CRIT "; break;
+            case TraceEventType.Error       :  levelText = "EROR "; break;
+            case TraceEventType.Warning     :  levelText = "WARN "; break;
+            case TraceEventType.Information :  levelText = "INFO "; break;
+            case TraceEventType.Verbose     :  levelText = "VEBO "; break;
+            default                         :  levelText = "TRAC "; break;
+         }
          buf.Append( levelText ).Append( txt ).Append( Environment.NewLine );
       }
 
@@ -311,7 +326,7 @@ namespace Sheepy.Logging {
    // Represents a log entry, to be queued for processing or forwarded to another logger.
    public class LogEntry {
       public DateTime Time;
-      public SourceLevels Level;
+      public TraceEventType Level;
       public object Message;
       public object[] Args;
    }
@@ -319,7 +334,7 @@ namespace Sheepy.Logging {
    // Process a log entry, converting it and optionally reject it by returning false.  Returning true to keep it.
    public delegate bool LogFilter ( LogEntry entry );
 
-   public class LogFilters {
+   public static class LogFilters {
 
       // If message is not string, and there are multiple params, the message is converted to a list of params
       public static bool AutoMultiParam ( LogEntry entry ) {

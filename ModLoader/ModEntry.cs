@@ -57,7 +57,7 @@ namespace Sheepy.Modnix {
 
       public long GetPriority () { lock ( Metadata ) { return Priority ?? Metadata.Priority; } }
 
-      internal void AddNotice ( SourceLevels lv, string reason, params object[] augs ) { lock ( Metadata ) {
+      internal void AddNotice ( TraceEventType lv, string reason, params object[] augs ) { lock ( Metadata ) {
          if ( Notices == null ) Notices = new List<LogEntry>();
          Notices.Add( new LogEntry{ Level = lv, Message = reason, Args = augs } );
       } }

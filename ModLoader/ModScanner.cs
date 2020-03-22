@@ -378,7 +378,7 @@ namespace Sheepy.Modnix {
          if ( mod.Disabled ) return;
          Log.Warn( log, augs );
          mod.Disabled = true;
-         mod.AddNotice( SourceLevels.Error, reason, augs );
+         mod.AddNotice( TraceEventType.Error, reason, augs );
          EnabledMods.Remove( mod );
       } }
       #endregion
