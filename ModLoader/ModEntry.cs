@@ -127,7 +127,7 @@ namespace Sheepy.Modnix {
          return null;
       }
 
-      private void DoLog ( object param ) => CreateLogger().Log( param is Exception ? TraceEventType.Error : TraceEventType.Information, param );
+      private void DoLog ( object param ) => CreateLogger().Log( param );
 
       internal DateTime? LastModified => Path == null ? (DateTime?) null : new FileInfo( Path ).LastWriteTime;
       internal LoggerProxy Logger; // Created when and only when an initialiser accepts a logging function

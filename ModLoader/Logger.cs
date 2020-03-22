@@ -53,13 +53,15 @@ namespace Sheepy.Logging {
 
       // ============ API ============
 
+      public void Log ( object message ) => Log( message is Exception ? TraceEventType.Error : TraceEventType.Information, message );
+
       public virtual void Log ( TraceEventType level, object message, params object[] args ) {
          if ( ( level & (TraceEventType) Level ) != level ) return;
          if ( args != null && args.Length <= 0 ) args = null;
          _Log( new LogEntry(){ Time = DateTime.Now, Level = level, Message = message, Args = args } );
       }
 
-      public virtual void Log ( TraceLevel level, object message, params object[] args ) {
+      public void Log ( TraceLevel level, object message, params object[] args ) {
          TraceEventType logLevel;
          switch ( level ) {
             case TraceLevel.Off     : return;
