@@ -40,7 +40,6 @@ namespace Sheepy.Modnix {
       public ModEntry ( ModMeta meta ) : this( null, meta ) { }
       public ModEntry ( string path, ModMeta meta ) {
          Path = path;
-         if ( path != null ) LastModified = new FileInfo( path ).LastWriteTime;
          Metadata = meta ?? throw new ArgumentNullException( nameof( meta ) );
       }
 
@@ -59,7 +58,7 @@ namespace Sheepy.Modnix {
 
       private Version GetVersion ( object target ) {
          var id = target?.ToString();
-         if ( string.IsNullOrEmpty( id ) ) return Metadata.Version;
+         if ( string.IsNullOrWhiteSpace( id ) ) return Metadata.Version;
          return ModScanner.GetVersionById( id );
       }
 
@@ -71,7 +70,7 @@ namespace Sheepy.Modnix {
 
       private string GetPath ( object target ) {
          var id = target?.ToString();
-         if ( string.IsNullOrEmpty( id ) ) return Path;
+         if ( string.IsNullOrWhiteSpace( id ) ) return Path;
          switch ( id ) {
             case "mods_root" : return ModLoader.ModDirectory;
          }
@@ -86,7 +85,7 @@ namespace Sheepy.Modnix {
          return null;
       }
 
-      internal readonly DateTime LastModified;
+      internal DateTime? LastModified => Path == null ? (DateTime?) null : new FileInfo( Path ).LastWriteTime;
       internal LoggerProxy Logger; // Created when and only when an initialiser accepts a logging function
       internal object Instance; // Created when and only when a non-static initialiser is called
       internal string Key { get { lock ( Metadata ) { return ModScanner.NormaliseModId( Metadata.Id ); } } }

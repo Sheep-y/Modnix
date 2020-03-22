@@ -286,7 +286,7 @@ namespace Sheepy.Modnix {
          if ( diff != 0 ) return diff;
          diff = CompareAttr( x.Metadata.Version, y.Metadata.Version );
          if ( diff != 0 ) return diff;
-         diff = CompareAttr( x.LastModified, y.LastModified );
+         diff = CompareAttr( x.LastModified.GetValueOrDefault(), y.LastModified.GetValueOrDefault() );
          if ( diff != 0 ) return diff;
          if ( x.Path == null || y.Path == null ) return CompareAttr( x.Path, y.Path );
          return CompareAttr( new FileInfo( x.Path ).Length, new FileInfo( y.Path ).Length );
