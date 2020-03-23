@@ -44,8 +44,8 @@ namespace Sheepy.Modnix {
          Metadata = meta ?? throw new ArgumentNullException( nameof( meta ) );
       }
 
-      public object ModAPI ( string query, object param = null ) { try {
-         switch ( query ) {
+      public object ModAPI ( string action, object param = null ) { try {
+         switch ( action ) {
             case "version"  : return GetVersion( param );
             case "path"     : return GetPath( param );
             case "mod"      : return GetMod( param );
@@ -53,8 +53,9 @@ namespace Sheepy.Modnix {
             case "mod_list" : return ListMods( param );
             case "config"   : return LoadSettings( param );
             case "logger"   : return GetLogFunc( param );
-            case "log"      : DoLog( param ); return null;
+            case "log"      : CreateLogger().Log( param ); return null;
          }
+         CreateLogger().Warn( "Unknown api action {0}", action );
          return null;
       } catch ( Exception ex ) { ModLoader.Log.Error( ex ); return null; } }
 
@@ -126,8 +127,6 @@ namespace Sheepy.Modnix {
          }
          return null;
       }
-
-      private void DoLog ( object param ) => CreateLogger().Log( param );
 
       internal DateTime? LastModified => Path == null ? (DateTime?) null : new FileInfo( Path ).LastWriteTime;
       internal LoggerProxy Logger; // Created when and only when an initialiser accepts a logging function
