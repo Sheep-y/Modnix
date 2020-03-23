@@ -3,6 +3,7 @@
 # Version 1.1
 
 * New: See console log in Modnix.  Console log and loader now auto-refresh.
+* Fix: Mods with multiple non-static initialiser classes are now called with the correct classes.
 * Fix: mods_root added as a reserved id. It is used by mod api path action.
 * Fix: Mod api log action will return true when successfully added to queue.
 * Fix: Unknown mod api action will trigger a warning.

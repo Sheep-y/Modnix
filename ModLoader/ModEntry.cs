@@ -129,7 +129,6 @@ namespace Sheepy.Modnix {
 
       internal DateTime? LastModified => Path == null ? (DateTime?) null : new FileInfo( Path ).LastWriteTime;
       internal LoggerProxy Logger; // Created when and only when an initialiser accepts a logging function
-      internal object Instance; // Created when and only when a non-static initialiser is called
       internal string Key { get { lock ( Metadata ) { return ModScanner.NormaliseModId( Metadata.Id ); } } }
 
       public ModEntry Parent;

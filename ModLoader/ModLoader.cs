@@ -230,6 +230,8 @@ namespace Sheepy.Modnix {
          return Assembly.LoadFrom( path );
       } catch ( Exception ex ) { Log.Error( ex ); return null; } }
 
+      private readonly static Dictionary<Type,WeakReference<object>> ModInstances = new Dictionary<Type,WeakReference<object>>();
+
       public static void CallInit ( ModEntry mod, Assembly dll, string typeName, string methodName ) { try {
          var type = dll.GetType( typeName );
          if ( type == null ) {
@@ -248,10 +250,9 @@ namespace Sheepy.Modnix {
          Func<string> augTxt = () => string.Join( ", ", augs.Select( e => e?.GetType()?.Name ?? "null" ) );
          Log.Info( "Calling {1}.{2}({3}) in {0}", mod.Path, typeName, methodName, augTxt );
          object target = null;
-         if ( ! func.IsStatic ) {
-            if ( mod.Instance == null )
-               mod.Instance = Activator.CreateInstance( type );
-            target = mod.Instance;
+         if ( ! func.IsStatic ) lock ( ModInstances ) {
+            if ( ! ModInstances.TryGetValue( type, out WeakReference<object> wref ) || ! wref.TryGetTarget( out target ) )
+               ModInstances[ type ] = new WeakReference<object>( target = Activator.CreateInstance( type ) );
          }
          func.Invoke( target, augs.ToArray() );
          Log.Verbo( "Done calling {0}", mod.Path );
