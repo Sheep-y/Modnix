@@ -53,7 +53,7 @@ namespace Sheepy.Modnix {
             case "mod_list" : return ListMods( param );
             case "config"   : return LoadSettings( param );
             case "logger"   : return GetLogFunc( param );
-            case "log"      : CreateLogger().Log( param ); return null;
+            case "log"      : CreateLogger().Log( param ); return true;
          }
          CreateLogger().Warn( "Unknown api action {0}", action );
          return null;
