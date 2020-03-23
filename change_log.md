@@ -1,5 +1,11 @@
 # Modnix Changelog
 
+# Version 1.1
+
+* Fix: mods_root added as a reserved id. It is used by mod api path action.
+* Fix: Mod api log action will return true when successfully added to queue.
+* Fix: Unknown mod api action will trigger a warning.
+
 # Version 1.0, 2020-03-23
 
 * New: Enable verbose logging in config file and GUI. Also extends to mods that log through Modnix.

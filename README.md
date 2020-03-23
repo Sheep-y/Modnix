@@ -37,6 +37,13 @@ See [my mods](https://github.com/Sheep-y/PhoenixPt-Mods/) for examples of dual P
 
 You can try to get support on the #mods channel on [official Discord](https://discordapp.com/invite/phoenixpoint).
 
+## Sementic Versioning
+
+Starting from 1.0, Modnix uses Sementic Versioning.
+
+Minor updates that are expected to not break normal mods will be considered minor.
+Otherwise virtually every release will be major.
+
 ## License
 
 The Injector and Mod Loader are released to the public domain.
