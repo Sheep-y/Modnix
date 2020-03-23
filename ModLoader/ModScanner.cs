@@ -234,6 +234,7 @@ namespace Sheepy.Modnix {
             return false;
          }
          switch ( key ) {
+            case "mods_root" :
             case "modnix" : case "loader" :
             case "phoenixpoint" : case "phoenix point" : case "game" :
             case "ppml" : case "ppml+" : case "phoenixpointmodloader" : case "phoenix point mod loader" :
