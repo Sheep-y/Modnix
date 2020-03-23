@@ -87,6 +87,7 @@ namespace Sheepy.Modnix.MainGUI {
       private void CheckGameRunning ( object _ = null ) {
          var IsRunning = AppControl.IsGameRunning();
          this.Dispatch( () => SharedGui.IsGameRunning = IsRunning );
+         CheckLogRefresh();
       }
 
       private void RefreshAppButtons () { try {
@@ -538,7 +539,10 @@ namespace Sheepy.Modnix.MainGUI {
          else ShowLog( "gui" );
       } catch ( Exception ex ) { Log( ex ); } }
 
-      private void ShowLog ( string type ) {
+      private DateTime? CurrentLogTime;
+      private string CurrentLog => ButtonLoaderLog.IsChecked == true ? LoaderLog : ButtonConsoleLog.IsChecked == true ? ConsoleLog : null;
+
+      private void ShowLog ( string type ) { try {
          bool isGui = false, isLoader = false, isConsole = false, isLicense = false;
          switch ( type ) {
             case "gui"    : LabelLogTitle.Content = "Manager Log"; isGui = true; break;
@@ -554,9 +558,21 @@ namespace Sheepy.Modnix.MainGUI {
          ButtonConsoleLog.IsChecked = isConsole;
          ButtonLicense.IsChecked = isLicense;
          if ( isGui ) TextLicense.Text = "";
-         else if ( isLoader ) TextLicense.Text = File.ReadAllText( LoaderLog );
-         else if ( isConsole ) TextLicense.Text = File.ReadAllText( ConsoleLog );
          else if ( isLicense ) TextLicense.Text = ModMetaJson.ReadAsText( AppControl.GetResource( "License.txt" ) );
+         else if ( isLoader || isConsole ) {
+            var file = CurrentLog;
+            TextLicense.Text = File.ReadAllText( file );
+            CurrentLogTime = new FileInfo( file ).LastWriteTime;
+         }
+         else CurrentLogTime = null;
+      } catch ( Exception ex ) { Log( ex ); } }
+
+      private void CheckLogRefresh () {
+         var file = CurrentLog;
+         if ( file == null ) return;
+         if ( ! File.Exists( file ) ) ShowLog( "gui" );
+         if ( new FileInfo( file ).LastAccessTime > CurrentLogTime.GetValueOrDefault() )
+            ShowLog( ButtonLoaderLog.IsChecked == true ? "loader" : "console" );
       }
       #endregion
 
