@@ -32,8 +32,8 @@ and [Troubleshooting](https://github.com/Sheep-y/Modnix/wiki/Troubleshooting-Mod
 
 See the [Wiki](https://github.com/Sheep-y/Modnix/wiki#wiki-wrapper) for mod specs.
 
-See my [Skip Intro](https://github.com/Sheep-y/PhoenixPt-Mods/tree/master/QoL/SkipIntro) mod for an example of
-dual PPML/Modnix support, with embedded mod info such as settings and disabling pre-Modnix versions.
+See [my mods](https://github.com/Sheep-y/PhoenixPt-Mods/) for examples of dual PPML/Modnix support.
+(Not the best examples, given their complexity, but that's all we have for now.)
 
 You can try to get support on the #mods channel on [official Discord](https://discordapp.com/invite/phoenixpoint).
 
