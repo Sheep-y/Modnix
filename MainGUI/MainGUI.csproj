@@ -115,6 +115,7 @@
     <Resource Include="Resources\Newtonsoft.Json.dll" />
     <Resource Include="Resources\img\book.png" />
     <Resource Include="Resources\img\canny.png" />
+    <Resource Include="Resources\img\console.png" />
     <Resource Include="Resources\img\cross.png" />
     <Resource Include="Resources\img\discord.png" />
     <Resource Include="Resources\img\eraser.png" />

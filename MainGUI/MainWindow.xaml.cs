@@ -102,6 +102,7 @@ namespace Sheepy.Modnix.MainGUI {
          ButtonModConf.IsEnabled = SharedGui.CanModify && CurrentMod != null && SelectedMods.Any( e => e.Is( ModQuery.HAS_CONFIG ) );
          ButtonModDelete.IsEnabled = SharedGui.CanModify && CurrentMod != null && ! SelectedMods.Any( e => e.Is( ModQuery.IS_CHILD ) );
          ButtonLoaderLog.IsEnabled = File.Exists( LoaderLog );
+         ButtonConsoleLog.IsEnabled = File.Exists( ConsoleLog );
 
          if ( SharedGui.IsGameRunning )
             BtnTxtSetup.Text = "Refresh";
@@ -509,45 +510,52 @@ namespace Sheepy.Modnix.MainGUI {
       } catch ( Exception ex ) { Log( ex ); } }
 
       private string LoaderLog => Path.Combine( App.ModFolder, "ModnixLoader.log" );
+      private string ConsoleLog => App.CurrentGame == null ? null : Path.Combine( App.CurrentGame.GameDir, "Console.log" );
 
       private void ButtonLogClear_Click ( object sender, RoutedEventArgs e ) {
          TextLog.Clear();
          ButtonLogSave.IsEnabled = false;
       }
 
+      private bool AnyLogChecked => ButtonLoaderLog.IsChecked == true ||
+         ButtonConsoleLog.IsChecked == true || ButtonLicense.IsChecked == true;
+
       private void ButtonLoaderLog_Checked ( object sender, RoutedEventArgs e ) {
-         if ( ButtonLoaderLog.IsChecked == true )
-            ShowLog( "loader" );
-         else if ( ButtonLicense.IsChecked == true )
-            return;
-         else
-            ShowLog( "gui" );
+         if ( ButtonLoaderLog.IsChecked == true ) ShowLog( "loader" );
+         else if ( AnyLogChecked ) return;
+         else ShowLog( "gui" );
+      }
+
+      private void ButtonConsoleLog_Checked ( object sender, RoutedEventArgs e ) {
+         if ( ButtonConsoleLog.IsChecked == true ) ShowLog( "console" );
+         else if ( AnyLogChecked ) return;
+         else ShowLog( "gui" );
       }
 
       private void ButtonLicense_Checked ( object sender, RoutedEventArgs e ) { try {
-         if ( ButtonLicense.IsChecked == true )
-            ShowLog( "license" );
-         else if ( ButtonLoaderLog.IsChecked == true )
-            return;
-         else
-            ShowLog( "gui" );
+         if ( ButtonLicense.IsChecked == true ) ShowLog( "license" );
+         else if ( AnyLogChecked ) return;
+         else ShowLog( "gui" );
       } catch ( Exception ex ) { Log( ex ); } }
 
       private void ShowLog ( string type ) {
-         bool isGui = false, isLoader = false, isLicense = false;
+         bool isGui = false, isLoader = false, isConsole = false, isLicense = false;
          switch ( type ) {
             case "gui"    : LabelLogTitle.Content = "Manager Log"; isGui = true; break;
+            case "console": LabelLogTitle.Content = "Console Log"; isConsole = true; break;
             case "loader" : LabelLogTitle.Content = "Loader Log"; isLoader = true; break;
             case "license": LabelLogTitle.Content = "License"; isLicense = true; break;
          }
          TextLog.Visibility = isGui ? Visibility.Visible : Visibility.Collapsed;
          TextLicense.Visibility = isGui ? Visibility.Collapsed : Visibility.Visible;
-         CheckLogVerbo.Visibility = ! isLicense ? Visibility.Visible : Visibility.Hidden;
+         CheckLogVerbo.Visibility = isGui ? Visibility.Visible : Visibility.Hidden;
          ButtonLogClear.Visibility = isGui ? Visibility.Visible : Visibility.Hidden;
          ButtonLoaderLog.IsChecked = isLoader;
+         ButtonConsoleLog.IsChecked = isConsole;
          ButtonLicense.IsChecked = isLicense;
          if ( isGui ) TextLicense.Text = "";
          else if ( isLoader ) TextLicense.Text = File.ReadAllText( LoaderLog );
+         else if ( isConsole ) TextLicense.Text = File.ReadAllText( ConsoleLog );
          else if ( isLicense ) TextLicense.Text = ModMetaJson.ReadAsText( AppControl.GetResource( "License.txt" ) );
       }
       #endregion

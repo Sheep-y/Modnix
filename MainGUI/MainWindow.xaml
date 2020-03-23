@@ -257,6 +257,8 @@
                         <ColumnDefinition/>
                         <ColumnDefinition Width="10"/>
                         <ColumnDefinition/>
+                        <ColumnDefinition Width="10"/>
+                        <ColumnDefinition/>
                     </Grid.ColumnDefinitions>
                     <ToggleButton x:Name="ButtonLoaderLog" Padding="5" Checked="ButtonLoaderLog_Checked" Unchecked="ButtonLoaderLog_Checked" TabIndex="2400">
                         <StackPanel Orientation="Horizontal">
@@ -264,13 +266,19 @@
                             <AccessText Text="Loader Log"/>
                         </StackPanel>
                     </ToggleButton>
-                    <ToggleButton x:Name="ButtonLicense" Padding="5" Grid.Column="2" TabIndex="2400" ForceCursor="True" Checked="ButtonLicense_Checked" Unchecked="ButtonLicense_Checked">
+                    <ToggleButton x:Name="ButtonConsoleLog" Padding="5" Grid.Column="2" Checked="ButtonConsoleLog_Checked" Unchecked="ButtonConsoleLog_Checked" TabIndex="2400">
+                        <StackPanel Orientation="Horizontal">
+                            <Image Source="Resources/img/console.png" Width="16" Margin="0,0,5,0"/>
+                            <AccessText Text="Console Log"/>
+                        </StackPanel>
+                    </ToggleButton>
+                    <ToggleButton x:Name="ButtonLicense" Padding="5" Grid.Column="4" TabIndex="2400" ForceCursor="True" Checked="ButtonLicense_Checked" Unchecked="ButtonLicense_Checked">
                         <StackPanel Orientation="Horizontal">
                             <Image Source="Resources/img/opensource.png" Width="16" Margin="0,0,5,0"/>
                             <AccessText Text="License"/>
                         </StackPanel>
                     </ToggleButton>
-                    <Button x:Name="ButtonCheckUpdate" Padding="5" Grid.Column="4" Click="ButtonCheckUpdate_Click" TabIndex="2400">
+                    <Button x:Name="ButtonCheckUpdate" Padding="5" Grid.Column="6" Click="ButtonCheckUpdate_Click" TabIndex="2400">
                         <StackPanel Orientation="Horizontal">
                             <Image Source="Resources/img/upgrade.png" Width="16" Margin="0,0,5,0"/>
                             <AccessText x:Name="BtnTextCheckUpdate" Text="Check Update"/>
