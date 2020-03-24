@@ -86,7 +86,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void CheckGameRunning ( object _ = null ) {
          var IsRunning = AppControl.IsGameRunning();
-         this.Dispatch( () => SharedGui.IsGameRunning = IsRunning );
+         SharedGui.IsGameRunning = IsRunning;
          CheckLogRefresh();
       }
 
@@ -561,19 +561,26 @@ namespace Sheepy.Modnix.MainGUI {
          else if ( isLicense ) TextLicense.Text = ModMetaJson.ReadAsText( AppControl.GetResource( "License.txt" ) );
          else if ( isLoader || isConsole ) {
             var file = CurrentLog;
-            TextLicense.Text = File.ReadAllText( file );
+            try {
+               TextLicense.Text = File.ReadAllText( file );
+            } catch ( SystemException ex ) {
+               if ( isConsole && SharedGui.IsGameRunning )
+                  TextLicense.Text = "The game locks the console log.  Cannot read it when game is running.";
+               else
+                  TextLicense.Text = ex.ToString();
+            }
             CurrentLogTime = new FileInfo( file ).LastWriteTime;
          }
          else CurrentLogTime = null;
       } catch ( Exception ex ) { Log( ex ); } }
 
-      private void CheckLogRefresh () {
+      private void CheckLogRefresh () { this.Dispatch( () => {
          var file = CurrentLog;
          if ( file == null ) return;
          if ( ! File.Exists( file ) ) ShowLog( "gui" );
          if ( new FileInfo( file ).LastAccessTime > CurrentLogTime.GetValueOrDefault() )
             ShowLog( ButtonLoaderLog.IsChecked == true ? "loader" : "console" );
-      }
+      } ); }
       #endregion
 
       #region Helpers
