@@ -7,8 +7,8 @@ Modnix is a mod loader and mod manager for [Phoenix Point](https://phoenixpoint.
 Supporting three mod formats,
 it is designed to succeed (replace) [Phoenix Point](https://github.com/RealityMachina/PhoenixPointModInjector/#readme) [Mod Loader](https://github.com/Ijwu/PhoenixPointModLoader/)s.
 
-Modnix is a lot more complicated than them,
-in order to give you a better modding experience.
+Modnix is a lot more complicated than PPML,
+in order to give everyone a better modding experience.
 I try my best, but if you find bugs, please report on [GitHub](https://github.com/Sheep-y/Modnix/issues) or [Nexus](https://www.nexusmods.com/phoenixpoint/mods/43?tab=bugs).
 
 ## User Features

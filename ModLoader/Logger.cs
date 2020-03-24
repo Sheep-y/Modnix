@@ -342,20 +342,34 @@ namespace Sheepy.Logging {
       public static bool AutoMultiParam ( LogEntry entry ) {
          if ( entry.Args == null || entry.Args.Length <= 0 ) return true;
          if ( entry.Message is string txt && txt.Contains( '{' ) && txt.Contains( '}' ) ) return true;
-
          int len = entry.Args.Length + 1;
          object[] newArg = new object[ len + 1 ];
          newArg[ 0 ] = entry.Message;
          entry.Args.CopyTo( newArg, 1 );
          entry.Args = newArg;
-
-         StringBuilder message = new StringBuilder( len * 4 );
-         for ( int i = 0 ; i < len ; i++ )
-            message.Append( '{' ).Append( i ).Append( "} " );
-         message.Length -= 1;
-         entry.Message = message.ToString();
-
+         entry.Message = GetMultiParamMessage( len );
          return true;
+      }
+
+      private static List<string> MultiParamCache = new List<string>(0);
+
+      private static string GetMultiParamMessage( int paramCount ) {
+         string text;
+         if ( paramCount < 100 ) lock ( MultiParamCache ) {
+            if ( MultiParamCache.Count > paramCount ) {
+               text = MultiParamCache[ paramCount ];
+               if ( text != null ) return text;
+            }
+         }
+         StringBuilder buf = new StringBuilder( paramCount * 4 );
+         for ( int i = 0 ; i < paramCount ; i++ )
+            buf.Append( '{' ).Append( i ).Append( "} " );
+         text = buf.ToString( 0, buf.Length - 1 );
+         if ( paramCount < 100 ) lock ( MultiParamCache ) {
+            while ( MultiParamCache.Count <= paramCount ) MultiParamCache.Add( null );
+            MultiParamCache[ paramCount ] = text;
+         }
+         return text;
       }
 
 
