@@ -165,7 +165,7 @@ namespace Sheepy.Modnix {
             foreach ( var resource in lib.MainModule.Resources ) {
                if ( ! ( resource is EmbeddedResource res ) || res.ResourceType != ResourceType.Embedded ) continue;
                if ( res.Name.IndexOf( ".mod_info.js", StringComparison.OrdinalIgnoreCase ) >= 0 )
-                  info = Encoding.UTF8.GetString( res.GetResourceData() );
+                  info = ModMetaJson.ReadAsText( res.GetResourceStream() );
                //else if ( res.Name.IndexOf( ".mod_init.conf", StringComparison.OrdinalIgnoreCase ) >= 0 )
                //   conf = Encoding.UTF8.GetString( res.GetResourceData() );
                else if ( res.Name.EndsWith( ".resources", StringComparison.OrdinalIgnoreCase ) ) {
