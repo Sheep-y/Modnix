@@ -523,30 +523,37 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void ButtonLoaderLog_Checked ( object sender, RoutedEventArgs e ) {
          if ( ButtonLoaderLog.IsChecked == true ) ShowLog( "loader" );
-         else if ( AnyLogChecked ) return;
-         else ShowLog( "gui" );
+         else ResetLogPanel();
       }
 
       private void ButtonConsoleLog_Checked ( object sender, RoutedEventArgs e ) {
          if ( ButtonConsoleLog.IsChecked == true ) ShowLog( "console" );
-         else if ( AnyLogChecked ) return;
-         else ShowLog( "gui" );
+         else ResetLogPanel();
       }
 
-      private void ButtonLicense_Checked ( object sender, RoutedEventArgs e ) { try {
+      private void ButtonChangeLog_Checked ( object sender, RoutedEventArgs e ) {
+         if ( ButtonChangeLog.IsChecked == true ) ShowLog( "change" );
+         else ResetLogPanel();
+      }
+
+      private void ButtonLicense_Checked ( object sender, RoutedEventArgs e ) {
          if ( ButtonLicense.IsChecked == true ) ShowLog( "license" );
-         else if ( AnyLogChecked ) return;
-         else ShowLog( "gui" );
-      } catch ( Exception ex ) { Log( ex ); } }
+         else ResetLogPanel();
+      }
+
+      private void ResetLogPanel () {
+         if ( ! AnyLogChecked ) ShowLog( "gui" );
+      }
 
       private DateTime? CurrentLogTime;
       private string CurrentLog => ButtonLoaderLog.IsChecked == true ? LoaderLog : ButtonConsoleLog.IsChecked == true ? ConsoleLog : null;
 
       private void ShowLog ( string type ) { try {
-         bool isGui = false, isLoader = false, isConsole = false, isLicense = false;
+         bool isGui = false, isLoader = false, isConsole = false, isChange = false, isLicense = false;
          switch ( type ) {
             case "gui"    : LabelLogTitle.Content = "Manager Log"; isGui = true; break;
             case "console": LabelLogTitle.Content = "Console Log"; isConsole = true; break;
+            case "change" : LabelLogTitle.Content = "Change Log"; isChange = true; break;
             case "loader" : LabelLogTitle.Content = "Loader Log"; isLoader = true; break;
             case "license": LabelLogTitle.Content = "License"; isLicense = true; break;
          }
@@ -556,8 +563,10 @@ namespace Sheepy.Modnix.MainGUI {
          ButtonLogClear.Visibility = isGui ? Visibility.Visible : Visibility.Hidden;
          ButtonLoaderLog.IsChecked = isLoader;
          ButtonConsoleLog.IsChecked = isConsole;
+         ButtonChangeLog.IsChecked = isChange;
          ButtonLicense.IsChecked = isLicense;
          if ( isGui ) TextLicense.Text = "";
+         else if ( isChange  ) TextLicense.Text = ModMetaJson.ReadAsText( AppControl.GetResource( "change_log.md" ) );
          else if ( isLicense ) TextLicense.Text = ModMetaJson.ReadAsText( AppControl.GetResource( "License.txt" ) );
          else if ( isLoader || isConsole ) {
             var file = CurrentLog;

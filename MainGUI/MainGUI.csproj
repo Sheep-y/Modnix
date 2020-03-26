@@ -84,6 +84,7 @@
     </Compile>
     <Compile Include="SharedGui.cs" />
     <Compile Include="Updater.cs" />
+    <Resource Include="Resources\change_log.md" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
