@@ -1,12 +1,12 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Serialization;
 using Sheepy.Logging;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -43,6 +43,7 @@ namespace Sheepy.Modnix {
 
       public object ModAPI ( string action, object param = null ) { try {
          switch ( action ) {
+            case "assembly"    : return GetAssembly( param );
             case "config"      : return LoadConfig( param );
             case "config_save" : return SaveConfig( param );
             case "mod_info"    : return new ModMeta().ImportFrom( GetMod( param )?.Metadata );
@@ -55,6 +56,18 @@ namespace Sheepy.Modnix {
          CreateLogger().Warn( "Unknown api action {0}", action );
          return null;
       } catch ( Exception ex ) { ModLoader.Log.Error( ex ); return null; } }
+
+      private Assembly GetAssembly ( object target ) {
+         var id = target?.ToString();
+         if ( string.IsNullOrWhiteSpace( id ) ) return ModAssembly;
+         switch ( id ) {
+            case "loader" : case "modnix" :
+               return Assembly.GetExecutingAssembly();
+            case "phoenixpoint" : case "phoenix point" : case "game" :
+               return null; // TODO: implement
+         }
+         return ModScanner.GetModById( id )?.ModAssembly;
+      }
 
       private Version GetVersion ( object target ) {
          var id = target?.ToString();
@@ -136,6 +149,7 @@ namespace Sheepy.Modnix {
 
       internal DateTime? LastModified => Path == null ? (DateTime?) null : new FileInfo( Path ).LastWriteTime;
       internal LoggerProxy Logger; // Created when and only when an initialiser accepts a logging function
+      internal Assembly ModAssembly;
       internal string Key { get { lock ( Metadata ) { return ModScanner.NormaliseModId( Metadata.Id ); } } }
 
       public ModEntry Parent;
