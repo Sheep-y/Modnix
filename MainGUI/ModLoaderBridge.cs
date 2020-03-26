@@ -54,6 +54,8 @@ namespace Sheepy.Modnix.MainGUI {
          }
       }
 
+      private static ModEntry Mod ( ModInfo mod ) => ( mod as GridModItem )?.Mod;
+
       internal void DeleteMod ( ModInfo mod ) {
          string path = Path.GetDirectoryName( mod.Path );
          if ( path == ModLoader.ModDirectory ) {
@@ -80,7 +82,7 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       internal void DeleteConfig ( ModInfo mod ) {
-         var file = ModLoader.CheckConfigFile( mod.Path );
+         var file = Mod( mod ).CheckConfigFile();
          if ( file != null ) {
             App.Log( $"Deleting {file}" );
             File.Delete( file );
@@ -88,7 +90,7 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       internal void ResetConfig ( ModInfo mod ) {
-         ModLoader.WriteConfigText( ( mod as GridModItem ).Mod, ModLoader.GetDefaultConfigText( ( mod as GridModItem ).Mod ) );
+         Mod( mod ).WriteConfigText( Mod( mod ).GetDefaultConfigText() );
       }
 
       private void RemoveEmptyFolders ( string path ) {
@@ -122,7 +124,7 @@ namespace Sheepy.Modnix.MainGUI {
             case ModQuery.HAS_CONFIG :
                return Mod.HasConfig;
             case ModQuery.HAS_CONFIG_FILE :
-               return ModLoader.CheckConfigFile( Mod.Path ) != null;
+               return Mod.CheckConfigFile() != null;
             default:
                return false;
          }
@@ -145,7 +147,7 @@ namespace Sheepy.Modnix.MainGUI {
          var name = new Run( Mod.Metadata.Name.ToString( "en" ) );
          body.Inlines.Add( Mod.Disabled ? (Inline) name : new Bold( name ) );
          if ( Mod.HasConfig )
-            body.Inlines.Add( ModLoader.CheckConfigFile( Mod.Path ) != null
+            body.Inlines.Add( Mod.CheckConfigFile() != null
                   ? "\t[has config file]" : "\t[can create config]" );
          body.Inlines.Add( "\r" );
       } }
@@ -234,7 +236,7 @@ namespace Sheepy.Modnix.MainGUI {
          var selfRun = new Run( "\r" + self );
          list.Add( selfRun );
          if ( Mod.HasConfig ) {
-            var config = ModLoader.CheckConfigFile( Mod.Path );
+            var config = Mod.CheckConfigFile();
             list.Add( config != null ? $"\r{fileName(config)} [Config]" : "\r(Can create config file)" );
          }
          foreach ( var e in meta.Dlls ) {

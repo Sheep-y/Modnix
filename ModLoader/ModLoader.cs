@@ -168,53 +168,6 @@ namespace Sheepy.Modnix {
       } } catch ( Exception ex ) { Log?.Error( ex ); } }
       #endregion
 
-      #region Mod config
-      public static string GetConfigFile ( string path ) {
-         if ( path == null ) return null;
-         var name = Path.GetFileNameWithoutExtension( path );
-         /*
-         if ( name.Equals( "mod_info", StringComparison.OrdinalIgnoreCase ) )
-            name = "mod_init";
-         */
-         return Path.Combine( Path.GetDirectoryName( path ), name + ".conf" );
-      }
-
-      public static string CheckConfigFile ( string path ) {
-         var confFile = GetConfigFile( path );
-         /*
-         if ( confFile == null || ! File.Exists( confFile ) )
-            confFile = Path.Combine( Path.GetDirectoryName( path ), "mod_init.conf" );
-         */
-         return File.Exists( confFile ) ? confFile : null;
-      }
-
-      public static string GetDefaultConfigText ( ModEntry mod ) { try {
-         var meta = mod.Metadata;
-         lock ( meta ) {
-            if ( meta.DefaultConfig == null ) return null;
-            return meta.ConfigText = ModMetaJson.Stringify( meta.DefaultConfig );
-         }
-      } catch ( Exception ex ) { Log?.Error( ex ); return null; } }
-
-      public static string GetConfigText ( ModEntry mod ) { try {
-         var meta = mod.Metadata;
-         lock ( meta )
-            if ( meta.ConfigText != null )
-               return meta.ConfigText;
-         var confFile = CheckConfigFile( mod.Path );
-         if ( confFile != null )
-            return File.ReadAllText( confFile, Encoding.UTF8 );
-         return GetDefaultConfigText( mod );
-      } catch ( Exception ex ) { Log?.Error( ex ); return null; } }
-
-      public static void WriteConfigText ( ModEntry mod, string str ) { try {
-         if ( string.IsNullOrWhiteSpace( str ) ) return;
-         var path = GetConfigFile( mod.Path );
-         Log.Info( $"Writing {str.Length} characters to {path}" );
-         File.WriteAllText( path, str, Encoding.UTF8 );
-      } catch ( Exception ex ) { Log?.Error( ex ); } }
-      #endregion
-
       #region Loading Mods
       public static void LoadMods ( string phase ) { try {
          Log.Info( "PHASE {0}", phase );

@@ -93,7 +93,7 @@ namespace Sheepy.Modnix {
 
       private object LoadConfig ( object param ) { try {
          if ( param == null ) param = typeof( JObject );
-         string txt = ModLoader.GetConfigText( this );
+         string txt = GetConfigText();
          if ( param is Type type ) {
             if ( type == typeof( string ) )
                return txt;
@@ -107,7 +107,7 @@ namespace Sheepy.Modnix {
          if ( param == null ) return null;
          return Task.Run( () => {
             var str = JsonConvert.SerializeObject( param, Formatting.Indented, ModMetaJson.JsonOptions );
-            File.WriteAllText( ModLoader.GetConfigFile( Path ), str, Encoding.UTF8 );
+            File.WriteAllText( GetConfigFile(), str, Encoding.UTF8 );
             lock ( Metadata ) Metadata.ConfigText = str;
          } );
       } catch ( Exception e ) { CreateLogger().Warn( e ); return null; } }
@@ -147,9 +147,54 @@ namespace Sheepy.Modnix {
       public List<LogEntry> Notices;
 
       public bool HasConfig { get { lock ( Metadata ) {
-         return Metadata.DefaultConfig != null || Metadata.ConfigText != null ||
-                ModLoader.CheckConfigFile( Path ) != null;
+         return Metadata.DefaultConfig != null || Metadata.ConfigText != null || CheckConfigFile() != null;
       } } }
+
+      
+      public string GetConfigFile () { try {
+         if ( Path == null ) return null;
+         var name = System.IO.Path.GetFileNameWithoutExtension( Path );
+         /*
+         if ( name.Equals( "mod_info", StringComparison.OrdinalIgnoreCase ) )
+            name = "mod_init";
+         */
+         return System.IO.Path.Combine( System.IO.Path.GetDirectoryName( Path ), name + ".conf" );
+      } catch ( Exception ex ) { CreateLogger().Error( ex ); return null; } }
+
+      public string CheckConfigFile () { try {
+         var confFile = GetConfigFile();
+         /*
+         if ( confFile == null || ! File.Exists( confFile ) )
+            confFile = Path.Combine( Path.GetDirectoryName( path ), "mod_init.conf" );
+         */
+         return File.Exists( confFile ) ? confFile : null;
+      } catch ( Exception ex ) { CreateLogger().Error( ex ); return null; } }
+
+      public string GetDefaultConfigText () { try {
+         var meta = Metadata;
+         lock ( meta ) {
+            if ( meta.DefaultConfig == null ) return null;
+            return meta.ConfigText = ModMetaJson.Stringify( meta.DefaultConfig );
+         }
+      } catch ( Exception ex ) { CreateLogger().Error( ex ); return null; } }
+
+      public string GetConfigText () { try {
+         var meta = Metadata;
+         lock ( meta )
+            if ( meta.ConfigText != null )
+               return meta.ConfigText;
+         var confFile = CheckConfigFile();
+         if ( confFile != null )
+            return File.ReadAllText( confFile, Encoding.UTF8 );
+         return GetDefaultConfigText();
+      } catch ( Exception ex ) { CreateLogger().Error( ex ); return null; } }
+
+      public void WriteConfigText ( string str ) { try {
+         if ( string.IsNullOrWhiteSpace( str ) ) return;
+         var path = GetConfigFile();
+         CreateLogger().Info( $"Writing {str.Length} chars to {path}" );
+         File.WriteAllText( path, str, Encoding.UTF8 );
+      } catch ( Exception ex ) { CreateLogger().Error( ex ); } }
 
       public long GetPriority () { lock ( Metadata ) { return Priority ?? Metadata.Priority; } }
 
