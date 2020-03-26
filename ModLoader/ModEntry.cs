@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace Sheepy.Modnix {
    using DllEntryMeta = Dictionary< string, HashSet< string > >;
@@ -46,13 +47,14 @@ namespace Sheepy.Modnix {
 
       public object ModAPI ( string action, object param = null ) { try {
          switch ( action ) {
-            case "config"   : return LoadConfig( param );
-            case "mod_info" : return new ModMeta().ImportFrom( GetMod( param )?.Metadata );
-            case "mod_list" : return ListMods( param );
-            case "path"     : return GetPath( param );
-            case "log"      : CreateLogger().Log( param ); return true;
-            case "logger"   : return GetLogFunc( param );
-            case "version"  : return GetVersion( param );
+            case "config"      : return LoadConfig( param );
+            case "config_save" : return SaveConfig( param );
+            case "mod_info"    : return new ModMeta().ImportFrom( GetMod( param )?.Metadata );
+            case "mod_list"    : return ListMods( param );
+            case "path"        : return GetPath( param );
+            case "log"         : CreateLogger().Log( param ); return true;
+            case "logger"      : return GetLogFunc( param );
+            case "version"     : return GetVersion( param );
          }
          CreateLogger().Warn( "Unknown api action {0}", action );
          return null;
@@ -60,7 +62,7 @@ namespace Sheepy.Modnix {
 
       private Version GetVersion ( object target ) {
          var id = target?.ToString();
-         if ( string.IsNullOrWhiteSpace( id ) ) return Metadata.Version;
+         if ( string.IsNullOrWhiteSpace( id ) ) lock ( Metadata ) return Metadata.Version;
          return ModScanner.GetVersionById( id );
       }
 
@@ -82,7 +84,7 @@ namespace Sheepy.Modnix {
       }
 
       private static IEnumerable<string> ListMods ( object target ) {
-         var list = ModScanner.EnabledMods.Select( e => e.Metadata.Id );
+         var list = ModScanner.EnabledMods.Select( e => { lock ( e.Metadata ) return e.Metadata.Id; } );
          if ( target == null ) return list;
          if ( target is string txt ) return list.Where( e => e.IndexOf( txt, StringComparison.OrdinalIgnoreCase ) >= 0 );
          if ( target is Regex reg ) return list.Where( e => reg.IsMatch( e ) );
@@ -91,7 +93,7 @@ namespace Sheepy.Modnix {
 
       private object LoadConfig ( object param ) { try {
          if ( param == null ) param = typeof( JObject );
-         var txt = ModLoader.ReadConfigText( this );
+         string txt = ModLoader.GetConfigText( this );
          if ( param is Type type ) {
             if ( type == typeof( string ) )
                return txt;
@@ -99,6 +101,15 @@ namespace Sheepy.Modnix {
          }
          JsonConvert.PopulateObject( txt, param, ModMetaJson.JsonOptions );
          return param;
+      } catch ( Exception e ) { CreateLogger().Warn( e ); return null; } }
+
+      private Task SaveConfig ( object param ) { try {
+         if ( param == null ) return null;
+         return Task.Run( () => {
+            var str = JsonConvert.SerializeObject( param, Formatting.Indented, ModMetaJson.JsonOptions );
+            File.WriteAllText( ModLoader.GetConfigFile( Path ), str, Encoding.UTF8 );
+            lock ( Metadata ) Metadata.ConfigText = str;
+         } );
       } catch ( Exception e ) { CreateLogger().Warn( e ); return null; } }
 
       private Logger CreateLogger () {

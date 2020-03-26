@@ -188,23 +188,23 @@ namespace Sheepy.Modnix {
          return File.Exists( confFile ) ? confFile : null;
       }
 
-      public static string ReadDefaultConfigText ( ModEntry mod ) { try {
+      public static string GetDefaultConfigText ( ModEntry mod ) { try {
          var meta = mod.Metadata;
          lock ( meta ) {
-            if ( meta.ConfigText != null )
-               return meta.ConfigText;
-            if ( meta.DefaultConfig != null )
-               return meta.ConfigText = ModMetaJson.Stringify( meta.DefaultConfig );
+            if ( meta.DefaultConfig == null ) return null;
+            return meta.ConfigText = ModMetaJson.Stringify( meta.DefaultConfig );
          }
-         return null;
-
       } catch ( Exception ex ) { Log?.Error( ex ); return null; } }
 
-      public static string ReadConfigText ( ModEntry mod ) { try {
+      public static string GetConfigText ( ModEntry mod ) { try {
+         var meta = mod.Metadata;
+         lock ( meta )
+            if ( meta.ConfigText != null )
+               return meta.ConfigText;
          var confFile = CheckConfigFile( mod.Path );
          if ( confFile != null )
             return File.ReadAllText( confFile, Encoding.UTF8 );
-         return ReadDefaultConfigText( mod );
+         return GetDefaultConfigText( mod );
       } catch ( Exception ex ) { Log?.Error( ex ); return null; } }
 
       public static void WriteConfigText ( ModEntry mod, string str ) { try {
