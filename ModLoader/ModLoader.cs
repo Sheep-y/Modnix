@@ -103,14 +103,14 @@ namespace Sheepy.Modnix {
       // Dynamically load embedded dll
       private static Assembly ModLoaderResolve  ( object domain, ResolveEventArgs dll ) { try {
          Log.Trace( "Resolving {0}", dll.Name );
-         AppDomain app = domain as AppDomain ?? AppDomain.CurrentDomain;
+         var app = domain as AppDomain ?? AppDomain.CurrentDomain;
          if ( dll.Name.StartsWith( "PhoenixPointModLoader, Version=0.2.0.0, ", StringComparison.OrdinalIgnoreCase ) ) {
             Log.Verbo( "Loading embedded PPML v0.2" );
             return app.Load( Properties.Resources.PPML_0_2 );
          }
          if ( dll.Name.StartsWith( "System." ) && dll.Name.Contains( ',' ) ) { // Generic system library lookup
-            string file = dll.Name.Substring( 0, dll.Name.IndexOf( ',' ) ) + ".dll";
-            string target = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.Windows ), "Microsoft.NET/Framework/v4.0.30319", file );
+            var file = dll.Name.Substring( 0, dll.Name.IndexOf( ',' ) ) + ".dll";
+            var target = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.Windows ), "Microsoft.NET/Framework/v4.0.30319", file );
             if ( File.Exists( target ) ) {
                Log.Info( "Loading {0}", target );
                return Assembly.LoadFrom( target );
@@ -206,6 +206,13 @@ namespace Sheepy.Modnix {
             return File.ReadAllText( confFile, Encoding.UTF8 );
          return ReadDefaultConfigText( mod );
       } catch ( Exception ex ) { Log?.Error( ex ); return null; } }
+
+      public static void WriteConfigText ( ModEntry mod, string str ) { try {
+         if ( string.IsNullOrWhiteSpace( str ) ) return;
+         var path = GetConfigFile( mod.Path );
+         Log.Info( $"Writing {str.Length} characters to {path}" );
+         File.WriteAllText( path, str, Encoding.UTF8 );
+      } catch ( Exception ex ) { Log?.Error( ex ); } }
       #endregion
 
       #region Loading Mods

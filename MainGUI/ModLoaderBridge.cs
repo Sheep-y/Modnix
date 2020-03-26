@@ -88,12 +88,7 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       internal void ResetConfig ( ModInfo mod ) {
-         var str = ModLoader.ReadDefaultConfigText( ( mod as GridModItem ).Mod );
-         if ( str != null ) {
-            var path = ModLoader.GetConfigFile( mod.Path );
-            App.Log( $"Writing {str.Length} bytes to {path}" );
-            File.WriteAllText( path, str );
-         }
+         ModLoader.WriteConfigText( ( mod as GridModItem ).Mod, ModLoader.ReadDefaultConfigText( ( mod as GridModItem ).Mod ) );
       }
 
       private void RemoveEmptyFolders ( string path ) {
