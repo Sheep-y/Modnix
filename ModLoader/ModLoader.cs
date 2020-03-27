@@ -176,7 +176,7 @@ namespace Sheepy.Modnix {
             foreach ( var dll in mod.Metadata.Dlls ) {
                if ( dll.Methods == null ) continue;
                if ( ! dll.Methods.TryGetValue( phase, out var entries ) ) continue;
-               var lib = LoadDll( dll.Path );
+               var lib = LoadDll( mod, dll.Path );
                if ( lib == null ) continue;
                if ( mod.ModAssembly == null ) mod.ModAssembly = lib;
                foreach ( var type in entries )
@@ -186,10 +186,10 @@ namespace Sheepy.Modnix {
          Log.Flush();
       } catch ( Exception ex ) { Log.Error( ex ); } }
 
-      public static Assembly LoadDll ( string path ) { try {
+      public static Assembly LoadDll ( ModEntry mod, string path ) { try {
          Log.Info( "Loading {0}", path );
          return Assembly.LoadFrom( path );
-      } catch ( Exception ex ) { Log.Error( ex ); return null; } }
+      } catch ( Exception ex ) { mod.Error( ex ); return null; } }
 
       private readonly static Dictionary<Type,WeakReference<object>> ModInstances = new Dictionary<Type,WeakReference<object>>();
 
@@ -217,7 +217,7 @@ namespace Sheepy.Modnix {
          }
          func.Invoke( target, augs.ToArray() );
          Log.Verbo( "Done calling {0}", mod.Path );
-      } catch ( Exception ex ) { Log.Error( ex ); } }
+      } catch ( Exception ex ) { mod.Error( ex ); } }
 
       private static object ParamValue ( ParameterInfo aug, ModEntry mod ) {
          var pType = aug.ParameterType;

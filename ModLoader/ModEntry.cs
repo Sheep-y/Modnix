@@ -110,16 +110,17 @@ namespace Sheepy.Modnix {
          }
          JsonConvert.PopulateObject( txt, param, ModMetaJson.JsonOptions );
          return param;
-      } catch ( Exception e ) { CreateLogger().Warn( e ); return null; } }
+      } catch ( Exception e ) { Error( e ); return null; } }
 
       private Task SaveConfig ( object param ) { try {
          if ( param == null ) return null;
          return Task.Run( () => {
-            var str = JsonConvert.SerializeObject( param, Formatting.Indented, ModMetaJson.JsonOptions );
+            if ( ! ( param is string str ) )
+               str = JsonConvert.SerializeObject( param, Formatting.Indented, ModMetaJson.JsonOptions );
             File.WriteAllText( GetConfigFile(), str, Encoding.UTF8 );
             lock ( Metadata ) Metadata.ConfigText = str;
          } );
-      } catch ( Exception e ) { CreateLogger().Warn( e ); return null; } }
+      } catch ( Exception e ) { Error( e ); return null; } }
 
       private Logger CreateLogger () {
          lock ( this ) {
@@ -146,6 +147,8 @@ namespace Sheepy.Modnix {
          }
          return null;
       }
+
+      internal void Error ( object err ) => CreateLogger().Error( err );
 
       internal DateTime? LastModified => Path == null ? (DateTime?) null : new FileInfo( Path ).LastWriteTime;
       internal LoggerProxy Logger; // Created when and only when an initialiser accepts a logging function
