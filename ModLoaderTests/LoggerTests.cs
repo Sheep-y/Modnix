@@ -134,6 +134,11 @@ namespace Sheepy.Logging.Tests {
          Log.Error( subject );
          Assert.IsTrue( LogSize == len, "Duplicate is suppressed" );
 
+         Log.Filters.Add( LogFilters.AddPrefix( "ABC" ) );
+         Log.Filters.Add( LogFilters.AddPostfix( "DEF" ) );
+         Log.Error( subject );
+         Assert.IsTrue( LogSize == len, "Duplicate is suppressed" );
+
          Log.Error( new FormatException() );
          Assert.IsTrue( LogContent.Contains( "FormatException" ), "New exception is logged" );
          len = LogSize;

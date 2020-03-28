@@ -57,7 +57,7 @@ namespace Sheepy.Logging {
 
       public virtual void Log ( TraceEventType level, object message, params object[] args ) {
          if ( ( level & (TraceEventType) Level ) != level ) return;
-         if ( args != null && args.Length <= 0 ) args = null;
+         if ( args?.Length == 0 ) args = null;
          _Log( new LogEntry(){ Time = DateTime.Now, Level = level, Message = message, Args = args } );
       }
 
@@ -117,7 +117,7 @@ namespace Sheepy.Logging {
          string txt = entry.Message?.ToString();
          if ( string.IsNullOrEmpty( txt ) ) return null;
 
-         if ( entry.Args != null && entry.Args.Length > 0 && txt != null ) try {
+         if ( entry.Args?.Length > 0 && txt != null ) try {
             return string.Format( txt, entry.Args );
          } catch ( FormatException ex ) { CallOnError( ex ); }
          return txt;
@@ -201,7 +201,7 @@ namespace Sheepy.Logging {
             lock ( _Queue ) {
                _Timer?.Dispose();
                _Timer = null;
-               if ( _Queue.Count <= 0 ) return;
+               if ( _Queue.Count == 0 ) return;
                entries = _Queue.ToArray();
                _Queue.Clear();
             }
@@ -294,7 +294,7 @@ namespace Sheepy.Logging {
       public LoggerProxy ( bool AllowClear = true, params Logger[] Masters ) {
          _AllowClear = AllowClear;
          _Masters = new RwlsList< Logger >( _Reader, _Writer );
-         if ( Masters != null && Masters.Length > 0 )
+         if ( Masters?.Length > 0 )
             foreach ( var master in Masters )
                _Masters.Add( master );
       }
@@ -340,7 +340,7 @@ namespace Sheepy.Logging {
 
       // If message is not string, and there are multiple params, the message is converted to a list of params
       public static bool AutoMultiParam ( LogEntry entry ) {
-         if ( entry.Args == null || entry.Args.Length <= 0 ) return true;
+         if ( entry.Args == null || entry.Args.Length == 0 ) return true;
          if ( entry.Message is string txt && txt.Contains( '{' ) && txt.Contains( '}' ) ) return true;
          int len = entry.Args.Length + 1;
          object[] newArg = new object[ len + 1 ];
@@ -413,7 +413,9 @@ namespace Sheepy.Logging {
       public static LogFilter IgnoreDuplicateExceptions { get {
          HashSet< string > ignored = new HashSet<string>();
          return ( entry ) => {
-            if ( ! ( entry.Message is Exception ex ) ) return true;
+            if ( entry.Message is Exception ex ) ;
+            else if ( entry?.Args.Length == 1 && entry.Args[0] is Exception err ) ex = err;
+            else return true;
             string txt = ex.ToString();
             lock( ignored ) {
                if ( ignored.Contains( txt ) ) return false;
@@ -425,16 +427,22 @@ namespace Sheepy.Logging {
 
       public static LogFilter AddPrefix ( string prefix ) {
          return ( entry ) => {
-            if ( entry.Message is Exception ) return true;
-            entry.Message = prefix + entry.Message?.ToString();
+            if ( entry.Message is Exception ) {
+               entry.Args = new object[]{ entry.Message };
+               entry.Message = prefix + "{0}";
+            } else
+               entry.Message = prefix + entry.Message?.ToString();
             return true;
          };
       }
 
       public static LogFilter AddPostfix ( string postfix ) {
          return ( entry ) => {
-            if ( entry.Message is Exception ) return true;
-            entry.Message = entry.Message?.ToString() + postfix;
+            if ( entry.Message is Exception ) {
+               entry.Args = new object[]{ entry.Message };
+               entry.Message = "{0}" + postfix;
+            } else
+               entry.Message = entry.Message?.ToString() + postfix;
             return true;
          };
       }
@@ -468,8 +476,8 @@ namespace Sheepy.Logging {
       private readonly LockHelper _Reader, _Writer;
 
       public RwlsList ( LoggerReadLockHelper reader, LoggerWriteLockHelper writer ) {
-         _Reader = reader ?? throw new ArgumentNullException( "reader" );
-         _Writer = writer ?? throw new ArgumentNullException( "writer" );
+         _Reader = reader ?? throw new ArgumentNullException( nameof( reader ) );
+         _Writer = writer ?? throw new ArgumentNullException( nameof( writer ) );
       }
 
       public T this[ int index ] {
