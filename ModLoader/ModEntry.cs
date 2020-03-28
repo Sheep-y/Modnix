@@ -130,7 +130,7 @@ namespace Sheepy.Modnix {
          var filters = Logger.Filters;
          filters.Add( LogFilters.IgnoreDuplicateExceptions );
          filters.Add( LogFilters.AutoMultiParam );
-         filters.Add( LogFilters.AddPrefix( Metadata.Id + "┊" ) );
+         filters.Add( LogFilters.AddPrefix( Metadata.Id + ModLoader.LOG_DIVIDER ) );
          return Logger;
       }
 

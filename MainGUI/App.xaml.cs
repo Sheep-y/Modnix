@@ -553,11 +553,56 @@ namespace Sheepy.Modnix.MainGUI {
       #endregion
 
       #region Mods
+      internal string LoaderLog => Path.Combine( ModFolder, "ModnixLoader.log" );
+      internal string ConsoleLog => CurrentGame == null ? null : Path.Combine( CurrentGame.GameDir, "Console.log" );
+
+      private bool IsLoadingModList;
+      private HashSet< string > ModWithError = new HashSet<string>();
+      private DateTime LoaderLogLastModified;
+      private readonly Regex RegexModIdFromLine = new Regex( "(?>[\\d:\\.]+) EROR ([^┊]+)┊", RegexOptions.Compiled );
+
       public void GetModList () { try {
-         Log( $"Rebuilding mod list" );
-         var list = ModBridge.LoadModList();
-         if ( list != null ) GUI.SetInfo( GuiInfo.MOD_LIST, list );
-      } catch ( IOException ex ) { Log( ex ); } }
+         lock ( ModWithError ) {
+            if ( IsLoadingModList ) return;
+            IsLoadingModList = true;
+         }
+         try {
+            Log( $"Rebuilding mod list" );
+            IEnumerable< ModInfo > list = null;
+            Task.WaitAll( new Task[] {
+               Task.Run( () => list = ModBridge.LoadModList() ),
+               Task.Run( CheckLogForError ),
+            } );
+            if ( list != null ) GUI.SetInfo( GuiInfo.MOD_LIST, list );
+         } finally {
+            lock ( ModWithError ) IsLoadingModList = false;
+         }
+      } catch ( SystemException ex ) { Log( ex ); } }
+
+      private void CheckLogForError () { try {
+         var file = LoaderLog;
+         if ( ! File.Exists( file ) ) {
+            lock ( ModWithError ) ModWithError.Clear();
+            return;
+         }
+         DateTime mTime = new FileInfo( file ).LastWriteTime;
+         lock ( ModWithError ) if ( mTime == LoaderLogLastModified ) return;
+         Log( $"Pasing {file} for errors, last updated {mTime}." );
+         using ( var reader = new StreamReader( file ) ) {
+            string line;
+            char div = ModLoader.LOG_DIVIDER;
+            while ( ( line = reader.ReadLine()?.Trim() ) != null ) {
+               if ( line.Length == 0 ) continue;
+               if ( ! line.Contains( "Exception: " ) || ! line.Contains( " EROR " ) ) continue;
+               var match = RegexModIdFromLine.Match( line );
+               if ( ! match.Success ) continue;
+               var id = match.Groups[ 1 ].Value;
+               Log( $"Error detected with {id}" );
+               ModWithError.Add( id );
+            }
+         }
+         lock ( ModWithError ) LoaderLogLastModified = mTime;
+      } catch ( SystemException ex ) { Log( ex ); } }
 
       internal Task DoModActionAsync ( AppAction action, IEnumerable<ModInfo> mods ) {
          Log( $"Queuing {action} of {mods.Count()} mods" );

@@ -8,6 +8,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Media;
@@ -16,7 +17,6 @@ namespace Sheepy.Modnix.MainGUI {
    // This class was created to separate ModLoader classes from the main program.
    internal class ModLoaderBridge {
       private readonly AppControl App = AppControl.Instance;
-      private bool Loading;
 
       internal void CheckSetup () { lock ( this ) {
          if ( ModLoader.NeedSetup ) {
@@ -40,18 +40,11 @@ namespace Sheepy.Modnix.MainGUI {
          ModLoader.SaveSettings();
       }
 
-      internal object LoadModList () {
-         lock ( this ) {
-            if ( Loading ) return null;
-            Loading = true;
-         }
+      internal IEnumerable<ModInfo> LoadModList () {
          CheckSetup();
          App.Log( "Building mod list" );
          ModScanner.BuildModList();
-         lock ( this ) {
-            Loading = false;
-            return ModScanner.AllMods.Select( e => new GridModItem( e ) );
-         }
+         return ModScanner.AllMods.Select( e => new GridModItem( e ) ).ToArray();
       }
 
       private static ModEntry Mod ( ModInfo mod ) => ( mod as GridModItem )?.Mod;

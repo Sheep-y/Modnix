@@ -2,7 +2,9 @@ Modnix Changelog
 
 # Version 1.1
 
-* New: See console log and changelog in Modnix.  Console log and loader log now auto-refresh.
+* New: See console log and changelog in Modnix.
+* New: Loader log now auto-refresh, same for new console log.
+* New: Loader log now can be filtered, same for new console log.
 * New: "config_save" and "assembly" mod api action added.
 * Fix: Embedded mod_info with BOM can now be correctly read.
 * Fix: Mods with multiple non-static initialiser classes are now called with the correct classes.

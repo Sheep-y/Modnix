@@ -15,10 +15,12 @@ namespace Sheepy.Modnix {
 
    public static class ModLoader {
       private readonly static string MOD_PATH  = "My Games/Phoenix Point/Mods".FixSlash();
-      public const string CONF_FILE = "Modnix.conf";
       internal static readonly string[] PHASES = new string[]{ "SplashMod", "Init", "Initialize", "MainMod" };
 
       internal static Logger Log;
+      public const char LOG_DIVIDER = '┊';
+
+      public const string CONF_FILE = "Modnix.conf";
       private static LoaderSettings _Settings;
       public static LoaderSettings Settings { get { lock( MOD_PATH ) { return _Settings; } } set { lock( MOD_PATH ) { _Settings = value; } } }
 

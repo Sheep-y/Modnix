@@ -103,8 +103,8 @@ namespace Sheepy.Modnix.MainGUI {
          ButtonModOpenModDir.IsEnabled = CurrentMod != null;
          ButtonModConf.IsEnabled = SharedGui.CanModify && CurrentMod != null && SelectedMods.Any( e => e.Is( ModQuery.HAS_CONFIG ) );
          ButtonModDelete.IsEnabled = SharedGui.CanModify && CurrentMod != null && ! SelectedMods.Any( e => e.Is( ModQuery.IS_CHILD ) );
-         ButtonLoaderLog.IsEnabled = File.Exists( LoaderLog );
-         ButtonConsoleLog.IsEnabled = File.Exists( ConsoleLog );
+         ButtonLoaderLog.IsEnabled = File.Exists( App.LoaderLog );
+         ButtonConsoleLog.IsEnabled = File.Exists( App.ConsoleLog );
 
          if ( SharedGui.IsGameRunning )
             BtnTxtSetup.Text = "Refresh";
@@ -511,9 +511,6 @@ namespace Sheepy.Modnix.MainGUI {
          }
       } catch ( Exception ex ) { Log( ex ); } }
 
-      private string LoaderLog => Path.Combine( App.ModFolder, "ModnixLoader.log" );
-      private string ConsoleLog => App.CurrentGame == null ? null : Path.Combine( App.CurrentGame.GameDir, "Console.log" );
-
       private void ButtonLogClear_Click ( object sender, RoutedEventArgs e ) {
          TextLog.Clear();
          ButtonLogSave.IsEnabled = false;
@@ -547,7 +544,7 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       private DateTime? CurrentLogTime;
-      private string CurrentLogFile => ButtonLoaderLog.IsChecked == true ? LoaderLog : ButtonConsoleLog.IsChecked == true ? ConsoleLog : null;
+      private string CurrentLogFile => ButtonLoaderLog.IsChecked == true ? App.LoaderLog : ButtonConsoleLog.IsChecked == true ? App.ConsoleLog : null;
       private string CurrentLog = "gui";
 
       private void ShowLog ( string type ) { try {
