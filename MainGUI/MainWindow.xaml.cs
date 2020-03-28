@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
@@ -546,9 +547,11 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       private DateTime? CurrentLogTime;
-      private string CurrentLog => ButtonLoaderLog.IsChecked == true ? LoaderLog : ButtonConsoleLog.IsChecked == true ? ConsoleLog : null;
+      private string CurrentLogFile => ButtonLoaderLog.IsChecked == true ? LoaderLog : ButtonConsoleLog.IsChecked == true ? ConsoleLog : null;
+      private string CurrentLog = "gui";
 
       private void ShowLog ( string type ) { try {
+         CurrentLog = type;
          bool isGui = false, isLoader = false, isConsole = false, isChange = false, isLicense = false;
          switch ( type ) {
             case "gui"    : LabelLogTitle.Content = "Manager Log"; isGui = true; break;
@@ -559,32 +562,42 @@ namespace Sheepy.Modnix.MainGUI {
          }
          TextLog.Visibility = isGui ? Visibility.Visible : Visibility.Collapsed;
          TextLicense.Visibility = isGui ? Visibility.Collapsed : Visibility.Visible;
-         CheckLogVerbo.Visibility = isGui ? Visibility.Visible : Visibility.Hidden;
-         ButtonLogClear.Visibility = isGui ? Visibility.Visible : Visibility.Hidden;
+         CheckLogVerbo.Visibility = isGui ? Visibility.Visible : Visibility.Collapsed;
+         ButtonLogClear.Visibility = isGui ? Visibility.Visible : Visibility.Collapsed;
+         LabelLogFilter.Visibility = TextLogFilter.Visibility = isGui || isChange || isLicense ? Visibility.Collapsed : Visibility.Visible;
          ButtonLoaderLog.IsChecked = isLoader;
          ButtonConsoleLog.IsChecked = isConsole;
          ButtonChangeLog.IsChecked = isChange;
          ButtonLicense.IsChecked = isLicense;
          if ( isGui ) TextLicense.Text = "";
-         else if ( isChange  ) TextLicense.Text = ModMetaJson.ReadAsText( AppControl.GetResource( "change_log.md" ) );
-         else if ( isLicense ) TextLicense.Text = ModMetaJson.ReadAsText( AppControl.GetResource( "License.txt" ) );
+         else if ( isChange  ) TextLicense.Text = ApplyLogFilter( ModMetaJson.ReadAsText( AppControl.GetResource( "change_log.md" ) ) );
+         else if ( isLicense ) TextLicense.Text = ApplyLogFilter( ModMetaJson.ReadAsText( AppControl.GetResource( "License.txt" ) ) );
          else if ( isLoader || isConsole ) {
-            var file = CurrentLog;
             try {
-               TextLicense.Text = File.ReadAllText( file );
+               TextLicense.Text = ApplyLogFilter( File.ReadAllText( CurrentLogFile ) );
             } catch ( SystemException ex ) {
                if ( isConsole && SharedGui.IsGameRunning )
                   TextLicense.Text = "The game locks the console log.  Cannot read it when game is running.";
                else
                   TextLicense.Text = ex.ToString();
             }
-            CurrentLogTime = new FileInfo( file ).LastWriteTime;
+            CurrentLogTime = new FileInfo( CurrentLogFile ).LastWriteTime;
          }
          else CurrentLogTime = null;
       } catch ( Exception ex ) { Log( ex ); } }
 
+      private void TextLogFilter_TextChanged ( object sender, TextChangedEventArgs e ) => ShowLog( CurrentLog );
+
+      private static Regex Linebreaks = new Regex( "\\r?\\n(\\s*\\r?\\n)*", RegexOptions.Compiled );
+
+      private string ApplyLogFilter ( string log ) {
+         var filter = TextLogFilter.Text;
+         if ( string.IsNullOrWhiteSpace( filter ) ) return log;
+         return string.Join( "\r", Linebreaks.Split( log ).Where( e => e.IndexOf( filter, StringComparison.OrdinalIgnoreCase ) >= 0 ) );
+      }
+
       private void CheckLogRefresh () { this.Dispatch( () => {
-         var file = CurrentLog;
+         var file = CurrentLogFile;
          if ( file == null ) return;
          if ( ! File.Exists( file ) ) ShowLog( "gui" );
          if ( new FileInfo( file ).LastAccessTime > CurrentLogTime.GetValueOrDefault() )
