@@ -49,7 +49,13 @@ namespace Sheepy.Modnix.MainGUI {
 
       private static ModEntry Mod ( ModInfo mod ) => ( mod as GridModItem )?.Mod;
 
-      internal void AddErrorNotice ( ModInfo mod ) => Mod( mod ).AddNotice( TraceEventType.Warning, "runtime_error" );
+      internal void AddLoaderLogNotice ( ModInfo mod, bool isError ) {
+         var m = Mod( mod );
+         if ( isError )
+            m.AddNotice( TraceEventType.Warning, "runtime_error" );
+         else
+            m.AddNotice( TraceEventType.Information, "runtime_warning" );
+      }
       
       internal void DeleteMod ( ModInfo mod ) {
          string path = Path.GetDirectoryName( mod.Path );
@@ -189,7 +195,9 @@ namespace Sheepy.Modnix.MainGUI {
                case "disable"  :
                   txt.Text = string.Format( "\rDisabled by {0}", notice.Args[0]?.ToString() ); break;
                case "runtime_error" :
-                  txt.Text = "\rMod throws runtime error, may be not safe to use. See loader log for details."; break;
+                  txt.Text = "\rRuntime error detected on last run, may be not safe to use. See loader log for details."; break;
+               case "runtime_warning" :
+                  txt.Text = "\rRuntime warning detected on last run. See loader log for details."; break;
                default:
                   txt.Text = "\r" + notice.Message.ToString(); break;
             }

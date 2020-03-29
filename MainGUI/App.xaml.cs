@@ -558,8 +558,9 @@ namespace Sheepy.Modnix.MainGUI {
 
       private bool IsLoadingModList;
       private HashSet< string > ModWithError = new HashSet<string>();
+      private HashSet< string > ModWithWarning = new HashSet<string>();
       private DateTime LoaderLogLastModified;
-      private readonly Regex RegexModIdFromLine = new Regex( "(?>[\\d:\\.]+) EROR ([^┊]+)┊", RegexOptions.Compiled );
+      private readonly Regex RegexModCaptureLine = new Regex( "^(?>[\\d:\\.]+) (EROR|WARN) ([^┊]+)┊", RegexOptions.Compiled );
 
       public void GetModList () { try {
          lock ( ModWithError ) {
@@ -580,7 +581,8 @@ namespace Sheepy.Modnix.MainGUI {
                lock ( SynGetSet ) Log( "Adding warnings to mods with errors." );
                foreach ( var mod in list ) {
                   if ( ! mod.Is( ModQuery.ENABLED ) ) continue;
-                  if ( ModWithError.Contains( mod.Id ) ) ModBridge.AddErrorNotice( mod );
+                  if ( ModWithError.Contains( mod.Id ) ) ModBridge.AddLoaderLogNotice( mod, true );
+                  if ( ModWithWarning.Contains( mod.Id ) ) ModBridge.AddLoaderLogNotice( mod, false );
                }
             } }
             if ( list != null ) GUI.SetInfo( GuiInfo.MOD_LIST, list );
@@ -592,7 +594,10 @@ namespace Sheepy.Modnix.MainGUI {
       private void CheckLogForError () { try {
          var file = LoaderLog;
          if ( ! File.Exists( file ) ) {
-            lock ( ModWithError ) ModWithError.Clear();
+            lock ( ModWithError ) {
+               ModWithError.Clear();
+               ModWithWarning.Clear();
+            }
             return;
          }
          DateTime mTime = new FileInfo( file ).LastWriteTime;
@@ -600,15 +605,16 @@ namespace Sheepy.Modnix.MainGUI {
          Log( $"Pasing {file} for errors, last updated {mTime}." );
          using ( var reader = new StreamReader( file ) ) {
             string line;
-            char div = ModLoader.LOG_DIVIDER;
             while ( ( line = reader.ReadLine()?.Trim() ) != null ) {
                if ( line.Length == 0 ) continue;
-               if ( ! line.Contains( "Exception: " ) || ! line.Contains( " EROR " ) ) continue;
-               var match = RegexModIdFromLine.Match( line );
+               var match = RegexModCaptureLine.Match( line );
                if ( ! match.Success ) continue;
-               var id = match.Groups[ 1 ].Value;
-               Log( $"Error detected with {id}" );
-               ModWithError.Add( id );
+               string type = match.Groups[ 1 ].Value, id = match.Groups[ 2 ].Value;
+               Log( $"{type} detected with {id}" );
+               if ( type.Equals( "EROR" ) )
+                  ModWithError.Add( id );
+               else
+                  ModWithWarning.Add( id );
             }
          }
          lock ( ModWithError ) LoaderLogLastModified = mTime;
