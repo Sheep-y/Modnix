@@ -59,22 +59,21 @@ namespace Sheepy.Modnix {
       } );
 
       public object ModAPI ( string action, object param = null ) { try {
-         action = action?.Trim().ToLowerInvariant();
-         switch ( action ) {
-            case "assembly"    : return GetAssembly( param );
-            case "config"      : return LoadConfig( param );
-            case "config_save" : return SaveConfig( param );
-            case "log"         : CreateLogger().Log( param ); return true;
-            case "logger"      : return GetLogFunc( param );
-            case "mod_info"    : return new ModMeta().ImportFrom( GetMod( param )?.Metadata );
-            case "mod_list"    : return ListMods( param );
-            case "path"        : return GetPath( param );
-            case "reg_action"  : return RegisterAction( param );
-            case "reg_handler" : return RegisterHandler( param );
-            case "unreg_action": return UnregisterAction( param );
-            case "version"     : return GetVersion( param );
-         }
-         if ( ! string.IsNullOrEmpty( action ) ) {
+         if ( ! LowerAndIsEmpty( action, out action ) ) {
+            switch ( action ) {
+               case "assembly"    : return GetAssembly( param );
+               case "config"      : return LoadConfig( param );
+               case "config_save" : return SaveConfig( param );
+               case "log"         : CreateLogger().Log( param ); return true;
+               case "logger"      : return GetLogFunc( param );
+               case "mod_info"    : return new ModMeta().ImportFrom( GetMod( param )?.Metadata );
+               case "mod_list"    : return ListMods( param );
+               case "path"        : return GetPath( param );
+               case "reg_action"  : return RegisterAction( param );
+               case "reg_handler" : return RegisterHandler( param );
+               case "unreg_action": return UnregisterAction( param );
+               case "version"     : return GetVersion( param );
+            }
             Func<object,object> handler;
             lock ( ApiExtension ) ApiExtension.TryGetValue( action, out handler );
             if ( handler != null ) return handler( param );
@@ -83,16 +82,16 @@ namespace Sheepy.Modnix {
          return null;
       } catch ( Exception ex ) { Error( ex ); return null; } }
 
-      private static bool IsEmpty ( object param, out string text ) {
-         text = param?.ToString().Trim();
+      private static bool LowerAndIsEmpty ( object param, out string text ) {
+         text = param?.ToString().Trim().ToLowerInvariant();
          return string.IsNullOrWhiteSpace( text );
       }
 
       private static Assembly GameAssembly;
 
       private Assembly GetAssembly ( object target ) {
-         if ( IsEmpty( target, out string id ) ) return ModAssembly;
-         switch ( id?.ToLowerInvariant() ) {
+         if ( LowerAndIsEmpty( target, out string id ) ) return ModAssembly;
+         switch ( id ) {
             case "loader" : case "modnix" :
                return Assembly.GetExecutingAssembly();
             case "phoenixpoint" : case "phoenix point" : case "game" :
@@ -104,18 +103,18 @@ namespace Sheepy.Modnix {
       }
 
       private Version GetVersion ( object target ) {
-         if ( IsEmpty( target, out string id ) ) lock ( Metadata ) return Metadata.Version;
+         if ( LowerAndIsEmpty( target, out string id ) ) lock ( Metadata ) return Metadata.Version;
          return ModScanner.GetVersionById( id );
       }
 
       private ModEntry GetMod ( object target ) {
-         if ( IsEmpty( target, out string id ) ) return this;
+         if ( LowerAndIsEmpty( target, out string id ) ) return this;
          return ModScanner.GetModById( id );
       }
 
       private string GetPath ( object target ) {
-         if ( IsEmpty( target, out string id ) ) return Path;
-         switch ( id?.ToLowerInvariant() ) {
+         if ( LowerAndIsEmpty( target, out string id ) ) return Path;
+         switch ( id ) {
             case "mods_root" : return ModLoader.ModDirectory;
             case "phoenixpoint" : case "phoenix point" : case "game" :
                return Process.GetCurrentProcess().MainModule?.FileName;
@@ -136,12 +135,10 @@ namespace Sheepy.Modnix {
       private string RegAction;
 
       private object RegisterAction ( object param ) {
-         if ( IsEmpty( param, out string cmd ) ) return false;
          lock ( ApiExtension ) {
-            RegAction = cmd.ToLowerInvariant();
-            if ( NativeCommand.Contains( RegAction ) || ApiExtension.ContainsKey( RegAction ) ) return false;
+            if ( LowerAndIsEmpty( param, out RegAction ) ) return false;
+            return ! NativeCommand.Contains( RegAction ) && ! ApiExtension.ContainsKey( RegAction );
          }
-         return true;
       }
 
       private object RegisterHandler ( object param ) { try {
@@ -166,8 +163,7 @@ namespace Sheepy.Modnix {
       } }
 
       private object UnregisterAction ( object param ) {
-         if ( IsEmpty( param, out string cmd ) ) return false;
-         cmd = cmd.ToLowerInvariant();
+         if ( LowerAndIsEmpty( param, out string cmd ) ) return false;
          ModEntry owner;
 
          lock ( ApiExtension ) ApiExtOwner.TryGetValue( cmd, out owner );

@@ -13,6 +13,7 @@ Modnix Changelog
 * Fix: Mod api log action will return true when successfully added to queue.
 * Fix: Unknown mod api action will trigger a warning.
 * Mod: New api action "assembly", "config_save", "reg_action", "reg_handler", "unreg_action".
+* Mod: Mod api actions are now case-insensitive, including registered extensions.
 * Mod: Multiple dll declaration no longer allowed in order to keep things simple.
 
 # Version 1.0, 2020-03-23

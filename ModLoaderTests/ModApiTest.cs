@@ -75,24 +75,24 @@ namespace Sheepy.Modnix.Tests {
       }
 
       [TestMethod()] public void ModExtTest () {
-         Assert.AreEqual( false, ModA.ModAPI( "reg_action", null ), "null action" );
-         Assert.AreEqual( false, ModA.ModAPI( "reg_action", ""   ), "empty action" );
-         Assert.AreEqual( false, ModA.ModAPI( "reg_action", " "  ), "blank action" );
+         Assert.AreEqual( false, ModA.ModAPI( "reg_action" , null ), "null action" );
+         Assert.AreEqual( false, ModA.ModAPI( "reg_action" , ""   ), "empty action" );
+         Assert.AreEqual( false, ModA.ModAPI( "reg_action" , " "  ), "blank action" );
          Assert.AreEqual( false, ModA.ModAPI( "reg_handler", "mod_info"  ), "reg_action mod_info" );
-         Assert.AreEqual( false, ModA.ModAPI( "reg_action", "mod_info"  ), "reg_action mod_info" );
+         Assert.AreEqual( false, ModA.ModAPI( "reg_action" , "mod_info"  ), "reg_action mod_info" );
          Assert.AreEqual( false, ModA.ModAPI( "unreg_action", "A" ), "unreg_action A (0)" );
 
          Assert.AreEqual( true, ModA.ModAPI( "reg_action" , "A" ), "reg_action A" );
          Assert.AreEqual( true, ModA.ModAPI( "reg_handler", (Func<object,string>) A_Ext ), "reg_handler A" );
-         Assert.AreEqual( "BA", ModB.ModAPI( "A", "B" ), "call api A" );
+         Assert.AreEqual( "BA", ModB.ModAPI( "a", "B" ), "call api A" );
          Assert.AreEqual( false, ModA.ModAPI( "reg_handler", (Func<object,string>) A_Ext ), "reg_handler A (2)" );
 
          Assert.AreEqual( false, ModB.ModAPI( "reg_action", "A" ), "reg_action A (2)" );
          Assert.AreEqual( false, ModB.ModAPI( "reg_handler", (Func<object,string>) A_Ext ), "reg_handler A (3)" );
          Assert.AreEqual( false, ModB.ModAPI( "unreg_action", "A" ), "unreg_action A (1)" );
 
-         Assert.AreEqual( true, ModA.ModAPI( "unreg_action", "A" ), "unreg_action A (2)" );
-         Assert.AreEqual( true, ModB.ModAPI( "reg_action", "A" ), "reg_action A (4)" );
+         Assert.AreEqual( true, ModA.ModAPI( "unreg_action", "a" ), "unreg_action A (2)" );
+         Assert.AreEqual( true, ModB.ModAPI( "reg_action", "A" ), "reg_action A (3)" );
          Assert.IsNull( ModB.ModAPI( "A", "B" ), "call api A (2)" );
       }
 
