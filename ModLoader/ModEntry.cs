@@ -36,6 +36,8 @@ namespace Sheepy.Modnix {
    public class ModEntry : ModSettings {
       public readonly string Path;
       public readonly ModMeta Metadata;
+      public ModEntry Parent;
+      public List<ModEntry> Children;
 
       public ModEntry ( ModMeta meta ) : this( null, meta ) { }
       public ModEntry ( string path, ModMeta meta ) {
@@ -43,6 +45,13 @@ namespace Sheepy.Modnix {
          Metadata = meta ?? throw new ArgumentNullException( nameof( meta ) );
       }
 
+      internal string Key { get { lock ( Metadata ) { return ModScanner.NormaliseModId( Metadata.Id ); } } }
+      internal DateTime? LastModified => Path == null ? (DateTime?) null : new FileInfo( Path ).LastWriteTime;
+      internal Assembly ModAssembly;
+
+      public long GetPriority () { lock ( Metadata ) { return Priority ?? Metadata.Priority; } }
+
+      #region API
       public object ModAPI ( string action, object param = null ) { try {
          switch ( action ) {
             case "assembly"    : return GetAssembly( param );
@@ -127,6 +136,10 @@ namespace Sheepy.Modnix {
             lock ( Metadata ) Metadata.ConfigText = str;
          } );
       } catch ( Exception e ) { Error( e ); return null; } }
+      #endregion
+
+      #region Logger
+      internal LoggerProxy Logger; // Created when and only when an initialiser accepts a logging function
 
       private Logger CreateLogger () {
          lock ( this ) {
@@ -155,16 +168,9 @@ namespace Sheepy.Modnix {
       }
 
       internal void Error ( object err ) => CreateLogger().Error( err );
+      #endregion
 
-      internal DateTime? LastModified => Path == null ? (DateTime?) null : new FileInfo( Path ).LastWriteTime;
-      internal LoggerProxy Logger; // Created when and only when an initialiser accepts a logging function
-      internal Assembly ModAssembly;
-      internal string Key { get { lock ( Metadata ) { return ModScanner.NormaliseModId( Metadata.Id ); } } }
-
-      public ModEntry Parent;
-      public List<ModEntry> Children;
-      private List<LogEntry> Notices;
-
+      #region Config
       public bool HasConfig { get { lock ( Metadata ) {
          return Metadata.DefaultConfig != null || Metadata.ConfigText != null || CheckConfigFile() != null;
       } } }
@@ -214,15 +220,16 @@ namespace Sheepy.Modnix {
          CreateLogger().Info( $"Writing {str.Length} chars to {path}" );
          File.WriteAllText( path, str, Encoding.UTF8 );
       } catch ( Exception ex ) { CreateLogger().Error( ex ); } }
+      #endregion
 
-      public long GetPriority () { lock ( Metadata ) { return Priority ?? Metadata.Priority; } }
+      private List<LogEntry> Notices;
+
+      public IEnumerable<LogEntry> GetNotices () => Notices == null ? Enumerable.Empty<LogEntry>() : Notices;
 
       public void AddNotice ( TraceEventType lv, string reason, params object[] augs ) { lock ( Metadata ) {
          if ( Notices == null ) Notices = new List<LogEntry>();
          Notices.Add( new LogEntry{ Level = lv, Message = reason, Args = augs } );
       } }
-
-      public IEnumerable<LogEntry> GetNotices () => Notices == null ? Enumerable.Empty<LogEntry>() : Notices;
 
       public override string ToString () { lock ( Metadata ) {
          var txt = "Mod " + Metadata.Name;
