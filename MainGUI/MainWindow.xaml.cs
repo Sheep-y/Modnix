@@ -596,7 +596,7 @@ namespace Sheepy.Modnix.MainGUI {
          ButtonChangeLog.IsChecked = isChange;
          ButtonLicense.IsChecked = isLicense;
          if ( isGui ) TextLicense.Text = "";
-         else if ( isChange  ) TextLicense.Text = ApplyLogFilter( ModMetaJson.ReadAsText( AppControl.GetResource( "change_log.md" ) ) );
+         else if ( isChange  ) TextLicense.Text = ApplyLogFilter( ModMetaJson.ReadAsText( AppControl.GetResource( "Changelog.md" ) ) );
          else if ( isLicense ) TextLicense.Text = ApplyLogFilter( ModMetaJson.ReadAsText( AppControl.GetResource( "License.txt" ) ) );
          else if ( isLoader || isConsole ) {
             try {
