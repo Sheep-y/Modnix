@@ -52,20 +52,12 @@ namespace Sheepy.Modnix.Tests {
          Assert.AreEqual( null, ModA.ModAPI( "path", "test.c" ), "test.c" );
       }
 
-      [TestMethod()] public void ModTest () {
-         Assert.AreEqual( ModA, ModA.ModAPI( "mod", null ), "A null" );
-         Assert.AreEqual( ModA, ModA.ModAPI( "mod", "" ), "A empty" );
-         Assert.AreEqual( ModA, ModA.ModAPI( "mod", " " ), "A blank" );
-         Assert.AreEqual( ModB, ModA.ModAPI( "mod", "Test.B" ), "Test.B" );
-         Assert.AreEqual( ModC, ModA.ModAPI( "mod", "test.c" ), "test.c" );
-      }
-
       [TestMethod()] public void ModInfoTest () {
-         Assert.AreEqual( ModA.Metadata, ModA.ModAPI( "mod_info", null ), "A null" );
-         Assert.AreEqual( ModA.Metadata, ModA.ModAPI( "mod_info", "" ), "A empty" );
-         Assert.AreEqual( ModA.Metadata, ModA.ModAPI( "mod_info", " " ), "A blank" );
-         Assert.AreEqual( ModB.Metadata, ModA.ModAPI( "mod_info", "Test.B" ), "Test.B" );
-         Assert.AreEqual( ModC.Metadata, ModA.ModAPI( "mod_info", "test.c" ), "test.c" );
+         Assert.AreEqual( ModA.Metadata.Id, ( ModA.ModAPI( "mod_info", null ) as ModMeta ).Id, "A null" );
+         Assert.AreEqual( ModA.Metadata.Id, ( ModA.ModAPI( "mod_info", "" ) as ModMeta ).Id, "A empty" );
+         Assert.AreEqual( ModA.Metadata.Id, ( ModA.ModAPI( "mod_info", " " ) as ModMeta ).Id, "A blank" );
+         Assert.AreEqual( ModB.Metadata.Id, ( ModA.ModAPI( "mod_info", "Test.B" ) as ModMeta ).Id, "Test.B" );
+         Assert.AreEqual( ModC.Metadata.Id, ( ModA.ModAPI( "mod_info", "test.c" ) as ModMeta ).Id, "test.c" );
       }
 
       [TestMethod()] public void ModListTest () {
@@ -81,5 +73,23 @@ namespace Sheepy.Modnix.Tests {
          list = (IEnumerable<string>) ModA.ModAPI( "mod_list", "none" );
          Assert.AreEqual( 0, list.Count(), "empty list count" );
       }
+
+      [TestMethod()] public void ModExtTest () {
+         Assert.AreEqual( false, ModA.ModAPI( "reg_action", null ), "null action" );
+         Assert.AreEqual( false, ModA.ModAPI( "reg_action", ""   ), "empty action" );
+         Assert.AreEqual( false, ModA.ModAPI( "reg_action", " "  ), "blank action" );
+         Assert.AreEqual( false, ModA.ModAPI( "reg_handler", "mod_info"  ), "reg_action mod_info" );
+         Assert.AreEqual( false, ModA.ModAPI( "reg_action", "mod_info"  ), "reg_action mod_info" );
+
+         Assert.AreEqual( true, ModA.ModAPI( "reg_action" , "A" ), "reg_action A" );
+         Assert.AreEqual( true, ModA.ModAPI( "reg_handler", (Func<object,string>) A_Ext ), "reg_handler A" );
+         Assert.AreEqual( "BA", ModB.ModAPI( "A", "B" ), "call api A" );
+         Assert.AreEqual( false, ModA.ModAPI( "reg_handler", (Func<object,string>) A_Ext ), "reg_handler A (2)" );
+
+         Assert.AreEqual( false, ModB.ModAPI( "reg_action", "A" ), "reg_action A (2)" );
+         Assert.AreEqual( false, ModB.ModAPI( "reg_handler", (Func<object,string>) A_Ext ), "reg_handler A (3)" );
+      }
+
+      private static string A_Ext ( object e ) => e.ToString() + "A";
    }
 }

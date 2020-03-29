@@ -52,7 +52,13 @@ namespace Sheepy.Modnix {
       public long GetPriority () { lock ( Metadata ) { return Priority ?? Metadata.Priority; } }
 
       #region API
+      private static readonly Dictionary<string,Func<object,object>> ApiExtension = new Dictionary<string, Func<object, object>>();
+      private static readonly HashSet<string> NativeCommand = new HashSet<string>( new string[]{
+         "assembly", "config", "config_save", "mod_info", "mod_list", "path", "log", "logger", "reg_action", "reg_handler", "version"
+      } );
+
       public object ModAPI ( string action, object param = null ) { try {
+         action = action?.Trim().ToLowerInvariant();
          switch ( action ) {
             case "assembly"    : return GetAssembly( param );
             case "config"      : return LoadConfig( param );
@@ -60,24 +66,36 @@ namespace Sheepy.Modnix {
             case "mod_info"    : return new ModMeta().ImportFrom( GetMod( param )?.Metadata );
             case "mod_list"    : return ListMods( param );
             case "path"        : return GetPath( param );
+            case "reg_action"  : return RegisterAction( param );
+            case "reg_handler" : return RegisterHandler( param );
             case "log"         : CreateLogger().Log( param ); return true;
             case "logger"      : return GetLogFunc( param );
             case "version"     : return GetVersion( param );
          }
-         CreateLogger().Warn( "Unknown api action {0}", action );
+         if ( ! string.IsNullOrEmpty( action ) ) {
+            bool extension;
+            Func<object,object> handler;
+            lock ( ApiExtension ) extension = ApiExtension.TryGetValue( action, out handler );
+            if ( extension ) return handler( param );
+         }
+         CreateLogger().Warn( "Unknown api action '{0}'", action );
          return null;
-      } catch ( Exception ex ) { ModLoader.Log.Error( ex ); return null; } }
+      } catch ( Exception ex ) { Error( ex ); return null; } }
+
+      private static bool IsEmpty ( object param, out string text ) {
+         text = param?.ToString().Trim();
+         return string.IsNullOrWhiteSpace( text );
+      }
 
       private static Assembly GameAssembly;
 
       private Assembly GetAssembly ( object target ) {
-         var id = target?.ToString();
-         if ( string.IsNullOrWhiteSpace( id ) ) return ModAssembly;
-         switch ( id ) {
+         if ( IsEmpty( target, out string id ) ) return ModAssembly;
+         switch ( id?.ToLowerInvariant() ) {
             case "loader" : case "modnix" :
                return Assembly.GetExecutingAssembly();
             case "phoenixpoint" : case "phoenix point" : case "game" :
-               if ( GameAssembly == null )
+               if ( GameAssembly == null ) // No need to lock. No conflict.
                   GameAssembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault( e => e.FullName.StartsWith( "Assembly-CSharp," ) );
                return GameAssembly;
          }
@@ -85,21 +103,18 @@ namespace Sheepy.Modnix {
       }
 
       private Version GetVersion ( object target ) {
-         var id = target?.ToString();
-         if ( string.IsNullOrWhiteSpace( id ) ) lock ( Metadata ) return Metadata.Version;
+         if ( IsEmpty( target, out string id ) ) lock ( Metadata ) return Metadata.Version;
          return ModScanner.GetVersionById( id );
       }
 
       private ModEntry GetMod ( object target ) {
-         var id = target?.ToString();
-         if ( string.IsNullOrWhiteSpace( id ) ) return this;
+         if ( IsEmpty( target, out string id ) ) return this;
          return ModScanner.GetModById( id );
       }
 
       private string GetPath ( object target ) {
-         var id = target?.ToString();
-         if ( string.IsNullOrWhiteSpace( id ) ) return Path;
-         switch ( id ) {
+         if ( IsEmpty( target, out string id ) ) return Path;
+         switch ( id?.ToLowerInvariant() ) {
             case "mods_root" : return ModLoader.ModDirectory;
             case "phoenixpoint" : case "phoenix point" : case "game" :
                return Process.GetCurrentProcess().MainModule?.FileName;
@@ -114,28 +129,39 @@ namespace Sheepy.Modnix {
          if ( target is Regex reg ) return list.Where( e => reg.IsMatch( e ) );
          return null;
       }
+      #endregion
 
-      private object LoadConfig ( object param ) { try {
-         if ( param == null ) param = typeof( JObject );
-         string txt = GetConfigText();
-         if ( param is Type type ) {
-            if ( type == typeof( string ) )
-               return txt;
-            return JsonConvert.DeserializeObject( txt, type, ModMetaJson.JsonOptions );
+      #region API Extension
+      private string RegAction;
+
+      private object RegisterAction ( object param ) {
+         if ( IsEmpty( param, out string cmd ) ) return false;
+         lock ( ApiExtension ) {
+            RegAction = cmd.ToLowerInvariant();
+            if ( NativeCommand.Contains( RegAction ) || ApiExtension.ContainsKey( RegAction ) ) return false;
          }
-         JsonConvert.PopulateObject( txt, param, ModMetaJson.JsonOptions );
-         return param;
-      } catch ( Exception e ) { Error( e ); return null; } }
+         return true;
+      }
 
-      private Task SaveConfig ( object param ) { try {
-         if ( param == null ) return null;
-         return Task.Run( () => {
-            if ( ! ( param is string str ) )
-               str = JsonConvert.SerializeObject( param, Formatting.Indented, ModMetaJson.JsonOptions );
-            File.WriteAllText( GetConfigFile(), str, Encoding.UTF8 );
-            lock ( Metadata ) Metadata.ConfigText = str;
-         } );
-      } catch ( Exception e ) { Error( e ); return null; } }
+      private object RegisterHandler ( object param ) { try {
+         string cmd;
+         lock ( ApiExtension ) cmd = RegAction;
+         if ( cmd == null )
+            throw new ApplicationException( "reg_handler without reg_action" );
+         if ( ! ( param is Func<object,object> func ) )
+            throw new ApplicationException( "reg_handler must be Func < object, object >" );
+         lock ( ApiExtension ) {
+            if ( NativeCommand.Contains( cmd ) || ApiExtension.ContainsKey( cmd ) )
+               throw new ApplicationException( "Cannot re-register api action " + cmd );
+            ApiExtension.Add( cmd, func );
+            RegAction = null;
+         }
+         CreateLogger().Info( "Registered api action {0}", cmd );
+         return true;
+      } catch ( ApplicationException ex ) {
+         CreateLogger().Warn( ex.Message );
+         return false;
+      } }
       #endregion
 
       #region Logger
@@ -171,11 +197,32 @@ namespace Sheepy.Modnix {
       #endregion
 
       #region Config
+      private object LoadConfig ( object param ) { try {
+         if ( param == null ) param = typeof( JObject );
+         string txt = GetConfigText();
+         if ( param is Type type ) {
+            if ( type == typeof( string ) )
+               return txt;
+            return JsonConvert.DeserializeObject( txt, type, ModMetaJson.JsonOptions );
+         }
+         JsonConvert.PopulateObject( txt, param, ModMetaJson.JsonOptions );
+         return param;
+      } catch ( Exception e ) { Error( e ); return null; } }
+
+      private Task SaveConfig ( object param ) { try {
+         if ( param == null ) return null;
+         return Task.Run( () => {
+            if ( ! ( param is string str ) )
+               str = JsonConvert.SerializeObject( param, Formatting.Indented, ModMetaJson.JsonOptions );
+            File.WriteAllText( GetConfigFile(), str, Encoding.UTF8 );
+            lock ( Metadata ) Metadata.ConfigText = str;
+         } );
+      } catch ( Exception e ) { Error( e ); return null; } }
+
       public bool HasConfig { get { lock ( Metadata ) {
          return Metadata.DefaultConfig != null || Metadata.ConfigText != null || CheckConfigFile() != null;
       } } }
 
-      
       public string GetConfigFile () { try {
          if ( Path == null ) return null;
          var name = System.IO.Path.GetFileNameWithoutExtension( Path );
