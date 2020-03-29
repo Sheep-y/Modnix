@@ -617,6 +617,7 @@ namespace Sheepy.Modnix.MainGUI {
                   ModWithWarning.Add( id );
             }
          }
+         ModWithWarning.RemoveWhere( ModWithError.Contains );
          lock ( ModWithError ) LoaderLogLastModified = mTime;
       } catch ( SystemException ex ) { Log( ex ); } }
 

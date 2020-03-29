@@ -195,9 +195,9 @@ namespace Sheepy.Modnix.MainGUI {
                case "disable"  :
                   txt.Text = string.Format( "\rDisabled by {0}", notice.Args[0]?.ToString() ); break;
                case "runtime_error" :
-                  txt.Text = "\rRuntime error detected on last run, may be not safe to use. See loader log for details."; break;
+                  txt.Text = "\rRuntime error(s) detected on last run, may be not safe to use."; break;
                case "runtime_warning" :
-                  txt.Text = "\rRuntime warning detected on last run. See loader log for details."; break;
+                  txt.Text = "\rRuntime warning(s) detected on last run."; break;
                default:
                   txt.Text = "\r" + notice.Message.ToString(); break;
             }
@@ -206,9 +206,9 @@ namespace Sheepy.Modnix.MainGUI {
                case TraceEventType.Error    :
                   txt.Foreground = Brushes.Red; break;
                case TraceEventType.Warning  :
-                  txt.Foreground = Brushes.SaddleBrown; break;
+                  txt.Foreground = Brushes.OrangeRed; break;
                default :
-                  txt.Foreground = Brushes.Blue; break;
+                  txt.Foreground = Brushes.DarkBlue; break;
             }
             list.Add( txt );
          }
