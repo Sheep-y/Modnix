@@ -132,7 +132,15 @@ namespace Sheepy.Modnix.MainGUI {
          }
       } }
 
-      public override void BuildDesc ( FlowDocument doc ) { lock ( Mod ) {
+      public override void BuildDocument ( ModDoc type, FlowDocument doc ) {
+         switch ( type ) {
+            case ModDoc.SUMMARY : BuildSummary( doc ); return;
+            case ModDoc.INFO : BuildDesc( doc ); return;
+         }
+         doc.Replace( new Paragraph( new Run( $"Unknown doc type {type}" ) ) );
+      }
+
+      private void BuildDesc ( FlowDocument doc ) { lock ( Mod ) {
          doc.Replace(
             BuildBlock( BuildBasicDesc ),
             BuildBlock( BuildProvidedDesc ),
@@ -143,7 +151,7 @@ namespace Sheepy.Modnix.MainGUI {
          );
       } }
 
-      public override void BuildSummary ( FlowDocument doc ) { lock ( Mod ) {
+      private void BuildSummary ( FlowDocument doc ) { lock ( Mod ) {
          var body = doc.Blocks.FirstBlock as Paragraph;
          if ( body == null ) return;
          var name = new Run( Mod.Metadata.Name.ToString( "en" ) );

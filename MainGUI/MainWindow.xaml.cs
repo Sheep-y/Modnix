@@ -387,27 +387,30 @@ namespace Sheepy.Modnix.MainGUI {
             Log( "Clearing mod info" );
             RichModInfo.TextRange().Text = "";
             BkgdModeInfo.Opacity = 0.5;
+            HideModTabs();
             return;
          }
          Log( $"Refreshing mod {CurrentMod}" );
          BkgdModeInfo.Opacity = 0.03;
-         CurrentMod.BuildDesc( RichModInfo.Document );
+         CurrentMod.BuildDocument( ModDoc.INFO, RichModInfo.Document );
       } catch ( Exception ex ) { Log( ex ); } }
+
+      private void HideModTabs () => TabModConfig.Visibility = TabModReadme.Visibility = TabModChange.Visibility = TabModLicense.Visibility = Visibility.Collapsed;
 
       private void BuildMultiModInfo () { try {
          var doc = RichModInfo.Document;
          var body = new Paragraph();
          doc.Replace( body );
          foreach ( var mod in SelectedMods )
-            mod.BuildSummary( doc );
+            mod.BuildDocument( ModDoc.SUMMARY, doc );
          body.Inlines.Add( $"\rTotal {GridModList.SelectedItems.Count} mods" );
       } catch ( Exception ex ) { Log( ex ); } }
 
-      private void TabModInfo_SelectionChanged ( object sender, SelectionChangedEventArgs e ) {
-         foreach ( var tab in TabModInfo.Items )
+      private void TabSetModInfo_SelectionChanged ( object sender, SelectionChangedEventArgs e ) {
+         foreach ( var tab in TabSetModInfo.Items )
             if ( tab is TabItem t )
                t.Content = null;
-         ( TabModInfo.SelectedItem as TabItem ).Content = RichModInfo;
+         ( TabSetModInfo.SelectedItem as TabItem ).Content = RichModInfo;
       }
 
       private void ButtonModOpenModDir_Click ( object sender, RoutedEventArgs evt ) {
