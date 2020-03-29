@@ -21,8 +21,8 @@ namespace Sheepy.Modnix {
       public DateTime? LastCheckUpdate = null;
       public string UpdateChannel = "release";
       public string GamePath = null;
-      public bool MinimiseLoaderPanel = false;
-      public bool MinimiseGamePanel = true;
+      public bool MinifyLoaderPanel = false;
+      public bool MinifyGamePanel = true;
       // For mod loader, set by manager
       public Dictionary< string, ModSettings > Mods;
    }

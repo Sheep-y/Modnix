@@ -2,6 +2,7 @@ Modnix Changelog
 
 # Version 1.1
 
+* New: Status panels and their buttons may now be minified to give more space to mod info.
 * New: See console log and changelog in Modnix.
 * New: Loader log now auto-refresh, same for new console log.
 * New: Loader log now can be filtered, same for new console log.

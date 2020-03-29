@@ -18,8 +18,8 @@
             <DockPanel Margin="0,0,5,0">
                <StackPanel DockPanel.Dock="Top" VerticalAlignment="Top">
                   <DockPanel>
-                     <Button x:Name="ButtonHideLoader" DockPanel.Dock="Right" Content="—" Height="20" VerticalAlignment="Bottom" Margin="0,0,0,5" Width="20" TabIndex="150" Click="ButtonHideLoader_Click" />
-                     <RichTextBox x:Name="RichAppInfo" Height="33" IsReadOnly="True" BorderBrush="{x:Null}" Margin="0,0,0,5" IsTabStop="False" TabIndex="100">
+                     <Button x:Name="ButtonMinifyLoader" DockPanel.Dock="Right" Content="—" Height="20" VerticalAlignment="Bottom" Margin="0,0,0,5" Width="20" TabIndex="150" Click="ButtonHideLoader_Click" />
+                     <RichTextBox x:Name="RichAppInfo" IsReadOnly="True" BorderBrush="{x:Null}" Margin="0,0,0,5" IsTabStop="False" TabIndex="100">
                         <FlowDocument PagePadding="0">
                            <Paragraph>
                               <Run Text="Modnix Manager&#x9;Ver 1.0&#xA;Status: Requires Setup"/>
@@ -27,7 +27,7 @@
                         </FlowDocument>
                      </RichTextBox>
                   </DockPanel>
-                  <Grid AutomationProperties.AcceleratorKey="D">
+                  <Grid>
                      <Grid.ColumnDefinitions>
                         <ColumnDefinition/>
                         <ColumnDefinition Width="5"/>
@@ -41,7 +41,7 @@
                            <AccessText x:Name="BtnTxtSetup" Text="Setup"/>
                         </StackPanel>
                      </Button>
-                     <Button x:Name="ButtonGitHub" Padding="5" Grid.Column="2" Click="ButtonGitHub_Click" Visibility="Hidden">
+                     <Button x:Name="ButtonGitHub" Padding="5" Grid.Column="2" Click="ButtonGitHub_Click" Visibility="Collapsed">
                         <AccessText Text="GitHub"/>
                      </Button>
                      <Button x:Name="ButtonUserGuide" Padding="5" Grid.Column="2" Click="ButtonUserGuide_Click" TabIndex="200">
@@ -58,8 +58,8 @@
                      </Button>
                   </Grid>
                   <DockPanel>
-                     <Button x:Name="ButtonHideGame" DockPanel.Dock="Right" Content="—" Height="20" VerticalAlignment="Bottom" Margin="0,0,0,5" Width="20" TabIndex="150" Click="ButtonHideGame_Click" />
-                     <RichTextBox x:Name="RichGameInfo" Height="33" IsReadOnly="True" BorderBrush="{x:Null}" Margin="0,10,0,5" IsTabStop="False" TabIndex="300">
+                     <Button x:Name="ButtonMinifyGame" DockPanel.Dock="Right" Content="—" Height="20" VerticalAlignment="Bottom" Margin="0,0,0,5" Width="20" TabIndex="350" Click="ButtonHideGame_Click" />
+                     <RichTextBox x:Name="RichGameInfo" IsReadOnly="True" BorderBrush="{x:Null}" Margin="0,10,0,5" IsTabStop="False" TabIndex="300">
                         <FlowDocument PagePadding="0">
                            <Paragraph>
                               <Run Text="Phoenix Point&#xA;Ver 1.0"/>

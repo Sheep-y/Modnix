@@ -96,16 +96,16 @@ namespace Sheepy.Modnix.MainGUI {
          Log( "Refreshing app buttons, " + ( SharedGui.CanModify ? "can mod" : "cannot mod" ) );
          ButtonSetup.IsEnabled = ! SharedGui.IsAppWorking && SharedGui.AppState != null;
          ButtonSetup.Visibility = ButtonUserGuide.Visibility = ButtonWiki.Visibility =
-            App.Settings.MinimiseLoaderPanel ? Visibility.Collapsed : Visibility.Visible;
-         ButtonHideGame.Content = App.Settings.MinimiseLoaderPanel ? "＋" : "—";
+            App.Settings.MinifyLoaderPanel ? Visibility.Collapsed : Visibility.Visible;
+         ButtonMinifyLoader.Content = App.Settings.MinifyLoaderPanel ? "＋" : "—";
 
          ButtonRunOnline.IsEnabled  = ButtonRunOffline.IsEnabled  = SharedGui.CanModify && SharedGui.IsGameFound;
          ButtonRunOnline.Foreground = ButtonRunOffline.Foreground = 
             ButtonRunOnline.IsEnabled && SharedGui.AppState != null && ! SharedGui.IsInjected ? Brushes.Red : Brushes.Black;
          ButtonWebsite.Visibility = ButtonForum.Visibility = ButtonReddit.Visibility =
             ButtonTwitter.Visibility = ButtonCanny.Visibility = ButtonDiscord.Visibility =
-            App.Settings.MinimiseGamePanel ? Visibility.Collapsed : Visibility.Visible;
-         ButtonHideGame.Content = App.Settings.MinimiseGamePanel ? "＋" : "—";
+            App.Settings.MinifyGamePanel ? Visibility.Collapsed : Visibility.Visible;
+         ButtonMinifyGame.Content = App.Settings.MinifyGamePanel ? "＋" : "—";
 
          ButtonAddMod.IsEnabled = SharedGui.CanModify && Directory.Exists( App.ModFolder );
          ButtonModDir.IsEnabled = Directory.Exists( App.ModFolder );
@@ -163,7 +163,7 @@ namespace Sheepy.Modnix.MainGUI {
          var state = new Run( txt );
          if ( SharedGui.AppState != "modnix" ) state.Foreground = Brushes.Red;
          var p = new Paragraph();
-         if ( ! App.Settings.MinimiseLoaderPanel ) {
+         if ( ! App.Settings.MinifyLoaderPanel ) {
             p.Inlines.Add( new Bold( new Run( AppControl.LIVE_NAME ) ) );
             p.Inlines.Add( $"\tVer {SharedGui.AppVer}\r" );
          }
@@ -174,7 +174,7 @@ namespace Sheepy.Modnix.MainGUI {
       } catch ( Exception ex ) { Log( ex ); } }
 
       private void ButtonHideLoader_Click ( object sender, RoutedEventArgs e ) {
-         App.Settings.MinimiseLoaderPanel = ! App.Settings.MinimiseLoaderPanel;
+         App.Settings.MinifyLoaderPanel = ! App.Settings.MinifyLoaderPanel;
          RefreshAppInfo();
          RefreshAppButtons();
       }
@@ -245,7 +245,7 @@ namespace Sheepy.Modnix.MainGUI {
          if ( SharedGui.IsGameFound ) {
             if ( SharedGui.GameVer != null )
                p.Inlines.Add( $"\tVer {SharedGui.GameVer}" );
-            if ( ! App.Settings.MinimiseGamePanel )
+            if ( ! App.Settings.MinifyGamePanel )
                p.Inlines.Add( "\r" + Path.GetFullPath( SharedGui.GamePath ) );
          } else
             p.Inlines.Add( new Run( "\rGame not found" ){ Foreground = Brushes.Red } );
@@ -253,8 +253,8 @@ namespace Sheepy.Modnix.MainGUI {
       } catch ( Exception ex ) { Log( ex ); } }
 
       private void ButtonHideGame_Click ( object sender, RoutedEventArgs e ) {
-         App.Settings.MinimiseGamePanel = ! App.Settings.MinimiseGamePanel;
-         RefreshAppInfo();
+         App.Settings.MinifyGamePanel = ! App.Settings.MinifyGamePanel;
+         RefreshGameInfo();
          RefreshAppButtons();
       }
 
