@@ -10,6 +10,7 @@ using static System.StringComparison;
 namespace Sheepy.Modnix.MainGUI {
 
    internal abstract class ModInfo {
+      public abstract string Id { get; }
       public abstract string Name { get; }
       public abstract string Version { get; }
       public abstract string Author { get; }

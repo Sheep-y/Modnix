@@ -49,6 +49,8 @@ namespace Sheepy.Modnix.MainGUI {
 
       private static ModEntry Mod ( ModInfo mod ) => ( mod as GridModItem )?.Mod;
 
+      internal void AddErrorNotice ( ModInfo mod ) => Mod( mod ).AddNotice( TraceEventType.Warning, "runtime_error" );
+      
       internal void DeleteMod ( ModInfo mod ) {
          string path = Path.GetDirectoryName( mod.Path );
          if ( path == ModLoader.ModDirectory ) {
@@ -99,6 +101,7 @@ namespace Sheepy.Modnix.MainGUI {
    internal class GridModItem : ModInfo {
       internal readonly ModEntry Mod;
       internal GridModItem ( ModEntry mod ) => Mod = mod ?? throw new ArgumentNullException( nameof( mod ) );
+      public override string Id => Mod.Metadata.Id;
       public override string Name => Mod.Metadata.Name?.ToString( "en" );
       public override string Version => Mod.Metadata.Version?.ToString();
       public override string Author => Mod.Metadata.Author?.ToString( "en" );
@@ -176,30 +179,30 @@ namespace Sheepy.Modnix.MainGUI {
             case "dlc"     : list.Add( "\rMod claims to not affect existing campaigns." ); break;
             case "perm"    : list.Add( "\rSaves made with this mod on may become dependent on this mod." ); break;
          }
-         if ( Mod.Notices != null ) {
-            foreach ( var notice in Mod.Notices ) {
-               var txt = new Run();
-               switch ( notice.Message ) {
-                  case "duplicate" :
-                     txt.Text = string.Format( "\rDisabled: Using {0}", notice.Args[0]?.ToString() ); break;
-                  case "require"  :
-                     txt.Text = string.Format( "\rDisabled: Missing requirement {0}", notice.Args[0]?.ToString() ); break;
-                  case "disable"  :
-                     txt.Text = string.Format( "\rDisabled by {0}", notice.Args[0]?.ToString() ); break;
-                  default:
-                     txt.Text = "\r" + notice.Message.ToString(); break;
-               }
-               switch ( notice.Level ) {
-                  case TraceEventType.Critical :
-                  case TraceEventType.Error    :
-                     txt.Foreground = Brushes.Red; break;
-                  case TraceEventType.Warning  :
-                     txt.Foreground = Brushes.Orange; break;
-                  default :
-                     txt.Foreground = Brushes.Blue; break;
-               }
-               list.Add( txt );
+         foreach ( var notice in Mod.GetNotices() ) {
+            var txt = new Run();
+            switch ( notice.Message ) {
+               case "duplicate" :
+                  txt.Text = string.Format( "\rDisabled: Using {0}", notice.Args[0]?.ToString() ); break;
+               case "require"  :
+                  txt.Text = string.Format( "\rDisabled: Missing requirement {0}", notice.Args[0]?.ToString() ); break;
+               case "disable"  :
+                  txt.Text = string.Format( "\rDisabled by {0}", notice.Args[0]?.ToString() ); break;
+               case "runtime_error" :
+                  txt.Text = "\rMod throws runtime error, may be not safe to use. See loader log for details."; break;
+               default:
+                  txt.Text = "\r" + notice.Message.ToString(); break;
             }
+            switch ( notice.Level ) {
+               case TraceEventType.Critical :
+               case TraceEventType.Error    :
+                  txt.Foreground = Brushes.Red; break;
+               case TraceEventType.Warning  :
+                  txt.Foreground = Brushes.SaddleBrown; break;
+               default :
+                  txt.Foreground = Brushes.Blue; break;
+            }
+            list.Add( txt );
          }
       }
 

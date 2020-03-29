@@ -157,7 +157,7 @@ namespace Sheepy.Modnix {
 
       public ModEntry Parent;
       public List<ModEntry> Children;
-      public List<LogEntry> Notices;
+      private List<LogEntry> Notices;
 
       public bool HasConfig { get { lock ( Metadata ) {
          return Metadata.DefaultConfig != null || Metadata.ConfigText != null || CheckConfigFile() != null;
@@ -211,10 +211,13 @@ namespace Sheepy.Modnix {
 
       public long GetPriority () { lock ( Metadata ) { return Priority ?? Metadata.Priority; } }
 
-      internal void AddNotice ( TraceEventType lv, string reason, params object[] augs ) { lock ( Metadata ) {
+      public void AddNotice ( TraceEventType lv, string reason, params object[] augs ) { lock ( Metadata ) {
          if ( Notices == null ) Notices = new List<LogEntry>();
          Notices.Add( new LogEntry{ Level = lv, Message = reason, Args = augs } );
       } }
+
+      public IEnumerable<LogEntry> GetNotices () => Notices == null ? Enumerable.Empty<LogEntry>() : Notices;
+
       public override string ToString () { lock ( Metadata ) {
          var txt = "Mod " + Metadata.Name;
          if ( Metadata.Version != null ) txt += " " + ModMetaJson.TrimVersion( Metadata.Version );

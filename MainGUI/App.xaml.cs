@@ -570,9 +570,19 @@ namespace Sheepy.Modnix.MainGUI {
             Log( $"Rebuilding mod list" );
             IEnumerable< ModInfo > list = null;
             Task.WaitAll( new Task[] {
-               Task.Run( () => list = ModBridge.LoadModList() ),
+               Task.Run( () => {
+                  var result = ModBridge.LoadModList();
+                  lock ( SynGetSet ) list = result;
+               } ),
                Task.Run( CheckLogForError ),
             } );
+            lock ( ModWithError ) { if ( ModWithError.Count > 0 ) {
+               lock ( SynGetSet ) Log( "Adding warnings to mods with errors." );
+               foreach ( var mod in list ) {
+                  if ( ! mod.Is( ModQuery.ENABLED ) ) continue;
+                  if ( ModWithError.Contains( mod.Id ) ) ModBridge.AddErrorNotice( mod );
+               }
+            } }
             if ( list != null ) GUI.SetInfo( GuiInfo.MOD_LIST, list );
          } finally {
             lock ( ModWithError ) IsLoadingModList = false;

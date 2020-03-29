@@ -5,12 +5,13 @@ Modnix Changelog
 * New: See console log and changelog in Modnix.
 * New: Loader log now auto-refresh, same for new console log.
 * New: Loader log now can be filtered, same for new console log.
-* New: "config_save" and "assembly" mod api action added.
+* New: Mod that logs an exception as error will be detected and show a warning.
 * Fix: Embedded mod_info with BOM can now be correctly read.
 * Fix: Mods with multiple non-static initialiser classes are now called with the correct classes.
 * Fix: mods_root added as a reserved id. It is used by mod api path action.
 * Fix: Mod api log action will return true when successfully added to queue.
 * Fix: Unknown mod api action will trigger a warning.
+* Mod: "config_save" and "assembly" mod api action added.
 * Mod: Multiple dll declaration no longer allowed in order to keep things simple.
 
 # Version 1.0, 2020-03-23
