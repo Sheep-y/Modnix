@@ -57,6 +57,8 @@ namespace Sheepy.Modnix {
          return null;
       } catch ( Exception ex ) { ModLoader.Log.Error( ex ); return null; } }
 
+      private static Assembly GameAssembly;
+
       private Assembly GetAssembly ( object target ) {
          var id = target?.ToString();
          if ( string.IsNullOrWhiteSpace( id ) ) return ModAssembly;
@@ -64,7 +66,9 @@ namespace Sheepy.Modnix {
             case "loader" : case "modnix" :
                return Assembly.GetExecutingAssembly();
             case "phoenixpoint" : case "phoenix point" : case "game" :
-               return null; // TODO: implement
+               if ( GameAssembly == null )
+                  GameAssembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault( e => e.FullName.StartsWith( "Assembly-CSharp," ) );
+               return GameAssembly;
          }
          return ModScanner.GetModById( id )?.ModAssembly;
       }
@@ -87,7 +91,7 @@ namespace Sheepy.Modnix {
          switch ( id ) {
             case "mods_root" : return ModLoader.ModDirectory;
             case "phoenixpoint" : case "phoenix point" : case "game" :
-               return null; // TODO: implement
+               return Process.GetCurrentProcess().MainModule?.FileName;
          }
          return ModScanner.GetModById( id )?.Path;
       }

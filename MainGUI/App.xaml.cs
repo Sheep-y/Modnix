@@ -577,15 +577,16 @@ namespace Sheepy.Modnix.MainGUI {
                } ),
                Task.Run( CheckLogForError ),
             } );
-            lock ( ModWithError ) { if ( ModWithError.Count > 0 ) {
-               lock ( SynGetSet ) Log( "Adding warnings to mods with errors." );
+            lock ( SynGetSet ) if ( list == null ) return;
+            lock ( ModWithError ) if ( ModWithError.Count > 0 || ModWithWarning.Count > 0 ) {
+               Log( "Adding warnings to mods with errors." );
                foreach ( var mod in list ) {
                   if ( ! mod.Is( ModQuery.ENABLED ) ) continue;
                   if ( ModWithError.Contains( mod.Id ) ) ModBridge.AddLoaderLogNotice( mod, true );
-                  if ( ModWithWarning.Contains( mod.Id ) ) ModBridge.AddLoaderLogNotice( mod, false );
+                  else if ( ModWithWarning.Contains( mod.Id ) ) ModBridge.AddLoaderLogNotice( mod, false );
                }
-            } }
-            if ( list != null ) GUI.SetInfo( GuiInfo.MOD_LIST, list );
+            }
+            GUI.SetInfo( GuiInfo.MOD_LIST, list );
          } finally {
             lock ( ModWithError ) IsLoadingModList = false;
          }
@@ -601,24 +602,25 @@ namespace Sheepy.Modnix.MainGUI {
             return;
          }
          DateTime mTime = new FileInfo( file ).LastWriteTime;
-         lock ( ModWithError ) if ( mTime == LoaderLogLastModified ) return;
-         Log( $"Pasing {file} for errors, last updated {mTime}." );
-         using ( var reader = new StreamReader( file ) ) {
-            string line;
-            while ( ( line = reader.ReadLine()?.Trim() ) != null ) {
-               if ( line.Length == 0 ) continue;
-               var match = RegexModCaptureLine.Match( line );
-               if ( ! match.Success ) continue;
-               string type = match.Groups[ 1 ].Value, id = match.Groups[ 2 ].Value;
-               Log( $"{type} detected with {id}" );
-               if ( type.Equals( "EROR" ) )
-                  ModWithError.Add( id );
-               else
-                  ModWithWarning.Add( id );
+         lock ( ModWithError ) {
+            if ( mTime == LoaderLogLastModified ) return;
+            Log( $"Pasing {file} for errors, last updated {mTime}." );
+            using ( var reader = new StreamReader( file ) ) {
+               string line;
+               while ( ( line = reader.ReadLine()?.Trim() ) != null ) {
+                  if ( line.Length == 0 ) continue;
+                  var match = RegexModCaptureLine.Match( line );
+                  if ( ! match.Success ) continue;
+                  string type = match.Groups[ 1 ].Value, id = match.Groups[ 2 ].Value;
+                  Log( $"{type} detected with {id}" );
+                  if ( type.Equals( "EROR" ) )
+                     ModWithError.Add( id );
+                  else
+                     ModWithWarning.Add( id );
+               }
             }
+            LoaderLogLastModified = mTime;
          }
-         ModWithWarning.RemoveWhere( ModWithError.Contains );
-         lock ( ModWithError ) LoaderLogLastModified = mTime;
       } catch ( SystemException ex ) { Log( ex ); } }
 
       internal Task DoModActionAsync ( AppAction action, IEnumerable<ModInfo> mods ) {
