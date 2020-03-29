@@ -139,6 +139,10 @@
                   </Grid>
                </StackPanel>
                <Grid DockPanel.Dock="Bottom">
+                  <Grid.RowDefinitions>
+                     <RowDefinition Height="1*"/>
+                     <RowDefinition Height="Auto"/>
+                  </Grid.RowDefinitions>
                   <Grid.ColumnDefinitions>
                      <ColumnDefinition/>
                      <ColumnDefinition Width="10"/>
@@ -146,40 +150,45 @@
                      <ColumnDefinition Width="10"/>
                      <ColumnDefinition/>
                   </Grid.ColumnDefinitions>
-                  <Button x:Name="ButtonModOpenModDir" Padding="5" IsEnabled="False" Click="ButtonModOpenModDir_Click" TabIndex="600">
+                  <TabControl x:Name="TabModInfo" Grid.ColumnSpan="5" TabStripPlacement="Bottom" Margin="0,10,0,5" SelectionChanged="TabModInfo_SelectionChanged">
+                     <TabItem Header="Mod Info">
+                        <RichTextBox x:Name="RichModInfo" IsReadOnly="True" IsDocumentEnabled="True" VerticalScrollBarVisibility="Auto" BorderBrush="{x:Null}" TabIndex="500">
+                           <RichTextBox.Background>
+                              <ImageBrush x:Name="BkgdModeInfo" ImageSource="Resources/img/modder.png" Stretch="Uniform" Opacity="0.5" >
+                                 <ImageBrush.RelativeTransform>
+                                    <TransformGroup>
+                                       <ScaleTransform CenterY="0.5" CenterX="0.5" ScaleX="0.8" ScaleY="0.8"/>
+                                    </TransformGroup>
+                                 </ImageBrush.RelativeTransform>
+                              </ImageBrush>
+                           </RichTextBox.Background>
+                           <FlowDocument PagePadding="0"/>
+                        </RichTextBox>
+                     </TabItem>
+                     <TabItem Header="Config"></TabItem>
+                     <TabItem Header="Readme"></TabItem>
+                     <TabItem Header="Change Log"></TabItem>
+                     <TabItem Header="License"></TabItem>
+                  </TabControl>
+                  <Button x:Name="ButtonModOpenModDir" Grid.Row="1" Padding="5" IsEnabled="False" Click="ButtonModOpenModDir_Click" TabIndex="600">
                      <StackPanel Orientation="Horizontal">
                         <Image Source="Resources/img/folder.png" Width="16" Margin="0,0,5,0"/>
                         <AccessText Text="Explore"/>
                      </StackPanel>
                   </Button>
-                  <Button x:Name="ButtonModConf" Grid.Column="2" Padding="5" IsEnabled="False" Click="ButtonModConf_Click" TabIndex="600">
+                  <Button x:Name="ButtonModConf" Grid.Row="1" Grid.Column="2" Padding="5" IsEnabled="False" Click="ButtonModConf_Click" TabIndex="600">
                      <StackPanel Orientation="Horizontal">
                         <Image Source="Resources/img/gear.png" Width="16" Margin="0,0,5,0"/>
                         <AccessText Text="Reset"/>
                      </StackPanel>
                   </Button>
-                  <Button x:Name="ButtonModDelete" Grid.Column="4" Padding="5" IsEnabled="False" Click="ButtonModDelete_Click" TabIndex="600">
+                  <Button x:Name="ButtonModDelete" Grid.Row="1" Grid.Column="4" Padding="5" IsEnabled="False" Click="ButtonModDelete_Click" TabIndex="600">
                      <StackPanel Orientation="Horizontal">
                         <Image Source="Resources/img/cross.png" Width="16" Margin="0,0,5,0"/>
                         <AccessText Text="Delete"/>
                      </StackPanel>
                   </Button>
                </Grid>
-               <RichTextBox x:Name="RichModInfo" IsReadOnly="True" IsDocumentEnabled="True" VerticalScrollBarVisibility="Auto" BorderBrush="{x:Null}" Margin="0,10,0,5" TabIndex="500">
-                  <RichTextBox.Background>
-                     <ImageBrush x:Name="BkgdModeInfo" ImageSource="Resources/img/modder.png" Stretch="Uniform" Opacity="0.5" >
-                        <ImageBrush.RelativeTransform>
-                           <TransformGroup>
-                              <ScaleTransform CenterY="0.5" CenterX="0.5" ScaleX="0.8" ScaleY="0.8"/>
-                           </TransformGroup>
-                        </ImageBrush.RelativeTransform>
-                     </ImageBrush>
-                  </RichTextBox.Background>
-                  <FlowDocument PagePadding="0">
-                     <Paragraph>
-                     </Paragraph>
-                  </FlowDocument>
-               </RichTextBox>
             </DockPanel>
             <GridSplitter x:Name="gridSplitter" Grid.Column="1" HorizontalAlignment="Center" Width="5" Margin="0" IsTabStop="False"/>
             <DockPanel Grid.Column="2" Margin="5,0,0,0">

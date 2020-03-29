@@ -401,6 +401,13 @@ namespace Sheepy.Modnix.MainGUI {
          }
       }
 
+      private void TabModInfo_SelectionChanged ( object sender, SelectionChangedEventArgs e ) {
+         foreach ( var tab in TabModInfo.Items )
+            if ( tab is TabItem t )
+               t.Content = null;
+         ( TabModInfo.SelectedItem as TabItem ).Content = RichModInfo;
+      }
+
       private void ButtonModConf_Click ( object sender, RoutedEventArgs evt ) {
          List<ModInfo> reset = new List<ModInfo>(), create = new List<ModInfo>();
          foreach ( var mod in SelectedMods ) {
