@@ -414,7 +414,7 @@ namespace Sheepy.Logging {
          HashSet< string > ignored = new HashSet<string>();
          return ( entry ) => {
             if ( entry.Message is Exception ex ) ;
-            else if ( entry?.Args.Length == 1 && entry.Args[0] is Exception err ) ex = err;
+            else if ( entry.Args?.Length == 1 && entry.Args[0] is Exception err ) ex = err;
             else return true;
             string txt = ex.ToString();
             lock( ignored ) {

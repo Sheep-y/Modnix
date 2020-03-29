@@ -11,8 +11,13 @@ namespace Sheepy.Logging.Tests {
 
       private long LogSize => new FileInfo( Log.LogFile ).Length;
       private string LogContent => File.ReadAllText( Log.LogFile );
+      private Exception Error;
 
-      [TestInitialize] public void TestInitialize () => Log.Clear();
+      [TestInitialize] public void TestInitialize () {
+         Error = null;
+         Log.Clear();
+         Log.OnError = ( err ) => Error = err;
+      }
 
       [TestCleanup] public void TestCleanup () {
          Log.Filters.Clear();
@@ -51,6 +56,8 @@ namespace Sheepy.Logging.Tests {
          Log.Info( "Background Cleared" );
          Log.Clear();
          Assert.IsFalse( File.Exists( Log.LogFile ), "Clear delete log" );
+
+         Assert.AreEqual( null, Error, "OnError" );
       }
 
       [TestMethod()] public void LoggerProxy () {
@@ -74,6 +81,8 @@ namespace Sheepy.Logging.Tests {
          } catch ( InvalidOperationException ) {
             Assert.IsTrue( true, "Proxy may disallow clear" );
          }
+
+         Assert.AreEqual( null, Error, "OnError" );
       }
 
       [TestMethod()] public void MultiParamFilter () {
@@ -88,6 +97,8 @@ namespace Sheepy.Logging.Tests {
 
          Log.Info( 6, 7, 8 );
          Assert.IsTrue( LogContent.Contains( "6 7 8" ), "Triggers on non-string" );
+
+         Assert.AreEqual( null, Error, "OnError" );
       }
 
       [TestMethod()] public void FormatParamFilter () {
@@ -106,6 +117,8 @@ namespace Sheepy.Logging.Tests {
 
          Log.Info( new object[]{ 1, new object[]{ 2, 3 } } );
          Assert.IsTrue( LogContent.Contains( "Object[]{ 1, Object[]{ 2, 3, }, }" ), "Array conversion" );
+
+         Assert.AreEqual( null, Error, "OnError" );
       }
 
       [TestMethod()] public void ResolveLazyFilter () {
@@ -118,8 +131,12 @@ namespace Sheepy.Logging.Tests {
          Log.Info( "{0}", (Func<string>)( () => "456" ) );
          Assert.IsTrue( LogContent.Contains( "456" ), "Resolve param" );
 
+         Assert.AreEqual( null, Error, "OnError" );
+
          Log.Info( "789 {0}", (Func<string>)( () => throw new Exception( "Dummy" ) ) );
          Assert.IsTrue( LogContent.Contains( "789" ), "Filter exceptions suppressed" );
+
+         Assert.IsNotNull( Error, "OnError triggered" );
       }
 
       [TestMethod()] public void IngoreDupErrorFilter () {
@@ -134,10 +151,14 @@ namespace Sheepy.Logging.Tests {
          Log.Error( subject );
          Assert.IsTrue( LogSize == len, "Duplicate is suppressed" );
 
+         Log.Error( subject.ToString() );
+         Assert.IsTrue( LogSize > len, "Non exceptions are allowed" );
+         len = LogSize;
+
          Log.Filters.Add( LogFilters.AddPrefix( "ABC" ) );
          Log.Filters.Add( LogFilters.AddPostfix( "DEF" ) );
          Log.Error( subject );
-         Assert.IsTrue( LogSize == len, "Duplicate is suppressed" );
+         Assert.IsTrue( LogSize == len, "Duplicate is suppressed with pre post" );
 
          Log.Error( new FormatException() );
          Assert.IsTrue( LogContent.Contains( "FormatException" ), "New exception is logged" );
@@ -145,6 +166,8 @@ namespace Sheepy.Logging.Tests {
 
          Log.Error( subject );
          Assert.IsTrue( LogSize == len, "Duplicate is still suppressed" );
+
+         Assert.AreEqual( null, Error, "OnError" );
       }
 
       [TestMethod()] public void PrefixPostfixFilter () {
@@ -158,6 +181,8 @@ namespace Sheepy.Logging.Tests {
 
          Log.Info( "BC XY" );
          Assert.IsTrue( LogContent.Contains( "ABC XYZ" ), "Added to message" );
+
+         Assert.AreEqual( null, Error, "OnError" );
       }
    }
 
