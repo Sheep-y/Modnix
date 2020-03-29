@@ -19,6 +19,7 @@ namespace Sheepy.Modnix.MainGUI {
 
    public partial class MainWindow : Window, IAppGui {
       private readonly AppControl App = AppControl.Instance;
+      private readonly object SynGetSet = new object();
 
       private event Action ModListChanged;
       private Timer GameStatusTimer;
@@ -26,6 +27,7 @@ namespace Sheepy.Modnix.MainGUI {
       public MainWindow () { try {
          InitializeComponent();
          GameStatusTimer = new Timer( CheckGameRunning, null, Timeout.Infinite, Timeout.Infinite );
+         RefreshModTimer = new Timer( RefreshModTick, null, Timeout.Infinite, Timeout.Infinite );
          SetupGUI();
          RefreshGUI();
       } catch ( Exception ex ) { Console.WriteLine( ex ); } }
@@ -33,6 +35,7 @@ namespace Sheepy.Modnix.MainGUI {
       private void Window_Closed ( object sender, EventArgs e ) {
          GameStatusTimer.Change( Timeout.Infinite, Timeout.Infinite );
          GameStatusTimer.Dispose();
+         RefreshModTimer?.Dispose();
          App.SaveSettings();
       }
 
@@ -366,28 +369,27 @@ namespace Sheepy.Modnix.MainGUI {
          SharedGui.IsAppWorking = true;
          App.AddModAsync( dialog.FileNames ).ContinueWith( task => {
             if ( task.IsFaulted ) Prompt( AppAction.ADD_MOD, PromptFlag.ERROR, task.Exception );
-            NewMods = new HashSet<string>( task.Result.SelectMany( e => e ) );
+            lock ( SynGetSet ) NewMods = new HashSet<string>( task.Result.SelectMany( e => e ) );
             SharedGui.IsAppWorking = false;
             this.Dispatch( () => ButtonRefreshMod_Click( sender, evt ) );
          } );
       }
 
-      private HashSet<string> NewMods; // Not thread safe! Same below! Fix!
-      private Timer RefreshModTimer;
+      private HashSet<string> NewMods;
+      private readonly Timer RefreshModTimer;
 
       private void ButtonRefreshMod_Click ( object sender, RoutedEventArgs evt ) {
-         if ( RefreshModTimer != null ) return;
          SetModList( null );
          // Add new mod can happens without visible refresh, and if the mod is not new it'd look like Modnix did nothing. So we need a delay.
-         RefreshModTimer = new Timer( ( _ ) => {
-            App.GetModList();
-            this.Dispatch( () => {
-               RefreshModTimer?.Dispose();
-               RefreshModTimer = null;
-            } );
-         }, null, 100, Timeout.Infinite );
+         RefreshModTimer.Change( 100, Timeout.Infinite );
          if ( SharedGui.IsGameRunning ) CheckGameRunning();
       }
+
+      private void RefreshModTick ( object _ ) {
+         App.GetModList();
+         RefreshModTimer.Change( Timeout.Infinite, Timeout.Infinite );
+      }
+
 
       private void ButtonModOpenModDir_Click ( object sender, RoutedEventArgs evt ) {
          var count = GridModList.SelectedItems.Count;
