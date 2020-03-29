@@ -282,11 +282,12 @@ namespace Sheepy.Modnix.MainGUI {
       private void ButtonWebsite_Click ( object sender, RoutedEventArgs e ) => OpenUrl( "www", e );
       #endregion
 
-      #region Mod Info Area
-      private ModInfo CurrentMod;
+      #region Mod List
       private IEnumerable<ModInfo> ModList;
       private IEnumerable<ModInfo> SelectedMods => GridModList.SelectedItems.OfType<ModInfo>();
-      //private bool IsSingleModSelected => CurrentMod != null && GridModList.SelectedItems.Count == 1;
+      private HashSet<string> NewMods;
+      private readonly Timer RefreshModTimer;
+
 
       private void SetModList ( IEnumerable<ModInfo> list ) {
          ModList = list;
@@ -320,33 +321,6 @@ namespace Sheepy.Modnix.MainGUI {
          RefreshAppButtons();
       }
 
-      private void RefreshModInfo () { try {
-         if ( GridModList.SelectedItems.Count > 1 ) {
-            Log( $"Showing mods summary" );
-            BkgdModeInfo.Opacity = 0.06;
-            BuildMultiModInfo();
-            return;
-         }
-         if ( CurrentMod == null ) {
-            Log( "Clearing mod info" );
-            RichModInfo.TextRange().Text = "";
-            BkgdModeInfo.Opacity = 0.5;
-            return;
-         }
-         Log( $"Refreshing mod {CurrentMod}" );
-         BkgdModeInfo.Opacity = 0.03;
-         CurrentMod.BuildDesc( RichModInfo.Document );
-      } catch ( Exception ex ) { Log( ex ); } }
-
-      private void BuildMultiModInfo () { try {
-         var doc = RichModInfo.Document;
-         var body = new Paragraph();
-         doc.Replace( body );
-         foreach ( var mod in SelectedMods )
-            mod.BuildSummary( doc );
-         body.Inlines.Add( $"\rTotal {GridModList.SelectedItems.Count} mods" );
-      } catch ( Exception ex ) { Log( ex ); } }
-
       private void ButtonAddMod_Click ( object sender, RoutedEventArgs evt ) {
          var dialog = new Microsoft.Win32.OpenFileDialog {
             DefaultExt = "*.7z;*.dll;*.js;*.xz;*.zip",
@@ -375,9 +349,6 @@ namespace Sheepy.Modnix.MainGUI {
          } );
       }
 
-      private HashSet<string> NewMods;
-      private readonly Timer RefreshModTimer;
-
       private void ButtonRefreshMod_Click ( object sender, RoutedEventArgs evt ) {
          SetModList( null );
          // Add new mod can happens without visible refresh, and if the mod is not new it'd look like Modnix did nothing. So we need a delay.
@@ -390,6 +361,54 @@ namespace Sheepy.Modnix.MainGUI {
          RefreshModTimer.Change( Timeout.Infinite, Timeout.Infinite );
       }
 
+      private void GridModList_SelectionChanged ( object sender, SelectionChangedEventArgs evt ) {
+         Log( $"Selection changed to {GridModList.SelectedItem}, total {GridModList.SelectedItems.Count}" );
+         SetSelectedMod( GridModList.SelectedItem as ModInfo );
+      }
+
+      private void GridModList_LoadingRow ( object sender, DataGridRowEventArgs e ) {
+         var row = e.Row;
+         row.Foreground = ( ( row.Item as ModInfo )?.Is( ModQuery.ENABLED ) == true )
+            ? Brushes.Navy : Brushes.Gray;
+      }
+      #endregion
+
+      #region Mod Info Area
+      private ModInfo CurrentMod;
+
+      private void RefreshModInfo () { try {
+         if ( GridModList.SelectedItems.Count > 1 ) {
+            Log( $"Showing mods summary" );
+            BkgdModeInfo.Opacity = 0.06;
+            BuildMultiModInfo();
+            return;
+         }
+         if ( CurrentMod == null ) {
+            Log( "Clearing mod info" );
+            RichModInfo.TextRange().Text = "";
+            BkgdModeInfo.Opacity = 0.5;
+            return;
+         }
+         Log( $"Refreshing mod {CurrentMod}" );
+         BkgdModeInfo.Opacity = 0.03;
+         CurrentMod.BuildDesc( RichModInfo.Document );
+      } catch ( Exception ex ) { Log( ex ); } }
+
+      private void BuildMultiModInfo () { try {
+         var doc = RichModInfo.Document;
+         var body = new Paragraph();
+         doc.Replace( body );
+         foreach ( var mod in SelectedMods )
+            mod.BuildSummary( doc );
+         body.Inlines.Add( $"\rTotal {GridModList.SelectedItems.Count} mods" );
+      } catch ( Exception ex ) { Log( ex ); } }
+
+      private void TabModInfo_SelectionChanged ( object sender, SelectionChangedEventArgs e ) {
+         foreach ( var tab in TabModInfo.Items )
+            if ( tab is TabItem t )
+               t.Content = null;
+         ( TabModInfo.SelectedItem as TabItem ).Content = RichModInfo;
+      }
 
       private void ButtonModOpenModDir_Click ( object sender, RoutedEventArgs evt ) {
          var count = GridModList.SelectedItems.Count;
@@ -401,13 +420,6 @@ namespace Sheepy.Modnix.MainGUI {
             if ( string.IsNullOrWhiteSpace( path ) ) return;
             AppControl.Explore( path );
          }
-      }
-
-      private void TabModInfo_SelectionChanged ( object sender, SelectionChangedEventArgs e ) {
-         foreach ( var tab in TabModInfo.Items )
-            if ( tab is TabItem t )
-               t.Content = null;
-         ( TabModInfo.SelectedItem as TabItem ).Content = RichModInfo;
       }
 
       private void ButtonModConf_Click ( object sender, RoutedEventArgs evt ) {
@@ -454,17 +466,6 @@ namespace Sheepy.Modnix.MainGUI {
             if ( result.IsFaulted ) Prompt( AppAction.DEL_MOD, PromptFlag.ERROR, result.Exception );
             this.Dispatch( () => ButtonRefreshMod_Click( sender, evt ) );
          } );
-      }
-
-      private void GridModList_SelectionChanged ( object sender, SelectionChangedEventArgs evt ) {
-         Log( $"Selection changed to {GridModList.SelectedItem}, total {GridModList.SelectedItems.Count}" );
-         SetSelectedMod( GridModList.SelectedItem as ModInfo );
-      }
-
-      private void GridModList_LoadingRow ( object sender, DataGridRowEventArgs e ) {
-         var row = e.Row;
-         row.Foreground = ( ( row.Item as ModInfo )?.Is( ModQuery.ENABLED ) == true )
-            ? Brushes.Navy : Brushes.Gray;
       }
       #endregion
 
