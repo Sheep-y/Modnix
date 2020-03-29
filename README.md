@@ -2,6 +2,8 @@
 
 ⮞⮞⮞ [Downloads](https://github.com/Sheep-y/Modnix/releases) ⮜⮜⮜
 
+3 minutes quick start: https://youtu.be/lNn5KfW__TA
+
 Modnix is a mod loader and mod manager for [Phoenix Point](https://phoenixpoint.info/), [Snapshot Games](http://www.snapshotgames.com/) 2019.
 
 Supporting three mod formats,
