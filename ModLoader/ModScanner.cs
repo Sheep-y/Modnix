@@ -93,12 +93,9 @@ namespace Sheepy.Modnix {
          if ( file.EndsWith( ".dll", StringComparison.OrdinalIgnoreCase ) ) {
             meta = ParseDllInfo( file );
             if ( meta == null ) return null;
-            if ( FindEmbeddedModInfo( file, out string info, out string conf ) ) {
+            if ( FindEmbeddedFile( file, "mod_info", "js", out string info ) ) {
                Log.Verbo( "Parsing embedded mod_info" );
                meta.ImportFrom( ParseInfoJs( info )?.EraseModsAndDlls() );
-               if ( conf != null ) lock ( meta ) {
-                  meta.ConfigText = conf;
-               }
             }
          } else {
             Log.Verbo( $"Parsing as mod_info: {file}" );
@@ -159,33 +156,30 @@ namespace Sheepy.Modnix {
          }.Normalise();
       } catch ( Exception ex ) { Log.Warn( ex ); return null; } }
 
-      private static bool FindEmbeddedModInfo ( string file, out string info, out string conf ) { info = conf = null; try {
+      public static bool FindEmbeddedFile ( string file, string name, string ext, out string text ) { text = null; try {
+         string fullname = $"{name}.{ext}", dotName = '.' + fullname;
          using ( var lib = AssemblyDefinition.ReadAssembly( file ) ) {
             if ( ! lib.MainModule.HasResources ) return false;
             foreach ( var resource in lib.MainModule.Resources ) {
                if ( ! ( resource is EmbeddedResource res ) || res.ResourceType != ResourceType.Embedded ) continue;
-               if ( res.Name.IndexOf( ".mod_info.js", StringComparison.OrdinalIgnoreCase ) >= 0 )
-                  info = ModMetaJson.ReadAsText( res.GetResourceStream() );
-               //else if ( res.Name.IndexOf( ".mod_init.conf", StringComparison.OrdinalIgnoreCase ) >= 0 )
-               //   conf = Encoding.UTF8.GetString( res.GetResourceData() );
-               else if ( res.Name.EndsWith( ".resources", StringComparison.OrdinalIgnoreCase ) ) {
-                  using ( var reader = new ResourceReader( res.GetResourceStream() ) ) {
-                     var data = reader.GetEnumerator();
-                     while ( data.MoveNext() ) {
-                        var name = data.Key.ToString();
-                        if ( ! name.StartsWith( "mod_", StringComparison.OrdinalIgnoreCase ) ) continue;
-                        if ( name.Equals( "mod_info", StringComparison.OrdinalIgnoreCase ) || name.EndsWith( "mod_info.js", StringComparison.OrdinalIgnoreCase ) ) {
-                           info = data.Value is Stream stream ? ModMetaJson.ReadAsText( stream ) : data.Value?.ToString();
-                        //} else if ( name.Equals( "mod_init", StringComparison.OrdinalIgnoreCase ) || name.EndsWith( "mod_init.conf", StringComparison.OrdinalIgnoreCase ) ) {
-                        //   conf = data.Value is Stream stream ? ModMetaJson.ReadAsText( stream ) : data.Value?.ToString();
-                        }
+               if ( res.Name.EndsWith( dotName, StringComparison.OrdinalIgnoreCase ) ) {
+                  text = ModMetaJson.ReadAsText( res.GetResourceStream() );
+                  return true;
+               }
+               if ( ! res.Name.EndsWith( ".resources", StringComparison.OrdinalIgnoreCase ) ) continue;
+               using ( var reader = new ResourceReader( res.GetResourceStream() ) ) {
+                  var data = reader.GetEnumerator();
+                  while ( data.MoveNext() ) {
+                     var item = data.Key.ToString();
+                     if ( item.Equals( name, StringComparison.OrdinalIgnoreCase ) || item.EndsWith( fullname, StringComparison.OrdinalIgnoreCase ) ) {
+                        text = data.Value is Stream stream ? ModMetaJson.ReadAsText( stream ) : data.Value?.ToString();
+                        return true;
                      }
                   }
                }
-               if ( info != null && conf != null ) return true;
             }
          }
-         return info != null;
+         return false;
       } catch ( Exception ex ) { Log.Warn( ex ); return false; } }
 
       private static DllEntryMeta ParseEntryPoints ( string file, bool active ) {
