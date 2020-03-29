@@ -177,4 +177,29 @@ namespace Sheepy.Modnix.MainGUI {
 
       internal static bool Has ( this PromptFlag haysack, PromptFlag needle ) => ( haysack & needle ) == needle;
    }
+
+   public static class WpfHelper {
+      public static TextRange TextRange ( this System.Windows.Controls.RichTextBox box ) {
+         return new TextRange( box.Document.ContentStart, box.Document.ContentEnd );
+      }
+
+      public static void Replace ( this FlowDocument doc, params Block[] blocks ) => Replace( doc, (IEnumerable<Block>) blocks );
+      public static void Replace ( this FlowDocument doc, IEnumerable< Block > blocks ) {
+         var body = doc.Blocks;
+         body.Clear();
+         foreach ( var e in blocks )
+            if ( e != null )
+               body.Add( e );
+      }
+
+      public static Paragraph P ( params Inline[] inlines ) => P( (IEnumerable<Inline>) inlines );
+      public static Paragraph P ( IEnumerable< Inline > inlines ) {
+         var result = new Paragraph();
+         var body = result.Inlines;
+         foreach ( var e in inlines )
+            if ( e != null )
+               body.Add( e );
+         return result;
+      }
+   }
 }
