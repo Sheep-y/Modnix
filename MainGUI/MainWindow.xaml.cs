@@ -33,6 +33,7 @@ namespace Sheepy.Modnix.MainGUI {
       private void Window_Closed ( object sender, EventArgs e ) {
          GameStatusTimer.Change( Timeout.Infinite, Timeout.Infinite );
          GameStatusTimer.Dispose();
+         App.SaveSettings();
       }
 
       private void SetupGUI () {
@@ -93,16 +94,27 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void RefreshAppButtons () { try {
          Log( "Refreshing app buttons, " + ( SharedGui.CanModify ? "can mod" : "cannot mod" ) );
-         ButtonSetup .IsEnabled = ! SharedGui.IsAppWorking && SharedGui.AppState != null;
+         ButtonSetup.IsEnabled = ! SharedGui.IsAppWorking && SharedGui.AppState != null;
+         ButtonSetup.Visibility = ButtonUserGuide.Visibility = ButtonWiki.Visibility =
+            App.Settings.MinimiseLoaderPanel ? Visibility.Collapsed : Visibility.Visible;
+         ButtonHideGame.Content = App.Settings.MinimiseLoaderPanel ? "＋" : "—";
+
          ButtonRunOnline.IsEnabled  = ButtonRunOffline.IsEnabled  = SharedGui.CanModify && SharedGui.IsGameFound;
          ButtonRunOnline.Foreground = ButtonRunOffline.Foreground = 
             ButtonRunOnline.IsEnabled && SharedGui.AppState != null && ! SharedGui.IsInjected ? Brushes.Red : Brushes.Black;
+         ButtonWebsite.Visibility = ButtonForum.Visibility = ButtonReddit.Visibility =
+            ButtonTwitter.Visibility = ButtonCanny.Visibility = ButtonDiscord.Visibility =
+            App.Settings.MinimiseGamePanel ? Visibility.Collapsed : Visibility.Visible;
+         ButtonHideGame.Content = App.Settings.MinimiseGamePanel ? "＋" : "—";
+
          ButtonAddMod.IsEnabled = SharedGui.CanModify && Directory.Exists( App.ModFolder );
          ButtonModDir.IsEnabled = Directory.Exists( App.ModFolder );
          ButtonRefreshMod.IsEnabled = Directory.Exists( App.ModFolder ) && ! SharedGui.IsAppWorking;
+
          ButtonModOpenModDir.IsEnabled = CurrentMod != null;
          ButtonModConf.IsEnabled = SharedGui.CanModify && CurrentMod != null && SelectedMods.Any( e => e.Is( ModQuery.HAS_CONFIG ) );
          ButtonModDelete.IsEnabled = SharedGui.CanModify && CurrentMod != null && ! SelectedMods.Any( e => e.Is( ModQuery.IS_CHILD ) );
+
          ButtonLoaderLog.IsEnabled = File.Exists( App.LoaderLog );
          ButtonConsoleLog.IsEnabled = File.Exists( App.ConsoleLog );
 
@@ -150,9 +162,22 @@ namespace Sheepy.Modnix.MainGUI {
             }
          var state = new Run( txt );
          if ( SharedGui.AppState != "modnix" ) state.Foreground = Brushes.Red;
-         RichAppInfo.Document.Replace( P( new Bold( new Run( AppControl.LIVE_NAME ) ), new Run( $"\tVer {SharedGui.AppVer}\rStatus: " ), state ) );
-         CheckLogVerbo.IsChecked = ( App.ModBridge.GetSettings().LogLevel & SourceLevels.Verbose ) == SourceLevels.Verbose;
+         var p = new Paragraph();
+         if ( ! App.Settings.MinimiseLoaderPanel ) {
+            p.Inlines.Add( new Bold( new Run( AppControl.LIVE_NAME ) ) );
+            p.Inlines.Add( $"\tVer {SharedGui.AppVer}\r" );
+         }
+         p.Inlines.Add( "Status: " );
+         p.Inlines.Add( state );
+         RichAppInfo.Document.Replace( p );
+         CheckLogVerbo.IsChecked = ( App.Settings.LogLevel & SourceLevels.Verbose ) == SourceLevels.Verbose;
       } catch ( Exception ex ) { Log( ex ); } }
+
+      private void ButtonHideLoader_Click ( object sender, RoutedEventArgs e ) {
+         App.Settings.MinimiseLoaderPanel = ! App.Settings.MinimiseLoaderPanel;
+         RefreshAppInfo();
+         RefreshAppButtons();
+      }
 
       private void ButtonWiki_Click ( object sender, RoutedEventArgs e ) => OpenUrl( "wiki", e );
       private void ButtonGitHub_Click ( object sender, RoutedEventArgs e ) => OpenUrl( "home", e );
@@ -220,11 +245,18 @@ namespace Sheepy.Modnix.MainGUI {
          if ( SharedGui.IsGameFound ) {
             if ( SharedGui.GameVer != null )
                p.Inlines.Add( $"\tVer {SharedGui.GameVer}" );
-            p.Inlines.Add( "\r" + Path.GetFullPath( SharedGui.GamePath ) );
+            if ( ! App.Settings.MinimiseGamePanel )
+               p.Inlines.Add( "\r" + Path.GetFullPath( SharedGui.GamePath ) );
          } else
             p.Inlines.Add( new Run( "\rGame not found" ){ Foreground = Brushes.Red } );
          RichGameInfo.Document.Replace( p );
       } catch ( Exception ex ) { Log( ex ); } }
+
+      private void ButtonHideGame_Click ( object sender, RoutedEventArgs e ) {
+         App.Settings.MinimiseGamePanel = ! App.Settings.MinimiseGamePanel;
+         RefreshAppInfo();
+         RefreshAppButtons();
+      }
 
       private void ButtonOnline_Click  ( object sender, RoutedEventArgs e ) {
          App.LaunchGame( "online" );
@@ -432,12 +464,9 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void CheckUpdate ( bool manual ) { try {
          if ( ! manual ) {
-            var settings = App.ModBridge.GetSettings();
             DateTime? lastCheck;
-            lock ( settings ) {
-               if ( ! settings.CheckUpdate ) return;
-               lastCheck = settings.LastCheckUpdate;
-            }
+            if ( ! App.Settings.CheckUpdate ) return;
+            lastCheck = App.Settings.LastCheckUpdate;
             if ( ! lastCheck.HasValue )
                Log( "Last update check was never" );
             else {
@@ -453,7 +482,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void UpdateChecked () { try {
          Log( $"Updating last update check time." );
-         App.ModBridge.GetSettings().LastCheckUpdate = DateTime.Now;
+         App.Settings.LastCheckUpdate = DateTime.Now;
          App.ModBridge.SaveSettings();
          ButtonCheckUpdate.IsEnabled = true;
       } catch ( Exception ex ) { Log( ex ); } }

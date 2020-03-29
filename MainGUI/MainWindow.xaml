@@ -17,13 +17,16 @@
             </Grid.ColumnDefinitions>
             <DockPanel Margin="0,0,5,0">
                <StackPanel DockPanel.Dock="Top" VerticalAlignment="Top">
-                  <RichTextBox x:Name="RichAppInfo" Height="33" IsReadOnly="True" BorderBrush="{x:Null}" Margin="0,0,0,5" IsTabStop="False" TabIndex="100">
-                     <FlowDocument PagePadding="0">
-                        <Paragraph>
-                           <Run Text="Modnix Manager&#x9;Ver 1.0&#xA;Status: Requires Setup"/>
-                        </Paragraph>
-                     </FlowDocument>
-                  </RichTextBox>
+                  <DockPanel>
+                     <Button x:Name="ButtonHideLoader" DockPanel.Dock="Right" Content="—" Height="20" VerticalAlignment="Bottom" Margin="0,0,0,5" Width="20" TabIndex="150" Click="ButtonHideLoader_Click" />
+                     <RichTextBox x:Name="RichAppInfo" Height="33" IsReadOnly="True" BorderBrush="{x:Null}" Margin="0,0,0,5" IsTabStop="False" TabIndex="100">
+                        <FlowDocument PagePadding="0">
+                           <Paragraph>
+                              <Run Text="Modnix Manager&#x9;Ver 1.0&#xA;Status: Requires Setup"/>
+                           </Paragraph>
+                        </FlowDocument>
+                     </RichTextBox>
+                  </DockPanel>
                   <Grid AutomationProperties.AcceleratorKey="D">
                      <Grid.ColumnDefinitions>
                         <ColumnDefinition/>
@@ -54,13 +57,16 @@
                         </StackPanel>
                      </Button>
                   </Grid>
-                  <RichTextBox x:Name="RichGameInfo" Height="33" IsReadOnly="True" BorderBrush="{x:Null}" Margin="0,10,0,5" IsTabStop="False" TabIndex="300">
-                     <FlowDocument PagePadding="0">
-                        <Paragraph>
-                           <Run Text="Phoenix Point&#xA;Ver 1.0"/>
-                        </Paragraph>
-                     </FlowDocument>
-                  </RichTextBox>
+                  <DockPanel>
+                     <Button x:Name="ButtonHideGame" DockPanel.Dock="Right" Content="—" Height="20" VerticalAlignment="Bottom" Margin="0,0,0,5" Width="20" TabIndex="150" Click="ButtonHideGame_Click" />
+                     <RichTextBox x:Name="RichGameInfo" Height="33" IsReadOnly="True" BorderBrush="{x:Null}" Margin="0,10,0,5" IsTabStop="False" TabIndex="300">
+                        <FlowDocument PagePadding="0">
+                           <Paragraph>
+                              <Run Text="Phoenix Point&#xA;Ver 1.0"/>
+                           </Paragraph>
+                        </FlowDocument>
+                     </RichTextBox>
+                  </DockPanel>
                   <Grid>
                      <Grid.RowDefinitions>
                         <RowDefinition/>

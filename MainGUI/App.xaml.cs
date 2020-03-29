@@ -153,8 +153,11 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void LoadSettings () {
          // Make sure settings is loaded before other processes
-         _ = ModBridge.GetSettings();
+         if ( Settings.SettingVersion < 20200329 )
+            Settings.SettingVersion = 20200329; // Update version but no need to save immediately.
       }
+
+      internal LoaderSettings Settings => ModBridge.GetSettings();
 
       internal void SaveSettings () {
          ModBridge.SaveSettings();

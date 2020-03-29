@@ -14,13 +14,15 @@ using System.Threading.Tasks;
 namespace Sheepy.Modnix {
 
    public class LoaderSettings {
-      public int SettingVersion = 20200319;
+      public int SettingVersion = 20200329;
       public SourceLevels LogLevel = SourceLevels.Information;
       // For mod manager
       public bool CheckUpdate = true;
       public DateTime? LastCheckUpdate = null;
       public string UpdateChannel = "release";
       public string GamePath = null;
+      public bool MinimiseLoaderPanel = false;
+      public bool MinimiseGamePanel = true;
       // For mod loader, set by manager
       public Dictionary< string, ModSettings > Mods;
    }
