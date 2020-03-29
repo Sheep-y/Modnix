@@ -12,7 +12,7 @@ Modnix Changelog
 * Fix: mods_root added as a reserved id. It is used by mod api path action.
 * Fix: Mod api log action will return true when successfully added to queue.
 * Fix: Unknown mod api action will trigger a warning.
-* Mod: New api action "assembly", "config_save", "reg_action", "reg_handler".
+* Mod: New api action "assembly", "config_save", "reg_action", "reg_handler", "unreg_action".
 * Mod: Multiple dll declaration no longer allowed in order to keep things simple.
 
 # Version 1.0, 2020-03-23

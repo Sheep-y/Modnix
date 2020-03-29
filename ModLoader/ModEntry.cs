@@ -53,8 +53,9 @@ namespace Sheepy.Modnix {
 
       #region API
       private static readonly Dictionary<string,Func<object,object>> ApiExtension = new Dictionary<string, Func<object, object>>();
+      private static readonly Dictionary<string,ModEntry> ApiExtOwner = new Dictionary<string, ModEntry>();
       private static readonly HashSet<string> NativeCommand = new HashSet<string>( new string[]{
-         "assembly", "config", "config_save", "mod_info", "mod_list", "path", "log", "logger", "reg_action", "reg_handler", "version"
+         "assembly", "config", "config_save", "mod_info", "mod_list", "path", "log", "logger", "reg_action", "reg_handler", "unreg_action", "version"
       } );
 
       public object ModAPI ( string action, object param = null ) { try {
@@ -63,20 +64,20 @@ namespace Sheepy.Modnix {
             case "assembly"    : return GetAssembly( param );
             case "config"      : return LoadConfig( param );
             case "config_save" : return SaveConfig( param );
+            case "log"         : CreateLogger().Log( param ); return true;
+            case "logger"      : return GetLogFunc( param );
             case "mod_info"    : return new ModMeta().ImportFrom( GetMod( param )?.Metadata );
             case "mod_list"    : return ListMods( param );
             case "path"        : return GetPath( param );
             case "reg_action"  : return RegisterAction( param );
             case "reg_handler" : return RegisterHandler( param );
-            case "log"         : CreateLogger().Log( param ); return true;
-            case "logger"      : return GetLogFunc( param );
+            case "unreg_action": return UnregisterAction( param );
             case "version"     : return GetVersion( param );
          }
          if ( ! string.IsNullOrEmpty( action ) ) {
-            bool extension;
             Func<object,object> handler;
-            lock ( ApiExtension ) extension = ApiExtension.TryGetValue( action, out handler );
-            if ( extension ) return handler( param );
+            lock ( ApiExtension ) ApiExtension.TryGetValue( action, out handler );
+            if ( handler != null ) return handler( param );
          }
          CreateLogger().Warn( "Unknown api action '{0}'", action );
          return null;
@@ -154,6 +155,7 @@ namespace Sheepy.Modnix {
             if ( NativeCommand.Contains( cmd ) || ApiExtension.ContainsKey( cmd ) )
                throw new ApplicationException( "Cannot re-register api action " + cmd );
             ApiExtension.Add( cmd, func );
+            ApiExtOwner.Add( cmd, this );
             RegAction = null;
          }
          CreateLogger().Info( "Registered api action {0}", cmd );
@@ -162,6 +164,24 @@ namespace Sheepy.Modnix {
          CreateLogger().Warn( ex.Message );
          return false;
       } }
+
+      private object UnregisterAction ( object param ) {
+         if ( IsEmpty( param, out string cmd ) ) return false;
+         cmd = cmd.ToLowerInvariant();
+         ModEntry owner;
+
+         lock ( ApiExtension ) ApiExtOwner.TryGetValue( cmd, out owner );
+         if ( owner != this ) {
+            CreateLogger().Warn( $"unreg_action '{cmd}' " + owner == null ? "not found." : "not owner" );
+            return false;
+         }
+         lock ( ApiExtension ) {
+            ApiExtension.Remove( cmd );
+            ApiExtOwner.Remove( cmd );
+         }
+         CreateLogger().Info( "Unregistered api action {0}", cmd );
+         return true;
+      }
       #endregion
 
       #region Logger
