@@ -156,6 +156,8 @@ namespace Sheepy.Modnix.MainGUI {
                return path != AppControl.Instance.ModFolder && Directory.EnumerateFileSystemEntries( path ).Count() > 1;
             case ModQuery.IS_CHILD :
                return Mod.Parent != null;
+            case ModQuery.HAS_WARNING :
+               return Mod.GetNotices().Any( e => e.Level == TraceEventType.Warning || e.Level == TraceEventType.Error || e.Level == TraceEventType.Critical );
             case ModQuery.HAS_CONFIG :
                return Mod.HasConfig;
             case ModQuery.HAS_CONFIG_FILE :

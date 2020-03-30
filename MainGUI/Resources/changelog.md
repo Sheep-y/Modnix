@@ -3,10 +3,11 @@ Modnix Changelog
 # Version 2.0
 
 * New: Status panels and their buttons may now be minified to give more space to mod info.
-* New: See console log and changelog in Modnix.
+* Mew: Read mod's readme, changelog, and license in mod info panel.
+* New: Read game console log and Modnix changelog in log tab.
 * New: Loader log now auto-refresh, same for new console log.
 * New: Loader log now can be filtered, same for new console log.
-* New: Mod that logs an error or warning will be detected and show a warning.
+* New: Mod that logs an error or warning will be detected, highlighted, and show a warning.
 * Fix: Embedded mod_info with BOM can now be correctly read.
 * Fix: Mods with multiple non-static initialiser classes are now called with the correct classes.
 * Fix: mods_root added as a reserved id. It is used by mod api path action.

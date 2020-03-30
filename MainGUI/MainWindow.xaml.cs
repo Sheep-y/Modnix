@@ -369,8 +369,13 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void GridModList_LoadingRow ( object sender, DataGridRowEventArgs e ) {
          var row = e.Row;
-         row.Foreground = ( ( row.Item as ModInfo )?.Is( ModQuery.ENABLED ) == true )
-            ? Brushes.Navy : Brushes.Gray;
+         var mod = row.Item as ModInfo;
+         if ( mod == null || ! mod.Is( ModQuery.ENABLED ) )
+            row.Foreground = Brushes.Gray;
+         else if ( mod.Is( ModQuery.HAS_WARNING ) )
+            row.Foreground = Brushes.OrangeRed;
+         else
+            row.Foreground = Brushes.Navy;
       }
       #endregion
 
