@@ -151,7 +151,13 @@
                      <ColumnDefinition/>
                   </Grid.ColumnDefinitions>
                   <TabControl x:Name="TabSetModInfo" Grid.ColumnSpan="5" TabStripPlacement="Bottom" Margin="0,10,0,5" SelectionChanged="TabSetModInfo_SelectionChanged">
-                     <TabItem x:Name="TabModInfo" Header="Mod Info">
+                     <TabItem x:Name="TabModInfo">
+                        <TabItem.Header>
+                           <StackPanel Orientation="Horizontal">
+                              <Image Source="Resources/img/info.png" Width="16" Margin="0,0,5,0"/>
+                              <AccessText Text="Mod Info"/>
+                           </StackPanel>
+                        </TabItem.Header>
                         <RichTextBox x:Name="RichModInfo" IsReadOnly="True" IsDocumentEnabled="True" VerticalScrollBarVisibility="Auto" BorderBrush="{x:Null}" TabIndex="500">
                            <RichTextBox.Background>
                               <ImageBrush x:Name="BkgdModeInfo" ImageSource="Resources/img/modder.png" Stretch="Uniform" Opacity="0.5" >
@@ -165,10 +171,38 @@
                            <FlowDocument PagePadding="0"/>
                         </RichTextBox>
                      </TabItem>
-                     <TabItem x:Name="TabModConfig" Header="Config" Visibility="Collapsed"></TabItem>
-                     <TabItem x:Name="TabModReadme" Header="Readme" Visibility="Collapsed"></TabItem>
-                     <TabItem x:Name="TabModChange" Header="Change Log" Visibility="Collapsed"></TabItem>
-                     <TabItem x:Name="TabModLicense" Header="License" Visibility="Collapsed"></TabItem>
+                     <TabItem x:Name="TabModConfig" Visibility="Collapsed">
+                        <TabItem.Header>
+                           <StackPanel Orientation="Horizontal">
+                              <Image Source="Resources/img/gear.png" Width="16" Margin="0,0,5,0"/>
+                              <AccessText Text="Config"/>
+                           </StackPanel>
+                        </TabItem.Header>
+                     </TabItem>
+                     <TabItem x:Name="TabModReadme" Visibility="Collapsed">
+                        <TabItem.Header>
+                           <StackPanel Orientation="Horizontal">
+                              <Image Source="Resources/img/book.png" Width="16" Margin="0,0,5,0"/>
+                              <AccessText Text="Readme"/>
+                           </StackPanel>
+                        </TabItem.Header>
+                     </TabItem>
+                     <TabItem x:Name="TabModChange" Visibility="Collapsed">
+                        <TabItem.Header>
+                           <StackPanel Orientation="Horizontal">
+                              <Image Source="Resources/img/reload.png" Width="16" Margin="0,0,5,0"/>
+                              <AccessText Text="Change Log"/>
+                           </StackPanel>
+                        </TabItem.Header>
+                     </TabItem>
+                     <TabItem x:Name="TabModLicense" Visibility="Collapsed">
+                        <TabItem.Header>
+                           <StackPanel Orientation="Horizontal">
+                              <Image Source="Resources/img/opensource.png" Width="16" Margin="0,0,5,0"/>
+                              <AccessText Text="License"/>
+                           </StackPanel>
+                        </TabItem.Header>
+                     </TabItem>
                   </TabControl>
                   <Button x:Name="ButtonModOpenModDir" Grid.Row="1" Padding="5" IsEnabled="False" Click="ButtonModOpenModDir_Click" TabIndex="600">
                      <StackPanel Orientation="Horizontal">
