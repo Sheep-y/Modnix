@@ -48,9 +48,9 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       private static Task< GridModItem > ConvertModTask ( ModEntry mod ) => Task.Run( () => ToGridItem( mod ) );
-      internal static readonly string[] ReadmeFiles  = new string[]{ "readme", "read.me", "readme.md", "readme.txt" };
-      internal static readonly string[] ChangeFiles  = new string[]{ "changelog", "change.log", "changelog.md", "changelog.txt", "history", "history.md", "history.txt" };
-      internal static readonly string[] LicenseFiles = new string[]{ "license", "unlicense", "license.md", "license.txt" };
+      internal static readonly string[] ReadmeFiles  = new string[]{ "readme.rtf", "read.txt", "readme.md", "readme", "read.me" };
+      internal static readonly string[] ChangeFiles  = new string[]{ "changelog.rtf", "changelog.txt", "changelog.md", "history.rtf", "history.txt", "history.md", "changelog", "change.log" };
+      internal static readonly string[] LicenseFiles = new string[]{ "license.rtf", "license.txt", "license.md", "license", "unlicense" };
 
       private static GridModItem ToGridItem ( ModEntry mod ) { try {
          var modPath = mod.Path;
@@ -216,10 +216,16 @@ namespace Sheepy.Modnix.MainGUI {
             if ( ! ModScanner.FindEmbeddedFile( Path, buf, fileList ) ) return;
             text = buf.ToString();
          }
-         if ( ! string.IsNullOrEmpty( text ) )
+         if ( string.IsNullOrEmpty( text ) ) {
             doc.TextRange().Text = "(No Data)";
-         else
-            doc.TextRange().Text = WpfHelper.Lf2Cr( text );
+            return;
+         }
+         if ( text.StartsWith( "{\\rtf", StringComparison.Ordinal ) ) try {
+            using ( var mem = new MemoryStream( Encoding.ASCII.GetBytes( text ) ) )
+               doc.TextRange().Load( mem, System.Windows.DataFormats.Rtf );
+            return;
+         } catch ( ArgumentException ex ) { AppControl.Instance.Log( ex ); }
+         doc.TextRange().Text = WpfHelper.Lf2Cr( text );
       } catch ( SystemException ex ) { doc.TextRange().Text = ex.ToString(); } }
 
       private void BuildBasicDesc ( ModMeta meta, InlineCollection list ) {
