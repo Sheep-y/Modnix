@@ -44,7 +44,13 @@ namespace Sheepy.Modnix.MainGUI {
          CheckSetup();
          App.Log( "Building mod list" );
          ModScanner.BuildModList();
-         return ModScanner.AllMods.Select( e => new GridModItem( e ) ).ToArray();
+         return Task.WhenAll( ModScanner.AllMods.Select( ConvertModTask ).ToArray() ).Result;
+      }
+
+      private static Task< GridModItem > ConvertModTask ( ModEntry mod ) => Task.Run( () => ToGridItem( mod ) );
+
+      private static GridModItem ToGridItem ( ModEntry mod ) {
+         return new GridModItem( mod );
       }
 
       private static ModEntry Mod ( ModInfo mod ) => ( mod as GridModItem )?.Mod;
@@ -58,7 +64,7 @@ namespace Sheepy.Modnix.MainGUI {
       }
       
       internal void DeleteMod ( ModInfo mod ) {
-         string path = Path.GetDirectoryName( mod.Path );
+         var path = Path.GetDirectoryName( mod.Path );
          if ( path == ModLoader.ModDirectory ) {
             App.Log( $"Deleting {mod.Path}" );
             File.Delete( mod.Path );
@@ -106,6 +112,7 @@ namespace Sheepy.Modnix.MainGUI {
 
    internal class GridModItem : ModInfo {
       internal readonly ModEntry Mod;
+      internal HashSet< ModDoc > Docs = new HashSet<ModDoc>();
       internal GridModItem ( ModEntry mod ) => Mod = mod ?? throw new ArgumentNullException( nameof( mod ) );
       public override string Id => Mod.Metadata.Id;
       public override string Name => Mod.Metadata.Name?.ToString( "en" );
@@ -192,6 +199,7 @@ namespace Sheepy.Modnix.MainGUI {
             case "newgame" : list.Add( "\rMod claims to affect new game and not break saves." ); break;
             case "dlc"     : list.Add( "\rMod claims to not affect existing campaigns." ); break;
             case "perm"    : list.Add( "\rSaves made with this mod on may become dependent on this mod." ); break;
+            default: break;
          }
          foreach ( var notice in Mod.GetNotices() ) {
             var txt = new Run();
