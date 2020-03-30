@@ -54,9 +54,6 @@ namespace Sheepy.Modnix {
       #region API
       private static readonly Dictionary<string,Func<object,object>> ApiExtension = new Dictionary<string, Func<object, object>>();
       private static readonly Dictionary<string,ModEntry> ApiExtOwner = new Dictionary<string, ModEntry>();
-      private static readonly HashSet<string> NativeCommand = new HashSet<string>( new string[]{
-         "assembly", "config", "config_save", "mod_info", "mod_list", "path", "log", "logger", "reg_action", "reg_handler", "unreg_action", "version"
-      } );
 
       public object ModAPI ( string action, object param = null ) { try {
          if ( ! LowerAndIsEmpty( action, out action ) ) {
@@ -73,10 +70,12 @@ namespace Sheepy.Modnix {
                case "reg_handler" : return RegisterHandler( param );
                case "unreg_action": return UnregisterAction( param );
                case "version"     : return GetVersion( param );
+               default:
+                  Func<object,object> handler;
+                  lock ( ApiExtension ) ApiExtension.TryGetValue( action, out handler );
+                  if ( handler != null ) return handler( param );
+                  break;
             }
-            Func<object,object> handler;
-            lock ( ApiExtension ) ApiExtension.TryGetValue( action, out handler );
-            if ( handler != null ) return handler( param );
          }
          CreateLogger().Warn( "Unknown api action '{0}'", action );
          return null;
@@ -98,8 +97,9 @@ namespace Sheepy.Modnix {
                if ( GameAssembly == null ) // No need to lock. No conflict.
                   GameAssembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault( e => e.FullName.StartsWith( "Assembly-CSharp," ) );
                return GameAssembly;
+            default:
+               return ModScanner.GetModById( id )?.ModAssembly;
          }
-         return ModScanner.GetModById( id )?.ModAssembly;
       }
 
       private Version GetVersion ( object target ) {
@@ -118,8 +118,9 @@ namespace Sheepy.Modnix {
             case "mods_root" : return ModLoader.ModDirectory;
             case "phoenixpoint" : case "phoenix point" : case "game" :
                return Process.GetCurrentProcess().MainModule?.FileName;
+            default :
+               return ModScanner.GetModById( id )?.Path;
          }
-         return ModScanner.GetModById( id )?.Path;
       }
 
       private static IEnumerable<string> ListMods ( object target ) {
@@ -137,7 +138,8 @@ namespace Sheepy.Modnix {
       private object RegisterAction ( object param ) {
          lock ( ApiExtension ) {
             if ( LowerAndIsEmpty( param, out RegAction ) ) return false;
-            return ! NativeCommand.Contains( RegAction ) && ! ApiExtension.ContainsKey( RegAction );
+            if ( ! RegAction.Contains( "." ) || RegAction.Length < 3 ) return false;
+            return ! ApiExtension.ContainsKey( RegAction );
          }
       }
 
@@ -147,9 +149,9 @@ namespace Sheepy.Modnix {
          if ( cmd == null )
             throw new ApplicationException( "reg_handler without reg_action" );
          if ( ! ( param is Func<object,object> func ) )
-            throw new ApplicationException( "reg_handler must be Func < object, object >" );
+            throw new ApplicationException( "reg_handler must be Func< object, object >" );
          lock ( ApiExtension ) {
-            if ( NativeCommand.Contains( cmd ) || ApiExtension.ContainsKey( cmd ) )
+            if ( ApiExtension.ContainsKey( cmd ) )
                throw new ApplicationException( "Cannot re-register api action " + cmd );
             ApiExtension.Add( cmd, func );
             ApiExtOwner.Add( cmd, this );
