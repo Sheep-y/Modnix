@@ -49,7 +49,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       private static Task< GridModItem > ConvertModTask ( ModEntry mod ) => Task.Run( () => ToGridItem( mod ) );
       internal static readonly string[] ReadmeFiles  = new string[]{ "readme", "read.me", "readme.md", "readme.txt" };
-      internal static readonly string[] ChangeFiles  = new string[]{ "changelog", "change.log", "changelog.md", "changelog.txt" };
+      internal static readonly string[] ChangeFiles  = new string[]{ "changelog", "change.log", "changelog.md", "changelog.txt", "history", "history.md", "history.txt" };
       internal static readonly string[] LicenseFiles = new string[]{ "license", "unlicense", "license.md", "license.txt" };
 
       private static GridModItem ToGridItem ( ModEntry mod ) { try {
@@ -206,15 +206,20 @@ namespace Sheepy.Modnix.MainGUI {
       } }
 
       private void BuildSupportingDoc ( ModDoc type, FlowDocument doc, string[] fileList ) { try {
+         string text = null;
          if ( Docs.TryGetValue( type, out string file ) && ! "embedded".Equals( file, StringComparison.Ordinal ) ) {
             AppControl.Instance.Log( $"Reading {type} {file}" );
-            doc.TextRange().Text = WpfHelper.Lf2Cr( File.ReadAllText( file ) );
+            text = File.ReadAllText( file );
          } else {
             AppControl.Instance.Log( $"Reading embedded {type} from {Path}" );
-            var text = new StringBuilder();
-            if ( ! ModScanner.FindEmbeddedFile( Path, text, fileList ) ) return;
-            doc.TextRange().Text = WpfHelper.Lf2Cr( text ).ToString();
+            var buf = new StringBuilder();
+            if ( ! ModScanner.FindEmbeddedFile( Path, buf, fileList ) ) return;
+            text = buf.ToString();
          }
+         if ( ! string.IsNullOrEmpty( text ) )
+            doc.TextRange().Text = "(No Data)";
+         else
+            doc.TextRange().Text = WpfHelper.Lf2Cr( text );
       } catch ( SystemException ex ) { doc.TextRange().Text = ex.ToString(); } }
 
       private void BuildBasicDesc ( ModMeta meta, InlineCollection list ) {
