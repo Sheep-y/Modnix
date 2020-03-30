@@ -108,6 +108,7 @@ namespace Sheepy.Modnix.MainGUI {
          ButtonWebsite.Visibility = ButtonForum.Visibility = ButtonReddit.Visibility =
             ButtonTwitter.Visibility = ButtonCanny.Visibility = ButtonDiscord.Visibility =
             App.Settings.MinifyGamePanel ? Visibility.Collapsed : Visibility.Visible;
+         GameButtonGap1.Height = GameButtonGap2.Height = new GridLength( App.Settings.MinifyGamePanel ? 0 : 5, GridUnitType.Pixel );
          ButtonMinifyGame.Content = App.Settings.MinifyGamePanel ? "＋" : "—";
 
          ButtonAddMod.IsEnabled = SharedGui.CanModify && Directory.Exists( App.ModFolder );
@@ -602,6 +603,7 @@ namespace Sheepy.Modnix.MainGUI {
             case "change" : LabelLogTitle.Content = "Change Log"; isChange = true; break;
             case "loader" : LabelLogTitle.Content = "Loader Log"; isLoader = true; break;
             case "license": LabelLogTitle.Content = "License"; isLicense = true; break;
+            default: break;
          }
          TextLog.Visibility = isGui ? Visibility.Visible : Visibility.Collapsed;
          TextLicense.Visibility = isGui ? Visibility.Collapsed : Visibility.Visible;
