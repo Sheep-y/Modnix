@@ -378,17 +378,19 @@ namespace Sheepy.Modnix.MainGUI {
       private ModInfo CurrentMod;
 
       private void RefreshModInfo () { try {
+         HideModTabs();
          if ( GridModList.SelectedItems.Count > 1 ) {
             Log( $"Showing mods summary" );
             BkgdModeInfo.Opacity = 0.06;
+            if ( TabSetModInfo.SelectedItem != TabModInfo ) TabSetModInfo.SelectedItem = TabModInfo;
             BuildMultiModInfo();
             return;
          }
-         HideModTabs();
          if ( CurrentMod == null ) {
             Log( "Clearing mod info" );
-            RichModInfo.TextRange().Text = "";
+            RichModInfo.Document.Replace();
             BkgdModeInfo.Opacity = 0.5;
+            if ( TabSetModInfo.SelectedItem != TabModInfo ) TabSetModInfo.SelectedItem = TabModInfo;
             return;
          }
          Log( $"Refreshing mod {CurrentMod}" );
@@ -397,7 +399,16 @@ namespace Sheepy.Modnix.MainGUI {
          TabModReadme.Visibility = CurrentMod.Is( ModQuery.HAS_README ) ? Visibility.Visible : Visibility.Collapsed;
          TabModChange.Visibility = CurrentMod.Is( ModQuery.HAS_CHANGELOG ) ? Visibility.Visible : Visibility.Collapsed;
          TabModLicense.Visibility = CurrentMod.Is( ModQuery.HAS_LICENSE ) ? Visibility.Visible : Visibility.Collapsed;
-         CurrentMod.BuildDocument( ModDoc.INFO, RichModInfo.Document );
+         if ( ( TabSetModInfo.SelectedItem as UIElement )?.Visibility != Visibility.Visible )
+            TabSetModInfo.SelectedItem = TabModInfo;
+         if ( TabSetModInfo.SelectedItem == TabModReadme )
+            CurrentMod.BuildDocument( ModDoc.README, RichModInfo.Document );
+         else if ( TabSetModInfo.SelectedItem == TabModChange )
+            CurrentMod.BuildDocument( ModDoc.CHANGELOG, RichModInfo.Document );
+         else if ( TabSetModInfo.SelectedItem == TabModLicense )
+            CurrentMod.BuildDocument( ModDoc.LICENSE, RichModInfo.Document );
+         else
+            CurrentMod.BuildDocument( ModDoc.INFO, RichModInfo.Document );
       } catch ( Exception ex ) { Log( ex ); } }
 
       private void HideModTabs () => TabModConfig.Visibility = TabModReadme.Visibility = TabModChange.Visibility = TabModLicense.Visibility = Visibility.Collapsed;
@@ -416,6 +427,7 @@ namespace Sheepy.Modnix.MainGUI {
             if ( tab is TabItem t )
                t.Content = null;
          ( TabSetModInfo.SelectedItem as TabItem ).Content = RichModInfo;
+         RefreshModInfo();
       }
 
       private void ButtonModOpenModDir_Click ( object sender, RoutedEventArgs evt ) {

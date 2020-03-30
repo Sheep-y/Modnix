@@ -179,9 +179,7 @@ namespace Sheepy.Modnix.MainGUI {
    }
 
    public static class WpfHelper {
-      public static TextRange TextRange ( this System.Windows.Controls.RichTextBox box ) {
-         return new TextRange( box.Document.ContentStart, box.Document.ContentEnd );
-      }
+      public static TextRange TextRange ( this FlowDocument doc ) => new TextRange( doc.ContentStart, doc.ContentEnd );
 
       public static void Replace ( this FlowDocument doc, params Block[] blocks ) => Replace( doc, (IEnumerable<Block>) blocks );
       public static void Replace ( this FlowDocument doc, IEnumerable< Block > blocks ) {

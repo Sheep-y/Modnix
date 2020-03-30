@@ -48,6 +48,9 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       private static Task< GridModItem > ConvertModTask ( ModEntry mod ) => Task.Run( () => ToGridItem( mod ) );
+      internal static readonly string[] ReadmeFiles  = new string[]{ "readme", "read.me", "readme.md", "readme.txt" };
+      internal static readonly string[] ChangeFiles  = new string[]{ "changelog", "change.log", "changelog.md", "changelog.txt" };
+      internal static readonly string[] LicenseFiles = new string[]{ "license", "unlicense", "license.md", "license.txt" };
 
       private static GridModItem ToGridItem ( ModEntry mod ) { try {
          var modPath = mod.Path;
@@ -56,26 +59,18 @@ namespace Sheepy.Modnix.MainGUI {
          var dir = Path.GetDirectoryName( modPath );
          AppControl.Instance.Log( "Scanning docs in " + dir );
          foreach ( var file in Directory.EnumerateFiles( dir ) ) { // TODO: Rewrite with string array lookup
-            switch ( Path.GetFileName( file ).ToLowerInvariant() ) {
-               case "readme": case "read.me": case "readme.md": case "readme.txt": 
-                  doc.Add( ModDoc.README, file ); break;
-               case "changelog": case "change.log": case "changelog.md": case "changelog.txt":
-                  doc.Add( ModDoc.CHANGELOG, file ); break;
-               case "license": case "unlicense": case "license.md": case "license.txt":
-                  doc.Add( ModDoc.LICENSE, file ); break;
-               default: break;
-            }
+            var name = Path.GetFileName( file ).ToLowerInvariant();
+            if ( ReadmeFiles.Contains( name ) ) doc.Add( ModDoc.README, file );
+            else if ( ChangeFiles.Contains( name ) ) doc.Add( ModDoc.CHANGELOG, file );
+            else if ( LicenseFiles.Contains( name ) ) doc.Add( ModDoc.LICENSE, file );
          }
          if ( modPath.EndsWith( ".dll", StringComparison.OrdinalIgnoreCase ) ) {
             AppControl.Instance.Log( "Scanning embedded docs in " + modPath );
-            if ( ! doc.ContainsKey( ModDoc.README ) && 
-                  ( ModScanner.FindEmbeddedFile( modPath, null, "readme", "read.me", "readme.md", "readme.txt" ) ) )
+            if ( ! doc.ContainsKey( ModDoc.README ) && ( ModScanner.FindEmbeddedFile( modPath, null, ReadmeFiles ) ) )
                doc.Add( ModDoc.README, "embedded" );
-            if ( ! doc.ContainsKey( ModDoc.CHANGELOG ) && 
-                  ( ModScanner.FindEmbeddedFile( modPath, null, "changelog", "change.log", "changelog.md", "changelog.txt" ) ) )
+            if ( ! doc.ContainsKey( ModDoc.CHANGELOG ) && ( ModScanner.FindEmbeddedFile( modPath, null, ChangeFiles ) ) )
                doc.Add( ModDoc.CHANGELOG, "embedded" );
-            if ( ! doc.ContainsKey( ModDoc.LICENSE ) && 
-                  ( ModScanner.FindEmbeddedFile( modPath, null, "license", "unlicense", "license.md", "license.txt" ) ) )
+            if ( ! doc.ContainsKey( ModDoc.LICENSE ) && ( ModScanner.FindEmbeddedFile( modPath, null, LicenseFiles ) ) )
                doc.Add( ModDoc.LICENSE, "embedded" );
          }
          return new GridModItem( mod ) { Docs = doc.Count == 0 ? null : doc };
@@ -178,10 +173,13 @@ namespace Sheepy.Modnix.MainGUI {
 
       public override void BuildDocument ( ModDoc type, FlowDocument doc ) {
          switch ( type ) {
-            case ModDoc.SUMMARY : BuildSummary( doc ); return;
-            case ModDoc.INFO : BuildDesc( doc ); return;
+            case ModDoc.SUMMARY : BuildSummary( doc ); break;
+            case ModDoc.INFO : BuildDesc( doc ); break;
+            case ModDoc.README : BuildSupportingDoc( type, doc, ModLoaderBridge.ReadmeFiles ); break;
+            case ModDoc.CHANGELOG : BuildSupportingDoc( type, doc, ModLoaderBridge.ChangeFiles ); break;
+            case ModDoc.LICENSE : BuildSupportingDoc( type, doc, ModLoaderBridge.LicenseFiles ); break;
+            default: doc.Replace( new Paragraph( new Run( $"Unknown doc type {type}" ) ) ); break;
          }
-         doc.Replace( new Paragraph( new Run( $"Unknown doc type {type}" ) ) );
       }
 
       private void BuildDesc ( FlowDocument doc ) { lock ( Mod ) {
@@ -205,6 +203,18 @@ namespace Sheepy.Modnix.MainGUI {
                   ? "\t[has config file]" : "\t[can create config]" );
          body.Inlines.Add( "\r" );
       } }
+
+      private void BuildSupportingDoc ( ModDoc type, FlowDocument doc, string[] fileList ) { try {
+         if ( Docs.TryGetValue( type, out string file ) && ! "embedded".Equals( file, StringComparison.Ordinal ) ) {
+            AppControl.Instance.Log( $"Reading {type} {file}" );
+            doc.TextRange().Text = File.ReadAllText( file ).Replace( "\r", "" ).Replace( '\n', '\r' );
+         } else {
+            AppControl.Instance.Log( $"Reading embedded {type} from {Path}" );
+            var text = new StringBuilder();
+            if ( ! ModScanner.FindEmbeddedFile( Path, text, fileList ) ) return;
+            doc.TextRange().Text = text.ToString().Replace( "\r", "" ).Replace( '\n', '\r' );
+         }
+      } catch ( SystemException ex ) { doc.TextRange().Text = ex.ToString(); } }
 
       private void BuildBasicDesc ( ModMeta meta, InlineCollection list ) {
          /* Experimental image code. Online image does not work, sadly.
@@ -268,7 +278,7 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       private void BuildProvidedDesc ( ModMeta meta, InlineCollection list ) {
-         string desc = meta.Description?.ToString( "en" );
+         var desc = meta.Description?.ToString( "en" );
          if ( string.IsNullOrWhiteSpace( desc ) ) return;
          list.Add( desc );
       }
