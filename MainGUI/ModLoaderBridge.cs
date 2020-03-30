@@ -49,9 +49,40 @@ namespace Sheepy.Modnix.MainGUI {
 
       private static Task< GridModItem > ConvertModTask ( ModEntry mod ) => Task.Run( () => ToGridItem( mod ) );
 
-      private static GridModItem ToGridItem ( ModEntry mod ) {
+      private static GridModItem ToGridItem ( ModEntry mod ) { try {
+         var modPath = mod.Path;
+         if ( string.IsNullOrWhiteSpace( modPath ) ) return new GridModItem( mod );
+         var doc = new Dictionary< ModDoc, string >();
+         var dir = Path.GetDirectoryName( modPath );
+         AppControl.Instance.Log( "Scanning docs in " + dir );
+         foreach ( var file in Directory.EnumerateFiles( dir ) ) { // TODO: Rewrite with string array lookup
+            switch ( Path.GetFileName( file ).ToLowerInvariant() ) {
+               case "readme": case "read.me": case "readme.md": case "readme.txt": 
+                  doc.Add( ModDoc.README, file ); break;
+               case "changelog": case "change.log": case "changelog.md": case "changelog.txt":
+                  doc.Add( ModDoc.CHANGELOG, file ); break;
+               case "license": case "unlicense": case "license.md": case "license.txt":
+                  doc.Add( ModDoc.LICENSE, file ); break;
+               default: break;
+            }
+         }
+         if ( modPath.EndsWith( ".dll", StringComparison.OrdinalIgnoreCase ) ) {
+            AppControl.Instance.Log( "Scanning embedded docs in " + modPath );
+            if ( ! doc.ContainsKey( ModDoc.README ) && 
+                  ( ModScanner.FindEmbeddedFile( modPath, null, "readme", "read.me", "readme.md", "readme.txt" ) ) )
+               doc.Add( ModDoc.README, "embedded" );
+            if ( ! doc.ContainsKey( ModDoc.CHANGELOG ) && 
+                  ( ModScanner.FindEmbeddedFile( modPath, null, "changelog", "change.log", "changelog.md", "changelog.txt" ) ) )
+               doc.Add( ModDoc.CHANGELOG, "embedded" );
+            if ( ! doc.ContainsKey( ModDoc.LICENSE ) && 
+                  ( ModScanner.FindEmbeddedFile( modPath, null, "license", "unlicense", "license.md", "license.txt" ) ) )
+               doc.Add( ModDoc.LICENSE, "embedded" );
+         }
+         return new GridModItem( mod ) { Docs = doc.Count == 0 ? null : doc };
+      } catch ( Exception ex ) {
+         AppControl.Instance.Log( ex );
          return new GridModItem( mod );
-      }
+      } }
 
       private static ModEntry Mod ( ModInfo mod ) => ( mod as GridModItem )?.Mod;
 
@@ -112,7 +143,7 @@ namespace Sheepy.Modnix.MainGUI {
 
    internal class GridModItem : ModInfo {
       internal readonly ModEntry Mod;
-      internal HashSet< ModDoc > Docs = new HashSet<ModDoc>();
+      internal Dictionary< ModDoc, string > Docs;
       internal GridModItem ( ModEntry mod ) => Mod = mod ?? throw new ArgumentNullException( nameof( mod ) );
       public override string Id => Mod.Metadata.Id;
       public override string Name => Mod.Metadata.Name?.ToString( "en" );
@@ -134,6 +165,12 @@ namespace Sheepy.Modnix.MainGUI {
                return Mod.HasConfig;
             case ModQuery.HAS_CONFIG_FILE :
                return Mod.CheckConfigFile() != null;
+            case ModQuery.HAS_README :
+               return Docs?.ContainsKey( ModDoc.README ) == true;
+            case ModQuery.HAS_CHANGELOG :
+               return Docs?.ContainsKey( ModDoc.CHANGELOG ) == true;
+            case ModQuery.HAS_LICENSE :
+               return Docs?.ContainsKey( ModDoc.LICENSE ) == true;
             default:
                return false;
          }

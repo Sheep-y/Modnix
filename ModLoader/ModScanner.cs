@@ -94,7 +94,7 @@ namespace Sheepy.Modnix {
             meta = ParseDllInfo( file );
             if ( meta == null ) return null;
             var info = new StringBuilder();
-            if ( FindEmbeddedFile( file, info, "mod_info", "js" ) ) {
+            if ( FindEmbeddedFile( file, info, "mod_info", "mod_info.js", "mod_info.json" ) ) {
                Log.Verbo( "Parsing embedded mod_info" );
                meta.ImportFrom( ParseInfoJs( info.ToString() )?.EraseModsAndDlls() );
             }
@@ -157,14 +157,13 @@ namespace Sheepy.Modnix {
          }.Normalise();
       } catch ( Exception ex ) { Log.Warn( ex ); return null; } }
 
-      public static bool FindEmbeddedFile ( string file, StringBuilder text, string name, params string[] exts ) { text = null; try {
-         var dotName = '.' + name + '.';
+      public static bool FindEmbeddedFile ( string file, StringBuilder text, params string[] names ) { try {
+         var dotName = names.Select( e => '.' + e ).ToArray();
          using ( var lib = AssemblyDefinition.ReadAssembly( file ) ) {
             if ( ! lib.MainModule.HasResources ) return false;
             foreach ( var resource in lib.MainModule.Resources ) {
                if ( ! ( resource is EmbeddedResource res ) || res.ResourceType != ResourceType.Embedded ) continue;
-               if ( res.Name.IndexOf( dotName, StringComparison.OrdinalIgnoreCase ) >= 0
-                     && exts.Any( e => res.Name.EndsWith( dotName + e, StringComparison.OrdinalIgnoreCase ) ) ) {
+               if ( dotName.Any( e => res.Name.EndsWith( e, StringComparison.OrdinalIgnoreCase ) ) ) {
                   if ( text != null )
                      text.Append( ModMetaJson.ReadAsText( res.GetResourceStream() ) );
                   return true;
@@ -174,8 +173,7 @@ namespace Sheepy.Modnix {
                   var data = reader.GetEnumerator();
                   while ( data.MoveNext() ) {
                      var item = data.Key.ToString();
-                     if ( item.Equals( name, StringComparison.OrdinalIgnoreCase ) ||
-                           exts.Any( e => item.EndsWith( $"{name} {e}", StringComparison.OrdinalIgnoreCase ) ) ) {
+                     if ( names.Any( e => item.EndsWith( e, StringComparison.OrdinalIgnoreCase ) ) ) {
                         if ( text != null )
                            text.Append( data.Value is Stream stream ? ModMetaJson.ReadAsText( stream ) : data.Value?.ToString() );
                         return true;
