@@ -383,15 +383,19 @@ namespace Sheepy.Modnix.MainGUI {
             BuildMultiModInfo();
             return;
          }
+         HideModTabs();
          if ( CurrentMod == null ) {
             Log( "Clearing mod info" );
             RichModInfo.TextRange().Text = "";
             BkgdModeInfo.Opacity = 0.5;
-            HideModTabs();
             return;
          }
          Log( $"Refreshing mod {CurrentMod}" );
          BkgdModeInfo.Opacity = 0.03;
+         TabModConfig.Visibility = CurrentMod.Is( ModQuery.HAS_CONFIG ) ? Visibility.Visible : Visibility.Collapsed;
+         TabModReadme.Visibility = CurrentMod.Is( ModQuery.HAS_README ) ? Visibility.Visible : Visibility.Collapsed;
+         TabModChange.Visibility = CurrentMod.Is( ModQuery.HAS_CHANGELOG ) ? Visibility.Visible : Visibility.Collapsed;
+         TabModLicense.Visibility = CurrentMod.Is( ModQuery.HAS_LICENSE ) ? Visibility.Visible : Visibility.Collapsed;
          CurrentMod.BuildDocument( ModDoc.INFO, RichModInfo.Document );
       } catch ( Exception ex ) { Log( ex ); } }
 
