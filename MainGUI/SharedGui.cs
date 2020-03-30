@@ -179,6 +179,9 @@ namespace Sheepy.Modnix.MainGUI {
    }
 
    public static class WpfHelper {
+      public static string Lf2Cr ( string text ) => text.Replace( "\r", "" ).Replace( '\n', '\r' );
+      public static StringBuilder Lf2Cr ( StringBuilder text ) => text.Replace( "\r", "" ).Replace( '\n', '\r' );
+
       public static TextRange TextRange ( this FlowDocument doc ) => new TextRange( doc.ContentStart, doc.ContentEnd );
 
       public static void Replace ( this FlowDocument doc, params Block[] blocks ) => Replace( doc, (IEnumerable<Block>) blocks );

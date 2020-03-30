@@ -199,20 +199,19 @@ namespace Sheepy.Modnix.MainGUI {
          var name = new Run( Mod.Metadata.Name.ToString( "en" ) );
          body.Inlines.Add( Mod.Disabled ? (Inline) name : new Bold( name ) );
          if ( Mod.HasConfig )
-            body.Inlines.Add( Mod.CheckConfigFile() != null
-                  ? "\t[has config file]" : "\t[can create config]" );
+            body.Inlines.Add( Mod.CheckConfigFile() != null ? "\t[has config file]" : "\t[can create config]" );
          body.Inlines.Add( "\r" );
       } }
 
       private void BuildSupportingDoc ( ModDoc type, FlowDocument doc, string[] fileList ) { try {
          if ( Docs.TryGetValue( type, out string file ) && ! "embedded".Equals( file, StringComparison.Ordinal ) ) {
             AppControl.Instance.Log( $"Reading {type} {file}" );
-            doc.TextRange().Text = File.ReadAllText( file ).Replace( "\r", "" ).Replace( '\n', '\r' );
+            doc.TextRange().Text = WpfHelper.Lf2Cr( File.ReadAllText( file ) );
          } else {
             AppControl.Instance.Log( $"Reading embedded {type} from {Path}" );
             var text = new StringBuilder();
             if ( ! ModScanner.FindEmbeddedFile( Path, text, fileList ) ) return;
-            doc.TextRange().Text = text.ToString().Replace( "\r", "" ).Replace( '\n', '\r' );
+            doc.TextRange().Text = WpfHelper.Lf2Cr( text ).ToString();
          }
       } catch ( SystemException ex ) { doc.TextRange().Text = ex.ToString(); } }
 
