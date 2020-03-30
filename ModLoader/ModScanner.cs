@@ -93,9 +93,10 @@ namespace Sheepy.Modnix {
          if ( file.EndsWith( ".dll", StringComparison.OrdinalIgnoreCase ) ) {
             meta = ParseDllInfo( file );
             if ( meta == null ) return null;
-            if ( FindEmbeddedFile( file, out string info, "mod_info", "js" ) ) {
+            var info = new StringBuilder();
+            if ( FindEmbeddedFile( file, info, "mod_info", "js" ) ) {
                Log.Verbo( "Parsing embedded mod_info" );
-               meta.ImportFrom( ParseInfoJs( info )?.EraseModsAndDlls() );
+               meta.ImportFrom( ParseInfoJs( info.ToString() )?.EraseModsAndDlls() );
             }
          } else {
             Log.Verbo( $"Parsing as mod_info: {file}" );
@@ -156,15 +157,16 @@ namespace Sheepy.Modnix {
          }.Normalise();
       } catch ( Exception ex ) { Log.Warn( ex ); return null; } }
 
-      public static bool FindEmbeddedFile ( string file, out string text, string name, params string[] exts ) { text = null; try {
-         string dotName = '.' + name + '.';
+      public static bool FindEmbeddedFile ( string file, StringBuilder text, string name, params string[] exts ) { text = null; try {
+         var dotName = '.' + name + '.';
          using ( var lib = AssemblyDefinition.ReadAssembly( file ) ) {
             if ( ! lib.MainModule.HasResources ) return false;
             foreach ( var resource in lib.MainModule.Resources ) {
                if ( ! ( resource is EmbeddedResource res ) || res.ResourceType != ResourceType.Embedded ) continue;
                if ( res.Name.IndexOf( dotName, StringComparison.OrdinalIgnoreCase ) >= 0
                      && exts.Any( e => res.Name.EndsWith( dotName + e, StringComparison.OrdinalIgnoreCase ) ) ) {
-                  text = ModMetaJson.ReadAsText( res.GetResourceStream() );
+                  if ( text != null )
+                     text.Append( ModMetaJson.ReadAsText( res.GetResourceStream() ) );
                   return true;
                }
                if ( ! res.Name.EndsWith( ".resources", StringComparison.OrdinalIgnoreCase ) ) continue;
@@ -174,7 +176,8 @@ namespace Sheepy.Modnix {
                      var item = data.Key.ToString();
                      if ( item.Equals( name, StringComparison.OrdinalIgnoreCase ) ||
                            exts.Any( e => item.EndsWith( $"{name} {e}", StringComparison.OrdinalIgnoreCase ) ) ) {
-                        text = data.Value is Stream stream ? ModMetaJson.ReadAsText( stream ) : data.Value?.ToString();
+                        if ( text != null )
+                           text.Append( data.Value is Stream stream ? ModMetaJson.ReadAsText( stream ) : data.Value?.ToString() );
                         return true;
                      }
                   }
