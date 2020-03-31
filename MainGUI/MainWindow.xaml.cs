@@ -400,13 +400,15 @@ namespace Sheepy.Modnix.MainGUI {
          }
          Log( $"Refreshing mod {CurrentMod}" );
          BkgdModeInfo.Opacity = 0.03;
-         TabModConfig.Visibility = CurrentMod.Is( ModQuery.HAS_CONFIG ) ? Visibility.Visible : Visibility.Collapsed;
-         TabModReadme.Visibility = CurrentMod.Is( ModQuery.HAS_README ) ? Visibility.Visible : Visibility.Collapsed;
-         TabModChange.Visibility = CurrentMod.Is( ModQuery.HAS_CHANGELOG ) ? Visibility.Visible : Visibility.Collapsed;
+         TabModConfig.Visibility  = CurrentMod.Is( ModQuery.HAS_CONFIG ) ? Visibility.Visible : Visibility.Collapsed;
+         TabModReadme.Visibility  = CurrentMod.Is( ModQuery.HAS_README ) ? Visibility.Visible : Visibility.Collapsed;
+         TabModChange.Visibility  = CurrentMod.Is( ModQuery.HAS_CHANGELOG ) ? Visibility.Visible : Visibility.Collapsed;
          TabModLicense.Visibility = CurrentMod.Is( ModQuery.HAS_LICENSE ) ? Visibility.Visible : Visibility.Collapsed;
          if ( ( TabSetModInfo.SelectedItem as UIElement )?.Visibility != Visibility.Visible )
             TabSetModInfo.SelectedItem = TabModInfo;
-         if ( TabSetModInfo.SelectedItem == TabModReadme )
+         if ( TabSetModInfo.SelectedItem == TabModConfig )
+            CurrentMod.BuildDocument( ModDoc.CONFIG, RichModInfo.Document );
+         else if ( TabSetModInfo.SelectedItem == TabModReadme )
             CurrentMod.BuildDocument( ModDoc.README, RichModInfo.Document );
          else if ( TabSetModInfo.SelectedItem == TabModChange )
             CurrentMod.BuildDocument( ModDoc.CHANGELOG, RichModInfo.Document );

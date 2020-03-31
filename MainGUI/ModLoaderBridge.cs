@@ -177,23 +177,13 @@ namespace Sheepy.Modnix.MainGUI {
          switch ( type ) {
             case ModDoc.SUMMARY : BuildSummary( doc ); break;
             case ModDoc.INFO : BuildDesc( doc ); break;
-            case ModDoc.README : BuildSupportingDoc( type, doc, ModLoaderBridge.ReadmeFiles ); break;
-            case ModDoc.CHANGELOG : BuildSupportingDoc( type, doc, ModLoaderBridge.ChangeFiles ); break;
-            case ModDoc.LICENSE : BuildSupportingDoc( type, doc, ModLoaderBridge.LicenseFiles ); break;
+            case ModDoc.CONFIG : BuildConfig( doc ); break;
+            case ModDoc.README : BuildSupportDoc( type, doc, ModLoaderBridge.ReadmeFiles ); break;
+            case ModDoc.CHANGELOG : BuildSupportDoc( type, doc, ModLoaderBridge.ChangeFiles ); break;
+            case ModDoc.LICENSE : BuildSupportDoc( type, doc, ModLoaderBridge.LicenseFiles ); break;
             default: doc.Replace( new Paragraph( new Run( $"Unknown doc type {type}" ) ) ); break;
          }
       }
-
-      private void BuildDesc ( FlowDocument doc ) { lock ( Mod ) {
-         doc.Replace(
-            BuildBlock( BuildBasicDesc ),
-            BuildBlock( BuildProvidedDesc ),
-            BuildBlock( BuildLinks ),
-            BuildBlock( BuildContacts ),
-            BuildBlock( BuildFileList ),
-            BuildCopyright()
-         );
-      } }
 
       private void BuildSummary ( FlowDocument doc ) { lock ( Mod ) {
          var body = doc.Blocks.FirstBlock as Paragraph;
@@ -205,7 +195,23 @@ namespace Sheepy.Modnix.MainGUI {
          body.Inlines.Add( "\r" );
       } }
 
-      private void BuildSupportingDoc ( ModDoc type, FlowDocument doc, string[] fileList ) { try {
+      private void BuildDesc ( FlowDocument doc ) { lock ( Mod ) {
+         doc.Replace(
+            BuildBlock( BuildBasicDesc ),
+            BuildBlock( BuildProvidedDesc ),
+            BuildBlock( BuildLinks ),
+            BuildBlock( BuildContacts ),
+            BuildBlock( BuildFileList ),
+            BuildCopyright()
+         );
+      } }
+      
+
+      private void BuildConfig ( FlowDocument doc ) { lock ( Mod ) {
+         doc.TextRange().Text = WpfHelper.Lf2Cr( Mod.GetConfigText() );
+      } }
+
+      private void BuildSupportDoc ( ModDoc type, FlowDocument doc, string[] fileList ) { try {
          string text = null;
          if ( Docs.TryGetValue( type, out string file ) && ! "embedded".Equals( file, StringComparison.Ordinal ) ) {
             AppControl.Instance.Log( $"Reading {type} {file}" );
