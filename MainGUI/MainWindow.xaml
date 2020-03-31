@@ -17,9 +17,9 @@
             </Grid.ColumnDefinitions>
             <DockPanel Margin="0,0,5,0">
                <StackPanel DockPanel.Dock="Top" VerticalAlignment="Top">
-                  <DockPanel>
-                     <Button x:Name="ButtonMinifyLoader" DockPanel.Dock="Right" Content="—" Height="20" VerticalAlignment="Bottom" Margin="0,0,0,5" Width="20" TabIndex="150" Click="ButtonHideLoader_Click" />
-                     <RichTextBox x:Name="RichAppInfo" IsReadOnly="True" BorderBrush="{x:Null}" Margin="0,0,0,5" IsTabStop="False" TabIndex="100">
+                  <DockPanel Margin="0,0,0,5">
+                     <Button x:Name="ButtonMinifyLoader" DockPanel.Dock="Right" Content="—" Height="20" VerticalAlignment="Bottom" Width="20" TabIndex="150" Click="ButtonHideLoader_Click" />
+                     <RichTextBox x:Name="RichAppInfo" IsReadOnly="True" BorderBrush="{x:Null}" IsTabStop="False" TabIndex="100">
                         <FlowDocument PagePadding="0">
                            <Paragraph>
                               <Run Text="Modnix Manager&#x9;Ver 1.0&#xA;Status: Requires Setup"/>
@@ -57,9 +57,9 @@
                         </StackPanel>
                      </Button>
                   </Grid>
-                  <DockPanel>
-                     <Button x:Name="ButtonMinifyGame" DockPanel.Dock="Right" Content="—" Height="20" VerticalAlignment="Bottom" Margin="0,0,0,5" Width="20" TabIndex="350" Click="ButtonHideGame_Click" />
-                     <RichTextBox x:Name="RichGameInfo" IsReadOnly="True" BorderBrush="{x:Null}" Margin="0,10,0,5" IsTabStop="False" TabIndex="300">
+                  <DockPanel Margin="0,0,0,5" >
+                     <Button x:Name="ButtonMinifyGame" DockPanel.Dock="Right" Content="—" Height="20" VerticalAlignment="Bottom" Width="20" TabIndex="350" Click="ButtonHideGame_Click" />
+                     <RichTextBox x:Name="RichGameInfo" IsReadOnly="True" BorderBrush="{x:Null}" Margin="0,10,0,0" IsTabStop="False" TabIndex="300">
                         <FlowDocument PagePadding="0">
                            <Paragraph>
                               <Run Text="Phoenix Point&#xA;Ver 1.0"/>
@@ -158,18 +158,47 @@
                               <AccessText Text="Mod Info"/>
                            </StackPanel>
                         </TabItem.Header>
-                        <RichTextBox x:Name="RichModInfo" IsReadOnly="True" IsDocumentEnabled="True" VerticalScrollBarVisibility="Auto" BorderBrush="{x:Null}" TabIndex="500">
-                           <RichTextBox.Background>
-                              <ImageBrush x:Name="BkgdModeInfo" ImageSource="Resources/img/modder.png" Stretch="Uniform" Opacity="0.5" >
-                                 <ImageBrush.RelativeTransform>
-                                    <TransformGroup>
-                                       <ScaleTransform CenterY="0.5" CenterX="0.5" ScaleX="0.8" ScaleY="0.8"/>
-                                    </TransformGroup>
-                                 </ImageBrush.RelativeTransform>
-                              </ImageBrush>
-                           </RichTextBox.Background>
-                           <FlowDocument PagePadding="0"/>
-                        </RichTextBox>
+                        <DockPanel x:Name="PanelModDocs">
+                           <Grid x:Name="PanelConfAction" DockPanel.Dock="Top" Margin="0,0,0,5">
+                              <Grid.ColumnDefinitions>
+                                 <ColumnDefinition/>
+                                 <ColumnDefinition Width="5"/>
+                                 <ColumnDefinition/>
+                                 <ColumnDefinition Width="5"/>
+                                 <ColumnDefinition/>
+                              </Grid.ColumnDefinitions>
+                              <Button x:Name="ButtonConfReset" Padding="0,5">
+                                 <StackPanel Orientation="Horizontal">
+                                    <Image Source="Resources/img/undo.png" Width="16" Margin="0,0,5,0"/>
+                                    <AccessText Text="Reset"/>
+                                 </StackPanel>
+                              </Button>
+                              <Button x:Name="ButtonConfProfile" Grid.Column="2" Padding="0,5">
+                                 <StackPanel Orientation="Horizontal">
+                                    <Image Source="Resources/img/gears.png" Width="16" Margin="0,0,5,0"/>
+                                    <AccessText Text="Default"/>
+                                 </StackPanel>
+                              </Button>
+                              <Button x:Name="ButtonConfSave" Grid.Column="4" Padding="0,5">
+                                 <StackPanel Orientation="Horizontal">
+                                    <Image Source="Resources/img/floppy.png" Width="16" Margin="0,0,5,0"/>
+                                    <AccessText Text="Save"/>
+                                 </StackPanel>
+                              </Button>
+                           </Grid>
+                           <RichTextBox x:Name="RichModInfo" IsReadOnly="True" IsDocumentEnabled="True" VerticalScrollBarVisibility="Auto" BorderBrush="{x:Null}" TabIndex="500">
+                              <RichTextBox.Background>
+                                 <ImageBrush x:Name="BkgdModeInfo" ImageSource="Resources/img/modder.png" Stretch="Uniform" Opacity="0.5" >
+                                    <ImageBrush.RelativeTransform>
+                                       <TransformGroup>
+                                          <ScaleTransform CenterY="0.5" CenterX="0.5" ScaleX="0.8" ScaleY="0.8"/>
+                                       </TransformGroup>
+                                    </ImageBrush.RelativeTransform>
+                                 </ImageBrush>
+                              </RichTextBox.Background>
+                              <FlowDocument PagePadding="0"/>
+                           </RichTextBox>
+                        </DockPanel>
                      </TabItem>
                      <TabItem x:Name="TabModConfig">
                         <TabItem.Header>
@@ -210,10 +239,10 @@
                         <AccessText Text="Explore"/>
                      </StackPanel>
                   </Button>
-                  <Button x:Name="ButtonModConf" Grid.Row="1" Grid.Column="2" Padding="5" IsEnabled="False" Click="ButtonModConf_Click" TabIndex="600">
+                  <Button x:Name="ButtonModEnabled" Grid.Row="1" Grid.Column="2" Padding="5" IsEnabled="False" Click="ButtonModEnabled_Click" TabIndex="600">
                      <StackPanel Orientation="Horizontal">
-                        <Image Source="Resources/img/gear.png" Width="16" Margin="0,0,5,0"/>
-                        <AccessText Text="Reset"/>
+                        <Image Source="Resources/img/check.png" Width="16" Margin="0,0,5,0"/>
+                        <AccessText Text="Enabled"/>
                      </StackPanel>
                   </Button>
                   <Button x:Name="ButtonModDelete" Grid.Row="1" Grid.Column="4" Padding="5" IsEnabled="False" Click="ButtonModDelete_Click" TabIndex="600">

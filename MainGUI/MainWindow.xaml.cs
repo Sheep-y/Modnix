@@ -101,7 +101,7 @@ namespace Sheepy.Modnix.MainGUI {
          ButtonSetup.IsEnabled = ! SharedGui.IsAppWorking && SharedGui.AppState != null;
          ButtonSetup.Visibility = ButtonUserGuide.Visibility = ButtonWiki.Visibility =
             minApp ? Visibility.Collapsed : Visibility.Visible;
-         RichAppInfo.Margin = new Thickness( 0, 0, 0, minApp ? 0 : 5 );
+         RichGameInfo.Margin = new Thickness( 0, minApp ? 0 : 10, 0, 0 );
          ButtonMinifyLoader.Content = minApp ? "＋" : "—";
 
          ButtonRunOnline.IsEnabled  = ButtonRunOffline.IsEnabled  = SharedGui.CanModify && SharedGui.IsGameFound;
@@ -110,7 +110,6 @@ namespace Sheepy.Modnix.MainGUI {
          ButtonWebsite.Visibility = ButtonForum.Visibility = ButtonReddit.Visibility =
             ButtonTwitter.Visibility = ButtonCanny.Visibility = ButtonDiscord.Visibility =
             minGame ? Visibility.Collapsed : Visibility.Visible;
-         RichGameInfo.Margin = new Thickness( 0, minGame ? 0 : 10, 0, 5 );
          GameButtonGap1.Height = GameButtonGap2.Height = new GridLength( minGame ? 0 : 5, GridUnitType.Pixel );
          ButtonMinifyGame.Content = minGame ? "＋" : "—";
 
@@ -119,7 +118,7 @@ namespace Sheepy.Modnix.MainGUI {
          ButtonRefreshMod.IsEnabled = Directory.Exists( App.ModFolder ) && ! SharedGui.IsAppWorking;
 
          ButtonModOpenModDir.IsEnabled = CurrentMod != null;
-         ButtonModConf.IsEnabled = SharedGui.CanModify && CurrentMod != null && SelectedMods.Any( e => e.Is( ModQuery.HAS_CONFIG ) );
+         ButtonModEnabled.IsEnabled = CurrentMod != null;
          ButtonModDelete.IsEnabled = SharedGui.CanModify && CurrentMod != null && ! SelectedMods.Any( e => e.Is( ModQuery.IS_CHILD ) );
 
          ButtonLoaderLog.IsEnabled = File.Exists( App.LoaderLog );
@@ -403,17 +402,21 @@ namespace Sheepy.Modnix.MainGUI {
          }
          Log( $"Refreshing mod {CurrentMod}" );
          BkgdModeInfo.Opacity = 0.03;
+
          TabModConfig.Visibility  = CurrentMod.Is( ModQuery.HAS_CONFIG ) ? Visibility.Visible : Visibility.Collapsed;
          TabModReadme.Visibility  = CurrentMod.Is( ModQuery.HAS_README ) ? Visibility.Visible : Visibility.Collapsed;
          TabModChange.Visibility  = CurrentMod.Is( ModQuery.HAS_CHANGELOG ) ? Visibility.Visible : Visibility.Collapsed;
          TabModLicense.Visibility = CurrentMod.Is( ModQuery.HAS_LICENSE ) ? Visibility.Visible : Visibility.Collapsed;
-         RichModInfo.IsReadOnly = true;
          if ( ( TabSetModInfo.SelectedItem as UIElement )?.Visibility != Visibility.Visible )
             TabSetModInfo.SelectedItem = TabModInfo;
-         if ( TabSetModInfo.SelectedItem == TabModConfig ) {
+
+         var isConfig = TabSetModInfo.SelectedItem == TabModConfig;
+         RichModInfo.IsReadOnly = ! isConfig;
+         PanelConfAction.Visibility = isConfig ? Visibility.Visible : Visibility.Collapsed;
+
+         if ( TabSetModInfo.SelectedItem == TabModConfig )
             CurrentMod.BuildDocument( ModDoc.CONFIG, RichModInfo.Document );
-            RichModInfo.IsReadOnly = false;
-         } else if ( TabSetModInfo.SelectedItem == TabModReadme )
+         else if ( TabSetModInfo.SelectedItem == TabModReadme )
             CurrentMod.BuildDocument( ModDoc.README, RichModInfo.Document );
          else if ( TabSetModInfo.SelectedItem == TabModChange )
             CurrentMod.BuildDocument( ModDoc.CHANGELOG, RichModInfo.Document );
@@ -438,7 +441,7 @@ namespace Sheepy.Modnix.MainGUI {
          foreach ( var tab in TabSetModInfo.Items )
             if ( tab is TabItem t )
                t.Content = null;
-         ( TabSetModInfo.SelectedItem as TabItem ).Content = RichModInfo;
+         ( TabSetModInfo.SelectedItem as TabItem ).Content = PanelModDocs;
          RefreshModInfo();
       }
 
@@ -454,7 +457,7 @@ namespace Sheepy.Modnix.MainGUI {
          }
       }
 
-      private void ButtonModConf_Click ( object sender, RoutedEventArgs evt ) {
+      private void ButtonModEnabled_Click ( object sender, RoutedEventArgs evt ) {
          List<ModInfo> reset = new List<ModInfo>(), create = new List<ModInfo>();
          foreach ( var mod in SelectedMods ) {
             if ( ! mod.Is( ModQuery.HAS_CONFIG ) ) continue;

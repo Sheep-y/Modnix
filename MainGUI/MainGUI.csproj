@@ -116,6 +116,7 @@
     <Resource Include="Resources\Newtonsoft.Json.dll" />
     <Resource Include="Resources\img\book.png" />
     <Resource Include="Resources\img\canny.png" />
+    <Resource Include="Resources\img\check.png" />
     <Resource Include="Resources\img\console.png" />
     <Resource Include="Resources\img\cross.png" />
     <Resource Include="Resources\img\discord.png" />
@@ -124,6 +125,7 @@
     <Resource Include="Resources\img\fandom.png" />
     <Resource Include="Resources\img\folder.png" />
     <Resource Include="Resources\img\gear.png" />
+    <Resource Include="Resources\img\gears.png" />
     <Resource Include="Resources\img\info.png" />
     <Resource Include="Resources\img\log_file.png" />
     <Resource Include="Resources\img\modder.png" />
@@ -133,9 +135,12 @@
     <Resource Include="Resources\img\opensource.png" />
     <Resource Include="Resources\img\phoenix_point.png" />
     <Resource Include="Resources\img\reddit.png" />
+    <Resource Include="Resources\img\redo.png" />
     <Resource Include="Resources\img\reload.png" />
     <Resource Include="Resources\img\snapshot.png" />
     <Resource Include="Resources\img\twitter.png" />
+    <Resource Include="Resources\img\uncheck.png" />
+    <Resource Include="Resources\img\undo.png" />
     <Resource Include="Resources\img\upgrade.png" />
     <Resource Include="Resources\img\www.png" />
   </ItemGroup>
