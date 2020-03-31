@@ -96,20 +96,23 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       private void RefreshAppButtons () { try {
+         bool minApp = App.Settings.MinifyLoaderPanel, minGame = App.Settings.MinifyGamePanel;
          Log( "Refreshing app buttons, " + ( SharedGui.CanModify ? "can mod" : "cannot mod" ) );
          ButtonSetup.IsEnabled = ! SharedGui.IsAppWorking && SharedGui.AppState != null;
          ButtonSetup.Visibility = ButtonUserGuide.Visibility = ButtonWiki.Visibility =
-            App.Settings.MinifyLoaderPanel ? Visibility.Collapsed : Visibility.Visible;
-         ButtonMinifyLoader.Content = App.Settings.MinifyLoaderPanel ? "＋" : "—";
+            minApp ? Visibility.Collapsed : Visibility.Visible;
+         RichAppInfo.Margin = new Thickness( 0, 0, 0, minApp ? 0 : 5 );
+         ButtonMinifyLoader.Content = minApp ? "＋" : "—";
 
          ButtonRunOnline.IsEnabled  = ButtonRunOffline.IsEnabled  = SharedGui.CanModify && SharedGui.IsGameFound;
          ButtonRunOnline.Foreground = ButtonRunOffline.Foreground = 
             ButtonRunOnline.IsEnabled && SharedGui.AppState != null && ! SharedGui.IsInjected ? Brushes.Red : Brushes.Black;
          ButtonWebsite.Visibility = ButtonForum.Visibility = ButtonReddit.Visibility =
             ButtonTwitter.Visibility = ButtonCanny.Visibility = ButtonDiscord.Visibility =
-            App.Settings.MinifyGamePanel ? Visibility.Collapsed : Visibility.Visible;
-         GameButtonGap1.Height = GameButtonGap2.Height = new GridLength( App.Settings.MinifyGamePanel ? 0 : 5, GridUnitType.Pixel );
-         ButtonMinifyGame.Content = App.Settings.MinifyGamePanel ? "＋" : "—";
+            minGame ? Visibility.Collapsed : Visibility.Visible;
+         RichGameInfo.Margin = new Thickness( 0, minGame ? 0 : 10, 0, 5 );
+         GameButtonGap1.Height = GameButtonGap2.Height = new GridLength( minGame ? 0 : 5, GridUnitType.Pixel );
+         ButtonMinifyGame.Content = minGame ? "＋" : "—";
 
          ButtonAddMod.IsEnabled = SharedGui.CanModify && Directory.Exists( App.ModFolder );
          ButtonModDir.IsEnabled = Directory.Exists( App.ModFolder );
@@ -404,11 +407,13 @@ namespace Sheepy.Modnix.MainGUI {
          TabModReadme.Visibility  = CurrentMod.Is( ModQuery.HAS_README ) ? Visibility.Visible : Visibility.Collapsed;
          TabModChange.Visibility  = CurrentMod.Is( ModQuery.HAS_CHANGELOG ) ? Visibility.Visible : Visibility.Collapsed;
          TabModLicense.Visibility = CurrentMod.Is( ModQuery.HAS_LICENSE ) ? Visibility.Visible : Visibility.Collapsed;
+         RichModInfo.IsReadOnly = true;
          if ( ( TabSetModInfo.SelectedItem as UIElement )?.Visibility != Visibility.Visible )
             TabSetModInfo.SelectedItem = TabModInfo;
-         if ( TabSetModInfo.SelectedItem == TabModConfig )
+         if ( TabSetModInfo.SelectedItem == TabModConfig ) {
             CurrentMod.BuildDocument( ModDoc.CONFIG, RichModInfo.Document );
-         else if ( TabSetModInfo.SelectedItem == TabModReadme )
+            RichModInfo.IsReadOnly = false;
+         } else if ( TabSetModInfo.SelectedItem == TabModReadme )
             CurrentMod.BuildDocument( ModDoc.README, RichModInfo.Document );
          else if ( TabSetModInfo.SelectedItem == TabModChange )
             CurrentMod.BuildDocument( ModDoc.CHANGELOG, RichModInfo.Document );
