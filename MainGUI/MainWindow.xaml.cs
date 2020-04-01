@@ -101,7 +101,6 @@ namespace Sheepy.Modnix.MainGUI {
          ButtonSetup.IsEnabled = ! SharedGui.IsAppWorking && SharedGui.AppState != null;
          ButtonSetup.Visibility = ButtonUserGuide.Visibility = ButtonWiki.Visibility =
             minApp ? Visibility.Collapsed : Visibility.Visible;
-         RichGameInfo.Margin = new Thickness( 0, minApp ? 0 : 10, 0, 0 );
          ButtonMinifyLoader.Content = minApp ? "＋" : "—";
 
          ButtonRunOnline.IsEnabled  = ButtonRunOffline.IsEnabled  = SharedGui.CanModify && SharedGui.IsGameFound;
@@ -397,33 +396,34 @@ namespace Sheepy.Modnix.MainGUI {
             Log( "Clearing mod info" );
             RichModInfo.Document.Replace();
             BkgdModeInfo.Opacity = 0.5;
-            if ( TabSetModInfo.SelectedItem != TabModInfo ) TabSetModInfo.SelectedItem = TabModInfo;
-            return;
-         }
-         Log( $"Refreshing mod {CurrentMod}" );
-         BkgdModeInfo.Opacity = 0.03;
+         } else {
+            Log( $"Refreshing mod {CurrentMod}" );
+            BkgdModeInfo.Opacity = 0.03;
 
-         TabModConfig.Visibility  = CurrentMod.Is( ModQuery.HAS_CONFIG ) ? Visibility.Visible : Visibility.Collapsed;
-         TabModReadme.Visibility  = CurrentMod.Is( ModQuery.HAS_README ) ? Visibility.Visible : Visibility.Collapsed;
-         TabModChange.Visibility  = CurrentMod.Is( ModQuery.HAS_CHANGELOG ) ? Visibility.Visible : Visibility.Collapsed;
-         TabModLicense.Visibility = CurrentMod.Is( ModQuery.HAS_LICENSE ) ? Visibility.Visible : Visibility.Collapsed;
+            TabModConfig.Visibility  = CurrentMod.Is( ModQuery.HAS_CONFIG ) ? Visibility.Visible : Visibility.Collapsed;
+            TabModReadme.Visibility  = CurrentMod.Is( ModQuery.HAS_README ) ? Visibility.Visible : Visibility.Collapsed;
+            TabModChange.Visibility  = CurrentMod.Is( ModQuery.HAS_CHANGELOG ) ? Visibility.Visible : Visibility.Collapsed;
+            TabModLicense.Visibility = CurrentMod.Is( ModQuery.HAS_LICENSE ) ? Visibility.Visible : Visibility.Collapsed;
+         }
+
          if ( ( TabSetModInfo.SelectedItem as UIElement )?.Visibility != Visibility.Visible )
             TabSetModInfo.SelectedItem = TabModInfo;
-
          var isConfig = TabSetModInfo.SelectedItem == TabModConfig;
          RichModInfo.IsReadOnly = ! isConfig;
          PanelConfAction.Visibility = isConfig ? Visibility.Visible : Visibility.Collapsed;
 
-         if ( TabSetModInfo.SelectedItem == TabModConfig )
-            CurrentMod.BuildDocument( ModDoc.CONFIG, RichModInfo.Document );
-         else if ( TabSetModInfo.SelectedItem == TabModReadme )
-            CurrentMod.BuildDocument( ModDoc.README, RichModInfo.Document );
-         else if ( TabSetModInfo.SelectedItem == TabModChange )
-            CurrentMod.BuildDocument( ModDoc.CHANGELOG, RichModInfo.Document );
-         else if ( TabSetModInfo.SelectedItem == TabModLicense )
-            CurrentMod.BuildDocument( ModDoc.LICENSE, RichModInfo.Document );
-         else
-            CurrentMod.BuildDocument( ModDoc.INFO, RichModInfo.Document );
+         if ( CurrentMod != null ) {
+            if ( TabSetModInfo.SelectedItem == TabModConfig )
+               CurrentMod.BuildDocument( ModDoc.CONFIG, RichModInfo.Document );
+            else if ( TabSetModInfo.SelectedItem == TabModReadme )
+               CurrentMod.BuildDocument( ModDoc.README, RichModInfo.Document );
+            else if ( TabSetModInfo.SelectedItem == TabModChange )
+               CurrentMod.BuildDocument( ModDoc.CHANGELOG, RichModInfo.Document );
+            else if ( TabSetModInfo.SelectedItem == TabModLicense )
+               CurrentMod.BuildDocument( ModDoc.LICENSE, RichModInfo.Document );
+            else
+               CurrentMod.BuildDocument( ModDoc.INFO, RichModInfo.Document );
+         }
       } catch ( Exception ex ) { Log( ex ); } }
 
       private void HideModTabs () => TabModConfig.Visibility = TabModReadme.Visibility = TabModChange.Visibility = TabModLicense.Visibility = Visibility.Collapsed;
@@ -441,7 +441,8 @@ namespace Sheepy.Modnix.MainGUI {
          foreach ( var tab in TabSetModInfo.Items )
             if ( tab is TabItem t )
                t.Content = null;
-         ( TabSetModInfo.SelectedItem as TabItem ).Content = PanelModDocs;
+         if ( TabSetModInfo.SelectedItem is TabItem current )
+            current.Content = PanelModDocs;
          RefreshModInfo();
       }
 
