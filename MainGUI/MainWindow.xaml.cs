@@ -479,6 +479,11 @@ namespace Sheepy.Modnix.MainGUI {
          RefreshModInfo();
       }
 
+      private void ButtonConfProfile_Click ( object sender, RoutedEventArgs e ) {
+         CurrentMod?.Do( AppAction.SET_CONFIG_PROFILE, "Default" );
+         RefreshModInfo();
+      }
+      
       private void ButtonConfSave_Click ( object sender, RoutedEventArgs e ) {
          CurrentMod?.Do( AppAction.SAVE_CONFIG );
          if ( IsConfEmpty() )
