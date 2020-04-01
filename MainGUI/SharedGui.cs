@@ -127,7 +127,7 @@ namespace Sheepy.Modnix.MainGUI {
             case AppAction.ADD_MOD : actionTxt = "Add Mod"; break;
             case AppAction.DEL_MOD : actionTxt = "Delete Mod"; break;
             case AppAction.DELETE_CONFIG : actionTxt = "Delete config"; break;
-            case AppAction.RESET_CONFIG : actionTxt = "Reset config"; break;
+            case AppAction.SAVE_CONFIG : actionTxt = "Save config"; break;
             default : actionTxt = "Action"; break;
          }
 

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -32,6 +33,10 @@ namespace Sheepy.Modnix.MainGUI {
          SetupGUI();
          RefreshGUI();
       } catch ( Exception ex ) { Console.WriteLine( ex ); } }
+
+      private void Window_Closing ( object sender, System.ComponentModel.CancelEventArgs evt ) {
+         if ( AbortByCheckSave() ) evt.Cancel = true;
+      }
 
       private void Window_Closed ( object sender, EventArgs e ) {
          GameStatusTimer.Change( Timeout.Infinite, Timeout.Infinite );
@@ -268,12 +273,14 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void ButtonOnline_Click  ( object sender, RoutedEventArgs e ) {
          App.LaunchGame( "online" );
+         if ( AbortByCheckSave() ) return;
          SetInfo( GuiInfo.GAME_RUNNING, true );
          GameStatusTimer.Change( Timeout.Infinite, 10_000 ); // Should be overrode by activate/deactivate, but just in case
       }
 
       private void ButtonOffline_Click ( object sender, RoutedEventArgs e ) {
          App.LaunchGame( "offline" );
+         if ( AbortByCheckSave() ) return;
          SetInfo( GuiInfo.GAME_RUNNING, true );
          GameStatusTimer.Change( Timeout.Infinite, 10_000 ); // Should be overrode by activate/deactivate, but just in case
       }
@@ -327,6 +334,7 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       private void ButtonAddMod_Click ( object sender, RoutedEventArgs evt ) {
+         if ( AbortByCheckSave() ) return;
          var dialog = new Microsoft.Win32.OpenFileDialog {
             DefaultExt = "*.7z;*.dll;*.js;*.xz;*.zip",
             Filter = "All Mods|*.7z;*.dll;*.js;*.xz;*.zip|"+
@@ -355,6 +363,7 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       private void ButtonRefreshMod_Click ( object sender, RoutedEventArgs evt ) {
+         if ( AbortByCheckSave() ) return;
          SetModList( null );
          // Add new mod can happens without visible refresh, and if the mod is not new it'd look like Modnix did nothing. So we need a delay.
          RefreshModTimer.Change( 100, Timeout.Infinite );
@@ -525,6 +534,7 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       private void ButtonModDelete_Click ( object sender, RoutedEventArgs evt ) {
+         if ( AbortByCheckSave() ) return;
          var mods = GridModList.SelectedItems.OfType<ModInfo>();
          var reset = mods.Where( e => e.Is( ModQuery.HAS_CONFIG_FILE ) ).ToList();
          var msg = "Delete Mods:\r\r" + string.Join( "\r", mods.Select( e => e.Name + ( e.Is( ModQuery.HAS_CONFIG_FILE ) ? " (Delete config?)" : "" ) ) );
@@ -550,6 +560,25 @@ namespace Sheepy.Modnix.MainGUI {
             if ( result.IsFaulted ) Prompt( AppAction.DEL_MOD, PromptFlag.ERROR, result.Exception );
             this.Dispatch( () => ButtonRefreshMod_Click( sender, evt ) );
          } );
+      }
+
+      private bool AbortByCheckSave () {
+         if ( ModList == null ) return false;
+         var unsaved = ModList.Where( e => e.Is( ModQuery.EDITING ) );
+         if ( ! unsaved.Any() ) return false;
+         Log( "Has unsaved mod. Prompting user." );
+         var result = MessageBox.Show( "Save config first?\n\n" + string.Join( "\n", unsaved.Select( e => e.Name ) ), "Save Configs",
+            MessageBoxButton.YesNoCancel, MessageBoxImage.Question, MessageBoxResult.Cancel );
+         if ( result == MessageBoxResult.Cancel ) return true;
+         if ( result == MessageBoxResult.No ) return false;
+         try {
+            Log( "Batch saving all unsaved mods." );
+            Task.WaitAll( unsaved.Select( e => Task.Run( () => e.Do( AppAction.SAVE_CONFIG ) ) ).ToArray() );
+            return false;
+         } catch ( AggregateException ex ) {
+            Prompt( AppAction.SAVE_CONFIG, PromptFlag.ERROR, ex );
+            return true;
+         }
       }
       #endregion
 

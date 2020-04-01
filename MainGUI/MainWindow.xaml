@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:Sheepy.Modnix.MainGUI"
         mc:Ignorable="d"
         WindowStartupLocation="CenterScreen"
-        Title="Modnix" Height="550" Width="820" Activated="Window_Activated" Deactivated="Window_Deactivated" Closed="Window_Closed">
+        Title="Modnix" Height="550" Width="820" Activated="Window_Activated" Deactivated="Window_Deactivated" Closed="Window_Closed" Closing="Window_Closing">
    <TabControl>
       <TabItem x:Name="TabMods" Header="Mods">
          <Grid Margin="10">
