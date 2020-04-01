@@ -376,7 +376,7 @@ namespace Sheepy.Modnix.MainGUI {
          var mod = row.Item as ModInfo;
          if ( mod == null || ! mod.Is( ModQuery.ENABLED ) )
             row.Foreground = Brushes.Gray;
-         else if ( mod.Is( ModQuery.HAS_WARNING ) )
+         else if ( mod.Is( ModQuery.WARNING ) )
             row.Foreground = Brushes.OrangeRed;
          else
             row.Foreground = Brushes.Navy;
@@ -436,7 +436,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void RefreshConfButtions () {
          if ( CurrentMod == null ) return;
-         ButtonConfSave.IsEnabled = ButtonConfReset.IsEnabled = CurrentMod.Is( ModQuery.IS_EDITING );
+         ButtonConfSave.IsEnabled = ButtonConfReset.IsEnabled = CurrentMod.Is( ModQuery.EDITING );
          string icon = "floppy";
          if ( IsConfEmpty() ) {
             icon = "cross";

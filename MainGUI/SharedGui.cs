@@ -23,7 +23,8 @@ namespace Sheepy.Modnix.MainGUI {
       public abstract string Path { get; }
    }
 
-   internal enum ModQuery { NONE, ENABLED, IS_FOLDER, IS_CHILD, IS_EDITING, HAS_WARNING, HAS_CONFIG, HAS_CONFIG_FILE, HAS_README, HAS_CHANGELOG, HAS_LICENSE }
+   internal enum ModQuery { NONE, ENABLED, EDITING, WARNING, IS_FOLDER, IS_CHILD,
+      HAS_CONFIG, HAS_CONFIG_FILE, HAS_README, HAS_CHANGELOG, HAS_LICENSE }
    internal enum ModDoc { NONE, SUMMARY, INFO, CONFIG, README, CHANGELOG, LICENSE }
 
    public enum AppAction { NONE,
