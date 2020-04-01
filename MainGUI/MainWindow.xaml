@@ -171,7 +171,7 @@
                                  <ColumnDefinition Width="5"/>
                                  <ColumnDefinition/>
                               </Grid.ColumnDefinitions>
-                              <Button x:Name="ButtonConfReset" Padding="0,5">
+                              <Button x:Name="ButtonConfReset" Padding="0,5" Click="ButtonConfReset_Click">
                                  <StackPanel Orientation="Horizontal">
                                     <Image Source="Resources/img/undo.png" Width="16"/>
                                     <AccessText Text="Reset"/>
@@ -183,14 +183,14 @@
                                     <AccessText Text="Default"/>
                                  </StackPanel>
                               </Button>
-                              <Button x:Name="ButtonConfSave" Grid.Column="4" Padding="0,5">
+                              <Button x:Name="ButtonConfSave" Grid.Column="4" Padding="0,5" Click="ButtonConfSave_Click">
                                  <StackPanel Orientation="Horizontal">
                                     <Image Source="Resources/img/floppy.png" Width="16" />
                                     <AccessText Text="Save"/>
                                  </StackPanel>
                               </Button>
                            </Grid>
-                           <RichTextBox x:Name="RichModInfo" IsReadOnly="True" IsDocumentEnabled="True" VerticalScrollBarVisibility="Auto" BorderBrush="{x:Null}" TabIndex="500">
+                           <RichTextBox x:Name="RichModInfo" IsReadOnly="True" IsDocumentEnabled="True" VerticalScrollBarVisibility="Auto" BorderBrush="{x:Null}" TabIndex="500" TextChanged="RichModInfo_TextChanged">
                               <RichTextBox.Background>
                                  <ImageBrush x:Name="BkgdModeInfo" ImageSource="Resources/img/modder.png" Stretch="Uniform" Opacity="0.5" >
                                     <ImageBrush.RelativeTransform>

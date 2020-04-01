@@ -18,16 +18,17 @@ namespace Sheepy.Modnix.MainGUI {
       public abstract string Type { get; }
       public abstract DateTime Installed { get; }
       public abstract bool Is ( ModQuery prop );
+      public abstract void Do ( AppAction action, object param = null );
       public abstract void BuildDocument ( ModDoc type, FlowDocument doc );
       public abstract string Path { get; }
    }
 
-   internal enum ModQuery { NONE, ENABLED, IS_FOLDER, IS_CHILD, HAS_WARNING, HAS_CONFIG, HAS_CONFIG_FILE, HAS_README, HAS_CHANGELOG, HAS_LICENSE }
+   internal enum ModQuery { NONE, ENABLED, IS_FOLDER, IS_CHILD, IS_EDITING, HAS_WARNING, HAS_CONFIG, HAS_CONFIG_FILE, HAS_README, HAS_CHANGELOG, HAS_LICENSE }
    internal enum ModDoc { NONE, SUMMARY, INFO, CONFIG, README, CHANGELOG, LICENSE }
 
    public enum AppAction { NONE,
-      SETUP, REVERT, LAUNCH_GAME, ADD_MOD, DEL_MOD,
-      ENABLE_MOD, DISABLE_MOD, DELETE_CONFIG, RESET_CONFIG }
+      SETUP, REVERT, LAUNCH_GAME, ADD_MOD, DEL_MOD, ENABLE_MOD, DISABLE_MOD,
+      EDIT_CONFIG, SAVE_CONFIG, RESET_CONFIG, DEFAULT_CONFIG, DELETE_CONFIG }
 
    [Flags]
    public enum PromptFlag { NONE, ERROR = 1,

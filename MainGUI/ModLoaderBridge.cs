@@ -114,18 +114,6 @@ namespace Sheepy.Modnix.MainGUI {
          }
       }
 
-      internal void DeleteConfig ( ModInfo mod ) {
-         var file = Mod( mod ).CheckConfigFile();
-         if ( file != null ) {
-            App.Log( $"Deleting {file}" );
-            File.Delete( file );
-         }
-      }
-
-      internal void ResetConfig ( ModInfo mod ) {
-         Mod( mod ).WriteConfigText( Mod( mod ).GetDefaultConfigText() );
-      }
-
       private void RemoveEmptyFolders ( string path ) {
          path = Path.GetDirectoryName( path );
          while ( path != ModLoader.ModDirectory && ! Directory.EnumerateFileSystemEntries( path ).Any() ) {
@@ -140,6 +128,7 @@ namespace Sheepy.Modnix.MainGUI {
       internal readonly ModEntry Mod;
       internal Dictionary< ModDoc, string > Docs;
       internal GridModItem ( ModEntry mod ) => Mod = mod ?? throw new ArgumentNullException( nameof( mod ) );
+      internal string EditingConfig;
       public override string Id => Mod.Metadata.Id;
       public override string Name => Mod.Metadata.Name?.ToString( "en" );
       public override string Version => Mod.Metadata.Version?.ToString();
@@ -158,6 +147,8 @@ namespace Sheepy.Modnix.MainGUI {
                return Mod.Parent != null;
             case ModQuery.HAS_WARNING :
                return Mod.GetNotices().Any( e => e.Level == TraceEventType.Warning || e.Level == TraceEventType.Error || e.Level == TraceEventType.Critical );
+            case ModQuery.IS_EDITING :
+               return EditingConfig != null;
             case ModQuery.HAS_CONFIG :
                return Mod.HasConfig;
             case ModQuery.HAS_CONFIG_FILE :
@@ -172,6 +163,44 @@ namespace Sheepy.Modnix.MainGUI {
                return false;
          }
       } }
+
+      public override void Do ( AppAction action, object param = null ) {
+         switch ( action ) {
+            case AppAction.EDIT_CONFIG :
+               lock ( this ) EditingConfig = param?.ToString();
+               return;
+            case AppAction.RESET_CONFIG :
+               lock ( this ) EditingConfig = null;
+               return;
+            case AppAction.DEFAULT_CONFIG :
+               lock ( this ) EditingConfig = Mod.GetDefaultConfigText();
+               return;
+            case AppAction.SAVE_CONFIG :
+               SaveConfig();
+               return;
+            default:
+               return;
+         }
+      }
+
+      private void SaveConfig () {
+         string conf;
+         lock ( this ) conf = EditingConfig;
+         if ( conf == null ) return;
+         if ( conf.Length == 0 )
+            DeleteConfig();
+         else
+            Mod.WriteConfigText( conf );
+         lock ( this ) EditingConfig = null;
+      }
+
+      private void DeleteConfig () {
+         var file = Mod.CheckConfigFile();
+         if ( file != null ) {
+            AppControl.Instance.Log( $"Deleting {file}" );
+            File.Delete( file );
+         }
+      }
 
       public override void BuildDocument ( ModDoc type, FlowDocument doc ) {
          switch ( type ) {
@@ -190,8 +219,6 @@ namespace Sheepy.Modnix.MainGUI {
          if ( body == null ) return;
          var name = new Run( Mod.Metadata.Name.ToString( "en" ) );
          body.Inlines.Add( Mod.Disabled ? (Inline) name : new Bold( name ) );
-         if ( Mod.HasConfig )
-            body.Inlines.Add( Mod.CheckConfigFile() != null ? "\t[has config file]" : "\t[can create config]" );
          body.Inlines.Add( "\r" );
       } }
 
@@ -205,10 +232,9 @@ namespace Sheepy.Modnix.MainGUI {
             BuildCopyright()
          );
       } }
-      
 
       private void BuildConfig ( FlowDocument doc ) { lock ( Mod ) {
-         doc.TextRange().Text = WpfHelper.Lf2Cr( Mod.GetConfigText() );
+         doc.TextRange().Text = EditingConfig ?? WpfHelper.Lf2Cr( Mod.GetConfigText() );
       } }
 
       private void BuildSupportDoc ( ModDoc type, FlowDocument doc, string[] fileList ) { try {

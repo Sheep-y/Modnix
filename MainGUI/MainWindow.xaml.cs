@@ -112,6 +112,8 @@ namespace Sheepy.Modnix.MainGUI {
          GameButtonGap1.Height = GameButtonGap2.Height = new GridLength( minGame ? 0 : 5, GridUnitType.Pixel );
          ButtonMinifyGame.Content = minGame ? "＋" : "—";
 
+         RefreshConfButtions();
+
          ButtonAddMod.IsEnabled = SharedGui.CanModify && Directory.Exists( App.ModFolder );
          ButtonModDir.IsEnabled = Directory.Exists( App.ModFolder );
          ButtonRefreshMod.IsEnabled = Directory.Exists( App.ModFolder ) && ! SharedGui.IsAppWorking;
@@ -382,6 +384,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       #region Mod Info Area
       private ModInfo CurrentMod;
+      private bool UpdatingModInfo;
 
       private void RefreshModInfo () { try {
          HideModTabs();
@@ -413,9 +416,11 @@ namespace Sheepy.Modnix.MainGUI {
          PanelConfAction.Visibility = isConfig ? Visibility.Visible : Visibility.Collapsed;
 
          if ( CurrentMod != null ) {
-            if ( TabSetModInfo.SelectedItem == TabModConfig )
+            UpdatingModInfo = true;
+            if ( TabSetModInfo.SelectedItem == TabModConfig ) {
                CurrentMod.BuildDocument( ModDoc.CONFIG, RichModInfo.Document );
-            else if ( TabSetModInfo.SelectedItem == TabModReadme )
+               RefreshConfButtions();
+            } else if ( TabSetModInfo.SelectedItem == TabModReadme )
                CurrentMod.BuildDocument( ModDoc.README, RichModInfo.Document );
             else if ( TabSetModInfo.SelectedItem == TabModChange )
                CurrentMod.BuildDocument( ModDoc.CHANGELOG, RichModInfo.Document );
@@ -423,8 +428,17 @@ namespace Sheepy.Modnix.MainGUI {
                CurrentMod.BuildDocument( ModDoc.LICENSE, RichModInfo.Document );
             else
                CurrentMod.BuildDocument( ModDoc.INFO, RichModInfo.Document );
+            UpdatingModInfo = false;
          }
       } catch ( Exception ex ) { Log( ex ); } }
+
+      private void RefreshConfButtions () {
+         if ( CurrentMod == null ) {
+            RefreshModInfo();
+            return;
+         }
+         ButtonConfSave.IsEnabled = ButtonConfReset.IsEnabled = CurrentMod.Is( ModQuery.IS_EDITING );
+      }
 
       private void HideModTabs () => TabModConfig.Visibility = TabModReadme.Visibility = TabModChange.Visibility = TabModLicense.Visibility = Visibility.Collapsed;
 
@@ -446,6 +460,23 @@ namespace Sheepy.Modnix.MainGUI {
          RefreshModInfo();
       }
 
+      private void RichModInfo_TextChanged ( object sender, TextChangedEventArgs e ) {
+         if ( UpdatingModInfo ) return;
+         if ( TabSetModInfo.SelectedItem == null || TabSetModInfo.SelectedItem != TabModConfig ) return;
+         CurrentMod?.Do( AppAction.EDIT_CONFIG, RichModInfo.Document.TextRange().Text );
+         RefreshConfButtions();
+      }
+
+      private void ButtonConfReset_Click ( object sender, RoutedEventArgs e ) {
+         CurrentMod?.Do( AppAction.RESET_CONFIG );
+         RefreshModInfo();
+      }
+
+      private void ButtonConfSave_Click ( object sender, RoutedEventArgs e ) {
+         CurrentMod?.Do( AppAction.SAVE_CONFIG );
+         RefreshConfButtions();
+      }
+
       private void ButtonModOpenModDir_Click ( object sender, RoutedEventArgs evt ) {
          var count = GridModList.SelectedItems.Count;
          if ( count > 3 &&
@@ -459,6 +490,7 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       private void ButtonModEnabled_Click ( object sender, RoutedEventArgs evt ) {
+         /*
          List<ModInfo> reset = new List<ModInfo>(), create = new List<ModInfo>();
          foreach ( var mod in SelectedMods ) {
             if ( ! mod.Is( ModQuery.HAS_CONFIG ) ) continue;
@@ -474,6 +506,7 @@ namespace Sheepy.Modnix.MainGUI {
             SharedGui.IsAppWorking = false;
             Prompt( AppAction.RESET_CONFIG, result.IsFaulted ? PromptFlag.ERROR : PromptFlag.NONE, result.Exception );
          } );
+         */
       }
 
       private void ButtonModDelete_Click ( object sender, RoutedEventArgs evt ) {

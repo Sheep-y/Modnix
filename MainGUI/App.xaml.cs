@@ -640,11 +640,11 @@ namespace Sheepy.Modnix.MainGUI {
             case AppAction.DEL_MOD :
                ModBridge.DeleteMod( mod );
                return;
-            case AppAction.DELETE_CONFIG :
-               ModBridge.DeleteConfig( mod );
+            case AppAction.SAVE_CONFIG :
+               mod.Do( AppAction.SAVE_CONFIG );
                return;
-            case AppAction.RESET_CONFIG :
-               ModBridge.ResetConfig( mod );
+            case AppAction.DELETE_CONFIG :
+               mod.Do( AppAction.DELETE_CONFIG );
                return;
             default :
                Log( $"Unknown command {action}" );
