@@ -173,20 +173,20 @@
                               </Grid.ColumnDefinitions>
                               <Button x:Name="ButtonConfReset" Padding="0,5" Click="ButtonConfReset_Click">
                                  <StackPanel Orientation="Horizontal">
-                                    <Image Source="Resources/img/undo.png" Width="16"/>
+                                    <Image Source="Resources/img/undo.png" Width="16" Margin="0,0,5,0"/>
                                     <AccessText Text="Reset"/>
                                  </StackPanel>
                               </Button>
                               <Button x:Name="ButtonConfProfile" Grid.Column="2" Padding="0,5">
                                  <StackPanel Orientation="Horizontal">
-                                    <Image Source="Resources/img/gears.png" Width="16" />
+                                    <Image Source="Resources/img/gears.png" Width="16"  Margin="0,0,5,0"/>
                                     <AccessText Text="Default"/>
                                  </StackPanel>
                               </Button>
                               <Button x:Name="ButtonConfSave" Grid.Column="4" Padding="0,5" Click="ButtonConfSave_Click">
                                  <StackPanel Orientation="Horizontal">
-                                    <Image Source="Resources/img/floppy.png" Width="16" />
-                                    <AccessText Text="Save"/>
+                                    <Image x:Name="IconConfSave" Source="Resources/img/floppy.png" Width="16" Margin="0,0,5,0" />
+                                    <AccessText x:Name="AccessTextConfSave" Text="Save"/>
                                  </StackPanel>
                               </Button>
                            </Grid>

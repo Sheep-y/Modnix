@@ -3,7 +3,8 @@ Modnix Changelog
 # Version 2.0
 
 * New: Status panels and their buttons may now be minified to give more space to mod info.
-* Mew: Read mod's readme, changelog, and license in mod info panel.
+* Mew: Read mod's readme, config, changelog, and license in mod info panel.
+* New: Barebone mod config editor.
 * New: Read game console log and Modnix changelog in log tab.
 * New: Loader log now auto-refresh, same for new console log.
 * New: Loader log now can be filtered, same for new console log.

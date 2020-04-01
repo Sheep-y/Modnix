@@ -12,6 +12,7 @@ using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using static System.Globalization.CultureInfo;
 using static Sheepy.Modnix.MainGUI.WpfHelper;
 
@@ -385,6 +386,7 @@ namespace Sheepy.Modnix.MainGUI {
       #region Mod Info Area
       private ModInfo CurrentMod;
       private bool UpdatingModInfo;
+      private bool IsConfEmpty () => RichModInfo.Document.TextRange().Text.Length == 0;
 
       private void RefreshModInfo () { try {
          HideModTabs();
@@ -433,11 +435,16 @@ namespace Sheepy.Modnix.MainGUI {
       } catch ( Exception ex ) { Log( ex ); } }
 
       private void RefreshConfButtions () {
-         if ( CurrentMod == null ) {
-            RefreshModInfo();
-            return;
-         }
+         if ( CurrentMod == null ) return;
          ButtonConfSave.IsEnabled = ButtonConfReset.IsEnabled = CurrentMod.Is( ModQuery.IS_EDITING );
+         string icon = "floppy";
+         if ( IsConfEmpty() ) {
+            icon = "cross";
+            AccessTextConfSave.Text = "Delete";
+            ButtonConfSave.IsEnabled = CurrentMod.Is( ModQuery.HAS_CONFIG_FILE );
+         } else
+            AccessTextConfSave.Text = "Save";
+         IconConfSave.Source = new BitmapImage( new Uri( $"/Resources/img/{icon}.png", UriKind.Relative ) );
       }
 
       private void HideModTabs () => TabModConfig.Visibility = TabModReadme.Visibility = TabModChange.Visibility = TabModLicense.Visibility = Visibility.Collapsed;
@@ -474,7 +481,10 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void ButtonConfSave_Click ( object sender, RoutedEventArgs e ) {
          CurrentMod?.Do( AppAction.SAVE_CONFIG );
-         RefreshConfButtions();
+         if ( IsConfEmpty() )
+            RefreshModInfo();
+         else
+            RefreshConfButtions();
       }
 
       private void ButtonModOpenModDir_Click ( object sender, RoutedEventArgs evt ) {

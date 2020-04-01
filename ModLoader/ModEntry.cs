@@ -284,6 +284,7 @@ namespace Sheepy.Modnix {
          var path = GetConfigFile();
          CreateLogger().Info( $"Writing {str.Length} chars to {path}" );
          File.WriteAllText( path, str, Encoding.UTF8 );
+         lock ( Metadata ) Metadata.ConfigText = str;
       } catch ( Exception ex ) { CreateLogger().Error( ex ); } }
       #endregion
 

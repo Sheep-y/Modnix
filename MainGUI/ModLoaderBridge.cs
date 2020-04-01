@@ -190,7 +190,7 @@ namespace Sheepy.Modnix.MainGUI {
          if ( conf.Length == 0 )
             DeleteConfig();
          else
-            Mod.WriteConfigText( conf );
+            Mod.WriteConfigText( conf.Replace( '\r', '\n' ) );
          lock ( this ) EditingConfig = null;
       }
 
@@ -234,6 +234,7 @@ namespace Sheepy.Modnix.MainGUI {
       } }
 
       private void BuildConfig ( FlowDocument doc ) { lock ( Mod ) {
+         AppControl.Instance.Log( "Showing conf. Editing " + EditingConfig?.Length ?? "null" );
          doc.TextRange().Text = EditingConfig ?? WpfHelper.Lf2Cr( Mod.GetConfigText() );
       } }
 
