@@ -140,6 +140,8 @@ namespace Sheepy.Modnix.MainGUI {
          switch ( prop ) {
             case ModQuery.ENABLED :
                return ! Mod.Disabled;
+            case ModQuery.FORCE_DISABLED :
+               return Mod.Disabled && Mod.GetNotices().Any( e => e.Level == TraceEventType.Error );
             case ModQuery.IS_FOLDER :
                var path = System.IO.Path.GetDirectoryName( Path );
                return path != AppControl.Instance.ModFolder && Directory.EnumerateFileSystemEntries( path ).Count() > 1;
@@ -166,6 +168,13 @@ namespace Sheepy.Modnix.MainGUI {
 
       public override void Do ( AppAction action, object param = null ) {
          switch ( action ) {
+            case AppAction.ENABLE_MOD :
+               EnableMod();
+               return;
+            case AppAction.DISABLE_MOD :
+               DisableMod();
+               AppControl.Instance.SaveSettings();
+               return;
             case AppAction.EDIT_CONFIG :
                lock ( this ) EditingConfig = param?.ToString();
                return;
@@ -181,6 +190,29 @@ namespace Sheepy.Modnix.MainGUI {
             default:
                return;
          }
+      }
+
+      private void EnableMod ( bool save = true ) {
+         var mods = AppControl.Instance.Settings.Mods;
+         if ( mods == null || ! mods.TryGetValue( Mod.Key, out ModSettings settings ) || ! settings.Disabled ) return;
+         AppControl.Instance.Log( $"Enabling mod {Mod.Metadata.Id}" );
+         settings.Disabled = false;
+         if ( save ) AppControl.Instance.SaveSettings();
+      }
+
+      private void DisableMod ( bool save = true ) {
+         var orig = AppControl.Instance.Settings.Mods;
+         var mods = orig;
+         if ( mods == null ) mods = new Dictionary<string, ModSettings>();
+         if ( ! mods.TryGetValue( Mod.Key, out ModSettings settings ) )
+            mods.Add( Mod.Key, new ModSettings{ Disabled = true } );
+         else if ( ! settings.Disabled )
+            settings.Disabled = true;
+         else
+            return;
+         AppControl.Instance.Log( $"Disabling mod {Mod.Metadata.Id}" );
+         if ( orig == null ) AppControl.Instance.Settings.Mods = mods;
+         if ( save ) AppControl.Instance.SaveSettings();
       }
 
       private void SaveConfig () {

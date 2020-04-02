@@ -125,7 +125,7 @@ namespace Sheepy.Modnix.MainGUI {
          ButtonRefreshMod.IsEnabled = Directory.Exists( App.ModFolder ) && ! SharedGui.IsAppWorking;
 
          ButtonModOpenModDir.IsEnabled = CurrentMod != null;
-         ButtonModEnabled.IsEnabled = CurrentMod != null;
+         ButtonModEnabled.IsEnabled = CurrentMod?.Is( ModQuery.FORCE_DISABLED ) == false;
          ButtonModDelete.IsEnabled = SharedGui.CanModify && CurrentMod != null && ! SelectedMods.Any( e => e.Is( ModQuery.IS_CHILD ) );
 
          ButtonLoaderLog.IsEnabled = File.Exists( App.LoaderLog );
@@ -514,23 +514,8 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       private void ButtonModEnabled_Click ( object sender, RoutedEventArgs evt ) {
-         /*
-         List<ModInfo> reset = new List<ModInfo>(), create = new List<ModInfo>();
-         foreach ( var mod in SelectedMods ) {
-            if ( ! mod.Is( ModQuery.HAS_CONFIG ) ) continue;
-            ( mod.Is( ModQuery.HAS_CONFIG_FILE ) ? reset : create ).Add( mod );
-         }
-         var msg = "";
-         if ( reset.Count > 0 ) msg += "Reset config of:\r" + string.Join( "\r", reset.Select( e => e.Name ) );
-         if ( create.Count > 0 ) msg += "\nCreate config of:\r" + string.Join( "\r", create.Select( e => e.Name ) );
-         if ( MessageBoxResult.OK != MessageBox.Show( msg.Trim(), "Reset Config", MessageBoxButton.OKCancel, MessageBoxImage.Warning, MessageBoxResult.Cancel ) )
-            return;
-         SharedGui.IsAppWorking = true;
-         App.DoModActionAsync( AppAction.RESET_CONFIG, create.Concat( reset ) ).ContinueWith( result => {
-            SharedGui.IsAppWorking = false;
-            Prompt( AppAction.RESET_CONFIG, result.IsFaulted ? PromptFlag.ERROR : PromptFlag.NONE, result.Exception );
-         } );
-         */
+         CurrentMod?.Do( CurrentMod?.Is( ModQuery.ENABLED ) == true ? AppAction.DISABLE_MOD : AppAction.ENABLE_MOD );
+         RefreshModList();
       }
 
       private void ButtonModDelete_Click ( object sender, RoutedEventArgs evt ) {
