@@ -44,7 +44,8 @@ namespace Sheepy.Modnix.MainGUI {
          CheckSetup();
          App.Log( "Building mod list" );
          ModScanner.BuildModList();
-         return Task.WhenAll( ModScanner.AllMods.Select( ConvertModTask ).ToArray() ).Result;
+         var result = Task.WhenAll( ModScanner.AllMods.Select( ConvertModTask ).ToArray() ).Result;
+         return result;
       }
 
       private static Task< GridModItem > ConvertModTask ( ModEntry mod ) => Task.Run( () => ToGridItem( mod ) );
@@ -55,7 +56,9 @@ namespace Sheepy.Modnix.MainGUI {
 
       private static GridModItem ToGridItem ( ModEntry mod ) { try {
          var modPath = mod.Path;
-         if ( string.IsNullOrWhiteSpace( modPath ) ) return new GridModItem( mod );
+         float order = ModScanner.EnabledMods.IndexOf( mod );
+         if ( order < 0 ) order = float.PositiveInfinity;
+         if ( string.IsNullOrWhiteSpace( modPath ) ) return new GridModItem( mod ){ _Order = order };
          var doc = new Dictionary< ModDoc, string >();
          var dir = Path.GetDirectoryName( modPath );
          AppControl.Instance.Log( "Scanning docs in " + dir );
@@ -74,7 +77,7 @@ namespace Sheepy.Modnix.MainGUI {
             if ( ! doc.ContainsKey( ModDoc.LICENSE ) && ( ModScanner.FindEmbeddedFile( modPath, null, LicenseFiles ) ) )
                doc.Add( ModDoc.LICENSE, "embedded" );
          }
-         return new GridModItem( mod ) { Docs = doc.Count == 0 ? null : doc };
+         return new GridModItem( mod ) { _Order = order, Docs = doc.Count == 0 ? null : doc };
       } catch ( Exception ex ) {
          AppControl.Instance.Log( ex );
          return new GridModItem( mod );
@@ -131,6 +134,8 @@ namespace Sheepy.Modnix.MainGUI {
       internal GridModItem ( ModEntry mod ) => Mod = mod ?? throw new ArgumentNullException( nameof( mod ) );
       internal string EditingConfig;
       public override string Id => Mod.Metadata.Id;
+      internal float  _Order;
+      public override float  Order => _Order;
       public override string Name => Mod.Metadata.Name?.ToString( "en" );
       public override string Version => Mod.Metadata.Version?.ToString();
       public override string Author => Mod.Metadata.Author?.ToString( "en" );

@@ -11,6 +11,7 @@ namespace Sheepy.Modnix.MainGUI {
 
    internal abstract class ModInfo {
       public abstract string Id { get; }
+      public abstract float Order { get; }
       public abstract string Name { get; }
       public abstract string Version { get; }
       public abstract string Author { get; }

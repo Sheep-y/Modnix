@@ -289,7 +289,8 @@
                </Grid>
                <DataGrid x:Name="GridModList" VerticalScrollBarVisibility="Visible" AutoGenerateColumns="False" IsReadOnly="True" Margin="0,5" SelectionChanged="GridModList_SelectionChanged" LoadingRow="GridModList_LoadingRow">
                   <DataGrid.Columns>
-                     <DataGridTextColumn Header="Mod" Binding="{Binding Name}" ClipboardContentBinding="{x:Null}"/>
+                     <DataGridTextColumn Header="#" Binding="{Binding Order}" ClipboardContentBinding="{x:Null}" />
+                     <DataGridTextColumn Header="Mod" Binding="{Binding Name}" ClipboardContentBinding="{x:Null}" SortDirection="Ascending"/>
                      <DataGridTextColumn Header="Version" Binding="{Binding Version}" ClipboardContentBinding="{x:Null}"/>
                      <DataGridTextColumn Header="Author" Binding="{Binding Author}" ClipboardContentBinding="{x:Null}"/>
                      <DataGridTextColumn Header="Status" Binding="{Binding Status}" ClipboardContentBinding="{x:Null}"/>
