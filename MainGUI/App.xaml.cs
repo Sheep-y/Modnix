@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -748,7 +749,7 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       internal static Stream GetResource ( string path ) {
-         return Application.GetResourceStream( new Uri( $"/Resources/{path}", UriKind.Relative ) ).Stream;
+         return new GZipStream( Application.GetResourceStream( new Uri( $"/Resources/{path}.gz", UriKind.Relative ) ).Stream, CompressionMode.Decompress );
       }
 
       internal byte[] GetResourceBytes ( string path ) {

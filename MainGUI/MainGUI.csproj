@@ -84,7 +84,16 @@
     </Compile>
     <Compile Include="SharedGui.cs" />
     <Compile Include="Updater.cs" />
-    <Resource Include="Resources\Changelog.md" />
+    <Resource Include="Resources\0Harmony.dll.gz" />
+    <Resource Include="Resources\7za.exe.gz" />
+    <None Include="Resources\Changelog.md" />
+    <Resource Include="Resources\Changelog.md.gz" />
+    <None Include="Resources\License.txt" />
+    <Resource Include="Resources\License.txt.gz" />
+    <Resource Include="Resources\ModnixInjector.exe.gz" />
+    <Resource Include="Resources\ModnixLoader.dll.gz" />
+    <Resource Include="Resources\Mono.Cecil.dll.gz" />
+    <Resource Include="Resources\Newtonsoft.Json.dll.gz" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -107,13 +116,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\0Harmony.dll" />
-    <Resource Include="Resources\7za.exe" />
-    <Resource Include="Resources\License.txt" />
-    <Resource Include="Resources\ModnixInjector.exe" />
-    <Resource Include="Resources\ModnixLoader.dll" />
-    <Resource Include="Resources\Mono.Cecil.dll" />
-    <Resource Include="Resources\Newtonsoft.Json.dll" />
     <Resource Include="Resources\img\book.png" />
     <Resource Include="Resources\img\canny.png" />
     <Resource Include="Resources\img\check.png" />
@@ -162,5 +164,10 @@
   <PropertyGroup>
     <PostBuildEvent>copy /y "$(TargetPath)" "$(SolutionDir)"
 copy /y "$(TargetPath)" "$(SolutionDir)ModnixInstaller.exe"</PostBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PreBuildEvent>cd "$(ProjectDir)Resources"
+"c:\Program Files\7-Zip\7z.exe" a -bd -bb0 -tgzip -mx=0 -mfb=258 License.txt.gz License.txt
+"c:\Program Files\7-Zip\7z.exe" a -bd -bb0 -tgzip -mx=0 -mfb=258 Changelog.md.gz Changelog.md</PreBuildEvent>
   </PropertyGroup>
 </Project>

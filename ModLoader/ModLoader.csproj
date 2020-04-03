@@ -93,8 +93,8 @@
     <PostBuildEvent>cd $(SolutionDir)MainGUI\
 mkdir Resources
 cd Resources
-copy /y $(ProjectDir)$(OutDir)$(TargetFileName) .
-copy /y $(ProjectDir)$(OutDir)Newtonsoft.Json.dll .
-copy /y $(ProjectDir)$(OutDir)0Harmony.dll .</PostBuildEvent>
+"c:\Program Files\7-Zip\7z.exe" a -bd -bb0 -tgzip -mx=0 -mfb=258 $(TargetFileName).gz $(ProjectDir)$(OutDir)$(TargetFileName)
+"c:\Program Files\7-Zip\7z.exe" a -bd -bb0 -tgzip -mx=0 -mfb=258 Newtonsoft.Json.dll.gz $(ProjectDir)$(OutDir)Newtonsoft.Json.dll
+"c:\Program Files\7-Zip\7z.exe" a -bd -bb0 -tgzip -mx=0 -mfb=258 0Harmony.dll.gz $(ProjectDir)$(OutDir)0Harmony.dll</PostBuildEvent>
   </PropertyGroup>
 </Project>

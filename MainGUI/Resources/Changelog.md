@@ -15,6 +15,7 @@ Modnix Changelog
 * Fix: mods_root added as a reserved id. It is used by mod api path action.
 * Fix: Mod api log action will return true when successfully added to queue.
 * Fix: Unknown mod api action will trigger a warning.
+* Gui: Compress resources to make file size smaller.
 * Mod: New api action "assembly", "config_save", "reg_action", "reg_handler", "unreg_action".
 * Mod: Mod api actions are now case-insensitive, including registered extensions.
 * Mod: Multiple dll declaration no longer allowed in order to keep things simple.

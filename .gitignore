@@ -259,8 +259,11 @@ paket-files/
 # Python Tools for Visual Studio (PTVS)
 __pycache__/
 *.pyc
-/MainGUI/Resources/Newtonsoft.Json.dll
-/MainGUI/Resources/Mono.Cecil.dll
-/MainGUI/Resources/ModnixLoader.dll
-/MainGUI/Resources/ModnixInjector.exe
-/MainGUI/Resources/0Harmony.dll
+
+# Project outputs
+/Modnix.exe
+/ModnixInstaller.exe
+# Project images
+/img
+# Dynamically compressed resources
+/MainGUI/Resources/*.gz
