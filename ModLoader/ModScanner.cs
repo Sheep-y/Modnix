@@ -309,9 +309,21 @@ namespace Sheepy.Modnix {
          EnabledMods.AddRange( AllMods.Where( e => ! e.Disabled ) );
          Log.Info( "Resolving {0} mods", EnabledMods.Count );
          EnabledMods.Sort( CompareMod ); // Make determinstic
+         RemoveDisabledMods();
          RemoveDuplicateMods();
          RemoveUnfulfilledMods();
          RemoveConflictMods();
+      }
+
+      private static void RemoveDisabledMods () {
+         var settings = ModLoader.Settings.Mods;
+         if ( settings == null ) return;
+         Log.Verbo( "Check manually disabled mods" );
+         foreach ( var mod in EnabledMods.ToArray() ) {
+            if ( ! settings.TryGetValue( mod.Key, out ModSettings modSetting ) ) continue;
+            if ( ! modSetting.Disabled ) continue;
+            DisableAndRemoveMod( mod, "disable", "Mod {1} is manually disabled.", mod );
+         }
       }
 
       private static void RemoveDuplicateMods () {

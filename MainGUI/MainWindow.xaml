@@ -245,8 +245,8 @@
                   </Button>
                   <Button x:Name="ButtonModEnabled" Grid.Row="1" Grid.Column="2" Padding="5" IsEnabled="False" Click="ButtonModEnabled_Click" TabIndex="600">
                      <StackPanel Orientation="Horizontal">
-                        <Image Source="Resources/img/check.png" Width="16" Margin="0,0,5,0"/>
-                        <AccessText Text="Enabled"/>
+                        <Image x:Name="IconModEnabled" Source="Resources/img/check.png" Width="16" Margin="0,0,5,0"/>
+                        <AccessText x:Name="AccessTextModEnabled" Text="Enabled"/>
                      </StackPanel>
                   </Button>
                   <Button x:Name="ButtonModDelete" Grid.Row="1" Grid.Column="4" Padding="5" IsEnabled="False" Click="ButtonModDelete_Click" TabIndex="600">

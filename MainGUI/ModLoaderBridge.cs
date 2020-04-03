@@ -48,9 +48,10 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       private static Task< GridModItem > ConvertModTask ( ModEntry mod ) => Task.Run( () => ToGridItem( mod ) );
-      internal static readonly string[] ReadmeFiles  = new string[]{ "readme.rtf", "read.txt", "readme.md", "readme", "read.me" };
+      internal static readonly string[] ReadmeFiles  = new string[]{ "readme.rtf", "read.txt", "readme.md", "readme", "read.me", "note", "notes"  };
       internal static readonly string[] ChangeFiles  = new string[]{ "changelog.rtf", "changelog.txt", "changelog.md", "history.rtf", "history.txt", "history.md", "changelog", "change.log" };
-      internal static readonly string[] LicenseFiles = new string[]{ "license.rtf", "license.txt", "license.md", "license", "unlicense" };
+      internal static readonly string[] LicenseFiles = new string[]{ "license.rtf", "license.txt", "license.md", "license", "unlicense",
+         "copyright.rtf", "copyright.txt", "copyright.md", "copyright" };
 
       private static GridModItem ToGridItem ( ModEntry mod ) { try {
          var modPath = mod.Path;
@@ -136,12 +137,18 @@ namespace Sheepy.Modnix.MainGUI {
       public override string Status { get { lock ( Mod ) return Mod.Disabled ? "Off" : "On"; } }
       public override DateTime Installed { get { lock ( Mod ) return new FileInfo( Mod.Path ).LastAccessTime; } }
 
+      private ModSettings Settings { get {
+         ModSettings result = null;
+         AppControl.Instance.Settings.Mods?.TryGetValue( Mod.Key, out result );
+         return result;
+      } }
+
       public override bool Is ( ModQuery prop ) { lock ( Mod ) {
          switch ( prop ) {
             case ModQuery.ENABLED :
                return ! Mod.Disabled;
             case ModQuery.FORCE_DISABLED :
-               return Mod.Disabled && Mod.GetNotices().Any( e => e.Level == TraceEventType.Error );
+               return Mod.Disabled && Settings?.Disabled != true;
             case ModQuery.IS_FOLDER :
                var path = System.IO.Path.GetDirectoryName( Path );
                return path != AppControl.Instance.ModFolder && Directory.EnumerateFileSystemEntries( path ).Count() > 1;
@@ -193,25 +200,24 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       private void EnableMod ( bool save = true ) {
-         var mods = AppControl.Instance.Settings.Mods;
-         if ( mods == null || ! mods.TryGetValue( Mod.Key, out ModSettings settings ) || ! settings.Disabled ) return;
+         if ( Settings?.Disabled != true ) return;
          AppControl.Instance.Log( $"Enabling mod {Mod.Metadata.Id}" );
-         settings.Disabled = false;
+         Settings.Disabled = false;
          if ( save ) AppControl.Instance.SaveSettings();
       }
 
       private void DisableMod ( bool save = true ) {
-         var orig = AppControl.Instance.Settings.Mods;
-         var mods = orig;
-         if ( mods == null ) mods = new Dictionary<string, ModSettings>();
-         if ( ! mods.TryGetValue( Mod.Key, out ModSettings settings ) )
+         var mods = AppControl.Instance.Settings.Mods;
+         if ( mods == null )
+            mods = AppControl.Instance.Settings.Mods = new Dictionary<string, ModSettings>();
+         var settings = Settings;
+         if ( settings == null )
             mods.Add( Mod.Key, new ModSettings{ Disabled = true } );
          else if ( ! settings.Disabled )
             settings.Disabled = true;
          else
             return;
          AppControl.Instance.Log( $"Disabling mod {Mod.Metadata.Id}" );
-         if ( orig == null ) AppControl.Instance.Settings.Mods = mods;
          if ( save ) AppControl.Instance.SaveSettings();
       }
 

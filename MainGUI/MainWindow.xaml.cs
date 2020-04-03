@@ -15,7 +15,6 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using static System.Globalization.CultureInfo;
-using static Sheepy.Modnix.MainGUI.WpfHelper;
 
 namespace Sheepy.Modnix.MainGUI {
 
@@ -127,6 +126,15 @@ namespace Sheepy.Modnix.MainGUI {
          ButtonModOpenModDir.IsEnabled = CurrentMod != null;
          ButtonModEnabled.IsEnabled = CurrentMod?.Is( ModQuery.FORCE_DISABLED ) == false;
          ButtonModDelete.IsEnabled = SharedGui.CanModify && CurrentMod != null && ! SelectedMods.Any( e => e.Is( ModQuery.IS_CHILD ) );
+         if ( CurrentMod != null ) {
+            var icon = "uncheck";
+            if ( CurrentMod.Is( ModQuery.ENABLED ) ) {
+               icon = "check";
+               AccessTextModEnabled.Text = "Enabled";
+            } else
+               AccessTextModEnabled.Text = "Disabled";
+            IconModEnabled.Source = new BitmapImage( new Uri( $"/Resources/img/{icon}.png", UriKind.Relative ) );
+         }
 
          ButtonLoaderLog.IsEnabled = File.Exists( App.LoaderLog );
          ButtonConsoleLog.IsEnabled = File.Exists( App.ConsoleLog );
@@ -515,7 +523,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void ButtonModEnabled_Click ( object sender, RoutedEventArgs evt ) {
          CurrentMod?.Do( CurrentMod?.Is( ModQuery.ENABLED ) == true ? AppAction.DISABLE_MOD : AppAction.ENABLE_MOD );
-         RefreshModList();
+         App.GetModList();
       }
 
       private void ButtonModDelete_Click ( object sender, RoutedEventArgs evt ) {
