@@ -17,7 +17,7 @@ Modnix Changelog
 * Fix: Unknown mod api action will trigger a warning.
 * Gui: Compress resources to make file size smaller.
 * Gui: Mod list now shows load order and sort by mod name by default.
-* Mod: Support PPML 0.3 mods.
+* Mod: Support PPML 0.3 mods.  PPML 0.3 is properly initialised, except it won't load mods.
 * Mod: New mod_info field "LoadIndex".
 * Mod: New api action "assembly", "config_save", "reg_action", "reg_handler", "unreg_action".
 * Mod: Mod api actions are now case-insensitive, including registered extensions.

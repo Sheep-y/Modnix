@@ -26,6 +26,7 @@ namespace Sheepy.Modnix {
 
       public static Version LoaderVersion, GameVersion;
       internal readonly static Version PPML_COMPAT = new Version( 0, 3 );
+      private static bool PpmlInitialised;
 
       public static string ModDirectory { get; private set; }
 
@@ -92,7 +93,7 @@ namespace Sheepy.Modnix {
          AppDomain.CurrentDomain.AssemblyResolve += ModLoaderResolve;
          ModDirectory = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.MyDocuments ), MOD_PATH );
          if ( Log == null ) {
-            if ( !Directory.Exists( ModDirectory ) )
+            if ( ! Directory.Exists( ModDirectory ) )
                Directory.CreateDirectory( ModDirectory );
             SetLog( new FileLogger( Path.Combine( ModDirectory, Assembly.GetExecutingAssembly().GetName().Name + ".log" ) ) { TimeFormat = "HH:mm:ss.ffff " }, true );
             LogGameVersion();
@@ -110,8 +111,7 @@ namespace Sheepy.Modnix {
          if ( name.StartsWith( "PhoenixPointModLoader,", StringComparison.OrdinalIgnoreCase ) )
             return app.Load( GetResourceBytes( "PPML_0_3.dll" ) );
          if ( name.StartsWith( "SimpleInjector,", StringComparison.OrdinalIgnoreCase ) )
-            return app.Load( GetResourceBytes( "SimpleInjector.dl" ) );
-         if ( name.StartsWith( "" ) )
+            return app.Load( GetResourceBytes( "SimpleInjector.dll" ) );
          if ( name.StartsWith( "System." ) && dll.Name.Contains( ',' ) ) { // Generic system library lookup
             var file = dll.Name.Substring( 0, dll.Name.IndexOf( ',' ) ) + ".dll";
             var target = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.Windows ), "Microsoft.NET/Framework/v4.0.30319", file );
@@ -123,10 +123,25 @@ namespace Sheepy.Modnix {
          return null;
       } catch ( Exception ex ) { Log?.Error( ex ); return null; } }
 
+      private static void LoadPpmlPlus () {
+         var asm = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault( e => e.FullName.StartsWith( "PhoenixPointModLoader," ) );
+         if ( asm == null ) return;
+         lock ( asm ) {
+            if ( PpmlInitialised ) return;
+            PpmlInitialised = true;
+         }
+         Log.Info( "Initialising PPML+." );
+         var init = asm.GetType( "PhoenixPointModLoader.PhoenixPointModLoader" )?.GetMethod( "Initialize", Static | Public );
+         if ( init == null ) Log.Warn( "Cannot find PhoenixPointModLoader.Initialize, PPML+ may not be initialized properly." );
+         try {
+            init.Invoke( null, new object[]{} );
+         } catch ( Exception ex ) { Log.Error( ex ); }
+      }
+
       private static Stream GetResourceStream ( string path ) {
          path = "." + path;
          var me = Assembly.GetExecutingAssembly();
-         var fullname = me.GetManifestResourceNames().Single( e => e.EndsWith( path, StringComparison.Ordinal ) );
+         var fullname = me.GetManifestResourceNames().FirstOrDefault( e => e.EndsWith( path, StringComparison.Ordinal ) );
          return fullname != null ? me.GetManifestResourceStream( fullname ) : null;
       }
 
@@ -225,6 +240,9 @@ namespace Sheepy.Modnix {
             Log.Error( "Cannot find {1}.{2} in {0}", dll.Location, typeName, methodName );
             return;
          }
+
+         if ( "Initialize".Equals( methodName ) ) LoadPpmlPlus();
+
          var augs = new List<object>();
          foreach ( var aug in func.GetParameters() )
             augs.Add( ParamValue( aug, mod ) );
