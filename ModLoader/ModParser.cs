@@ -94,7 +94,6 @@ namespace Sheepy.Modnix {
             case "max":
                ModMetaJson.ParseVersion( txt, out e.Max );
                break;
-            default: break;
          }
          return e;
       }

@@ -30,8 +30,8 @@ namespace Sheepy.Modnix {
    public class ModSettings {
       public bool Disabled;
       public SourceLevels? LogLevel;
-      public long? Priority;
-      public bool IsDefaultSettings => ! Disabled && LogLevel == null && Priority == null;
+      public long? LoadIndex;
+      public bool IsDefaultSettings => ! Disabled && LogLevel == null && LoadIndex == null;
    }
 
    public class ModEntry : ModSettings {
@@ -50,7 +50,7 @@ namespace Sheepy.Modnix {
       internal DateTime? LastModified => Path == null ? (DateTime?) null : new FileInfo( Path ).LastWriteTime;
       internal Assembly ModAssembly;
 
-      public long GetPriority () { lock ( Metadata ) { return Priority ?? Metadata.Priority; } }
+      public long Index { get { lock ( Metadata ) { return LoadIndex ?? Metadata.LoadIndex; } } }
 
       #region API
       private static readonly Dictionary<string,Func<object,object>> ApiExtension = new Dictionary<string, Func<object, object>>();
@@ -321,7 +321,7 @@ namespace Sheepy.Modnix {
 
       public AppVer[]  Requires;
       public AppVer[]  Disables;
-      public long      Priority;
+      public long      LoadIndex;
 
       public string[]  Mods;
       public DllMeta[] Dlls;
@@ -346,7 +346,7 @@ namespace Sheepy.Modnix {
             CopyNonNull( overrider.Copyright, ref Copyright );
             CopyNonNull( overrider.Requires, ref Requires );
             CopyNonNull( overrider.Disables, ref Disables );
-            CopyNonNull( overrider.Priority, ref Priority );
+            CopyNonNull( overrider.LoadIndex, ref LoadIndex );
             CopyNonNull( overrider.Mods, ref Mods );
             CopyNonNull( overrider.Dlls, ref Dlls );
             CopyNonNull( overrider.DefaultConfig, ref DefaultConfig );

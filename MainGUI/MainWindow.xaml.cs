@@ -705,7 +705,6 @@ namespace Sheepy.Modnix.MainGUI {
             case "change" : LabelLogTitle.Content = "Change Log"; isChange = true; break;
             case "loader" : LabelLogTitle.Content = "Loader Log"; isLoader = true; break;
             case "license": LabelLogTitle.Content = "License"; isLicense = true; break;
-            default: break;
          }
          TextLog.Visibility = isGui ? Visibility.Visible : Visibility.Collapsed;
          TextLicense.Visibility = isGui ? Visibility.Collapsed : Visibility.Visible;

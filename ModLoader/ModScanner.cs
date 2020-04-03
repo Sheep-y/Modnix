@@ -285,7 +285,9 @@ namespace Sheepy.Modnix {
       }
 
       private static int CompareMod ( ModEntry x, ModEntry y ) {
-         var diff = CompareAttr( x.Key, y.Key );
+         var diff = CompareAttr( x.Index, y.Index );
+         if ( diff != 0 ) return diff;
+         diff = CompareAttr( x.Key, y.Key );
          if ( diff != 0 ) return diff;
          diff = CompareAttr( x.Metadata.Version, y.Metadata.Version );
          if ( diff != 0 ) return diff;
@@ -322,7 +324,7 @@ namespace Sheepy.Modnix {
          foreach ( var mod in EnabledMods.ToArray() ) {
             if ( ! settings.TryGetValue( mod.Key, out ModSettings modSetting ) ) continue;
             if ( ! modSetting.Disabled ) continue;
-            DisableAndRemoveMod( mod, "manual", "Mod {1} is manually disabled.", mod );
+            DisableAndRemoveMod( mod, "manual", "Mod {1} is manually disabled.", mod, mod.Key );
          }
       }
 
