@@ -16,7 +16,7 @@ I try my best, but if you find bugs, please report on [GitHub](https://github.co
 ## User Features
 
 1. Easy to use.  One-click setup, simple mod manager, detailed diagnostic log.
-2. Advanced mods, such as *real* Skip Intro, and can load *both* PPML 0.1 and 0.2 mods.
+2. Advanced mods, such as *real* Skip Intro, and can load PPML 0.1, 0.2, *and* 0.3 mods.
 3. Create and reset mod configs for compatible mods.
 4. Quick access to mod files, communities, resources, and of course the game.
 

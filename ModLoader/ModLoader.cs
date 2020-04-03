@@ -25,7 +25,7 @@ namespace Sheepy.Modnix {
       public static LoaderSettings Settings { get { lock( MOD_PATH ) { return _Settings; } } set { lock( MOD_PATH ) { _Settings = value; } } }
 
       public static Version LoaderVersion, GameVersion;
-      internal readonly static Version PPML_COMPAT = new Version( 0, 1 );
+      internal readonly static Version PPML_COMPAT = new Version( 0, 3 );
 
       public static string ModDirectory { get; private set; }
 
@@ -70,7 +70,7 @@ namespace Sheepy.Modnix {
       private static void MainPhase () {
          RunMainPhaseOnInit = false;
          LoadMods( "Init" ); // PPML v0.1
-         LoadMods( "Initialize" ); // PPML v0.2
+         LoadMods( "Initialize" ); // PPML v0.2+
          LoadMods( "MainMod" ); // Modnix
          if ( harmony != null ) UnpatchMenuCrt();
       }
@@ -104,13 +104,15 @@ namespace Sheepy.Modnix {
 
       // Dynamically load embedded dll
       private static Assembly ModLoaderResolve  ( object domain, ResolveEventArgs dll ) { try {
-         Log.Trace( "Resolving {0}", dll.Name );
+         var name = dll.Name;
+         Log.Trace( "Resolving {0}", name );
          var app = domain as AppDomain ?? AppDomain.CurrentDomain;
-         if ( dll.Name.StartsWith( "PhoenixPointModLoader, Version=0.2.0.0, ", StringComparison.OrdinalIgnoreCase ) ) {
-            Log.Verbo( "Loading embedded PPML v0.2" );
-            return app.Load( Properties.Resources.PPML_0_2 );
-         }
-         if ( dll.Name.StartsWith( "System." ) && dll.Name.Contains( ',' ) ) { // Generic system library lookup
+         if ( name.StartsWith( "PhoenixPointModLoader,", StringComparison.OrdinalIgnoreCase ) )
+            return app.Load( GetResourceBytes( "PPML_0_3.dll" ) );
+         if ( name.StartsWith( "SimpleInjector,", StringComparison.OrdinalIgnoreCase ) )
+            return app.Load( GetResourceBytes( "SimpleInjector.dl" ) );
+         if ( name.StartsWith( "" ) )
+         if ( name.StartsWith( "System." ) && dll.Name.Contains( ',' ) ) { // Generic system library lookup
             var file = dll.Name.Substring( 0, dll.Name.IndexOf( ',' ) ) + ".dll";
             var target = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.Windows ), "Microsoft.NET/Framework/v4.0.30319", file );
             if ( File.Exists( target ) ) {
@@ -120,6 +122,22 @@ namespace Sheepy.Modnix {
          }
          return null;
       } catch ( Exception ex ) { Log?.Error( ex ); return null; } }
+
+      private static Stream GetResourceStream ( string path ) {
+         path = "." + path;
+         var me = Assembly.GetExecutingAssembly();
+         var fullname = me.GetManifestResourceNames().Single( e => e.EndsWith( path, StringComparison.Ordinal ) );
+         return fullname != null ? me.GetManifestResourceStream( fullname ) : null;
+      }
+
+      private static byte[] GetResourceBytes ( string path ) {
+         var mem = new MemoryStream();
+         using ( var stream = GetResourceStream( path ) ) {
+            stream.CopyTo( mem );
+            Log.Verbo( "Extracted {0}, {1:n0} bytes", path, mem.Length );
+         }
+         return mem.ToArray();
+      }
 
       private static void LoadSettings () {
          var confFile = Path.Combine( ModDirectory, CONF_FILE );

@@ -17,10 +17,12 @@ Modnix Changelog
 * Fix: Unknown mod api action will trigger a warning.
 * Gui: Compress resources to make file size smaller.
 * Gui: Mod list now shows load order and sort by mod name by default.
+* Mod: Support PPML 0.3 mods.
 * Mod: New mod_info field "LoadIndex".
 * Mod: New api action "assembly", "config_save", "reg_action", "reg_handler", "unreg_action".
 * Mod: Mod api actions are now case-insensitive, including registered extensions.
 * Mod: Multiple dll declaration no longer allowed in order to keep things simple.
+* Mod: Fix reported version for "ppml" when queries through api.
 
 # Version 1.0, 2020-03-23
 
