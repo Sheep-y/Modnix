@@ -29,8 +29,9 @@ namespace Sheepy.Modnix {
 
    public class ModSettings {
       public bool Disabled;
-      public SourceLevels? LogLevel = SourceLevels.Information;
+      public SourceLevels? LogLevel;
       public long? Priority;
+      public bool IsDefaultSettings => ! Disabled && LogLevel == null && Priority == null;
    }
 
    public class ModEntry : ModSettings {
