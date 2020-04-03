@@ -177,7 +177,7 @@ namespace Sheepy.Modnix.MainGUI {
       // -s --skip-launch-check  Skip checking running process, modnix installation, and setting migration
       // -reset --reset          Clear and reset App settings
       private void ProcessParams ( string[] args ) {
-         if ( args == null || args.Length <= 0 ) return;
+         if ( args == null || args.Length == 0 ) return;
          var param = args.ToList();
 
          if ( ParamIndex( param, "reset", "reset" ) >= 0 ) {
@@ -828,7 +828,7 @@ namespace Sheepy.Modnix.MainGUI {
       internal void WriteCodeFile ( string file, Stream source ) {
          if ( source == null ) throw new ArgumentNullException( nameof( source ) );
          string target = Path.Combine( CodeDir, file );
-         App.Log( $"Writing {source.Length} bytes to {target}" );
+         App.Log( $"Writing to {target}" );
          using ( var writer = new FileStream( target, FileMode.Create ) ) {
             source.CopyTo( writer );
          }

@@ -401,12 +401,13 @@ namespace Sheepy.Modnix.MainGUI {
             var config = Mod.CheckConfigFile();
             list.Add( config != null ? $"\r{fileName(config)} [Config]" : "\r(Can create config file)" );
          }
-         foreach ( var e in meta.Dlls ) {
-            var path = fileName( e.Path );
-            var txt = "\r" + path + " [" + string.Join( ", ", e.Methods.Keys ) + "]";
-            if ( path == self ) selfRun.Text = txt;
-            else list.Add( txt );
-         }
+         if ( meta.Dlls != null )
+            foreach ( var e in meta.Dlls ) {
+               var path = fileName( e.Path );
+               var txt = "\r" + path + " [" + string.Join( ", ", e.Methods.Keys ) + "]";
+               if ( path == self ) selfRun.Text = txt;
+               else list.Add( txt );
+            }
       }
 
       private Block BuildCopyright () {

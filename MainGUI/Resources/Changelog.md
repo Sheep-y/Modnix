@@ -15,6 +15,7 @@ Modnix Changelog
 * Fix: mods_root added as a reserved id. It is used by mod api path action.
 * Fix: Mod api log action will return true when successfully added to queue.
 * Fix: Unknown mod api action will trigger a warning.
+* Fix: Mods without dll will no longer crash gui mod list.
 * Gui: Compress resources to make file size smaller.
 * Gui: Mod list now shows load order and sort by mod name by default.
 * Mod: Support PPML 0.3 mods.  PPML 0.3 is properly initialised, except it won't load mods.
