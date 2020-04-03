@@ -29,7 +29,7 @@ namespace Sheepy.Modnix {
 
    public class ModSettings {
       public bool Disabled;
-      public SourceLevels LogLevel = SourceLevels.Information;
+      public SourceLevels? LogLevel = SourceLevels.Information;
       public long? Priority;
    }
 
@@ -188,7 +188,7 @@ namespace Sheepy.Modnix {
       private Logger CreateLogger () {
          lock ( this ) {
             if ( Logger != null ) return Logger;
-            Logger = new LoggerProxy( ModLoader.Log ){ Level = LogLevel };
+            Logger = new LoggerProxy( ModLoader.Log ){ Level = LogLevel ?? ModLoader.Settings.LogLevel };
          }
          var filters = Logger.Filters;
          filters.Add( LogFilters.IgnoreDuplicateExceptions );

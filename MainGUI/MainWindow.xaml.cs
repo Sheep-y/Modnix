@@ -102,7 +102,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void RefreshAppButtons () { try {
          bool minApp = App.Settings.MinifyLoaderPanel, minGame = App.Settings.MinifyGamePanel;
-         Log( "Refreshing app buttons, " + ( SharedGui.CanModify ? "can mod" : "cannot mod" ) );
+         Log( "Refreshing app buttons" );
          ButtonSetup.IsEnabled = ! SharedGui.IsAppWorking && SharedGui.AppState != null;
          ButtonSetup.Visibility = ButtonUserGuide.Visibility = ButtonWiki.Visibility =
             minApp ? Visibility.Collapsed : Visibility.Visible;
@@ -124,17 +124,17 @@ namespace Sheepy.Modnix.MainGUI {
          ButtonRefreshMod.IsEnabled = Directory.Exists( App.ModFolder ) && ! SharedGui.IsAppWorking;
 
          ButtonModOpenModDir.IsEnabled = CurrentMod != null;
-         ButtonModEnabled.IsEnabled = CurrentMod?.Is( ModQuery.FORCE_DISABLED ) == false;
          ButtonModDelete.IsEnabled = SharedGui.CanModify && CurrentMod != null && ! SelectedMods.Any( e => e.Is( ModQuery.IS_CHILD ) );
-         if ( CurrentMod != null ) {
-            var icon = "uncheck";
-            if ( CurrentMod.Is( ModQuery.ENABLED ) ) {
-               icon = "check";
-               AccessTextModEnabled.Text = "Enabled";
-            } else
-               AccessTextModEnabled.Text = "Disabled";
-            IconModEnabled.Source = new BitmapImage( new Uri( $"/Resources/img/{icon}.png", UriKind.Relative ) );
+         var icon = "uncheck";
+         if ( IsDisableButton ) {
+            icon = "check";
+            AccessTextModDisable.Text = "Disable";
+            ButtonModDisable.IsEnabled = SelectedMods.Any();
+         } else {
+            AccessTextModDisable.Text = "Enable";
+            ButtonModDisable.IsEnabled = SelectedMods.Any( e => ! e.Is( ModQuery.FORCE_DISABLED ) );
          }
+         IconModDisable.Source = new BitmapImage( new Uri( $"/Resources/img/{icon}.png", UriKind.Relative ) );
 
          ButtonLoaderLog.IsEnabled = File.Exists( App.LoaderLog );
          ButtonConsoleLog.IsEnabled = File.Exists( App.ConsoleLog );
@@ -403,7 +403,8 @@ namespace Sheepy.Modnix.MainGUI {
       #region Mod Info Area
       private ModInfo CurrentMod;
       private bool UpdatingModInfo;
-      private bool IsConfEmpty () => RichModInfo.Document.TextRange().Text.Length == 0;
+      private bool IsConfEmpty => RichModInfo.Document.TextRange().Text.Length == 0;
+      private bool IsDisableButton => SelectedMods.Any( e => e.Is( ModQuery.ENABLED ) ) || ! SelectedMods.Any();
 
       private void RefreshModInfo () { try {
          HideModTabs();
@@ -455,7 +456,7 @@ namespace Sheepy.Modnix.MainGUI {
          if ( CurrentMod == null ) return;
          ButtonConfSave.IsEnabled = ButtonConfReset.IsEnabled = CurrentMod.Is( ModQuery.EDITING );
          string icon = "floppy";
-         if ( IsConfEmpty() ) {
+         if ( IsConfEmpty ) {
             icon = "cross";
             AccessTextConfSave.Text = "Delete";
             ButtonConfSave.IsEnabled = CurrentMod.Is( ModQuery.HAS_CONFIG_FILE );
@@ -503,7 +504,7 @@ namespace Sheepy.Modnix.MainGUI {
       
       private void ButtonConfSave_Click ( object sender, RoutedEventArgs e ) {
          CurrentMod?.Do( AppAction.SAVE_CONFIG );
-         if ( IsConfEmpty() )
+         if ( IsConfEmpty )
             RefreshModInfo();
          else
             RefreshConfButtions();
@@ -521,8 +522,11 @@ namespace Sheepy.Modnix.MainGUI {
          }
       }
 
-      private void ButtonModEnabled_Click ( object sender, RoutedEventArgs evt ) {
-         CurrentMod?.Do( CurrentMod?.Is( ModQuery.ENABLED ) == true ? AppAction.DISABLE_MOD : AppAction.ENABLE_MOD );
+      private void ButtonModDisable_Click ( object sender, RoutedEventArgs evt ) {
+         var disable = IsDisableButton;
+         foreach ( var mod in SelectedMods )
+            mod.Do( disable ? AppAction.DISABLE_MOD : AppAction.ENABLE_MOD );
+         App.SaveSettings();
          App.GetModList();
       }
 

@@ -199,14 +199,13 @@ namespace Sheepy.Modnix.MainGUI {
          }
       }
 
-      private void EnableMod ( bool save = true ) {
+      private void EnableMod () {
          if ( Settings?.Disabled != true ) return;
          AppControl.Instance.Log( $"Enabling mod {Mod.Metadata.Id}" );
          Settings.Disabled = false;
-         if ( save ) AppControl.Instance.SaveSettings();
       }
 
-      private void DisableMod ( bool save = true ) {
+      private void DisableMod () {
          var mods = AppControl.Instance.Settings.Mods;
          if ( mods == null )
             mods = AppControl.Instance.Settings.Mods = new Dictionary<string, ModSettings>();
@@ -218,7 +217,6 @@ namespace Sheepy.Modnix.MainGUI {
          else
             return;
          AppControl.Instance.Log( $"Disabling mod {Mod.Metadata.Id}" );
-         if ( save ) AppControl.Instance.SaveSettings();
       }
 
       private void SaveConfig () {
@@ -340,6 +338,8 @@ namespace Sheepy.Modnix.MainGUI {
                   txt.Text = string.Format( "\rDisabled: Missing requirement {0}", notice.Args[0]?.ToString() ); break;
                case "disable"  :
                   txt.Text = string.Format( "\rDisabled by {0}", notice.Args[0]?.ToString() ); break;
+               case "manual"  :
+                  txt.Text = "\rManually Disabled"; break;
                case "runtime_error" :
                   txt.Text = "\rRuntime error(s) detected on last run, may be not safe to use."; break;
                case "runtime_warning" :
