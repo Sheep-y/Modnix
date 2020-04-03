@@ -418,10 +418,10 @@ namespace Sheepy.Modnix.MainGUI {
          if ( CopySelf( MyPath, ModGuiExe ) )
             flags |= PromptFlag.SETUP_SELF_COPY;
          // Copy hook files
-         CurrentGame.WriteCodeFile( HARM_DLL, GetResource( HARM_DLL ) );
-         CurrentGame.WriteCodeFile( CECI_DLL, GetResource( CECI_DLL ) );
-         CurrentGame.WriteCodeFile( LOADER  , GetResource( LOADER   ) );
-         CurrentGame.WriteCodeFile( INJECTOR, GetResource( INJECTOR ) );
+         CurrentGame.WriteCodeFile( HARM_DLL, GetResourceStream( HARM_DLL ) );
+         CurrentGame.WriteCodeFile( CECI_DLL, GetResourceStream( CECI_DLL ) );
+         CurrentGame.WriteCodeFile( LOADER  , GetResourceStream( LOADER   ) );
+         CurrentGame.WriteCodeFile( INJECTOR, GetResourceStream( INJECTOR ) );
          CurrentGame.RunInjector( "/y" );
          CheckInjectionStatus();
          if ( CurrentGame.Status == "modnix" ) {
@@ -748,13 +748,13 @@ namespace Sheepy.Modnix.MainGUI {
          }
       }
 
-      internal static Stream GetResource ( string path ) {
+      internal static Stream GetResourceStream ( string path ) {
          return new GZipStream( Application.GetResourceStream( new Uri( $"/Resources/{path}.gz", UriKind.Relative ) ).Stream, CompressionMode.Decompress );
       }
 
       internal byte[] GetResourceBytes ( string path ) {
          var mem = new MemoryStream();
-         using ( var stream = GetResource( path ) ) {
+         using ( var stream = GetResourceStream( path ) ) {
             stream.CopyTo( mem );
             Log( string.Format( "Extracted {0}, {1:n0} bytes", path, mem.Length ) );
          }

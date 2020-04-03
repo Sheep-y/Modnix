@@ -499,7 +499,7 @@ namespace Sheepy.Modnix.MainGUI {
          lock ( EXE ) {
             if ( ! File.Exists( exe ) ) using ( var writer = new FileStream( exe, FileMode.Create ) ) {
                Log( $"Creating {exe}" );
-               AppControl.GetResource( EXE ).CopyTo( writer );
+               AppControl.GetResourceStream( EXE ).CopyTo( writer );
             }
          }
          return exe;
