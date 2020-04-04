@@ -48,7 +48,7 @@ namespace Sheepy.Modnix {
 
       public string Key { get { lock ( Metadata ) { return ModScanner.NormaliseModId( Metadata.Id ); } } }
       internal DateTime? LastModified => Path == null ? (DateTime?) null : new FileInfo( Path ).LastWriteTime;
-      internal Assembly ModAssembly;
+      internal List< Assembly > ModAssemblies = null;
 
       public long Index { get { lock ( Metadata ) { return LoadIndex ?? Metadata.LoadIndex; } } }
 
@@ -60,6 +60,7 @@ namespace Sheepy.Modnix {
          if ( ! LowerAndIsEmpty( action, out action ) ) {
             switch ( action ) {
                case "assembly"    : return GetAssembly( param );
+               case "assemblies"  : return GetAssemblies( param );
                case "config"      : return LoadConfig( param );
                case "config_save" : return SaveConfig( param );
                case "dir"         : return GetDir( param );
@@ -90,17 +91,19 @@ namespace Sheepy.Modnix {
 
       private static Assembly GameAssembly;
 
-      private Assembly GetAssembly ( object target ) {
-         if ( LowerAndIsEmpty( target, out string id ) ) return ModAssembly;
+      private Assembly GetAssembly ( object target ) => GetAssemblies( target )?.FirstOrDefault();
+
+      private IEnumerable < Assembly > GetAssemblies ( object target ) {
+         if ( LowerAndIsEmpty( target, out string id ) ) return ModAssemblies ?? Enumerable.Empty<Assembly>();
          switch ( id ) {
             case "loader" : case "modnix" :
-               return Assembly.GetExecutingAssembly();
+               return new Assembly[]{ Assembly.GetExecutingAssembly() };
             case "phoenixpoint" : case "phoenix point" : case "game" :
                if ( GameAssembly == null ) // No need to lock. No conflict.
-                  GameAssembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault( e => e.FullName.StartsWith( "Assembly-CSharp," ) );
-               return GameAssembly;
+                  GameAssembly = Array.Find( AppDomain.CurrentDomain.GetAssemblies(), e => e.FullName.StartsWith( "Assembly-CSharp," ) );
+               return new Assembly[]{ GameAssembly };
             default:
-               return ModScanner.GetModById( id )?.ModAssembly;
+               return ModScanner.GetModById( id )?.ModAssemblies ?? Enumerable.Empty<Assembly>();
          }
       }
 
@@ -285,7 +288,7 @@ namespace Sheepy.Modnix {
             name = "mod_init";
          */
          return System.IO.Path.Combine( System.IO.Path.GetDirectoryName( Path ), name + ".conf" );
-      } catch ( Exception ex ) { CreateLogger().Error( ex ); return null; } }
+      } catch ( Exception ex ) { Error( ex ); return null; } }
 
       public string CheckConfigFile () { try {
          var confFile = GetConfigFile();
@@ -294,15 +297,24 @@ namespace Sheepy.Modnix {
             confFile = Path.Combine( Path.GetDirectoryName( path ), "mod_init.conf" );
          */
          return File.Exists( confFile ) ? confFile : null;
-      } catch ( Exception ex ) { CreateLogger().Error( ex ); return null; } }
+      } catch ( Exception ex ) { Error( ex ); return null; } }
 
       public string GetDefaultConfigText () { try {
          var meta = Metadata;
          lock ( meta ) {
+            if ( meta.DefaultConfigText != null ) return meta.DefaultConfigText;
+            if ( meta.ConfigType != null && ModAssemblies != null ) try {
+               foreach ( var asm in ModAssemblies ) {
+                  var type = asm.GetType( meta.ConfigType );
+                  if ( type == null ) continue;
+                  meta.DefaultConfig = Activator.CreateInstance( type );
+                  break;
+               }
+            } catch ( Exception ex ) { Error( ex ); }
             if ( meta.DefaultConfig == null ) return null;
-            return ModMetaJson.Stringify( meta.DefaultConfig );
+            return meta.DefaultConfigText = ModMetaJson.Stringify( meta.DefaultConfig );
          }
-      } catch ( Exception ex ) { CreateLogger().Error( ex ); return null; } }
+      } catch ( Exception ex ) { Error( ex ); return null; } }
 
       public string GetConfigText () { try {
          var meta = Metadata;
@@ -311,7 +323,7 @@ namespace Sheepy.Modnix {
                return meta.ConfigText;
          var confFile = CheckConfigFile();
          return meta.ConfigText = confFile != null ? File.ReadAllText( confFile, Encoding.UTF8 ) : GetDefaultConfigText();
-      } catch ( Exception ex ) { CreateLogger().Error( ex ); return null; } }
+      } catch ( Exception ex ) { Error( ex ); return null; } }
 
       public void WriteConfigText ( string str ) { try {
          if ( string.IsNullOrWhiteSpace( str ) ) return;
@@ -319,7 +331,7 @@ namespace Sheepy.Modnix {
          CreateLogger().Info( $"Writing {str.Length} chars to {path}" );
          File.WriteAllText( path, str, Encoding.UTF8 );
          lock ( Metadata ) Metadata.ConfigText = str;
-      } catch ( Exception ex ) { CreateLogger().Error( ex ); } }
+      } catch ( Exception ex ) { Error( ex ); } }
       #endregion
 
       private List<LogEntry> Notices;
@@ -361,6 +373,7 @@ namespace Sheepy.Modnix {
 
       public   string  ConfigType;
       public   object  DefaultConfig;
+      internal string  DefaultConfigText;
       internal string  ConfigText;
 
       internal bool HasContent => Mods == null && Dlls == null;
@@ -417,6 +430,7 @@ namespace Sheepy.Modnix {
          NormStringArray( ref Mods );
          NormDllMeta( ref Dlls );
          ConfigType = NormString( ConfigType );
+         if ( ConfigType != null ) DefaultConfig = null;
          return this;
       } }
 

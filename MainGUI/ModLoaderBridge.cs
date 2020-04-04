@@ -66,7 +66,7 @@ namespace Sheepy.Modnix.MainGUI {
          var doc = new Dictionary< ModDoc, string >();
          var dir = Path.GetDirectoryName( modPath );
          AppControl.Instance.Log( "Scanning docs in " + dir );
-         foreach ( var file in Directory.EnumerateFiles( dir ) ) { // TODO: Rewrite with string array lookup
+         foreach ( var file in Directory.EnumerateFiles( dir ) ) {
             var name = Path.GetFileName( file ).ToLowerInvariant();
             if ( ReadmeFiles.Contains( name ) ) doc.Add( ModDoc.README, file );
             else if ( ChangeFiles.Contains( name ) ) doc.Add( ModDoc.CHANGELOG, file );

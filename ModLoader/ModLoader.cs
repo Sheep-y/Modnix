@@ -211,7 +211,10 @@ namespace Sheepy.Modnix {
                if ( ! dll.Methods.TryGetValue( phase, out var entries ) ) continue;
                var lib = LoadDll( mod, dll.Path );
                if ( lib == null ) continue;
-               if ( mod.ModAssembly == null ) mod.ModAssembly = lib;
+               if ( mod.ModAssemblies == null )
+                  mod.ModAssemblies = new List<Assembly>();
+               if ( ! mod.ModAssemblies.Contains( lib ) )
+                  mod.ModAssemblies.Add( lib );
                foreach ( var type in entries )
                   CallInit( mod, lib, type, phase );
             }
