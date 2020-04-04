@@ -18,7 +18,7 @@ Modnix Changelog
 * Fix: Mods without dll will no longer crash gui mod list.
 * Gui: Compress resources to make file size smaller.
 * Gui: Mod list now shows load order and sort by mod name by default.
-* Mod: Support PPML 0.3 mods.  PPML 0.3 is properly initialised, except it won't load mods.
+* Mod: Upgrade PPML+ to 0.3.  PPML+ is now properly initialised, except it won't load mods.
 * Mod: New mod_info field "LoadIndex".
 * Mod: New api action "assembly", "config_save", "reg_action", "reg_handler", "unreg_action".
 * Mod: Mod api actions are now case-insensitive, including registered extensions.
@@ -95,7 +95,7 @@ Modnix Changelog
 * First public beta.
 * One-click install.
 * Full GUI showing injection state, game state and communities, mod list, basic mod info, and log of GUI.
-* Supported mods: PPML 0.1, PPML 0.2, Modnix.
+* Supported mods: PPML 0.1, PPML 0.2 (PPML+), Modnix.
 * Modnix mod phase: SplashMod, MainMod.
 * Detect Phoenix Point on default EPG path.
 * Rename PPML exe and delete modding dlls from game root on setup, to prevent accidents.

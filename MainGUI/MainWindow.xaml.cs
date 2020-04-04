@@ -305,9 +305,8 @@ namespace Sheepy.Modnix.MainGUI {
       #region Mod List
       private IEnumerable<ModInfo> ModList;
       private IEnumerable<ModInfo> SelectedMods => GridModList.SelectedItems.OfType<ModInfo>();
-      private HashSet<string> NewMods;
+      private HashSet<string> SelectMods;
       private readonly Timer RefreshModTimer;
-
 
       private void SetModList ( IEnumerable<ModInfo> list ) {
          ModList = list;
@@ -323,15 +322,15 @@ namespace Sheepy.Modnix.MainGUI {
          }
          GridModList.Items?.Refresh();
          GridModList.UpdateLayout();
-         if ( ModList != null && NewMods != null && NewMods.Count > 0 ) {
+         if ( ModList != null && SelectMods != null && SelectMods.Count > 0 ) {
             foreach ( var mod in ModList.OfType<ModInfo>() ) {
-               if ( NewMods.Contains( mod.Path ) ) {
+               if ( SelectMods.Contains( mod.Path ) ) {
                   GridModList.SelectedItem = mod;
                   GridModList.ScrollIntoView( mod );
                   break;
                }
             }
-            NewMods = null;
+            SelectMods = null;
          }
       } catch ( Exception ex ) { Log( ex ); } }
 
@@ -364,7 +363,7 @@ namespace Sheepy.Modnix.MainGUI {
          SharedGui.IsAppWorking = true;
          App.AddModAsync( dialog.FileNames ).ContinueWith( task => {
             if ( task.IsFaulted ) Prompt( AppAction.ADD_MOD, PromptFlag.ERROR, task.Exception );
-            lock ( SynGetSet ) NewMods = new HashSet<string>( task.Result.SelectMany( e => e ) );
+            lock ( SynGetSet ) SelectMods = new HashSet<string>( task.Result.SelectMany( e => e ) );
             SharedGui.IsAppWorking = false;
             this.Dispatch( () => ButtonRefreshMod_Click( sender, evt ) );
          } );
@@ -526,6 +525,7 @@ namespace Sheepy.Modnix.MainGUI {
          var disable = IsDisableButton;
          foreach ( var mod in SelectedMods )
             mod.Do( disable ? AppAction.DISABLE_MOD : AppAction.ENABLE_MOD );
+         SelectMods = new HashSet<string>( SelectedMods.Select( e => e.Path ) );
          App.SaveSettings();
          App.GetModList();
       }
