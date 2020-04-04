@@ -18,7 +18,7 @@ Modnix Changelog
 * Gui: Loader log now auto-refresh, same for new console log.
 * Gui: Click on a mod's disabled reason to jump to the cause.
 * Mod: Upgrade PPML+ to 0.3.  PPML+ is now properly initialised, except it won't load mods.
-* Mod: New mod_info field "LoadIndex".
+* Mod: New mod_info field "LoadIndex" and "ConfigType".  "DefaultConfig" is deprecated.
 * Mod: New api action "assembly", "config_save", "dir", "reg_action", "reg_handler", "unreg_action".
 * Mod: "path" api action now supports Modnix / Loader path.
 * Mod: Mod api actions are now case-insensitive, including registered extensions.

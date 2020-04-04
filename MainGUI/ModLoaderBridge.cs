@@ -192,7 +192,7 @@ namespace Sheepy.Modnix.MainGUI {
                lock ( this ) EditingConfig = null;
                return;
             case AppAction.SET_CONFIG_PROFILE :
-               lock ( this ) EditingConfig = WpfHelper.Lf2Cr( GetDefaultConfigText() );
+               lock ( this ) EditingConfig = WpfHelper.Lf2Cr( Mod.GetDefaultConfigText() ?? GetConfigFromSandbox() );
                return;
             case AppAction.SAVE_CONFIG :
                SaveConfig();
@@ -247,7 +247,7 @@ namespace Sheepy.Modnix.MainGUI {
          }
       }
 
-      private string GetDefaultConfigText () {
+      private string GetConfigFromSandbox () {
          Log( $"Creating sandbox for {Mod.Metadata.Id}" );
          var domain = AppDomain.CreateDomain( Mod.Metadata.Id, null, new AppDomainSetup { DisallowCodeDownload = true } );
          try {
@@ -260,7 +260,7 @@ namespace Sheepy.Modnix.MainGUI {
             }
             var typeName = Mod.Metadata.ConfigType;
             Log( $"Sandbox resolving {typeName}" );
-            return proxy.Stringify( typeName ) ?? proxy.GetError();
+            return Mod.CacheDefaultConfigText( proxy.Stringify( typeName ) ) ?? proxy.GetError();
          } catch ( Exception ex ) {
             Log( ex );
             return null;
@@ -306,7 +306,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void BuildConfig ( FlowDocument doc ) { lock ( Mod ) {
          Log( "Showing conf. Editing " + EditingConfig?.Length ?? "null" );
-         doc.TextRange().Text = EditingConfig ?? WpfHelper.Lf2Cr( Mod.GetConfigText() ?? GetDefaultConfigText() ) ?? "";
+         doc.TextRange().Text = EditingConfig ?? WpfHelper.Lf2Cr( Mod.GetConfigText() ?? Mod.GetDefaultConfigText() ?? GetConfigFromSandbox() ) ?? "";
       } }
 
       private void BuildSupportDoc ( ModDoc type, FlowDocument doc, string[] fileList ) { try {

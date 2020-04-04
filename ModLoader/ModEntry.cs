@@ -325,6 +325,11 @@ namespace Sheepy.Modnix {
          return meta.ConfigText = confFile != null ? File.ReadAllText( confFile, Encoding.UTF8 ) : GetDefaultConfigText();
       } catch ( Exception ex ) { Error( ex ); return null; } }
 
+      public string CacheDefaultConfigText ( string config ) {
+         if ( config == null ) return null;
+         lock ( Metadata ) return Metadata.DefaultConfigText = config;
+      }
+
       public void WriteConfigText ( string str ) { try {
          if ( string.IsNullOrWhiteSpace( str ) ) return;
          var path = GetConfigFile();
