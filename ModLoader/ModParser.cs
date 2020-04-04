@@ -52,6 +52,7 @@ namespace Sheepy.Modnix {
       }
 
       public static T Parse<T> ( string json ) => JsonConvert.DeserializeObject<T>( json, JsonOptions );
+      public static object Parse ( string json, Type type ) => JsonConvert.DeserializeObject( json, type, JsonOptions );
       public static string Stringify ( object val ) => JsonConvert.SerializeObject( val, Formatting.Indented, JsonOptions );
       public static ModMeta ParseMod ( string json ) => Parse<ModMeta>( json );
    }

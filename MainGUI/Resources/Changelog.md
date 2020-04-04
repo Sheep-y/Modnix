@@ -7,7 +7,7 @@ Modnix Changelog
 * New: Mod config editor. Save without content to delete the config file.
 * New: Read mod's readme, config, changelog, and license in mod info panel.
 * New: Read game console log and Modnix changelog in log tab. Loader and console log may be filtered.
-* New: Mod that logs an error or warning will be detected, highlighted, and show a warning.
+* New: Mod that logs an error or warning will be detected, highlighted, and show a notice in mod info.
 * Fix: Embedded mod_info with BOM can now be correctly read.
 * Fix: Mods with multiple non-static initialiser classes are now called with the correct classes.
 * Fix: Mod api log action will return true when successfully added to queue.
@@ -24,6 +24,7 @@ Modnix Changelog
 * Mod: Mod api actions are now case-insensitive, including registered extensions.
 * Mod: Multiple dll declaration no longer allowed in order to keep things simple.
 * Mod: Fix reported version for "ppml" when queries through api.
+* Mod: DefaultConfig in mod_info will be compared with a new instance of the config type, on the config action, and warn if different.
 
 # Version 1.0, 2020-03-23
 

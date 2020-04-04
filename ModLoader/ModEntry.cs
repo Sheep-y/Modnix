@@ -128,9 +128,9 @@ namespace Sheepy.Modnix {
       }
 
       private string GetDir ( object target ) {
-         LowerAndIsEmpty( target, out string id );
-         if ( "mods_root".Equals( id ) ) return ModLoader.ModDirectory;
-         return System.IO.Path.GetDirectoryName( GetPath( target ) );
+         var path = GetPath( target );
+         if ( path == null || object.ReferenceEquals( path, ModLoader.ModDirectory ) ) return path;
+         return System.IO.Path.GetDirectoryName( path );
       }
 
       private static IEnumerable<string> ListMods ( object target ) {
@@ -235,7 +235,7 @@ namespace Sheepy.Modnix {
          if ( param is Type type ) {
             if ( type == typeof( string ) )
                return txt;
-            var result = JsonConvert.DeserializeObject( txt, type, ModMetaJson.JsonOptions );
+            var result = ModMetaJson.Parse( txt, type );
             RunCheckConfig( type );
             return result;
          }
@@ -251,11 +251,13 @@ namespace Sheepy.Modnix {
          }
          Task.Run( () => { try {
             string confText;
-            lock ( Metadata ) confText = Metadata.ConfigText;
+            lock ( Metadata ) confText = GetDefaultConfigText();
             if ( confText == null ) return;
             CreateLogger().Verbo( "Verifying config in background" );
             var newInstance = Activator.CreateInstance( confType );
-            var newText = JsonConvert.SerializeObject( newInstance, Formatting.Indented, ModMetaJson.JsonOptions );
+            var newText = ModMetaJson.Stringify( newInstance );
+            var confObj = ModMetaJson.Parse( confText, confType );
+            confText = ModMetaJson.Stringify( confObj );
             if ( confText.Equals( newText, StringComparison.Ordinal ) ) return;
             Warn( "Default config mismatch.\nGot: {0}\nNew: {1}", confText, newText );
          } catch ( Exception ex ) { Info( "Error when verifying config: {0}", ex ); }
@@ -266,11 +268,8 @@ namespace Sheepy.Modnix {
          if ( param == null ) return null;
          return Task.Run( () => {
             if ( ! ( param is string str ) )
-               str = JsonConvert.SerializeObject( param, Formatting.Indented, ModMetaJson.JsonOptions );
-            var file = GetConfigFile();
-            Info( "Writing {0} chars to {1} in background", str.Length, file );
-            File.WriteAllText( file, str, Encoding.UTF8 );
-            lock ( Metadata ) Metadata.ConfigText = str;
+               str = ModMetaJson.Stringify( param );
+            WriteConfigText( str );
          } );
       } catch ( Exception e ) { Error( e ); return null; } }
 
@@ -301,7 +300,7 @@ namespace Sheepy.Modnix {
          var meta = Metadata;
          lock ( meta ) {
             if ( meta.DefaultConfig == null ) return null;
-            return meta.ConfigText = ModMetaJson.Stringify( meta.DefaultConfig );
+            return ModMetaJson.Stringify( meta.DefaultConfig );
          }
       } catch ( Exception ex ) { CreateLogger().Error( ex ); return null; } }
 
@@ -313,7 +312,7 @@ namespace Sheepy.Modnix {
          var confFile = CheckConfigFile();
          if ( confFile != null )
             return File.ReadAllText( confFile, Encoding.UTF8 );
-         return GetDefaultConfigText();
+         return meta.ConfigText = GetDefaultConfigText();
       } catch ( Exception ex ) { CreateLogger().Error( ex ); return null; } }
 
       public void WriteConfigText ( string str ) { try {

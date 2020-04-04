@@ -158,7 +158,7 @@ namespace Sheepy.Modnix {
          var confFile = Path.Combine( ModDirectory, CONF_FILE );
          if ( File.Exists( confFile ) ) try {
             Log.Info( $"Loading {confFile}" );
-            Settings = JsonConvert.DeserializeObject<LoaderSettings>( File.ReadAllText( confFile ), ModMetaJson.JsonOptions );
+            Settings = ModMetaJson.Parse<LoaderSettings>( File.ReadAllText( confFile ) );
          } catch ( Exception ex ) { Log.Error( ex ); }
          if ( Settings == null ) {
             Log.Info( $"Using default settings, because cannot find or parse {confFile}" );
@@ -169,7 +169,7 @@ namespace Sheepy.Modnix {
 
       public static void SaveSettings () {
          var confFile = Path.Combine( ModDirectory, CONF_FILE );
-         var json = JsonConvert.SerializeObject( Settings, Formatting.Indented, ModMetaJson.JsonOptions );
+         var json = ModMetaJson.Stringify( Settings );
          if ( string.IsNullOrWhiteSpace( json ) ) return;
          if ( ! Directory.Exists( ModDirectory ) )
             Directory.CreateDirectory( ModDirectory );
