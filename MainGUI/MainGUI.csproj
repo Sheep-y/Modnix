@@ -84,16 +84,16 @@
     </Compile>
     <Compile Include="SharedGui.cs" />
     <Compile Include="Updater.cs" />
-    <Resource Include="Resources\0Harmony.dll.gz" />
-    <Resource Include="Resources\7za.exe.gz" />
+    <EmbeddedResource Include="Resources\0Harmony.dll.gz" />
+    <EmbeddedResource Include="Resources\7za.exe.gz" />
     <None Include="Resources\Changelog.md" />
-    <Resource Include="Resources\Changelog.md.gz" />
+    <EmbeddedResource Include="Resources\Changelog.md.gz" />
     <None Include="Resources\License.txt" />
-    <Resource Include="Resources\License.txt.gz" />
-    <Resource Include="Resources\ModnixInjector.exe.gz" />
-    <Resource Include="Resources\ModnixLoader.dll.gz" />
-    <Resource Include="Resources\Mono.Cecil.dll.gz" />
-    <Resource Include="Resources\Newtonsoft.Json.dll.gz" />
+    <EmbeddedResource Include="Resources\License.txt.gz" />
+    <EmbeddedResource Include="Resources\ModnixInjector.exe.gz" />
+    <EmbeddedResource Include="Resources\ModnixLoader.dll.gz" />
+    <EmbeddedResource Include="Resources\Mono.Cecil.dll.gz" />
+    <EmbeddedResource Include="Resources\Newtonsoft.Json.dll.gz" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

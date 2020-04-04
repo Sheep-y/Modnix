@@ -137,10 +137,10 @@ namespace Sheepy.Modnix {
       }
 
       private static Stream GetResourceStream ( string path ) {
-         path = "." + path;
+         path = ".Resources." + path;
          var me = Assembly.GetExecutingAssembly();
-         var fullname = me.GetManifestResourceNames().FirstOrDefault( e => e.EndsWith( path, StringComparison.Ordinal ) );
-         return fullname != null ? me.GetManifestResourceStream( fullname ) : null;
+         var fullname = Array.Find( me.GetManifestResourceNames(), e => e.EndsWith( path, StringComparison.Ordinal ) );
+         return me.GetManifestResourceStream( fullname );
       }
 
       private static byte[] GetResourceBytes ( string path ) {

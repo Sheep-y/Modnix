@@ -34,6 +34,14 @@ namespace Sheepy.Modnix.MainGUI {
       public bool AssumeRoot => ListFiles().Any( e => e.StartsWith( "PPDefModifier", StringComparison.Ordinal ) && e != "PPDefModifier.dll" );
    }
 
+   internal static class AppRes {
+      internal const string INJECTOR = "ModnixInjector.exe";
+      internal const string LOADER   = "ModnixLoader.dll";
+      internal const string HARM_DLL = "0Harmony.dll";
+      internal const string CECI_DLL = "Mono.Cecil.dll";
+      internal const string JSON_DLL = "Newtonsoft.Json.dll";
+   }
+
    public partial class AppControl : Application {
       public static AppControl Instance { get; private set; }
 
@@ -44,17 +52,11 @@ namespace Sheepy.Modnix.MainGUI {
       internal const string APP_EXT  = ".exe";
       internal const string GAME_EXE = "PhoenixPointWin64.exe";
       internal const string GAME_DLL = "Assembly-CSharp.dll";
-
-      internal const string INJECTOR = "ModnixInjector.exe";
-      internal const string LOADER   = "ModnixLoader.dll";
       internal const string PAST     = "PhoenixPointModLoaderInjector.exe";
       internal const string PAST_BK  = "PhoenixPointModLoaderInjector.exe.orig";
       internal const string PAST_DL1 = "PPModLoader.dll";
       internal const string PAST_DL2 = "PhoenixPointModLoader.dll";
       internal const string PAST_MOD = "Mods";
-      internal const string HARM_DLL = "0Harmony.dll";
-      internal const string CECI_DLL = "Mono.Cecil.dll";
-      internal const string JSON_DLL = "Newtonsoft.Json.dll";
       internal const string MOD_LOG  = "ModnixLoader.log";
 
       internal const string EPIC_DIR = ".egstore";
@@ -124,8 +126,9 @@ namespace Sheepy.Modnix.MainGUI {
       } catch ( Exception ex ) { Console.WriteLine( ex ); } }
 
       private void Init ( string[] args ) {
+         AssemblyLoader.Log = Log;
          // Dynamically load embedded dll
-         AppDomain.CurrentDomain.AssemblyResolve += AssemblyResolve;
+         AppDomain.CurrentDomain.AssemblyResolve += AssemblyLoader.AssemblyResolve;
 
          // Build important paths and self information
          ModGuiExe = Path.Combine( ModFolder, LIVE_NAME + APP_EXT );
@@ -138,18 +141,6 @@ namespace Sheepy.Modnix.MainGUI {
          // Parse command line arguments
          if ( args != null )
             ProcessParams( args );
-      }
-
-      internal Assembly AssemblyResolve ( object domain, ResolveEventArgs dll ) {
-         Log( $"Modnix resolving {dll.Name}" );
-         var app = domain as AppDomain ?? AppDomain.CurrentDomain;
-         if ( dll.Name.StartsWith( "ModnixLoader,", StringComparison.OrdinalIgnoreCase ) )
-            return app.Load( GetResourceBytes( LOADER ) );
-         if ( dll.Name.StartsWith( "Mono.Cecil,", StringComparison.OrdinalIgnoreCase ) )
-            return app.Load( GetResourceBytes( CECI_DLL ) );
-         if ( dll.Name.StartsWith( "Newtonsoft.Json,", StringComparison.OrdinalIgnoreCase ) )
-            return app.Load( GetResourceBytes( JSON_DLL ) );
-         return null;
       }
 
       private void LoadSettings () {
@@ -418,10 +409,10 @@ namespace Sheepy.Modnix.MainGUI {
          if ( CopySelf( MyPath, ModGuiExe ) )
             flags |= PromptFlag.SETUP_SELF_COPY;
          // Copy hook files
-         CurrentGame.WriteCodeFile( HARM_DLL, GetResourceStream( HARM_DLL ) );
-         CurrentGame.WriteCodeFile( CECI_DLL, GetResourceStream( CECI_DLL ) );
-         CurrentGame.WriteCodeFile( LOADER  , GetResourceStream( LOADER   ) );
-         CurrentGame.WriteCodeFile( INJECTOR, GetResourceStream( INJECTOR ) );
+         CurrentGame.WriteCodeFile( AppRes.HARM_DLL, AssemblyLoader.GetResourceStream( AppRes.HARM_DLL ) );
+         CurrentGame.WriteCodeFile( AppRes.CECI_DLL, AssemblyLoader.GetResourceStream( AppRes.CECI_DLL ) );
+         CurrentGame.WriteCodeFile( AppRes.LOADER  , AssemblyLoader.GetResourceStream( AppRes.LOADER   ) );
+         CurrentGame.WriteCodeFile( AppRes.INJECTOR, AssemblyLoader.GetResourceStream( AppRes.INJECTOR ) );
          CurrentGame.RunInjector( "/y" );
          CheckInjectionStatus();
          if ( CurrentGame.Status == "modnix" ) {
@@ -433,7 +424,7 @@ namespace Sheepy.Modnix.MainGUI {
             if ( HasLegacy() && CurrentGame.RenameCodeFile( PAST, PAST_BK ) )
                flags |= PromptFlag.SETUP_PPML;
             // Cleanup - accident prevention. Old dlls at game base may override dlls in the managed folder.
-            foreach ( var file in new string[] { PAST, PAST_DL1, PAST_DL2, INJECTOR, LOADER, HARM_DLL, CECI_DLL } )
+            foreach ( var file in new string[] { PAST, PAST_DL1, PAST_DL2, AppRes.INJECTOR, AppRes.LOADER, AppRes.HARM_DLL, AppRes.CECI_DLL } )
                CurrentGame.DeleteRootFile( file );
             GUI.Prompt( AppAction.SETUP, flags );
          } else
@@ -462,7 +453,7 @@ namespace Sheepy.Modnix.MainGUI {
          }
          // Delete a few files that should not be in the mods folder
          var modDir = new GameInstallation( OldPath );
-         foreach ( var dll in new string[] { LOADER, INJECTOR, CECI_DLL, HARM_DLL, PAST, PAST_DL1, PAST_DL2 } )
+         foreach ( var dll in new string[] { AppRes.LOADER, AppRes.INJECTOR, AppRes.CECI_DLL, AppRes.HARM_DLL, PAST, PAST_DL1, PAST_DL2 } )
             modDir.DeleteRootFile( dll );
          if ( IsSameDir( OldPath, ModFolder ) ) {
             Log( $"{OldPath} seems to be symbolic link, skipping migration." );
@@ -533,8 +524,8 @@ namespace Sheepy.Modnix.MainGUI {
          CurrentGame.RunInjector( "/y /r" );
          CheckInjectionStatus();
          if ( CurrentGame.Status == "none" ) {
-            CurrentGame.DeleteCodeFile( INJECTOR );
-            CurrentGame.DeleteCodeFile( LOADER );
+            CurrentGame.DeleteCodeFile( AppRes.INJECTOR );
+            CurrentGame.DeleteCodeFile( AppRes.LOADER );
             GUI.Prompt( AppAction.REVERT );
          } else
             throw new ApplicationException( "Modnix revert failed" );
@@ -755,19 +746,6 @@ namespace Sheepy.Modnix.MainGUI {
          }
       }
 
-      internal static Stream GetResourceStream ( string path ) {
-         return new GZipStream( Application.GetResourceStream( new Uri( $"/Resources/{path}.gz", UriKind.Relative ) ).Stream, CompressionMode.Decompress );
-      }
-
-      internal byte[] GetResourceBytes ( string path ) {
-         var mem = new MemoryStream();
-         using ( var stream = GetResourceStream( path ) ) {
-            stream.CopyTo( mem );
-            Log( string.Format( "Mapped {0} to memory, {1:n0} bytes.", path, mem.Length ) );
-         }
-         return mem.ToArray();
-      }
-
       private string _StartupLog = "Startup log:\n";
       private string StartupLog { get => Get( ref _StartupLog ); set => Set( ref _StartupLog, value ); }
 
@@ -800,8 +778,8 @@ namespace Sheepy.Modnix.MainGUI {
       internal GameInstallation ( string gameDir ) {
          GameDir  = gameDir;
          CodeDir  = Path.Combine( gameDir, AppControl.DLL_PATH );
-         Injector = Path.Combine( CodeDir, AppControl.INJECTOR );
-         Loader   = Path.Combine( CodeDir, AppControl.LOADER   );
+         Injector = Path.Combine( CodeDir, AppRes.INJECTOR );
+         Loader   = Path.Combine( CodeDir, AppRes.LOADER );
       }
 
       internal readonly AppControl App = AppControl.Instance;
@@ -864,6 +842,38 @@ namespace Sheepy.Modnix.MainGUI {
          File.Move( subject, target );
          return File.Exists( target );
       } catch ( Exception ex ) { return App.Log( ex, false ); } }
+   }
+
+   internal static class AssemblyLoader {
+      internal static Action<object> Log;
+
+      internal static Assembly AssemblyResolve ( object domain, ResolveEventArgs dll ) {
+         Log?.Invoke( $"Modnix resolving {dll.Name}" );
+         var app = domain as AppDomain ?? AppDomain.CurrentDomain;
+         if ( dll.Name.StartsWith( "ModnixLoader,", StringComparison.OrdinalIgnoreCase ) )
+            return app.Load( GetResourceBytes( AppRes.LOADER ) );
+         if ( dll.Name.StartsWith( "Mono.Cecil,", StringComparison.OrdinalIgnoreCase ) )
+            return app.Load( GetResourceBytes( AppRes.CECI_DLL ) );
+         if ( dll.Name.StartsWith( "Newtonsoft.Json,", StringComparison.OrdinalIgnoreCase ) )
+            return app.Load( GetResourceBytes( AppRes.JSON_DLL ) );
+         return null;
+      }
+
+      internal static Stream GetResourceStream ( string path ) {
+         path = ".Resources." + path + ".gz";
+         var me = Assembly.GetExecutingAssembly();
+         var fullname = Array.Find( me.GetManifestResourceNames(), e => e.EndsWith( path, StringComparison.Ordinal ) );
+         return new GZipStream( me.GetManifestResourceStream( fullname ), CompressionMode.Decompress );
+      }
+
+      internal static byte[] GetResourceBytes ( string path ) {
+         var mem = new MemoryStream();
+         using ( var stream = GetResourceStream( path ) ) {
+            stream.CopyTo( mem );
+            Log?.Invoke( string.Format( "Mapped {0} to memory, {1:n0} bytes.", path, mem.Length ) );
+         }
+         return mem.ToArray();
+      }
    }
 
    internal static class ExtCls {

@@ -544,7 +544,7 @@ namespace Sheepy.Modnix.MainGUI {
          lock ( EXE ) {
             if ( ! File.Exists( exe ) ) using ( var writer = new FileStream( exe, FileMode.Create ) ) {
                Log( $"Creating {exe}" );
-               AppControl.GetResourceStream( EXE ).CopyTo( writer );
+               AssemblyLoader.GetResourceStream( EXE ).CopyTo( writer );
             }
          }
          return exe;
@@ -583,8 +583,7 @@ namespace Sheepy.Modnix.MainGUI {
       private Exception Error;
 
       public void Initiate () { try {
-         App = new AppControl();
-         AppDomain.CurrentDomain.AssemblyResolve += App.AssemblyResolve;
+         AppDomain.CurrentDomain.AssemblyResolve += AssemblyLoader.AssemblyResolve;
          Application.ResourceAssembly = Assembly.GetExecutingAssembly();
       } catch ( Exception ex ) { Error = ex; } }
 
