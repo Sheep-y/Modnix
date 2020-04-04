@@ -58,9 +58,9 @@ namespace Sheepy.Modnix.MainGUI {
       internal const string PAST_DL2 = "PhoenixPointModLoader.dll";
       internal const string PAST_MOD = "Mods";
       internal const string MOD_LOG  = "ModnixLoader.log";
-
       internal const string EPIC_DIR = ".egstore";
 
+      private string[] UNSAFE_DLL = new string[] { AppRes.LOADER, AppRes.INJECTOR, AppRes.CECI_DLL, AppRes.HARM_DLL, PAST, PAST_DL1, PAST_DL2 };
       internal readonly string ModFolder = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.MyDocuments ), MOD_PATH );
 
       private string _ModGuiExe;
@@ -424,7 +424,7 @@ namespace Sheepy.Modnix.MainGUI {
             if ( HasLegacy() && CurrentGame.RenameCodeFile( PAST, PAST_BK ) )
                flags |= PromptFlag.SETUP_PPML;
             // Cleanup - accident prevention. Old dlls at game base may override dlls in the managed folder.
-            foreach ( var file in new string[] { PAST, PAST_DL1, PAST_DL2, AppRes.INJECTOR, AppRes.LOADER, AppRes.HARM_DLL, AppRes.CECI_DLL } )
+            foreach ( var file in UNSAFE_DLL )
                CurrentGame.DeleteRootFile( file );
             GUI.Prompt( AppAction.SETUP, flags );
          } else
@@ -453,7 +453,7 @@ namespace Sheepy.Modnix.MainGUI {
          }
          // Delete a few files that should not be in the mods folder
          var modDir = new GameInstallation( OldPath );
-         foreach ( var dll in new string[] { AppRes.LOADER, AppRes.INJECTOR, AppRes.CECI_DLL, AppRes.HARM_DLL, PAST, PAST_DL1, PAST_DL2 } )
+         foreach ( var dll in UNSAFE_DLL )
             modDir.DeleteRootFile( dll );
          if ( IsSameDir( OldPath, ModFolder ) ) {
             Log( $"{OldPath} seems to be symbolic link, skipping migration." );
