@@ -87,13 +87,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       private static ModEntry Mod ( ModInfo mod ) => ( mod as GridModItem )?.Mod;
 
-      internal void AddLoaderLogNotice ( ModInfo mod, bool isError ) {
-         var m = Mod( mod );
-         if ( isError )
-            m.AddNotice( TraceEventType.Warning, "runtime_error" );
-         else
-            m.AddNotice( TraceEventType.Information, "runtime_warning" );
-      }
+      internal void AddLoaderLogNotice ( ModInfo mod, string reason ) => Mod( mod ).AddNotice( TraceEventType.Warning, reason );
       
       internal void DeleteMod ( ModInfo mod ) {
          var path = Path.GetDirectoryName( mod.Path );
@@ -347,18 +341,20 @@ namespace Sheepy.Modnix.MainGUI {
             var txt = new Run();
             switch ( notice.Message ) {
                case "duplicate" :
-                  txt.Text = string.Format( "\rDisabled: Using {0}", notice.Args[0]?.ToString() ); break;
-               case "require"  :
-                  txt.Text = string.Format( "\rDisabled: Missing requirement {0}", notice.Args[0]?.ToString() ); break;
-               case "disable"  :
-                  txt.Text = string.Format( "\rDisabled by {0}", notice.Args[0]?.ToString() ); break;
+                  txt.Text = string.Format( "\rDisabled: Using {0}.", notice.Args[0]?.ToString() ); break;
+               case "require" :
+                  txt.Text = string.Format( "\rDisabled: Missing requirement {0}.", notice.Args[0]?.ToString() ); break;
+               case "disable" :
+                  txt.Text = string.Format( "\rDisabled by {0}.", notice.Args[0]?.ToString() ); break;
                case "manual"  :
                   txt.Text = "\rManually Disabled"; break;
                case "runtime_error" :
                   txt.Text = "\rRuntime error(s) detected on last run, may be not safe to use."; break;
                case "runtime_warning" :
                   txt.Text = "\rRuntime warning(s) detected on last run."; break;
-               default:
+               case "config_mismatch" :
+                  txt.Text = "\rDefaultConfig different from new instance defaults."; break;
+               default :
                   txt.Text = "\r" + notice.Message.ToString(); break;
             }
             switch ( notice.Level ) {

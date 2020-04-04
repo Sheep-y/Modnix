@@ -257,7 +257,7 @@ namespace Sheepy.Modnix {
             var newInstance = Activator.CreateInstance( confType );
             var newText = JsonConvert.SerializeObject( newInstance, Formatting.Indented, ModMetaJson.JsonOptions );
             if ( confText.Equals( newText, StringComparison.Ordinal ) ) return;
-            Warn( "Config mismatch.\nGot: {0}\nNew: {1}", confText, newText );
+            Warn( "Default config mismatch.\nGot: {0}\nNew: {1}", confText, newText );
          } catch ( Exception ex ) { Info( "Error when verifying config: {0}", ex ); }
          } );
       }

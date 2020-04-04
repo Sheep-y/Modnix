@@ -149,7 +149,7 @@ namespace Sheepy.Modnix {
          var mem = new MemoryStream();
          using ( var stream = GetResourceStream( path ) ) {
             stream.CopyTo( mem );
-            Log.Verbo( "Extracted {0}, {1:n0} bytes", path, mem.Length );
+            Log.Verbo( "Mapped {0} to memory, {1:n0} bytes.", path, mem.Length );
          }
          return mem.ToArray();
       }

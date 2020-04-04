@@ -563,6 +563,7 @@ namespace Sheepy.Modnix.MainGUI {
       private bool IsLoadingModList;
       private HashSet< string > ModWithError = new HashSet<string>();
       private HashSet< string > ModWithWarning = new HashSet<string>();
+      private HashSet< string > ModWithConfWarn = new HashSet<string>();
       private DateTime LoaderLogLastModified;
       private readonly Regex RegexModCaptureLine = new Regex( "^(?>[\\d:\\.]+) (EROR|WARN) ([^┊]+)┊", RegexOptions.Compiled );
 
@@ -582,12 +583,13 @@ namespace Sheepy.Modnix.MainGUI {
                Task.Run( CheckLogForError ),
             } );
             lock ( SynGetSet ) if ( list == null ) return;
-            lock ( ModWithError ) if ( ModWithError.Count > 0 || ModWithWarning.Count > 0 ) {
-               Log( "Adding warnings to mods with errors." );
+            lock ( ModWithError ) if ( ModWithError.Count > 0 || ModWithWarning.Count > 0 || ModWithConfWarn.Count > 0 ) {
+               Log( "Adding warnings to mods with runtime notices." );
                foreach ( var mod in list ) {
                   if ( ! mod.Is( ModQuery.ENABLED ) ) continue;
-                  if ( ModWithError.Contains( mod.Id ) ) ModBridge.AddLoaderLogNotice( mod, true );
-                  else if ( ModWithWarning.Contains( mod.Id ) ) ModBridge.AddLoaderLogNotice( mod, false );
+                  if ( ModWithError.Contains( mod.Id ) ) ModBridge.AddLoaderLogNotice( mod, "runtime_error" );
+                  else if ( ModWithWarning.Contains( mod.Id ) ) ModBridge.AddLoaderLogNotice( mod, "runtime_warning" );
+                  else if ( ModWithConfWarn.Contains( mod.Id ) ) ModBridge.AddLoaderLogNotice( mod, "config_mismatch" );
                }
             }
             GUI.SetInfo( GuiInfo.MOD_LIST, list );
@@ -602,6 +604,7 @@ namespace Sheepy.Modnix.MainGUI {
             lock ( ModWithError ) {
                ModWithError.Clear();
                ModWithWarning.Clear();
+               ModWithConfWarn.Clear();
             }
             return;
          }
@@ -616,13 +619,15 @@ namespace Sheepy.Modnix.MainGUI {
                   var match = RegexModCaptureLine.Match( line );
                   if ( ! match.Success ) continue;
                   string type = match.Groups[ 1 ].Value, id = match.Groups[ 2 ].Value;
-                  Log( $"{type} detected with {id}" );
                   if ( type.Equals( "EROR" ) )
                      ModWithError.Add( id );
+                  else if ( line.EndsWith( "┊Default config mismatch.", StringComparison.Ordinal ) )
+                     ModWithConfWarn.Add( id );
                   else
                      ModWithWarning.Add( id );
                }
             }
+            Log( $"Log parsed. Error {ModWithError.Count}, Warn {ModWithWarning.Count}, Config {ModWithConfWarn.Count}." );
             LoaderLogLastModified = mTime;
          }
       } catch ( SystemException ex ) { Log( ex ); } }
@@ -756,7 +761,7 @@ namespace Sheepy.Modnix.MainGUI {
          var mem = new MemoryStream();
          using ( var stream = GetResourceStream( path ) ) {
             stream.CopyTo( mem );
-            Log( string.Format( "Extracted {0}, {1:n0} bytes", path, mem.Length ) );
+            Log( string.Format( "Mapped {0} to memory, {1:n0} bytes.", path, mem.Length ) );
          }
          return mem.ToArray();
       }
