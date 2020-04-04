@@ -61,11 +61,12 @@ namespace Sheepy.Modnix {
             switch ( action ) {
                case "assembly"    : return GetAssembly( param );
                case "config"      : return LoadConfig( param );
-               case "config_save" : return SaveConfig( param );
+               case "config_save" : return SaveConfig( param );;
+               case "dir"n        : return GetDir( param );
                case "log"         : CreateLogger().Log( param ); return true;
                case "logger"      : return GetLogFunc( param );
                case "mod_info"    : return new ModMeta().ImportFrom( GetMod( param )?.Metadata );
-               case "mod_list"    : return ListMods( param );
+               case "mod_list"    : return ListMods( param )
                case "path"        : return GetPath( param );
                case "reg_action"  : return RegisterAction( param );
                case "reg_handler" : return RegisterHandler( param );
@@ -117,11 +118,19 @@ namespace Sheepy.Modnix {
          if ( LowerAndIsEmpty( target, out string id ) ) return Path;
          switch ( id ) {
             case "mods_root" : return ModLoader.ModDirectory;
+            case "loader" : case "modnix" :
+               return Assembly.GetExecutingAssembly().Location;
             case "phoenixpoint" : case "phoenix point" : case "game" :
                return Process.GetCurrentProcess().MainModule?.FileName;
             default :
                return ModScanner.GetModById( id )?.Path;
          }
+      }
+
+      private string GetDir ( object target ) {
+         LowerAndIsEmpty( target, out string id ) );
+         if ( "mods_root".Equals( id ) ) return ModLoader.ModDirectory;
+         return System.IO.Path.GetDirectoryName( GetPath( target ) );
       }
 
       private static IEnumerable<string> ListMods ( object target ) {

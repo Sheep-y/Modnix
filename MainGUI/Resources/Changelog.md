@@ -10,7 +10,6 @@ Modnix Changelog
 * New: Mod that logs an error or warning will be detected, highlighted, and show a warning.
 * Fix: Embedded mod_info with BOM can now be correctly read.
 * Fix: Mods with multiple non-static initialiser classes are now called with the correct classes.
-* Fix: mods_root added as a reserved id. It is used by mod api path action.
 * Fix: Mod api log action will return true when successfully added to queue.
 * Fix: Unknown mod api action will trigger a warning.
 * Fix: Mods without dll will no longer crash gui mod list.
@@ -20,7 +19,8 @@ Modnix Changelog
 * Gui: Click on a mod's disabled reason to jump to the cause.
 * Mod: Upgrade PPML+ to 0.3.  PPML+ is now properly initialised, except it won't load mods.
 * Mod: New mod_info field "LoadIndex".
-* Mod: New api action "assembly", "config_save", "reg_action", "reg_handler", "unreg_action".
+* Mod: New api action "assembly", "config_save", "dir", "reg_action", "reg_handler", "unreg_action".
+* Mod: "path" api action now supports Modnix / Loader path.
 * Mod: Mod api actions are now case-insensitive, including registered extensions.
 * Mod: Multiple dll declaration no longer allowed in order to keep things simple.
 * Mod: Fix reported version for "ppml" when queries through api.

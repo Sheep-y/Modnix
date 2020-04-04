@@ -351,7 +351,7 @@ namespace Sheepy.Modnix.MainGUI {
             if ( key == null ) return null;
             var val = key.GetValue( "MatchedExeFullPath" )?.ToString();
             if ( val == null || ! File.Exists( val ) ) return null;
-            val= Path.GetDirectoryName( val );
+            val = Path.GetDirectoryName( val );
             if ( IsGamePath( val ) ) return val;
          }
          return null;
