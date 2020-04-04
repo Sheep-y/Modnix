@@ -243,6 +243,7 @@ namespace Sheepy.Modnix {
             return result;
          }
          JsonConvert.PopulateObject( txt, param, ModMetaJson.JsonOptions );
+         lock ( Metadata ) if ( Metadata.ConfigType != null ) return param;
          RunCheckConfig( param.GetType() );
          return param;
       } catch ( Exception e ) { Error( e ); return null; } }
@@ -256,7 +257,7 @@ namespace Sheepy.Modnix {
             string confText;
             lock ( Metadata ) confText = GetDefaultConfigText();
             if ( confText == null ) return;
-            CreateLogger().Verbo( "Verifying config in background" );
+            CreateLogger().Info( "Verifying DefaultConfig in background" );
             var newInstance = Activator.CreateInstance( confType );
             var newText = ModMetaJson.Stringify( newInstance );
             var confObj = ModMetaJson.Parse( confText, confType );
