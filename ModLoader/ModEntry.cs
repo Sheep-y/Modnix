@@ -61,12 +61,12 @@ namespace Sheepy.Modnix {
             switch ( action ) {
                case "assembly"    : return GetAssembly( param );
                case "config"      : return LoadConfig( param );
-               case "config_save" : return SaveConfig( param );;
-               case "dir"n        : return GetDir( param );
+               case "config_save" : return SaveConfig( param );
+               case "dir"         : return GetDir( param );
                case "log"         : CreateLogger().Log( param ); return true;
                case "logger"      : return GetLogFunc( param );
                case "mod_info"    : return new ModMeta().ImportFrom( GetMod( param )?.Metadata );
-               case "mod_list"    : return ListMods( param )
+               case "mod_list"    : return ListMods( param );
                case "path"        : return GetPath( param );
                case "reg_action"  : return RegisterAction( param );
                case "reg_handler" : return RegisterHandler( param );
@@ -79,7 +79,7 @@ namespace Sheepy.Modnix {
                   break;
             }
          }
-         CreateLogger().Warn( "Unknown api action '{0}'", action );
+         Warn( "Unknown api action '{0}'", action );
          return null;
       } catch ( Exception ex ) { Error( ex ); return null; } }
 
@@ -128,7 +128,7 @@ namespace Sheepy.Modnix {
       }
 
       private string GetDir ( object target ) {
-         LowerAndIsEmpty( target, out string id ) );
+         LowerAndIsEmpty( target, out string id );
          if ( "mods_root".Equals( id ) ) return ModLoader.ModDirectory;
          return System.IO.Path.GetDirectoryName( GetPath( target ) );
       }
@@ -167,10 +167,10 @@ namespace Sheepy.Modnix {
             ApiExtOwner.Add( cmd, this );
             RegAction = null;
          }
-         CreateLogger().Info( "Registered api action {0}", cmd );
+         Info( "Registered api action {0}", cmd );
          return true;
       } catch ( ApplicationException ex ) {
-         CreateLogger().Warn( ex.Message );
+         Warn( ex.Message );
          return false;
       } }
 
@@ -180,14 +180,14 @@ namespace Sheepy.Modnix {
 
          lock ( ApiExtension ) ApiExtOwner.TryGetValue( cmd, out owner );
          if ( owner != this ) {
-            CreateLogger().Warn( $"unreg_action '{cmd}' " + owner == null ? "not found." : "not owner" );
+            Warn( $"unreg_action '{cmd}' " + owner == null ? "not found." : "not owner" );
             return false;
          }
          lock ( ApiExtension ) {
             ApiExtension.Remove( cmd );
             ApiExtOwner.Remove( cmd );
          }
-         CreateLogger().Info( "Unregistered api action {0}", cmd );
+         Info( "Unregistered api action {0}", cmd );
          return true;
       }
       #endregion
@@ -221,28 +221,55 @@ namespace Sheepy.Modnix {
          return null;
       }
 
-      internal void Error ( object err ) => CreateLogger().Error( err );
+      internal void Info  ( object msg, params object[] augs ) => CreateLogger().Info ( msg, augs );
+      internal void Warn  ( object msg, params object[] augs ) => CreateLogger().Warn ( msg, augs );
+      internal void Error ( object msg ) => CreateLogger().Error( msg );
       #endregion
 
       #region Config
+      private bool ConfigChecked;
+
       private object LoadConfig ( object param ) { try {
          if ( param == null ) param = typeof( JObject );
          string txt = GetConfigText();
          if ( param is Type type ) {
             if ( type == typeof( string ) )
                return txt;
-            return JsonConvert.DeserializeObject( txt, type, ModMetaJson.JsonOptions );
+            var result = JsonConvert.DeserializeObject( txt, type, ModMetaJson.JsonOptions );
+            RunCheckConfig( type );
+            return result;
          }
          JsonConvert.PopulateObject( txt, param, ModMetaJson.JsonOptions );
+         RunCheckConfig( param.GetType() );
          return param;
       } catch ( Exception e ) { Error( e ); return null; } }
+
+      private void RunCheckConfig ( Type confType ) {
+         lock ( this ) {
+            if ( ConfigChecked ) return;
+            ConfigChecked = true;
+         }
+         Task.Run( () => { try {
+            string confText;
+            lock ( Metadata ) confText = Metadata.ConfigText;
+            if ( confText == null ) return;
+            CreateLogger().Verbo( "Verifying config in background" );
+            var newInstance = Activator.CreateInstance( confType );
+            var newText = JsonConvert.SerializeObject( newInstance, Formatting.Indented, ModMetaJson.JsonOptions );
+            if ( confText.Equals( newText, StringComparison.Ordinal ) ) return;
+            Warn( "Config mismatch.\nGot: {0}\nNew: {1}", confText, newText );
+         } catch ( Exception ex ) { Info( "Error when verifying config: {0}", ex ); }
+         } );
+      }
 
       private Task SaveConfig ( object param ) { try {
          if ( param == null ) return null;
          return Task.Run( () => {
             if ( ! ( param is string str ) )
                str = JsonConvert.SerializeObject( param, Formatting.Indented, ModMetaJson.JsonOptions );
-            File.WriteAllText( GetConfigFile(), str, Encoding.UTF8 );
+            var file = GetConfigFile();
+            Info( "Writing {0} chars to {1} in background", str.Length, file );
+            File.WriteAllText( file, str, Encoding.UTF8 );
             lock ( Metadata ) Metadata.ConfigText = str;
          } );
       } catch ( Exception e ) { Error( e ); return null; } }
