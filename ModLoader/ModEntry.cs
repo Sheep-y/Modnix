@@ -274,7 +274,7 @@ namespace Sheepy.Modnix {
       } catch ( Exception e ) { Error( e ); return null; } }
 
       public bool HasConfig { get { lock ( Metadata ) {
-         return Metadata.DefaultConfig != null || Metadata.ConfigText != null || CheckConfigFile() != null;
+         return Metadata.ConfigType != null || Metadata.DefaultConfig != null || Metadata.ConfigText != null || CheckConfigFile() != null;
       } } }
 
       public string GetConfigFile () { try {
@@ -310,9 +310,7 @@ namespace Sheepy.Modnix {
             if ( meta.ConfigText != null )
                return meta.ConfigText;
          var confFile = CheckConfigFile();
-         if ( confFile != null )
-            return File.ReadAllText( confFile, Encoding.UTF8 );
-         return meta.ConfigText = GetDefaultConfigText();
+         return meta.ConfigText = confFile != null ? File.ReadAllText( confFile, Encoding.UTF8 ) : GetDefaultConfigText();
       } catch ( Exception ex ) { CreateLogger().Error( ex ); return null; } }
 
       public void WriteConfigText ( string str ) { try {
@@ -361,6 +359,7 @@ namespace Sheepy.Modnix {
       public string[]  Mods;
       public DllMeta[] Dlls;
 
+      public   string  ConfigType;
       public   object  DefaultConfig;
       internal string  ConfigText;
 
@@ -384,8 +383,8 @@ namespace Sheepy.Modnix {
             CopyNonNull( overrider.LoadIndex, ref LoadIndex );
             CopyNonNull( overrider.Mods, ref Mods );
             CopyNonNull( overrider.Dlls, ref Dlls );
+            CopyNonNull( overrider.ConfigType, ref ConfigType );
             CopyNonNull( overrider.DefaultConfig, ref DefaultConfig );
-            CopyNonNull( overrider.ConfigText, ref ConfigText );
          }
          lock ( this ) return this;
       }
@@ -417,6 +416,7 @@ namespace Sheepy.Modnix {
          NormAppVer( ref Disables );
          NormStringArray( ref Mods );
          NormDllMeta( ref Dlls );
+         ConfigType = NormString( ConfigType );
          return this;
       } }
 

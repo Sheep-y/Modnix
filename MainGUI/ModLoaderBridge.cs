@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -190,7 +191,7 @@ namespace Sheepy.Modnix.MainGUI {
                lock ( this ) EditingConfig = null;
                return;
             case AppAction.SET_CONFIG_PROFILE :
-               lock ( this ) EditingConfig = WpfHelper.Lf2Cr( Mod.GetDefaultConfigText() );
+               lock ( this ) EditingConfig = WpfHelper.Lf2Cr( GetDefaultConfigText() );
                return;
             case AppAction.SAVE_CONFIG :
                SaveConfig();
@@ -245,6 +246,29 @@ namespace Sheepy.Modnix.MainGUI {
          }
       }
 
+      private string GetDefaultConfigText () { try {
+         var setup = new AppDomainSetup { DisallowCodeDownload = true };
+         var domain = AppDomain.CreateDomain( Mod.Metadata.Id, null, setup );
+         try {
+            var proxy = domain.CreateInstanceFromAndUnwrap( Assembly.GetExecutingAssembly().Location, "Sheepy.Modnix.MainGUI.DomainProxy" ) as Sandbox;
+            proxy.Initiate();
+            var dlls = Mod.Metadata.Dlls.Select( e => e.Path ).ToArray();
+            foreach ( var dll in dlls ) {
+               proxy.LoadDll( dll );
+               if ( proxy.HasError ) return proxy.GetError();
+            }
+            return proxy.Stringify( Mod.Metadata.ConfigType ) ?? proxy.GetError();
+         } catch ( Exception ex ) {
+            AppControl.Instance.Log( ex );
+            return null;
+         } finally {
+            AppDomain.Unload( domain );
+         }
+      } catch ( Exception ex ) {
+         AppControl.Instance.Log( ex );
+         return null;
+      } }
+
       public override void BuildDocument ( ModDoc type, FlowDocument doc ) {
          switch ( type ) {
             case ModDoc.SUMMARY : BuildSummary( doc ); break;
@@ -278,7 +302,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void BuildConfig ( FlowDocument doc ) { lock ( Mod ) {
          AppControl.Instance.Log( "Showing conf. Editing " + EditingConfig?.Length ?? "null" );
-         doc.TextRange().Text = EditingConfig ?? WpfHelper.Lf2Cr( Mod.GetConfigText() );
+         doc.TextRange().Text = EditingConfig ?? WpfHelper.Lf2Cr( Mod.GetConfigText() ) ?? GetDefaultConfigText();
       } }
 
       private void BuildSupportDoc ( ModDoc type, FlowDocument doc, string[] fileList ) { try {
@@ -546,6 +570,34 @@ namespace Sheepy.Modnix.MainGUI {
          if ( File.Exists( exe ) )
             File.Delete( exe );
       } catch ( SystemException ) { } }
+   }
+
+   public class Sandbox : MarshalByRefObject {
+      private Exception Error;
+
+      public void Initiate () { try {
+         AppDomain.CurrentDomain.AssemblyResolve += AssemblyResolve;
+      } catch ( Exception ex ) { Error = ex; } }
+
+      private Assembly AssemblyResolve ( object domain, ResolveEventArgs dll ) { try {
+         return null;
+      } catch ( Exception ex ) { Error = ex; return null; } }
+
+      public void LoadDll ( string path ) { try {
+         Assembly.LoadFrom( path );
+      } catch ( Exception ex ) { Error = ex; } }
+
+      public string Stringify ( string typeName ) { try {
+         foreach ( var asm in AppDomain.CurrentDomain.GetAssemblies().Reverse() ) {
+            var type = asm.GetType( typeName );
+            if ( type == null ) continue;
+            return Activator.CreateInstance( type ).ToString();
+         }
+         return null;
+      } catch ( Exception ex ) { Error = ex; return null; } }
+
+      public bool HasError => Error != null;
+      public string GetError () => Error?.ToString();
    }
 
    public static class NativeMethods {
