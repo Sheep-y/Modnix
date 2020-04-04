@@ -247,15 +247,13 @@ namespace Sheepy.Modnix.MainGUI {
          }
       }
 
-      private string GetDefaultConfigText () { try {
+      private string GetDefaultConfigText () {
          Log( $"Creating sandbox for {Mod.Metadata.Id}" );
-         var setup = new AppDomainSetup { DisallowCodeDownload = true };
-         var domain = AppDomain.CreateDomain( Mod.Metadata.Id, null, setup );
+         var domain = AppDomain.CreateDomain( Mod.Metadata.Id, null, new AppDomainSetup { DisallowCodeDownload = true } );
          try {
             var proxy = domain.CreateInstanceFromAndUnwrap( Assembly.GetExecutingAssembly().Location, typeof( Sandbox ).FullName ) as Sandbox;
             proxy.Initiate();
-            var dlls = Mod.Metadata.Dlls.Select( e => e.Path ).ToArray();
-            foreach ( var dll in dlls ) {
+            foreach ( var dll in Mod.Metadata.Dlls.Select( e => e.Path ) ) {
                Log( $"Sandbox loading {dll}" );
                proxy.LoadDll( dll );
                if ( proxy.HasError ) return proxy.GetError();
@@ -267,12 +265,13 @@ namespace Sheepy.Modnix.MainGUI {
             Log( ex );
             return null;
          } finally {
-            AppDomain.Unload( domain );
+            if ( domain != null )
+               Task.Run( () => { try {
+                  Log( $"Unloading sandbox {Mod.Metadata.Id}" );
+                  AppDomain.Unload( domain );
+               } catch ( Exception ex ) { Log( ex ); } } );
          }
-      } catch ( Exception ex ) {
-         Log( ex );
-         return null;
-      } }
+      }
 
       public override void BuildDocument ( ModDoc type, FlowDocument doc ) {
          switch ( type ) {
@@ -580,7 +579,7 @@ namespace Sheepy.Modnix.MainGUI {
 
    public class Sandbox : MarshalByRefObject {
       private AppControl App;
-      private HashSet<Assembly> ModDlls = new HashSet<Assembly>();
+      private HashSet<Assembly> ModDlls;
       private Exception Error;
 
       public void Initiate () { try {
@@ -590,6 +589,10 @@ namespace Sheepy.Modnix.MainGUI {
       } catch ( Exception ex ) { Error = ex; } }
 
       public void LoadDll ( string path ) { try {
+         if ( ModDlls == null ) {
+            ModDlls = new HashSet<Assembly>();
+            ModMetaJson.TrimVersion( new Version() ); // Call something to load ModLoader.
+         }
          ModDlls.Add( Assembly.LoadFrom( path ) );
       } catch ( Exception ex ) { Error = ex; } }
 
