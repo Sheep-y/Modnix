@@ -9,8 +9,10 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
+using System.Windows.Input;
 using System.Windows.Media;
 
 namespace Sheepy.Modnix.MainGUI {
@@ -368,8 +370,23 @@ namespace Sheepy.Modnix.MainGUI {
                default :
                   txt.Foreground = Brushes.DarkBlue; break;
             }
-            if ( notice.Args?.Length > 0 && notice.Args[0] is ModEntry cause )
-               txt.PreviewMouseDown += ( sender, evt ) => AppControl.Instance.GUI.SetInfo( GuiInfo.MOD, cause.Path );
+            if ( notice.Args?.Length > 0 && notice.Args[0] is ModEntry cause ) {
+               void onClick ( object a, object b ) => AppControl.Instance.GUI.SetInfo( GuiInfo.MOD, cause.Path );
+               void onEnter ( object a, object b ) => txt.TextDecorations.Add( TextDecorations.Underline );
+               void onLeave ( object a, object b ) => txt.TextDecorations.Clear();
+               txt.PreviewMouseDown += onClick;
+               txt.MouseEnter += onEnter;
+               txt.MouseLeave += onLeave;
+               /*
+               txt.PreviewTouchDown += onClick;
+               txt.TouchEnter += onEnter;
+               txt.TouchLeave += onLeave;
+               txt.PreviewStylusDown += onClick;
+               txt.StylusEnter += onEnter;
+               txt.StylusLeave += onLeave;
+               */
+               txt.Cursor = Cursors.Hand;
+            }
             list.Add( txt );
          }
       }
