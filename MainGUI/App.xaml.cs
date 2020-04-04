@@ -599,17 +599,21 @@ namespace Sheepy.Modnix.MainGUI {
       } catch ( SystemException ex ) { Log( ex ); } }
 
       private void CheckLogForError () { try {
-         lock ( ModWithError ) {
+         void ClearLogs () { lock ( ModWithError ) {
             ModWithError.Clear();
             ModWithWarning.Clear();
             ModWithConfWarn.Clear();
-         }
+         } }
          var file = LoaderLog;
-         if ( ! File.Exists( file ) ) return;
+         if ( ! File.Exists( file ) ) {
+            ClearLogs();
+            return;
+         }
          DateTime mTime = new FileInfo( file ).LastWriteTime;
          lock ( ModWithError ) {
             if ( mTime == LoaderLogLastModified ) return;
-            Log( $"Pasing {file} for errors, last updated {mTime}." );
+            Log( $"Parsing {file} for errors, last updated {mTime}." );
+            ClearLogs();
             using ( var reader = new StreamReader( file ) ) {
                string line;
                while ( ( line = reader.ReadLine()?.Trim() ) != null ) {
