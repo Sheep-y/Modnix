@@ -140,7 +140,7 @@ namespace Sheepy.Modnix.MainGUI {
             ProcessParams( args );
       }
 
-      private Assembly AssemblyResolve ( object domain, ResolveEventArgs dll ) {
+      internal Assembly AssemblyResolve ( object domain, ResolveEventArgs dll ) {
          Log( $"Modnix resolving {dll.Name}" );
          var app = domain as AppDomain ?? AppDomain.CurrentDomain;
          if ( dll.Name.StartsWith( "ModnixLoader,", StringComparison.OrdinalIgnoreCase ) )

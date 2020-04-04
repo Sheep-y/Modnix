@@ -1,4 +1,5 @@
-﻿using Sheepy.Logging;
+﻿using Newtonsoft.Json;
+using Sheepy.Logging;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -250,7 +251,7 @@ namespace Sheepy.Modnix.MainGUI {
          var setup = new AppDomainSetup { DisallowCodeDownload = true };
          var domain = AppDomain.CreateDomain( Mod.Metadata.Id, null, setup );
          try {
-            var proxy = domain.CreateInstanceFromAndUnwrap( Assembly.GetExecutingAssembly().Location, "Sheepy.Modnix.MainGUI.DomainProxy" ) as Sandbox;
+            var proxy = domain.CreateInstanceFromAndUnwrap( Assembly.GetExecutingAssembly().Location, typeof( Sandbox ).FullName ) as Sandbox;
             proxy.Initiate();
             var dlls = Mod.Metadata.Dlls.Select( e => e.Path ).ToArray();
             foreach ( var dll in dlls ) {
@@ -302,7 +303,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void BuildConfig ( FlowDocument doc ) { lock ( Mod ) {
          AppControl.Instance.Log( "Showing conf. Editing " + EditingConfig?.Length ?? "null" );
-         doc.TextRange().Text = EditingConfig ?? WpfHelper.Lf2Cr( Mod.GetConfigText() ) ?? GetDefaultConfigText();
+         doc.TextRange().Text = EditingConfig ?? WpfHelper.Lf2Cr( Mod.GetConfigText() ?? GetDefaultConfigText() ) ?? "";
       } }
 
       private void BuildSupportDoc ( ModDoc type, FlowDocument doc, string[] fileList ) { try {
@@ -573,25 +574,25 @@ namespace Sheepy.Modnix.MainGUI {
    }
 
    public class Sandbox : MarshalByRefObject {
+      private AppControl App;
+      private HashSet<Assembly> ModDlls = new HashSet<Assembly>();
       private Exception Error;
 
       public void Initiate () { try {
-         AppDomain.CurrentDomain.AssemblyResolve += AssemblyResolve;
+         App = new AppControl();
+         AppDomain.CurrentDomain.AssemblyResolve += App.AssemblyResolve;
+         Application.ResourceAssembly = Assembly.GetExecutingAssembly();
       } catch ( Exception ex ) { Error = ex; } }
 
-      private Assembly AssemblyResolve ( object domain, ResolveEventArgs dll ) { try {
-         return null;
-      } catch ( Exception ex ) { Error = ex; return null; } }
-
       public void LoadDll ( string path ) { try {
-         Assembly.LoadFrom( path );
+         ModDlls.Add( Assembly.LoadFrom( path ) );
       } catch ( Exception ex ) { Error = ex; } }
 
       public string Stringify ( string typeName ) { try {
-         foreach ( var asm in AppDomain.CurrentDomain.GetAssemblies().Reverse() ) {
+         foreach ( var asm in ModDlls ) {
             var type = asm.GetType( typeName );
             if ( type == null ) continue;
-            return Activator.CreateInstance( type ).ToString();
+            return JsonConvert.SerializeObject( Activator.CreateInstance( type ), Formatting.Indented );
          }
          return null;
       } catch ( Exception ex ) { Error = ex; return null; } }
