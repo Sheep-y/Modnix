@@ -324,7 +324,7 @@ namespace Sheepy.Modnix {
          foreach ( var mod in EnabledMods.ToArray() ) {
             if ( ! settings.TryGetValue( mod.Key, out ModSettings modSetting ) ) continue;
             if ( ! modSetting.Disabled ) continue;
-            DisableAndRemoveMod( mod, "manual", "Mod {1} is manually disabled.", mod, mod.Key );
+            DisableAndRemoveMod( mod, "manual", "Mod {0} is manually disabled.", mod.Key );
          }
       }
 

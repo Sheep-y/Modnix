@@ -73,7 +73,8 @@ namespace Sheepy.Modnix.MainGUI {
          switch ( info ) {
             case GuiInfo.VISIBILITY : ShowWindow(); break;
             case GuiInfo.APP_UPDATE : Update = value; UpdateChecked(); RefreshUpdateStatus(); break;
-            case GuiInfo.MOD_LIST : SetModList( value as IEnumerable<ModInfo> ); break;
+            case GuiInfo.MOD        : SetSelectedMod( ListedMods.First( e => e.Path.Equals( value?.ToString(), StringComparison.Ordinal ) ) ); break;
+            case GuiInfo.MOD_LIST   : SetModList( value as IEnumerable<ModInfo> ); break;
             default : SharedGui.SetInfo( info, value ); break;
          }
       } catch ( Exception ex ) { Log( ex ); } } ); }
@@ -304,6 +305,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       #region Mod List
       private IEnumerable<ModInfo> ModList;
+      private IEnumerable<ModInfo> ListedMods => GridModList.ItemsSource.OfType<ModInfo>();
       private IEnumerable<ModInfo> SelectedMods => GridModList.SelectedItems.OfType<ModInfo>();
       private HashSet<string> SelectMods;
       private readonly Timer RefreshModTimer;
@@ -336,8 +338,11 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void SetSelectedMod ( ModInfo mod ) {
          CurrentMod = mod;
-         RefreshModInfo();
-         RefreshAppButtons();
+         if ( GridModList.SelectedItem == mod ) {
+            RefreshModInfo();
+            RefreshAppButtons();
+         } else
+            GridModList.SelectedItem = mod;
       }
 
       private void ButtonAddMod_Click ( object sender, RoutedEventArgs evt ) {

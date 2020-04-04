@@ -368,6 +368,8 @@ namespace Sheepy.Modnix.MainGUI {
                default :
                   txt.Foreground = Brushes.DarkBlue; break;
             }
+            if ( notice.Args?.Length > 0 && notice.Args[0] is ModEntry cause )
+               txt.PreviewMouseDown += ( sender, evt ) => AppControl.Instance.GUI.SetInfo( GuiInfo.MOD, cause.Path );
             list.Add( txt );
          }
       }

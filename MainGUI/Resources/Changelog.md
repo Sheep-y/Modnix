@@ -2,13 +2,11 @@ Modnix Changelog
 
 # Version 2.0
 
-* New: Status panels and their buttons may now be minified to give more space to mod info.
 * New: Mods may now be manually disabled.
+* New: Status panels and their buttons may now be minified to give more space to mod info.
+* New: Mod config editor. Save without content to delete the config file.
 * New: Read mod's readme, config, changelog, and license in mod info panel.
-* New: Barebone mod config editor.
-* New: Read game console log and Modnix changelog in log tab.
-* New: Loader log now auto-refresh, same for new console log.
-* New: Loader log now can be filtered, same for new console log.
+* New: Read game console log and Modnix changelog in log tab. Loader and console log may be filtered.
 * New: Mod that logs an error or warning will be detected, highlighted, and show a warning.
 * Fix: Embedded mod_info with BOM can now be correctly read.
 * Fix: Mods with multiple non-static initialiser classes are now called with the correct classes.
@@ -18,6 +16,8 @@ Modnix Changelog
 * Fix: Mods without dll will no longer crash gui mod list.
 * Gui: Compress resources to make file size smaller.
 * Gui: Mod list now shows load order and sort by mod name by default.
+* Gui: Loader log now auto-refresh, same for new console log.
+* Gui: Click on a mod's disabled reason to jump to the cause.
 * Mod: Upgrade PPML+ to 0.3.  PPML+ is now properly initialised, except it won't load mods.
 * Mod: New mod_info field "LoadIndex".
 * Mod: New api action "assembly", "config_save", "reg_action", "reg_handler", "unreg_action".

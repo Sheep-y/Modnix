@@ -21,7 +21,7 @@ namespace Sheepy.Modnix.MainGUI {
       void Log ( object message );
    }
 
-   public enum GuiInfo { NONE, VISIBILITY, MOD_LIST,
+   public enum GuiInfo { NONE, VISIBILITY, MOD, MOD_LIST,
       APP_STATE, APP_VER, APP_UPDATE,
       GAME_RUNNING, GAME_PATH, GAME_VER }
 
