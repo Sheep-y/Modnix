@@ -42,10 +42,8 @@ namespace Sheepy.Modnix {
             ModScanner.BuildModList();
             LoadMods( "SplashMod" );
             PatchMenuCrt();
-         } if ( RunMainPhaseOnInit ) { // Subsequence runs
+         } else if ( RunMainPhaseOnInit ) // Subsequence runs
             MainPhase();
-            return;
-         }
       } catch ( Exception ex ) {
          if ( Log == null )
             Console.WriteLine( ex );
