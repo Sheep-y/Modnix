@@ -204,7 +204,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void EnableMod () {
          if ( Settings?.Disabled != true ) return;
-         AppControl.Instance.Log( $"Enabling mod {Mod.Metadata.Id}" );
+         Log( $"Enabling mod {Mod.Metadata.Id}" );
          Settings.Disabled = false;
          if ( Settings.IsDefaultSettings ) {
             var settings = AppControl.Instance.Settings;
@@ -225,7 +225,7 @@ namespace Sheepy.Modnix.MainGUI {
             settings.Disabled = true;
          else
             return;
-         AppControl.Instance.Log( $"Disabling mod {Mod.Metadata.Id}" );
+         Log( $"Disabling mod {Mod.Metadata.Id}" );
       }
 
       private void SaveConfig () {
@@ -242,12 +242,13 @@ namespace Sheepy.Modnix.MainGUI {
       private void DeleteConfig () {
          var file = Mod.CheckConfigFile();
          if ( file != null ) {
-            AppControl.Instance.Log( $"Deleting {file}" );
+            Log( $"Deleting {file}" );
             File.Delete( file );
          }
       }
 
       private string GetDefaultConfigText () { try {
+         Log( $"Creating sandbox for {Mod.Metadata.Id}" );
          var setup = new AppDomainSetup { DisallowCodeDownload = true };
          var domain = AppDomain.CreateDomain( Mod.Metadata.Id, null, setup );
          try {
@@ -255,18 +256,21 @@ namespace Sheepy.Modnix.MainGUI {
             proxy.Initiate();
             var dlls = Mod.Metadata.Dlls.Select( e => e.Path ).ToArray();
             foreach ( var dll in dlls ) {
+               Log( $"Sandbox loading {dll}" );
                proxy.LoadDll( dll );
                if ( proxy.HasError ) return proxy.GetError();
             }
-            return proxy.Stringify( Mod.Metadata.ConfigType ) ?? proxy.GetError();
+            var typeName = Mod.Metadata.ConfigType;
+            Log( $"Sandbox resolving {typeName}" );
+            return proxy.Stringify( typeName ) ?? proxy.GetError();
          } catch ( Exception ex ) {
-            AppControl.Instance.Log( ex );
+            Log( ex );
             return null;
          } finally {
             AppDomain.Unload( domain );
          }
       } catch ( Exception ex ) {
-         AppControl.Instance.Log( ex );
+         Log( ex );
          return null;
       } }
 
@@ -302,17 +306,17 @@ namespace Sheepy.Modnix.MainGUI {
       } }
 
       private void BuildConfig ( FlowDocument doc ) { lock ( Mod ) {
-         AppControl.Instance.Log( "Showing conf. Editing " + EditingConfig?.Length ?? "null" );
+         Log( "Showing conf. Editing " + EditingConfig?.Length ?? "null" );
          doc.TextRange().Text = EditingConfig ?? WpfHelper.Lf2Cr( Mod.GetConfigText() ?? GetDefaultConfigText() ) ?? "";
       } }
 
       private void BuildSupportDoc ( ModDoc type, FlowDocument doc, string[] fileList ) { try {
          string text = null;
          if ( Docs.TryGetValue( type, out string file ) && ! "embedded".Equals( file, StringComparison.Ordinal ) ) {
-            AppControl.Instance.Log( $"Reading {type} {file}" );
+            Log( $"Reading {type} {file}" );
             text = File.ReadAllText( file );
          } else {
-            AppControl.Instance.Log( $"Reading embedded {type} from {Path}" );
+            Log( $"Reading embedded {type} from {Path}" );
             var buf = new StringBuilder();
             if ( ! ModScanner.FindEmbeddedFile( Path, buf, fileList ) ) return;
             text = buf.ToString();
@@ -325,7 +329,7 @@ namespace Sheepy.Modnix.MainGUI {
             using ( var mem = new MemoryStream( Encoding.ASCII.GetBytes( text ) ) )
                doc.TextRange().Load( mem, System.Windows.DataFormats.Rtf );
             return;
-         } catch ( ArgumentException ex ) { AppControl.Instance.Log( ex ); }
+         } catch ( ArgumentException ex ) { Log( ex ); }
          doc.TextRange().Text = WpfHelper.Lf2Cr( text );
       } catch ( SystemException ex ) { doc.TextRange().Text = ex.ToString(); } }
 
@@ -490,6 +494,7 @@ namespace Sheepy.Modnix.MainGUI {
          return "DLL";
       } } }
 
+      public void Log ( object msg ) => AppControl.Instance.Log( msg );
       public override string ToString () { lock ( Mod ) return Mod.ToString(); }
    }
 
@@ -592,7 +597,7 @@ namespace Sheepy.Modnix.MainGUI {
          foreach ( var asm in ModDlls ) {
             var type = asm.GetType( typeName );
             if ( type == null ) continue;
-            return JsonConvert.SerializeObject( Activator.CreateInstance( type ), Formatting.Indented );
+            return ModMetaJson.Stringify( Activator.CreateInstance( type ) );
          }
          return null;
       } catch ( Exception ex ) { Error = ex; return null; } }
