@@ -575,7 +575,7 @@ namespace Sheepy.Modnix.MainGUI {
          try {
             Log( $"Rebuilding mod list" );
             IEnumerable< ModInfo > list = null;
-            Task.WaitAll( new Task[] {
+            Task.WaitAll( new Task[] { // Scan mods and loader logs in parallel.
                Task.Run( () => {
                   var result = ModBridge.LoadModList();
                   lock ( SynGetSet ) list = result;
@@ -599,15 +599,13 @@ namespace Sheepy.Modnix.MainGUI {
       } catch ( SystemException ex ) { Log( ex ); } }
 
       private void CheckLogForError () { try {
-         var file = LoaderLog;
-         if ( ! File.Exists( file ) ) {
-            lock ( ModWithError ) {
-               ModWithError.Clear();
-               ModWithWarning.Clear();
-               ModWithConfWarn.Clear();
-            }
-            return;
+         lock ( ModWithError ) {
+            ModWithError.Clear();
+            ModWithWarning.Clear();
+            ModWithConfWarn.Clear();
          }
+         var file = LoaderLog;
+         if ( ! File.Exists( file ) ) return;
          DateTime mTime = new FileInfo( file ).LastWriteTime;
          lock ( ModWithError ) {
             if ( mTime == LoaderLogLastModified ) return;
