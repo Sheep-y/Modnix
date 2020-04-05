@@ -19,7 +19,7 @@ Modnix Changelog
 * Gui: Click on a mod's disabled reason to jump to the cause.
 * Mod: Upgrade PPML+ to 0.3.  PPML+ is now properly initialised, except it won't load mods.
 * Mod: New mod_info field "LoadIndex" and "ConfigType".
-* Mod: New api action "assembly", "config_save", "dir", "reg_action", "reg_handler", "unreg_action".
+* Mod: New api action "assembly", "config_save", "dir", "log_flush", "reg_action", "reg_handler", "unreg_action".
 * Mod: "path" api action now supports Modnix / Loader path.
 * Mod: Mod api actions are now case-insensitive, including registered extensions.
 * Mod: Multiple dll declaration no longer allowed in order to keep things simple.

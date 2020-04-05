@@ -65,6 +65,7 @@ namespace Sheepy.Modnix {
                case "config_save" : return SaveConfig( param );
                case "dir"         : return GetDir( param );
                case "log"         : CreateLogger().Log( param ); return true;
+               case "log_flush"   : return FlushLog( param );
                case "logger"      : return GetLogFunc( param );
                case "mod_info"    : return new ModMeta().ImportFrom( GetMod( param )?.Metadata );
                case "mod_list"    : return ListMods( param );
@@ -222,6 +223,14 @@ namespace Sheepy.Modnix {
             case "TraceLevel"     : return (Action<TraceLevel,object,object[]>) Logger.Log;
          }
          return null;
+      }
+
+      private bool FlushLog ( object param ) {
+         lock ( this ) if ( Logger == null ) return false;
+         var logger = CreateLogger();
+         logger.Verbo( "Flusing log.{0}{1}", param == null ? "" : " Reason: ", param );
+         logger.Flush();
+         return true;
       }
 
       internal void Info  ( object msg, params object[] augs ) => CreateLogger().Info ( msg, augs );
