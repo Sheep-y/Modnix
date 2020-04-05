@@ -234,22 +234,28 @@ namespace Sheepy.Modnix {
 
       private object LoadConfig ( object param ) { try {
          if ( param == null ) param = typeof( JObject );
-         string txt = GetConfigText();
+         string txt;
          if ( param is Type type ) {
             if ( type == typeof( string ) )
-               return txt;
-            var result = ModMetaJson.Parse( txt, type );
-            RunCheckConfig( type );
-            return result;
+               return GetConfigText();
+            var confFile = CheckConfigFile();
+            if ( type.FullName.Equals( Metadata.ConfigType ) && confFile == null )
+               return Activator.CreateInstance( type ); // Skip text conversion when using ConfigType and no config file found.
+            txt = GetConfigText( confFile );
+            if ( txt == null ) return Activator.CreateInstance( type );
+            param = ModMetaJson.Parse( txt, type );
+         } else {
+            txt = GetConfigText();
+            if ( txt == null ) return param;
+            JsonConvert.PopulateObject( txt, param, ModMetaJson.JsonOptions );
          }
-         JsonConvert.PopulateObject( txt, param, ModMetaJson.JsonOptions );
-         lock ( Metadata ) if ( Metadata.ConfigType != null ) return param;
-         RunCheckConfig( param.GetType() );
+         lock ( Metadata )
+            if ( Metadata.ConfigType == null ) RunCheckConfig( param.GetType() );
          return param;
       } catch ( Exception e ) { Error( e ); return null; } }
 
       private void RunCheckConfig ( Type confType ) {
-         lock ( this ) {
+         lock ( Metadata ) {
             if ( ConfigChecked ) return;
             ConfigChecked = true;
          }
@@ -317,12 +323,12 @@ namespace Sheepy.Modnix {
          }
       } catch ( Exception ex ) { Error( ex ); return null; } }
 
-      public string GetConfigText () { try {
+      public string GetConfigText ( string confFile = null ) { try {
          var meta = Metadata;
          lock ( meta )
             if ( meta.ConfigText != null )
                return meta.ConfigText;
-         var confFile = CheckConfigFile();
+         if ( confFile == null ) confFile = CheckConfigFile();
          return meta.ConfigText = confFile != null ? File.ReadAllText( confFile, Encoding.UTF8 ) : GetDefaultConfigText();
       } catch ( Exception ex ) { Error( ex ); return null; } }
 
