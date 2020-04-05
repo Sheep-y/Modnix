@@ -276,11 +276,12 @@ namespace Sheepy.Modnix {
 
       private Task SaveConfig ( object param ) { try {
          if ( param == null ) return null;
-         return Task.Run( () => {
+         var syn = new object();
+         lock ( syn ) return Task.Run( () => { lock ( syn ) {
             if ( ! ( param is string str ) )
                str = ModMetaJson.Stringify( param );
             WriteConfigText( str );
-         } );
+         } } );
       } catch ( Exception e ) { Error( e ); return null; } }
 
       public bool HasConfig { get { lock ( Metadata ) {
