@@ -170,6 +170,7 @@ namespace Sheepy.Modnix.MainGUI {
       #region App Info Area
       private void RefreshAppInfo () { try {
          Log( "Refreshing app info" );
+         Title = ( AppControl.LIVE_NAME + " " + SharedGui.AppVer ).Trim();
          string txt;
          if ( SharedGui.IsAppWorking || SharedGui.AppState == null )
             txt = "Busy";
