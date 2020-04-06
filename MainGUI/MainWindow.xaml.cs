@@ -382,11 +382,11 @@ namespace Sheepy.Modnix.MainGUI {
             if ( task.IsFaulted ) Prompt( AppAction.ADD_MOD, PromptFlag.ERROR, task.Exception );
             lock ( SynGetSet ) SelectMods = new HashSet<string>( task.Result.SelectMany( e => e ) );
             SharedGui.IsAppWorking = false;
-            this.Dispatch( () => ButtonRefreshMod_Click( sender, evt ) );
+            this.Dispatch( () => ButtonRefreshMod_Click() );
          } );
       }
 
-      private void ButtonRefreshMod_Click ( object sender, RoutedEventArgs evt ) {
+      private void ButtonRefreshMod_Click ( object sender = null, RoutedEventArgs evt = null ) {
          if ( AbortByCheckSave() ) return;
          SetModList( null );
          // Add new mod can happens without visible refresh, and if the mod is not new it'd look like Modnix did nothing. So we need a delay.
@@ -710,8 +710,8 @@ namespace Sheepy.Modnix.MainGUI {
          if ( ! AnyLogChecked ) ShowLog( "gui" );
       }
 
-      private DateTime? CurrentLogTime;
-      private string CurrentLogFile => ButtonLoaderLog.IsChecked == true ? App.LoaderLog : ButtonConsoleLog.IsChecked == true ? App.ConsoleLog : null;
+      private DateTime? ConsoleLogTime;
+      private DateTime? LoaderLogTime;
       private string CurrentLog = "gui";
 
       private void ShowLog ( string type ) { try {
@@ -738,16 +738,16 @@ namespace Sheepy.Modnix.MainGUI {
          else if ( isLicense ) TextLicense.Text = ApplyLogFilter( ModMetaJson.ReadAsText( AssemblyLoader.GetResourceStream( "License.txt" ) ) );
          else if ( isLoader || isConsole ) {
             try {
-               TextLicense.Text = ApplyLogFilter( File.ReadAllText( CurrentLogFile ) );
+               TextLicense.Text = ApplyLogFilter( File.ReadAllText( isLoader ? App.LoaderLog : App.ConsoleLog ) );
             } catch ( SystemException ex ) {
                if ( isConsole && SharedGui.IsGameRunning )
                   TextLicense.Text = "The game locks the console log.  Cannot read it when game is running.";
                else
                   TextLicense.Text = ex.ToString();
             }
-            CurrentLogTime = new FileInfo( CurrentLogFile ).LastWriteTime;
+            ConsoleLogTime = new FileInfo( App.ConsoleLog ).LastWriteTime;
+            LoaderLogTime  = new FileInfo( App.LoaderLog  ).LastWriteTime;
          }
-         else CurrentLogTime = null;
       } catch ( Exception ex ) { Log( ex ); } }
 
       private void TextLogFilter_TextChanged ( object sender, TextChangedEventArgs e ) => ShowLog( CurrentLog );
@@ -761,11 +761,17 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       private void CheckLogRefresh () { this.Dispatch( () => {
-         var file = CurrentLogFile;
-         if ( file == null ) return;
-         if ( ! File.Exists( file ) ) ShowLog( "gui" );
-         if ( new FileInfo( file ).LastAccessTime > CurrentLogTime.GetValueOrDefault() )
-            ShowLog( ButtonLoaderLog.IsChecked == true ? "loader" : "console" );
+         var isLoader  = ButtonLoaderLog.IsChecked  == true;
+         var isConsole = ButtonConsoleLog.IsChecked == true;
+         var file = isLoader ? App.LoaderLog : isConsole ? App.ConsoleLog : null;
+         if ( file != null ) {
+            if ( ! File.Exists( file ) ) ShowLog( "gui" );
+            var time = isLoader ? LoaderLogTime : ConsoleLogTime;
+            if ( new FileInfo( file ).LastAccessTime > time.GetValueOrDefault() )
+               ShowLog( isLoader ? "loader" : "console" );
+         }
+         if ( File.Exists( App.LoaderLog ) && new FileInfo( App.LoaderLog ).LastAccessTime > LoaderLogTime.GetValueOrDefault() )
+            App.GetModList();
       } ); }
       #endregion
 
