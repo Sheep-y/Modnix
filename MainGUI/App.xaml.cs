@@ -302,14 +302,14 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       internal string CheckAppVer () { try {
-         string version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
+         var version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
          return ModMetaJson.RegxVerTrim.Replace( version, "" );
       } catch ( Exception ex ) { return Log( ex, "error" ); } }
 
       internal string CheckGameVer () { try {
          Log( "Detecting game version." );
          try {
-            string logFile = Path.Combine( ModFolder, MOD_LOG );
+            var logFile = Path.Combine( ModFolder, MOD_LOG );
             if ( File.Exists( logFile ) &&
                  File.GetLastWriteTime( logFile ) > File.GetLastWriteTime( Path.Combine( CurrentGame.CodeDir, GAME_DLL ) ) ) {
                Log( $"Parsing {logFile}" );
@@ -568,7 +568,7 @@ namespace Sheepy.Modnix.MainGUI {
          }
          try {
             Log( $"Rebuilding mod list" );
-            IEnumerable< ModInfo > list = null;
+            ModInfo[] list = null;
             Task.WaitAll( new Task[] { // Scan mods and loader logs in parallel.
                Task.Run( () => {
                   var result = ModBridge.LoadModList();
