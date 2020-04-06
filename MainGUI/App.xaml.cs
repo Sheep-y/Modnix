@@ -659,7 +659,7 @@ namespace Sheepy.Modnix.MainGUI {
          return Task.WhenAll( files.Select( file => Task.Run( () => AddMod( file ) ) ) );
       }
 
-      private static Regex IgnoreInAddMod = new Regex( "-\\d{6,}$", RegexOptions.Compiled );
+      private static Regex IgnoreInAddMod = new Regex( "(-\\d{6,}|\\.(dll|js|json))+$", RegexOptions.Compiled );
 
       private string[] AddMod ( string file ) {
          var ext = Path.GetExtension( file ).ToLowerInvariant();
