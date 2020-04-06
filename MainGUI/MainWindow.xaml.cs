@@ -625,10 +625,11 @@ namespace Sheepy.Modnix.MainGUI {
          }
          ButtonCheckUpdate.IsEnabled = true;
          BtnTextCheckUpdate.Text = "Check Update";
-         GithubRelease release = Update as GithubRelease;
+         if ( App.Settings?.UpdateChannel == "dev" ) BtnTextCheckUpdate.Text += " (dev)";
+         var release = Update as GithubRelease;
          if ( release == null ) return;
 
-         MessageBoxResult result = MessageBox.Show( $"Update {release.Tag_Name} released.\nOpen download page?", "Updater", MessageBoxButton.YesNo );
+         var result = MessageBox.Show( $"Update {release.Tag_Name} released.\nOpen download page?", "Updater", MessageBoxButton.YesNo );
          if ( result == MessageBoxResult.No ) return;
          if ( ! String.IsNullOrWhiteSpace( release.Html_Url ) )
             Process.Start( release.Html_Url );

@@ -79,7 +79,7 @@ namespace Sheepy.Modnix.MainGUI {
          release = null;
          App.Log( $"Found {releases?.Length} releases." );
          if ( releases == null || releases.Length <= 0 ) return false;
-         bool isDevChannel = App.ModBridge.GetSettings()?.UpdateChannel == "dev";
+         bool isDevChannel = App.Settings?.UpdateChannel == "dev";
          foreach ( var e in releases ) try {
             App.Log( $"{e.Tag_Name} ({(e.Prerelease?"Prerelease":"Production")}) {e.Assets?.Length??0} asset(s)" );
             if ( String.IsNullOrWhiteSpace( e.Tag_Name ) || e.Tag_Name[0] != 'v' ) continue;
