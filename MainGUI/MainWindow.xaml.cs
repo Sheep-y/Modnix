@@ -269,13 +269,8 @@ namespace Sheepy.Modnix.MainGUI {
             if ( SharedGui.GameVer != null )
                p.Inlines.Add( $"\tVer {SharedGui.GameVer}" );
             if ( ! App.Settings.MinifyGamePanel ) {
-               var txt = new Run( Path.GetFullPath( SharedGui.GamePath ) ){ Foreground = Brushes.Navy };
-               void onClick ( object a, object b ) => AppControl.Explore( Path.GetFullPath( SharedGui.GamePath ) );
-               void onEnter ( object a, object b ) => txt.TextDecorations.Add( TextDecorations.Underline );
-               void onLeave ( object a, object b ) => txt.TextDecorations.Clear();
-               txt.PreviewMouseDown += onClick;
-               txt.MouseEnter += onEnter;
-               txt.MouseLeave += onLeave;
+               var txt = new Run( Path.GetFullPath( SharedGui.GamePath ) ){ Foreground = Brushes.Blue };
+               WpfHelper.Linkify( txt, () => AppControl.Explore( Path.Combine( Path.GetFullPath( SharedGui.GamePath ), AppControl.GAME_EXE ) ) );
                p.Inlines.Add( "\r" );
                p.Inlines.Add( txt );
             }

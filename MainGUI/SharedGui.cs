@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Windows;
 using System.Windows.Documents;
+using System.Windows.Input;
 using static System.StringComparison;
 
 namespace Sheepy.Modnix.MainGUI {
@@ -184,6 +185,14 @@ namespace Sheepy.Modnix.MainGUI {
    public static class WpfHelper {
       public static string Lf2Cr ( string text ) => text?.Replace( "\r", "" ).Replace( '\n', '\r' );
       public static StringBuilder Lf2Cr ( StringBuilder text ) => text?.Replace( "\r", "" ).Replace( '\n', '\r' );
+
+      public static T Linkify < T > ( T elem, Action onClick ) where T : Inline {
+         elem.PreviewMouseDown += ( a, b ) => onClick();
+         elem.MouseEnter += ( a, b ) => elem.TextDecorations.Add( TextDecorations.Underline );
+         elem.MouseLeave += ( a, b ) => elem.TextDecorations.Clear();
+         elem.Cursor = Cursors.Hand;
+         return elem;
+      }
 
       public static TextRange TextRange ( this FlowDocument doc ) => new TextRange( doc.ContentStart, doc.ContentEnd );
 

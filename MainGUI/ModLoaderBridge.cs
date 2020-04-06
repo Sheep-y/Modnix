@@ -413,23 +413,8 @@ namespace Sheepy.Modnix.MainGUI {
                default :
                   txt.Foreground = Brushes.DarkBlue; break;
             }
-            if ( notice.Args?.Length > 0 && notice.Args[0] is ModEntry cause ) {
-               void onClick ( object a, object b ) => AppControl.Instance.GUI.SetInfo( GuiInfo.MOD, cause.Path );
-               void onEnter ( object a, object b ) => txt.TextDecorations.Add( TextDecorations.Underline );
-               void onLeave ( object a, object b ) => txt.TextDecorations.Clear();
-               txt.PreviewMouseDown += onClick;
-               txt.MouseEnter += onEnter;
-               txt.MouseLeave += onLeave;
-               /*
-               txt.PreviewTouchDown += onClick;
-               txt.TouchEnter += onEnter;
-               txt.TouchLeave += onLeave;
-               txt.PreviewStylusDown += onClick;
-               txt.StylusEnter += onEnter;
-               txt.StylusLeave += onLeave;
-               */
-               txt.Cursor = Cursors.Hand;
-            }
+            if ( notice.Args?.Length > 0 && notice.Args[0] is ModEntry cause )
+               WpfHelper.Linkify( txt, () => AppControl.Instance.GUI.SetInfo( GuiInfo.MOD, cause.Path ) );
             list.Add( txt );
          }
       }
@@ -454,8 +439,10 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void BuildFileList ( ModMeta meta, InlineCollection list ) {
          Func< string, string > fileName = System.IO.Path.GetFileName;
-         list.Add( $"Path\r{System.IO.Path.GetDirectoryName(Path)}{System.IO.Path.DirectorySeparatorChar}\r\r" );
-         list.Add( "File(s)" );
+         list.Add( $"Path\r" );
+         var pathTxt = new Run( System.IO.Path.GetDirectoryName( Path ) + System.IO.Path.DirectorySeparatorChar ){ Foreground = Brushes.Blue };
+         list.Add( WpfHelper.Linkify( pathTxt, () => AppControl.Explore( Path ) ) );
+         list.Add( "\r\rFile(s)" );
          var self = fileName( Path );
          var selfRun = new Run( "\r" + self );
          list.Add( selfRun );
@@ -498,7 +485,7 @@ namespace Sheepy.Modnix.MainGUI {
             string name = e.Key, link = e.Value;
             if ( string.IsNullOrWhiteSpace( name ) || string.IsNullOrWhiteSpace( link ) ) continue;
             list.Add( "\r" + name + "\t" );
-            list.Add( new Hyperlink( new Run( link ) ){ NavigateUri = new Uri( link ) } );
+            list.Add( new Hyperlink( new Run( link ){ Foreground = Brushes.Blue } ){ NavigateUri = new Uri( link ) } );
          }
       }
 
