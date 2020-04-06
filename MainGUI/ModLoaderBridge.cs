@@ -207,6 +207,9 @@ namespace Sheepy.Modnix.MainGUI {
             case AppAction.RESET_CONFIG :
                lock ( this ) EditingConfig = null;
                return;
+            case AppAction.DELETE_CONFIG :
+               DeleteConfig();
+               return;
             case AppAction.SET_CONFIG_PROFILE :
                lock ( this ) EditingConfig = WpfHelper.Lf2Cr( Mod.GetDefaultConfigText() ?? GetConfigFromSandbox() );
                return;
