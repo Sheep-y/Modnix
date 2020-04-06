@@ -156,7 +156,7 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       internal void SetLogLevel ( SourceLevels level ) {
-         var settings = ModBridge.GetSettings();
+         var settings = Settings;
          if ( settings.LogLevel == level ) return;
          ModLoader.SetLogLevel( level );
          settings.LogLevel = level;
@@ -253,8 +253,8 @@ namespace Sheepy.Modnix.MainGUI {
          GUI.SetInfo( GuiInfo.APP_VER, CheckAppVer() );
          if ( FoundGame( out string gamePath ) ) {
             Log( $"Found game at {gamePath}" );
-            if ( gamePath != ModBridge.GetSettings().GamePath ) {
-               ModBridge.GetSettings().GamePath = gamePath;
+            if ( gamePath != Settings.GamePath ) {
+               Settings.GamePath = gamePath;
                SaveSettings();
             }
             CurrentGame = new GameInstallation( gamePath );
@@ -325,7 +325,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       // Try to detect game path
       private bool FoundGame ( out string gamePath ) { gamePath = null; try {
-         if ( IsGamePath( gamePath = ModBridge.GetSettings().GamePath ) ) return true;
+         if ( IsGamePath( gamePath = Settings.GamePath ) ) return true;
          foreach ( var path in new string[] { ".", "..", Path.Combine( "..", ".." ) } )
             if ( IsGamePath( gamePath = path ) ) return true;
          gamePath = SearchRegistry();
@@ -392,8 +392,7 @@ namespace Sheepy.Modnix.MainGUI {
       #region Setup / Restore
       internal void SetGamePath ( string path ) {
          Log( $"Setting game path to {path}" );
-         var conf = ModBridge.GetSettings();
-         lock ( conf ) conf.GamePath = path;
+         Settings.GamePath = path;
          CurrentGame = new GameInstallation( path );
       }
 
