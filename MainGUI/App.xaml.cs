@@ -352,7 +352,7 @@ namespace Sheepy.Modnix.MainGUI {
          foreach ( var drive in DriveInfo.GetDrives() ) try {
             if ( drive.DriveType != DriveType.Fixed ) continue;
             if ( ! drive.IsReady ) continue;
-            string path = Path.Combine( drive.Name, "Program Files", "Epic Games", "PhoenixPoint" );
+            var path = Path.Combine( drive.Name, "Program Files", "Epic Games", "PhoenixPoint" );
             if ( IsGamePath( path ) ) return path;
          } catch ( SystemException ) { }
          return null;
@@ -374,7 +374,7 @@ namespace Sheepy.Modnix.MainGUI {
                return;
             }
          } else {
-            string exe = Path.Combine( CurrentGame.GameDir, GAME_EXE );
+            var exe = Path.Combine( CurrentGame.GameDir, GAME_EXE );
             Log( $"Launching {exe}" );
             using ( Process p = new Process() ) {
                p.StartInfo.UseShellExecute = false;
@@ -403,7 +403,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void DoSetup () { try {
          Log( $"Running setup" );
-         PromptFlag flags = PromptFlag.NONE;
+         var flags = PromptFlag.NONE;
          // Copy exe to mod folder
          if ( CopySelf( MyPath, ModGuiExe ) )
             flags |= PromptFlag.SETUP_SELF_COPY;
@@ -444,8 +444,8 @@ namespace Sheepy.Modnix.MainGUI {
       } catch ( Exception ex ) { return Log( ex, false ); } }
 
       private bool MigrateLegacy () { try {
-         string OldPath = Path.Combine( CurrentGame.GameDir, PAST_MOD );
-         string NewPath = ModFolder;
+         var OldPath = Path.Combine( CurrentGame.GameDir, PAST_MOD );
+         var NewPath = ModFolder;
          if ( ! Directory.Exists( OldPath ) ) {
             CreateShortcut();
             return false;
@@ -458,17 +458,17 @@ namespace Sheepy.Modnix.MainGUI {
             Log( $"{OldPath} seems to be symbolic link, skipping migration." );
             return false;
          }
-         bool ModsMoved = false;
+         var ModsMoved = false;
          Log( $"Migrating {OldPath} to {NewPath}" );
          // Move mods
          foreach ( var file in Directory.EnumerateFiles( OldPath ) ) try {
-            string to = Path.Combine( NewPath, Path.GetFileName( file ) );
+            var to = Path.Combine( NewPath, Path.GetFileName( file ) );
             Log( $"{file} => {to}" );
             File.Move( file, to );
             ModsMoved = true;
          } catch ( Exception ex ) { Log( ex ); }
          foreach ( var dir in Directory.EnumerateDirectories( OldPath ) ) try {
-            string to = Path.Combine( NewPath, dir.Replace( OldPath + Path.DirectorySeparatorChar, "" ) );
+            var to = Path.Combine( NewPath, dir.Replace( OldPath + Path.DirectorySeparatorChar, "" ) );
             Log( $"{dir} => {to}" );
             Directory.Move( dir, to );
             ModsMoved = true;

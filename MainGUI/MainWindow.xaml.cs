@@ -319,8 +319,10 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void RefreshModList () { try {
          Log( "Refreshing mod list" );
+         if ( SelectMods == null && SelectedMods.Any() )
+            SelectMods = new HashSet<string>( SelectedMods.Select( e => e.Path ) );
          if ( GridModList.ItemsSource != ModList ) {
-            Log( "New mod list, clearing selection" );
+            Log( "New mod list" );
             GridModList.ItemsSource = ModList;
          }
          GridModList.Items?.Refresh();
