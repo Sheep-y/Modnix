@@ -18,6 +18,22 @@ namespace Sheepy.Modnix.Tests {
       private static void ResolveMods () => 
          typeof( ModScanner ).GetMethod( "ResolveMods", NonPublic | Static ).Invoke( null, new object[0] );
 
+      [TestMethod()] public void NameMatchTest () {
+         Assert.IsTrue( ModScanner.NameMatch( "abc", "ABC" ), "ignore case" );
+         Assert.IsTrue( ModScanner.NameMatch( "ExampleMod", "Example Mod" ), "ignore space" );
+         Assert.IsTrue( ModScanner.NameMatch( "Mod", "Mod - Copy" ), "One copy" );
+         Assert.IsTrue( ModScanner.NameMatch( "Mod", "Mod - Copy - Copy" ), "Two copy" );
+         Assert.IsTrue( ModScanner.NameMatch( "Mod", "Mod(123)" ), "Browser copy A" );
+         Assert.IsTrue( ModScanner.NameMatch( "Mod", "Mod (123)" ), "Browser copy B" );
+         Assert.IsTrue( ModScanner.NameMatch( "AIM-2-3", "AIM-0-1-1234568" ), "nexus id" );
+         Assert.IsTrue( ModScanner.NameMatch( "ExampleMod", "ExampleMod-1-2-345 - Copy(123)" ), "Multiple copy" );
+         Assert.IsTrue( ModScanner.NameMatch( "Mod.tar", "Mod" ), "Manual extraction" );
+
+         Assert.IsFalse( ModScanner.NameMatch( "a", "A" ), "Too short" );
+         Assert.IsFalse( ModScanner.NameMatch( "abc", "def" ), "diff name" );
+         Assert.IsFalse( ModScanner.NameMatch( "DebugConsole", "EnableConsole" ), "console mods" );
+      }
+
       [TestMethod()] public void DisabledModTest () {
          ModScanner.AllMods.Add( new ModEntry( new ModMeta{ Id = "A" } ) );
          ModScanner.AllMods.Add( new ModEntry( new ModMeta{ Id = "B" } ){ Disabled = true } );

@@ -77,9 +77,10 @@ namespace Sheepy.Modnix {
          return true;
       }
 
-      private static readonly Regex IgnoreInFolderName = new Regex( "(^Phoenix[ -_]?P(?:oin)?t[ -_]?|\\W+)", RegexOptions.Compiled | RegexOptions.IgnoreCase );
+      // PP prefix | non-word characters | ( .tar | browser copies | windows copies | nexus mod ids )+$
+      private static readonly Regex IgnoreInFolderName = new Regex( "(^Phoenix[ -_]?P(?:oin)?t[ -_]?|\\W+|(\\.tar|\\(\\d+\\)| - Copy|-\\d+)+$)", RegexOptions.Compiled | RegexOptions.IgnoreCase );
 
-      private static bool NameMatch ( string container, string subject ) {
+      public static bool NameMatch ( string container, string subject ) {
          if ( container == null || subject == null ) return false;
          container = IgnoreInFolderName.Replace( container, "" ).ToLowerInvariant();
          subject = IgnoreInFolderName.Replace( subject, "" ).ToLowerInvariant();
