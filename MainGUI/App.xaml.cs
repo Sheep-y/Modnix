@@ -337,13 +337,17 @@ namespace Sheepy.Modnix.MainGUI {
       } catch ( IOException ex ) { gamePath = null; return Log( ex, false ); } }
 
       private string SearchRegistry () { try {
-         Log( "Checking GameConfigStore registry" );
-         using ( RegistryKey key = Registry.CurrentUser.OpenSubKey( "System\\GameConfigStore\\Children\\acd774ad-4030-4091-8b74-e50749daefd8" ) ) {
-            if ( key == null ) return null;
-            var val = key.GetValue( "MatchedExeFullPath" )?.ToString();
-            if ( val == null || ! File.Exists( val ) ) return null;
-            val = Path.GetDirectoryName( val );
-            if ( IsGamePath( val ) ) return val;
+         Log( $"Finding {GAME_EXE} in Windows Game Bar registry" );
+         using ( RegistryKey gamebar = Registry.CurrentUser.OpenSubKey( "System\\GameConfigStore\\Children" ) ) {
+            foreach ( var game in gamebar.GetSubKeyNames() ) {
+               using ( RegistryKey key = gamebar.OpenSubKey( game ) ) {
+                  if ( key == null ) continue;
+                  var val = key.GetValue( "MatchedExeFullPath" )?.ToString();
+                  if ( val == null || val.IndexOf( GAME_EXE, StringComparison.OrdinalIgnoreCase ) < 0 || ! File.Exists( val ) ) continue;
+                  val = Path.GetDirectoryName( val );
+                  if ( IsGamePath( val ) ) return val;
+               }
+            }
          }
          return null;
       } catch ( Exception ex ) { return Log< string >( ex, null ); } }
