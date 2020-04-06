@@ -529,7 +529,7 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       private static Regex MalformPaths = new Regex( "(?:^[/\\\\]|\\.\\.[/\\\\])", RegexOptions.Compiled );
-      private static Regex IgnoreFiles = new Regex( "(?:\\.(?:conf|cs|csproj)|[/\\\\])$", RegexOptions.Compiled | RegexOptions.IgnoreCase );
+      private static Regex IgnoreFiles = new Regex( "(?:\\.(?:cs|csproj|sln)|[/\\\\])$", RegexOptions.Compiled | RegexOptions.IgnoreCase );
 
       public override string[] Install ( string modFolder ) {
          var destination = modFolder + Path.DirectorySeparatorChar;
@@ -570,7 +570,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       public override string[] ListFiles () {
          var exe = Create7z();
-         var stdout = AppControl.Instance.RunAndWait( Path.GetDirectoryName( ArchivePath ), exe, $"l \"{ArchivePath}\" -ba -bd -sccUTF-8 -xr!*.conf -xr!*.cs -xr!*.csprog", suppressLog: true );
+         var stdout = AppControl.Instance.RunAndWait( Path.GetDirectoryName( ArchivePath ), exe, $"l \"{ArchivePath}\" -ba -bd -sccUTF-8 -xr!*.cs -xr!*.csprog -xr!*.sln", suppressLog: true );
          return stdout.Split( '\n' )
             .Where( e => ! e.Contains( " D..." ) ) // Ignore folders, e.g. empty folders result from ignoring *.cs
             .Select( e => RemoveSize.Replace( e.Substring( 25 ).Trim(), "" ) ).ToArray();
@@ -580,7 +580,7 @@ namespace Sheepy.Modnix.MainGUI {
          var exe = Create7z();
          var destination = modFolder + Path.DirectorySeparatorChar;
          Directory.CreateDirectory( destination );
-         var stdout = AppControl.Instance.RunAndWait( destination, exe, $"x \"{ArchivePath}\" -y -bb1 -ba -bd -sccUTF-8 -xr!*.conf -xr!*.cs -xr!*.csprog" );
+         var stdout = AppControl.Instance.RunAndWait( destination, exe, $"x \"{ArchivePath}\" -y -bb1 -ba -bd -sccUTF-8 -xr!*.cs -xr!*.csprog -xr!*.sln" );
          if ( ! stdout.Contains( "Everything is Ok" ) ) throw new ApplicationException( stdout );
          return stdout.Split( '\n' ).Where( e => e.Length > 2 && e.StartsWith( "- ", StringComparison.Ordinal ) )
             .Select( e => Path.Combine( modFolder, e.Substring( 2 ).Trim() ) ).ToArray();
