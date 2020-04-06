@@ -263,6 +263,8 @@ __pycache__/
 # Project outputs
 /Modnix.exe
 /ModnixInstaller.exe
+/ModnixInstaller_*.exe
+/ModnixManualSetup_*
 # Project images
 /img
 # Dynamically compressed resources

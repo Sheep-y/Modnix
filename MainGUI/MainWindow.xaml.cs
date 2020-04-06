@@ -764,14 +764,18 @@ namespace Sheepy.Modnix.MainGUI {
          var isLoader  = ButtonLoaderLog.IsChecked  == true;
          var isConsole = ButtonConsoleLog.IsChecked == true;
          var file = isLoader ? App.LoaderLog : isConsole ? App.ConsoleLog : null;
+         var isLoaderLogUpdated =  File.Exists( App.LoaderLog ) && new FileInfo( App.LoaderLog ).LastAccessTime > LoaderLogTime.GetValueOrDefault() ;
          if ( file != null ) {
             if ( ! File.Exists( file ) ) ShowLog( "gui" );
-            var time = isLoader ? LoaderLogTime : ConsoleLogTime;
-            if ( new FileInfo( file ).LastAccessTime > time.GetValueOrDefault() )
+            if ( isLoader ) {
+               if ( isLoaderLogUpdated ) ShowLog( "loader" );
+            } else if ( new FileInfo( file ).LastAccessTime > ConsoleLogTime.GetValueOrDefault() )
                ShowLog( isLoader ? "loader" : "console" );
          }
-         if ( File.Exists( App.LoaderLog ) && new FileInfo( App.LoaderLog ).LastAccessTime > LoaderLogTime.GetValueOrDefault() )
+         if ( isLoaderLogUpdated ) {
+            LoaderLogTime = new FileInfo( App.LoaderLog ).LastAccessTime;
             App.GetModList();
+         }
       } ); }
       #endregion
 
