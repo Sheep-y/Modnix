@@ -666,17 +666,17 @@ namespace Sheepy.Modnix.MainGUI {
          var modname = IgnoreInAddMod.Replace( Path.GetFileNameWithoutExtension( file ), "" );
          if ( string.IsNullOrWhiteSpace( modname ) ) modname = Path.GetFileNameWithoutExtension( file );
          var folder = Path.Combine( ModFolder, modname );
-         if ( ext.Equals( ".zip" ) || ext.Equals( ".7z" ) || ext.Equals( ".xz" ) ) {
-            Log( $"Adding {file} as a packed mod" );
-            var reader = ext.Equals( ".zip" ) ? (ArchiveReader) new ZipArchiveReader( file ) : new SevenZipArchiveReader( file );
-            return reader.Install( reader.AssumeRoot ? ModFolder : folder );
-         } else {
+         if ( ext.Equals( ".js" ) || ext.Equals( ".json" ) || ext.Equals( ".dll" ) ) {
             Log( $"Adding {file} as a single file mod" );
             Directory.CreateDirectory( folder );
             var destination = Path.Combine( folder, Path.GetFileName( file ) );
             Log( destination );
             File.Copy( file, destination, true );
             return new string[] { destination };
+         } else {
+            Log( $"Adding {file} as a packed mod" );
+            var reader = ext.Equals( ".zip" ) ? (ArchiveReader) new ZipArchiveReader( file ) : new SevenZipArchiveReader( file );
+            return reader.Install( reader.AssumeRoot ? ModFolder : folder );
          }
       }
 

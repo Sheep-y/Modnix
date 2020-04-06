@@ -451,7 +451,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void BuildFileList ( ModMeta meta, InlineCollection list ) {
          Func< string, string > fileName = System.IO.Path.GetFileName;
-         list.Add( $"Path\r{System.IO.Path.GetDirectoryName(Path)}\r\r" );
+         list.Add( $"Path\r{System.IO.Path.GetDirectoryName(Path)}{System.IO.Path.DirectorySeparatorChar}\r\r" );
          list.Add( "File(s)" );
          var self = fileName( Path );
          var selfRun = new Run( "\r" + self );
