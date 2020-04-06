@@ -268,8 +268,17 @@ namespace Sheepy.Modnix.MainGUI {
          if ( SharedGui.IsGameFound ) {
             if ( SharedGui.GameVer != null )
                p.Inlines.Add( $"\tVer {SharedGui.GameVer}" );
-            if ( ! App.Settings.MinifyGamePanel )
-               p.Inlines.Add( "\r" + Path.GetFullPath( SharedGui.GamePath ) );
+            if ( ! App.Settings.MinifyGamePanel ) {
+               var txt = new Run( Path.GetFullPath( SharedGui.GamePath ) ){ Foreground = Brushes.Navy };
+               void onClick ( object a, object b ) => AppControl.Explore( Path.GetFullPath( SharedGui.GamePath ) );
+               void onEnter ( object a, object b ) => txt.TextDecorations.Add( TextDecorations.Underline );
+               void onLeave ( object a, object b ) => txt.TextDecorations.Clear();
+               txt.PreviewMouseDown += onClick;
+               txt.MouseEnter += onEnter;
+               txt.MouseLeave += onLeave;
+               p.Inlines.Add( "\r" );
+               p.Inlines.Add( txt );
+            }
          } else
             p.Inlines.Add( new Run( "\rGame not found" ){ Foreground = Brushes.Red } );
          RichGameInfo.Document.Replace( p );

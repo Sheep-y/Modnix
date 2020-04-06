@@ -431,19 +431,19 @@ namespace Sheepy.Modnix.MainGUI {
          }
       }
 
-      private void BuildProvidedDesc ( ModMeta meta, InlineCollection list ) {
+      private static void BuildProvidedDesc ( ModMeta meta, InlineCollection list ) {
          var desc = meta.Description?.ToString( "en" );
          if ( string.IsNullOrWhiteSpace( desc ) ) return;
          list.Add( desc );
       }
 
-      private void BuildLinks ( ModMeta meta, InlineCollection list ) {
+      private static void BuildLinks ( ModMeta meta, InlineCollection list ) {
          if ( meta.Url == null ) return;
          list.Add( "Link(s)" );
          BuildDict( meta.Url, list );
       }
 
-      private void BuildContacts ( ModMeta meta, InlineCollection list ) {
+      private static void BuildContacts ( ModMeta meta, InlineCollection list ) {
          if ( meta.Contact == null ) return;
          list.Add( "Contact(s)" );
          BuildDict( meta.Contact, list );
@@ -509,7 +509,7 @@ namespace Sheepy.Modnix.MainGUI {
          return "DLL";
       } } }
 
-      public void Log ( object msg ) => AppControl.Instance.Log( msg );
+      public static void Log ( object msg ) => AppControl.Instance.Log( msg );
       public override string ToString () { lock ( Mod ) return Mod.ToString(); }
    }
 
