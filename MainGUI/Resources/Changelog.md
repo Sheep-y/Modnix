@@ -5,24 +5,29 @@ Modnix Changelog
 * New: Mods may now be manually disabled.
 * New: Status panels and their buttons may now be minified to give more space to mod info.
 * New: Mod config editor. Save without content to delete the config file.
-* New: Read mod's readme, config, changelog, and license in mod info panel.
-* New: Read game console log and Modnix changelog in log tab. Loader and console log may be filtered.
+* New: Read mod's readme, history / changelog, and license in mod info panel.
+* New: Read game's console log and Modnix's changelog in log tab. Loader and console log may be filtered.
 * New: Mod that logs an error or warning will be detected, highlighted, and show a notice in mod info.
+* New: Add Mod now supports .gz and .bz2.  Refined mod name logic for adding and scanning mods.
 * Fix: Embedded mod_info with BOM can now be correctly read.
 * Fix: Mods with multiple non-static initialiser classes are now called with the correct classes.
-* Fix: Mod api log action will return true when successfully added to queue.
+* Fix: Mod api log action will return true when successfully added to log queue.
 * Fix: Unknown mod api action will trigger a warning.
 * Fix: Mods without dll will no longer crash gui mod list.
-* Gui: Compress resources to make file size smaller.
-* Gui: Mod list now shows load order and sort by mod name by default.
-* Gui: Loader log now auto-refresh, same for new console log.
+* App: Scan more game bar configs for Phoenix Point path.
+* App: Compress resources to make file size smaller.
+* Gui: Mod list now shows load order, and sort by mod name by default.
+* Gui: Mod list and loader log now auto-refresh on loader log update.
 * Gui: Click on a mod's disabled reason to jump to the cause.
-* Mod: Upgrade PPML+ to 0.3.  PPML+ is now properly initialised, except it won't load mods.
-* Mod: New mod_info field "LoadIndex" and "ConfigType".
+* Gui: Click on game path / mod path to open Windows Explorer.
+* Gui: Show version in title. Update button shows (dev) when on dev channel.
+* Gui: Keep current mod selection when refreshing mod.
+* Mod: Upgrade PPML+ to 0.3.  PPML+ is now properly initialised.
+* Mod: New mod_info field "LoadIndex" and "ConfigType". ConfigType replaces DefaultConfig; simpler, faster, and less prone to error.
 * Mod: New api action "assembly", "config_save", "dir", "log_flush", "reg_action", "reg_handler", "unreg_action".
 * Mod: "path" api action now supports Modnix / Loader path.
 * Mod: Mod api actions are now case-insensitive, including registered extensions.
-* Mod: Multiple dll declaration no longer allowed in order to keep things simple.
+* Mod: Multiple dll declarations no longer allowed in order to keep things simple.
 * Mod: Fix reported version for "ppml" when queries through api.
 * Mod: DefaultConfig in mod_info will be compared with a new instance of the config type, on the config action, and warn if different.
 
@@ -35,10 +40,10 @@ Modnix Changelog
 * Fix: Obsolete methods are no longer skipped.
 * Fix: Partial versions are now completely zero-filled, instead of partially.
 * Fix: Typo in revert injection message.
+* App: Faster injection status detection by checking only known injection points.
 * Gui: When selecting multiple mods, no longer bold disabled mods.
 * Gui: Loader Log button now shows log in-panel, good for a quick check.  Diagnostic Log renamed to Manager Log.
 * Gui: Rewrote post-setup message to be less intimidating and mention where to resetup.
-* Gui: Faster injection status detection by checking only known injection points.
 * Mod: Faster mod scanning by skipping nested classes, non-public classes, abstract classes, interfaces, enums, and system-generated classes.
 * Mod: Faster mod scanning by skipping non-public methods and shortcut Prefix/Postfix.
 * Mod: Rename Conflicts to Disables to better reflect its purpose.
