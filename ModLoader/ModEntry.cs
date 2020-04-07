@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 namespace Sheepy.Modnix {
 
    public class LoaderSettings {
-      public int SettingVersion = 20200329;
+      public int SettingVersion = 20200403;
       public SourceLevels LogLevel = SourceLevels.Information;
       // For mod manager
       public bool CheckUpdate = true;
