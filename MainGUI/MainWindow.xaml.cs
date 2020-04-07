@@ -171,7 +171,8 @@ namespace Sheepy.Modnix.MainGUI {
       #region App Info Area
       private void RefreshAppInfo () { try {
          Log( "Refreshing app info" );
-         Title = ( AppControl.LIVE_NAME + " " + SharedGui.AppVer ).Trim();
+         var build = new LoaderSettings().UpdateChannel.Equals( "dev" ) ? " (dev)" : "";
+         Title = ( AppControl.LIVE_NAME + " " + SharedGui.AppVer + build ).Trim();
          string txt;
          if ( SharedGui.IsAppWorking || SharedGui.AppState == null )
             txt = "Busy";
@@ -189,7 +190,7 @@ namespace Sheepy.Modnix.MainGUI {
          var p = new Paragraph();
          if ( ! App.Settings.MinifyLoaderPanel ) {
             p.Inlines.Add( new Bold( new Run( AppControl.LIVE_NAME ) ) );
-            p.Inlines.Add( $"\tVer {SharedGui.AppVer}\r" );
+            p.Inlines.Add( $"\tVer {SharedGui.AppVer}{build}\r" );
          }
          p.Inlines.Add( "Status: " );
          p.Inlines.Add( state );
