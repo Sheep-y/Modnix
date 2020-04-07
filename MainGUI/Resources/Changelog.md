@@ -20,7 +20,7 @@ Modnix Changelog
 * Gui: Mod list and loader log now auto-refresh on loader log update.
 * Gui: Click on a mod's disabled reason to jump to the cause.
 * Gui: Click on game path / mod path to open Windows Explorer.
-* Gui: Show version in title. Update button shows (dev) when on dev channel.
+* Gui: Show version in title, and show dev status.  Update button shows (dev) when on dev channel.
 * Gui: Keep current mod selection when refreshing mod.
 * Mod: Upgrade PPML+ to 0.3.  PPML+ is now properly initialised.
 * Mod: New mod_info field "LoadIndex" and "ConfigType". ConfigType replaces DefaultConfig; simpler, faster, and less prone to error.
