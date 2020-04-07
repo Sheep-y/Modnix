@@ -445,14 +445,10 @@ namespace Sheepy.Modnix.MainGUI {
          list.Add( $"Path\r" );
          var pathTxt = new Run( System.IO.Path.GetDirectoryName( Path ) + System.IO.Path.DirectorySeparatorChar ){ Foreground = Brushes.Blue };
          list.Add( WpfHelper.Linkify( pathTxt, () => AppControl.Explore( Path ) ) );
-         list.Add( "\r\rFile(s)" );
+         list.Add( "\r\rKnown File(s)" );
          var self = fileName( Path );
          var selfRun = new Run( "\r" + self );
          list.Add( selfRun );
-         if ( Mod.HasConfig ) {
-            var config = Mod.CheckConfigFile();
-            list.Add( config != null ? $"\r{fileName(config)} [Config]" : "\r(Can create config file)" );
-         }
          if ( meta.Dlls != null )
             foreach ( var e in meta.Dlls ) {
                var path = fileName( e.Path );
@@ -460,6 +456,15 @@ namespace Sheepy.Modnix.MainGUI {
                if ( path == self ) selfRun.Text = txt;
                else list.Add( txt );
             }
+         if ( Mod.HasConfig ) {
+            var config = Mod.CheckConfigFile();
+            list.Add( config != null ? $"\r{fileName(config)} [Config]" : "\r(Can create config file)" );
+         }
+         if ( Docs != null ) {
+            foreach ( var row in Docs )
+               if ( row.Value != "embedded" )
+                  list.Add( "\r" + row.Value + " [Doc]" );
+         }
       }
 
       private Block BuildCopyright () {
