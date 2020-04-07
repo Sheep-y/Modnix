@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.NetworkInformation;
 using System.Text;
 
 namespace Sheepy.Modnix.MainGUI {
@@ -83,7 +84,7 @@ namespace Sheepy.Modnix.MainGUI {
          foreach ( var e in releases ) try {
             App.Log( $"{e.Tag_Name} ({(e.Prerelease?"Prerelease":"Production")}) {e.Assets?.Length??0} asset(s)" );
             if ( String.IsNullOrWhiteSpace( e.Tag_Name ) || e.Tag_Name[0] != 'v' ) continue;
-            if ( e.Assets == null || e.Assets.Length <= 0 ) continue;
+            if ( e.Assets == null || e.Assets.Length == 0 ) continue;
             if ( isDevChannel && e.Prerelease ) continue;
             Version eVer = Version.Parse( e.Tag_Name.Substring( 1 ) );
             if ( eVer <= update_from ) continue;
