@@ -179,7 +179,7 @@ namespace Sheepy.Modnix.MainGUI {
             case ModQuery.WARNING :
                return Mod.GetNotices().Any( e => e.Level == TraceEventType.Warning || e.Level == TraceEventType.Error || e.Level == TraceEventType.Critical );
             case ModQuery.EDITING :
-               return EditingConfig != null;
+               return EditingConfig != null && ! EditingConfig.Trim().Equals( WpfHelper.Lf2Cr( Mod.GetConfigText()?.Trim() ) );
             case ModQuery.HAS_CONFIG :
                return Mod.HasConfig;
             case ModQuery.HAS_CONFIG_FILE :
@@ -252,9 +252,8 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void SaveConfig () {
          string conf;
-         lock ( this ) conf = EditingConfig;
-         if ( conf == null ) return;
-         if ( conf.Length == 0 )
+         lock ( this ) conf = EditingConfig?.Trim();
+         if ( string.IsNullOrEmpty( conf ) )
             DeleteConfig();
          else
             Mod.WriteConfigText( conf.Replace( '\r', '\n' ) );
@@ -328,7 +327,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void BuildConfig ( FlowDocument doc ) { lock ( Mod ) {
          Log( "Showing conf. Editing " + EditingConfig?.Length ?? "null" );
-         doc.TextRange().Text = EditingConfig ?? WpfHelper.Lf2Cr( Mod.GetConfigText() ?? Mod.GetDefaultConfigText() ?? GetConfigFromSandbox() ) ?? "";
+         doc.TextRange().Text = EditingConfig ?? WpfHelper.Lf2Cr( Mod.GetConfigText() ?? Mod.GetDefaultConfigText() ?? GetConfigFromSandbox() )?.Trim() ?? "";
       } }
 
       private void BuildSupportDoc ( ModDoc type, FlowDocument doc, string[] fileList ) { try {

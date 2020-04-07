@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -418,51 +419,56 @@ namespace Sheepy.Modnix.MainGUI {
       private bool IsConfEmpty => RichModInfo.Document.TextRange().Text.Length == 0;
       private bool IsDisableButton => SelectedMods.Any( e => e.Is( ModQuery.ENABLED ) ) || ! SelectedMods.Any();
 
-      private void RefreshModInfo () { try {
-         HideModTabs();
-         if ( GridModList.SelectedItems.Count > 1 ) {
-            Log( $"Showing mods summary" );
-            BkgdModeInfo.Opacity = 0.06;
-            if ( TabSetModInfo.SelectedItem != TabModInfo ) TabSetModInfo.SelectedItem = TabModInfo;
-            BuildMultiModInfo();
-            return;
-         }
-         if ( CurrentMod == null ) {
-            Log( "Clearing mod info" );
-            RichModInfo.Document.Replace();
-            BkgdModeInfo.Opacity = 0.5;
-         } else {
-            Log( $"Refreshing mod {CurrentMod}" );
-            BkgdModeInfo.Opacity = 0.03;
-
-            TabModConfig.Visibility  = CurrentMod.Is( ModQuery.HAS_CONFIG ) ? Visibility.Visible : Visibility.Collapsed;
-            TabModReadme.Visibility  = CurrentMod.Is( ModQuery.HAS_README ) ? Visibility.Visible : Visibility.Collapsed;
-            TabModChange.Visibility  = CurrentMod.Is( ModQuery.HAS_CHANGELOG ) ? Visibility.Visible : Visibility.Collapsed;
-            TabModLicense.Visibility = CurrentMod.Is( ModQuery.HAS_LICENSE ) ? Visibility.Visible : Visibility.Collapsed;
-         }
-
-         if ( ( TabSetModInfo.SelectedItem as UIElement )?.Visibility != Visibility.Visible )
-            TabSetModInfo.SelectedItem = TabModInfo;
-         var isConfig = TabSetModInfo.SelectedItem == TabModConfig;
-         RichModInfo.IsReadOnly = ! isConfig;
-         PanelConfAction.Visibility = isConfig ? Visibility.Visible : Visibility.Collapsed;
-
-         if ( CurrentMod != null ) {
+      private void RefreshModInfo () {
+         try {
             UpdatingModInfo = true;
-            if ( TabSetModInfo.SelectedItem == TabModConfig ) {
-               CurrentMod.BuildDocument( ModDoc.CONFIG, RichModInfo.Document );
-               RefreshConfButtions();
-            } else if ( TabSetModInfo.SelectedItem == TabModReadme )
-               CurrentMod.BuildDocument( ModDoc.README, RichModInfo.Document );
-            else if ( TabSetModInfo.SelectedItem == TabModChange )
-               CurrentMod.BuildDocument( ModDoc.CHANGELOG, RichModInfo.Document );
-            else if ( TabSetModInfo.SelectedItem == TabModLicense )
-               CurrentMod.BuildDocument( ModDoc.LICENSE, RichModInfo.Document );
-            else
-               CurrentMod.BuildDocument( ModDoc.INFO, RichModInfo.Document );
+            HideModTabs();
+            if ( GridModList.SelectedItems.Count > 1 ) {
+               Log( $"Showing mods summary" );
+               BkgdModeInfo.Opacity = 0.06;
+               if ( TabSetModInfo.SelectedItem != TabModInfo ) TabSetModInfo.SelectedItem = TabModInfo;
+               BuildMultiModInfo();
+               return;
+            }
+            if ( CurrentMod == null ) {
+               Log( "Clearing mod info" );
+               RichModInfo.Document.Replace();
+               BkgdModeInfo.Opacity = 0.5;
+            } else {
+               Log( $"Refreshing mod {CurrentMod}" );
+               BkgdModeInfo.Opacity = 0.03;
+
+               TabModConfig.Visibility  = CurrentMod.Is( ModQuery.HAS_CONFIG ) ? Visibility.Visible : Visibility.Collapsed;
+               TabModReadme.Visibility  = CurrentMod.Is( ModQuery.HAS_README ) ? Visibility.Visible : Visibility.Collapsed;
+               TabModChange.Visibility  = CurrentMod.Is( ModQuery.HAS_CHANGELOG ) ? Visibility.Visible : Visibility.Collapsed;
+               TabModLicense.Visibility = CurrentMod.Is( ModQuery.HAS_LICENSE ) ? Visibility.Visible : Visibility.Collapsed;
+            }
+
+            if ( ( TabSetModInfo.SelectedItem as UIElement )?.Visibility != Visibility.Visible )
+               TabSetModInfo.SelectedItem = TabModInfo;
+            var isConfig = TabSetModInfo.SelectedItem == TabModConfig;
+            RichModInfo.IsReadOnly = ! isConfig;
+            PanelConfAction.Visibility = isConfig ? Visibility.Visible : Visibility.Collapsed;
+
+            if ( CurrentMod != null ) {
+               if ( TabSetModInfo.SelectedItem == TabModConfig ) {
+                  CurrentMod.BuildDocument( ModDoc.CONFIG, RichModInfo.Document );
+                  RefreshConfButtions();
+               } else if ( TabSetModInfo.SelectedItem == TabModReadme )
+                  CurrentMod.BuildDocument( ModDoc.README, RichModInfo.Document );
+               else if ( TabSetModInfo.SelectedItem == TabModChange )
+                  CurrentMod.BuildDocument( ModDoc.CHANGELOG, RichModInfo.Document );
+               else if ( TabSetModInfo.SelectedItem == TabModLicense )
+                  CurrentMod.BuildDocument( ModDoc.LICENSE, RichModInfo.Document );
+               else
+                  CurrentMod.BuildDocument( ModDoc.INFO, RichModInfo.Document );
+            }
+         } catch ( Exception ex ) {
+            Log( ex );
+         } finally {
             UpdatingModInfo = false;
          }
-      } catch ( Exception ex ) { Log( ex ); } }
+      }
 
       private void RefreshConfButtions () {
          if ( CurrentMod == null ) return;
@@ -475,6 +481,14 @@ namespace Sheepy.Modnix.MainGUI {
          } else
             AccessTextConfSave.Text = "Save";
          IconConfSave.Source = new BitmapImage( new Uri( $"/Resources/img/{icon}.png", UriKind.Relative ) );
+         
+         var txt = RichModInfo.Document.TextRange().Text?.Trim();
+         LabelConfNotice.Visibility = Visibility.Collapsed;
+         if ( txt?.Length >= 2 && txt[ 0 ] == '{' && txt[ txt.Length-1 ] == '}' ) try {
+            _ = JsonConvert.DeserializeObject( txt );
+         } catch ( JsonException ) {
+            LabelConfNotice.Visibility = Visibility.Visible;
+         }
       }
 
       private void HideModTabs () => TabModConfig.Visibility = TabModReadme.Visibility = TabModChange.Visibility = TabModLicense.Visibility = Visibility.Collapsed;
