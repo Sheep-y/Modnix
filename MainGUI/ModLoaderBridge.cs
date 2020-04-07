@@ -84,9 +84,12 @@ namespace Sheepy.Modnix.MainGUI {
          AppControl.Instance.Log( "Scanning docs in " + dir );
          foreach ( var file in Directory.EnumerateFiles( dir ) ) {
             var name = Path.GetFileName( file ).ToLowerInvariant();
-            if ( ReadmeFiles.Contains( name ) ) doc.Add( ModDoc.README, file );
-            else if ( ChangeFiles.Contains( name ) ) doc.Add( ModDoc.CHANGELOG, file );
-            else if ( LicenseFiles.Contains( name ) ) doc.Add( ModDoc.LICENSE, file );
+            if ( ! doc.ContainsKey( ModDoc.README ) && ReadmeFiles.Contains( name ) )
+               doc.Add( ModDoc.README, file );
+            else if ( ! doc.ContainsKey( ModDoc.README ) && ChangeFiles.Contains( name ) )
+               doc.Add( ModDoc.CHANGELOG, file );
+            else if ( ! doc.ContainsKey( ModDoc.README ) && LicenseFiles.Contains( name ) )
+               doc.Add( ModDoc.LICENSE, file );
          }
          if ( modPath.EndsWith( ".dll", StringComparison.OrdinalIgnoreCase ) ) {
             AppControl.Instance.Log( "Scanning embedded docs in " + modPath );
