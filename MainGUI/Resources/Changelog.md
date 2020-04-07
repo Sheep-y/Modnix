@@ -24,7 +24,7 @@ Modnix Changelog
 * Gui: Keep current mod selection when refreshing mod.
 * Mod: Upgrade PPML+ to 0.3.  PPML+ is now properly initialised.
 * Mod: New mod_info field "LoadIndex" and "ConfigType". ConfigType replaces DefaultConfig; simpler, faster, and less prone to error.
-* Mod: New api action "assembly", "config_save", "dir", "log_flush", "reg_action", "reg_handler", "unreg_action".
+* Mod: New api action "assembly", "config_save", "dir", "log_flush", "reg_action", "reg_handler", "stacktrace", "unreg_action".
 * Mod: "path" api action now supports Modnix / Loader path.
 * Mod: Mod api actions are now case-insensitive, including registered extensions.
 * Mod: Multiple dll declarations no longer allowed in order to keep things simple.

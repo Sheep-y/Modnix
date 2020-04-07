@@ -567,7 +567,7 @@ namespace Sheepy.Modnix.MainGUI {
             IsLoadingModList = true;
          }
          try {
-            Log( $"Rebuilding mod list" );
+            Log( "Rebuilding mod list" );
             ModInfo[] list = null;
             Task.WaitAll( new Task[] { // Scan mods and loader logs in parallel.
                Task.Run( () => {

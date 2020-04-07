@@ -72,6 +72,7 @@ namespace Sheepy.Modnix {
                case "path"        : return GetPath( param );
                case "reg_action"  : return RegisterAction( param );
                case "reg_handler" : return RegisterHandler( param );
+               case "stacktrace"  : return Stacktrace();
                case "unreg_action": return UnregisterAction( param );
                case "version"     : return GetVersion( param );
                default:
@@ -231,6 +232,12 @@ namespace Sheepy.Modnix {
          logger.Verbo( "Flusing log.{0}{1}", param == null ? "" : " Reason: ", param );
          logger.Flush();
          return true;
+      }
+
+      private StackTrace Stacktrace () {
+         var trace = new StackTrace( 2 );
+         Info( trace );
+         return trace;
       }
 
       internal void Info  ( object msg, params object[] augs ) => CreateLogger().Info ( msg, augs );
