@@ -53,12 +53,18 @@ namespace Sheepy.Modnix {
       public long Index { get { lock ( Metadata ) { return LoadIndex ?? Metadata.LoadIndex; } } }
 
       #region API
-      private static readonly Dictionary<string,Func<object,object>> ApiExtension = new Dictionary<string, Func<object, object>>();
+      private static readonly Dictionary<string,Func<string,object,object>> ApiExtension = new Dictionary<string, Func<string, object, object>>();
       private static readonly Dictionary<string,ModEntry> ApiExtOwner = new Dictionary<string, ModEntry>();
 
       public object ModAPI ( string action, object param = null ) { try {
-         if ( ! LowerAndIsEmpty( action, out action ) ) {
-            switch ( action ) {
+         string cmd = action = action.Trim(), name = "";
+         int sep = action.IndexOf( ' ' );
+         if ( sep > 0 ) {
+            cmd = action.Substring( 0, sep );
+            name = action.Substring( sep + 1 ).TrimStart();
+         }
+         if ( ! LowerAndIsEmpty( cmd, out action ) ) {
+            switch ( cmd ) {
                case "assembly"    : return GetAssembly( param );
                case "assemblies"  : return GetAssemblies( param );
                case "config"      : return LoadConfig( param );
@@ -70,15 +76,14 @@ namespace Sheepy.Modnix {
                case "mod_info"    : return new ModMeta().ImportFrom( GetMod( param )?.Metadata );
                case "mod_list"    : return ListMods( param );
                case "path"        : return GetPath( param );
-               case "reg_action"  : return RegisterAction( param );
-               case "reg_handler" : return RegisterHandler( param );
+               case "register_api": return RegisterHandler( name, param );
                case "stacktrace"  : return Stacktrace();
                case "unreg_action": return UnregisterAction( param );
                case "version"     : return GetVersion( param );
                default:
-                  Func<object,object> handler;
-                  lock ( ApiExtension ) ApiExtension.TryGetValue( action, out handler );
-                  if ( handler != null ) return handler( param );
+                  Func<string,object,object> handler;
+                  lock ( ApiExtension ) ApiExtension.TryGetValue( cmd, out handler );
+                  if ( handler != null ) return handler( name, param );
                   break;
             }
          }
@@ -148,29 +153,20 @@ namespace Sheepy.Modnix {
       #endregion
 
       #region API Extension
-      private string RegAction;
-
-      private object RegisterAction ( object param ) {
-         lock ( ApiExtension ) {
-            if ( LowerAndIsEmpty( param, out RegAction ) ) return false;
-            if ( ! RegAction.Contains( "." ) || RegAction.Length < 3 ) return false;
-            return ! ApiExtension.ContainsKey( RegAction );
+      private object RegisterHandler ( string name, object param ) { try {
+         if ( LowerAndIsEmpty( name, out string cmd ) || ! cmd.Contains( "." ) || cmd.Length < 3  )
+            throw new ApplicationException( $"Invalid name for register_api, need a dot and at least 3 chars. Got \"{cmd}\"." );
+         if ( ! ( param is Func<string,object,object> func3 ) ) {
+            if ( param is Func<object,object> func2 )
+               func3 = ( _, augs ) => func2( augs );
+            else
+               throw new ApplicationException( "register_api parameter be Func< object, object > or Func< string, object, object >" );
          }
-      }
-
-      private object RegisterHandler ( object param ) { try {
-         string cmd;
-         lock ( ApiExtension ) cmd = RegAction;
-         if ( cmd == null )
-            throw new ApplicationException( "reg_handler without reg_action" );
-         if ( ! ( param is Func<object,object> func ) )
-            throw new ApplicationException( "reg_handler must be Func< object, object >" );
          lock ( ApiExtension ) {
             if ( ApiExtension.ContainsKey( cmd ) )
                throw new ApplicationException( "Cannot re-register api action " + cmd );
-            ApiExtension.Add( cmd, func );
+            ApiExtension.Add( cmd, func3 );
             ApiExtOwner.Add( cmd, this );
-            RegAction = null;
          }
          Info( "Registered api action {0}", cmd );
          return true;
