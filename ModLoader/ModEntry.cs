@@ -69,11 +69,9 @@ namespace Sheepy.Modnix {
                case "api_remove"  : return RemoveApi( name );
                case "assembly"    : return GetAssembly( param );
                case "assemblies"  : return GetAssemblies( param );
-               case "config"      : return LoadConfig( param );
-               case "config_save" : return SaveConfig( param );
+               case "config"      : return LoadConfig( name, param );
                case "dir"         : return GetDir( param );
-               case "log"         : CreateLogger().Log( param ); return true;
-               case "log_flush"   : return FlushLog( param );
+               case "log"         : return DoLog( name, param );
                case "logger"      : return GetLogFunc( param );
                case "mod_info"    : return new ModMeta().ImportFrom( GetMod( param )?.Metadata );
                case "mod_list"    : return ListMods( param );
@@ -222,11 +220,25 @@ namespace Sheepy.Modnix {
          return null;
       }
 
-      private bool FlushLog ( object param ) {
-         lock ( this ) if ( Logger == null ) return false;
-         var logger = CreateLogger();
-         logger.Verbo( "Flusing log.{0}{1}", param == null ? "" : " Reason: ", param );
-         logger.Flush();
+      private bool DoLog ( string level, object param ) {
+         if ( LowerAndIsEmpty( level, out level ) ) level = param is Exception ? "e" : "i";
+         var lv = TraceEventType.Information;
+         switch ( level[0] ) {
+            case 'c' : lv = TraceEventType.Critical; break;
+            case 'e' : lv = TraceEventType.Error; break;
+            case 't' : lv = TraceEventType.Transfer; break;
+            case 'v' : lv = TraceEventType.Verbose; break;
+            case 'w' : lv = TraceEventType.Warning; break;
+            case 'f':
+               if ( "flush".Equals( level ) ) {
+                  lock ( this ) if ( Logger == null ) return true;
+                  Logger.Verbo( "Flusing log.{0}{1}", param == null ? "" : " Reason: ", param );
+                  Logger.Flush();
+                  return true;
+               }
+               break;
+         }
+         CreateLogger().Log( lv, param );
          return true;
       }
 
@@ -244,7 +256,9 @@ namespace Sheepy.Modnix {
       #region Config
       private bool ConfigChecked;
 
-      private object LoadConfig ( object param ) { try {
+      private object LoadConfig ( string profile, object param ) { try {
+         LowerAndIsEmpty( profile, out profile );
+         if ( "save".Equals( profile ) || "write".Equals( profile ) ) return SaveConfig( param );
          if ( param == null ) param = typeof( JObject );
          string txt;
          if ( param is Type type ) {
