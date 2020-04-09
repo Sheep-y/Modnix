@@ -76,7 +76,7 @@ namespace Sheepy.Modnix {
                case "mod_info"    : return new ModMeta().ImportFrom( GetMod( param )?.Metadata );
                case "mod_list"    : return ListMods( param );
                case "path"        : return GetPath( param );
-               case "stacktrace"  : return Stacktrace();
+               case "stacktrace"  : return Stacktrace( name );
                case "version"     : return GetVersion( param );
                default:
                   Func<string,object,object> handler;
@@ -232,7 +232,7 @@ namespace Sheepy.Modnix {
             case 'f':
                if ( "flush".Equals( level ) ) {
                   lock ( this ) if ( Logger == null ) return true;
-                  Logger.Verbo( "Flusing log.{0}{1}", param == null ? "" : " Reason: ", param );
+                  Logger.Verbo( "Flushing log.{0}{1}", param == null ? "" : " Reason: ", param );
                   Logger.Flush();
                   return true;
                }
@@ -242,9 +242,9 @@ namespace Sheepy.Modnix {
          return true;
       }
 
-      private StackTrace Stacktrace () {
+      private StackTrace Stacktrace ( string name ) {
          var trace = new StackTrace( 2 );
-         Info( trace );
+         DoLog( name, trace );
          return trace;
       }
 
