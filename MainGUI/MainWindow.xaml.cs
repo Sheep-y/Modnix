@@ -315,6 +315,7 @@ namespace Sheepy.Modnix.MainGUI {
       private IEnumerable<ModInfo> ListedMods => GridModList.ItemsSource.OfType<ModInfo>();
       private IEnumerable<ModInfo> SelectedMods => GridModList.SelectedItems.OfType<ModInfo>();
       private HashSet<string> SelectMods;
+      private TabItem SelectTab;
       private readonly Timer RefreshModTimer;
 
       private void SetModList ( IEnumerable<ModInfo> list ) {
@@ -325,8 +326,10 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void RefreshModList () { try {
          Log( "Refreshing mod list" );
-         if ( SelectMods == null && SelectedMods.Any() )
+          lock ( SynGetSet ) if ( SelectMods == null && SelectedMods.Any() ) {
             SelectMods = new HashSet<string>( SelectedMods.Select( e => e.Path ) );
+            SelectTab = TabSetModInfo.SelectedItem as TabItem;
+         }
          if ( GridModList.ItemsSource != ModList ) {
             Log( "New mod list" );
             GridModList.ItemsSource = ModList;
@@ -338,11 +341,13 @@ namespace Sheepy.Modnix.MainGUI {
                if ( SelectMods.Contains( mod.Path ) ) {
                   GridModList.SelectedItem = mod;
                   GridModList.ScrollIntoView( mod );
+                  if ( SelectTab != null ) TabSetModInfo.SelectedItem = SelectTab;
                   break;
                }
             }
-            SelectMods = null;
          }
+         SelectMods = null;
+         SelectTab = null;
       } catch ( Exception ex ) { Log( ex ); } }
 
       private void SetSelectedMod ( ModInfo mod ) {
@@ -378,7 +383,10 @@ namespace Sheepy.Modnix.MainGUI {
          SharedGui.IsAppWorking = true;
          App.AddModAsync( dialog.FileNames ).ContinueWith( task => {
             if ( task.IsFaulted ) Prompt( AppAction.ADD_MOD, PromptFlag.ERROR, task.Exception );
-            lock ( SynGetSet ) SelectMods = new HashSet<string>( task.Result.SelectMany( e => e ) );
+            lock ( SynGetSet ) {
+               SelectMods = new HashSet<string>( task.Result.SelectMany( e => e ) );
+               SelectTab = null;
+            }
             SharedGui.IsAppWorking = false;
             this.Dispatch( () => ButtonRefreshMod_Click() );
          } );
@@ -553,7 +561,6 @@ namespace Sheepy.Modnix.MainGUI {
          var disable = IsDisableButton;
          foreach ( var mod in SelectedMods )
             mod.Do( disable ? AppAction.DISABLE_MOD : AppAction.ENABLE_MOD );
-         SelectMods = new HashSet<string>( SelectedMods.Select( e => e.Path ) );
          App.SaveSettings();
          App.GetModList();
       }
