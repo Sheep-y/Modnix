@@ -75,21 +75,30 @@ namespace Sheepy.Modnix.Tests {
       }
 
       [TestMethod()] public void ModExtTest () {
-         Assert.AreEqual( false, ModA.ModAPI( "reg_action" , null ), "null action" );
-         Assert.AreEqual( false, ModA.ModAPI( "reg_action" , ""   ), "empty action" );
-         Assert.AreEqual( false, ModA.ModAPI( "reg_action" , " "  ), "blank action" );
-         Assert.AreEqual( false, ModA.ModAPI( "reg_handler", "mod_info"  ), "reg_handler without reg_action" );
-         Assert.AreEqual( false, ModA.ModAPI( "reg_action" , "mod_info"  ), "reg_action mod_info" );
-         Assert.AreEqual( false, ModA.ModAPI( "unreg_action", "A" ), "unreg_action without reg_action" );
-         Assert.AreEqual( false, ModA.ModAPI( "reg_action" , "A" ), "reg_action no dot" );
-         Assert.AreEqual( false, ModA.ModAPI( "reg_action" , ".." ), "reg_action too short" );
-         Assert.AreEqual( true, ModA.ModAPI( "reg_action" , "..." ), "reg_action valid" );
+         Func<object,string> ExtA = ( e )=> e.ToString() + "A";
+         Func<string,object,string> ExtB = ( t, e )=> t + e.ToString() + "B";
+         Func<string> ExtC = () => "";
 
-         Assert.AreEqual( true, ModA.ModAPI( "reg_action" , "A.A" ), "reg_action A.A" );
-         Assert.AreEqual( true, ModA.ModAPI( "reg_handler", (Func<object,string>) A_Ext ), "reg_handler A_Ext" );
-         Assert.AreEqual( "BA", ModB.ModAPI( "a.A", "B" ), "call api a.A" );
-         Assert.AreEqual( false, ModA.ModAPI( "reg_handler", (Func<object,string>) A_Ext ), "re-reg_handler A_Ext" );
+         Assert.AreEqual( false, ModA.ModAPI( "api_add" , null ), "no name null action" );
+         Assert.AreEqual( true , ModA.ModAPI( "api_add A.A", ExtA ), "A.A => ExtA" );
+         Assert.AreEqual( true , ModA.ModAPI( "api_add A.B", ExtB ), "A.B => ExtB" );
 
+         Assert.AreEqual( false, ModA.ModAPI( "api_add AAA", ExtA ), "no dot" );
+         Assert.AreEqual( false, ModA.ModAPI( "api_add .A", ExtA ), "too short" );
+         Assert.AreEqual( false, ModA.ModAPI( "api_add A.A", ExtA ), "duplucate reg" );
+         Assert.AreEqual( false, ModA.ModAPI( "api_add A.C", null ), "null action" );
+         Assert.AreEqual( false, ModA.ModAPI( "api_add A.C", ExtC ), "Invalid action" );
+
+         Assert.AreEqual( "0A", ModB.ModAPI( "a.A", "0" ), "call api a.A" );
+         Assert.AreEqual( "c0B", ModB.ModAPI( "A.b c", "0" ), "call api A.b" );
+         Assert.AreEqual( false, ModB.ModAPI( "api_remove", "A.B" ), "api_remove non-owner" );
+         Assert.AreEqual( true , ModA.ModAPI( "api_remove", "a.b" ), "api_remove owner" );
+         Assert.AreEqual( null , ModA.ModAPI( "A.b c", "0" ), "call after api_remove" );
+
+         Assert.AreEqual( true , ModB.ModAPI( "api_add A.B", ExtB ), "A.B => ExtB (ModB)" );
+         Assert.AreEqual( "c0B", ModA.ModAPI( "A.b c", "0" ), "call api A.b (Mod B)" );
+
+         /*
          Assert.AreEqual( false, ModB.ModAPI( "reg_action", "a.a" ), "re-reg_action A.A" );
          Assert.AreEqual( false, ModB.ModAPI( "reg_handler", (Func<object,string>) A_Ext ), "reg_handler after failed reg_action" );
          Assert.AreEqual( false, ModB.ModAPI( "unreg_action", "A.A" ), "unreg_action non-owner" );
@@ -97,8 +106,7 @@ namespace Sheepy.Modnix.Tests {
          Assert.AreEqual( true, ModA.ModAPI( "unreg_action", "a.a" ), "unreg_action owner" );
          Assert.AreEqual( true, ModB.ModAPI( "reg_action", "a.a" ), "reg_action B" );
          Assert.IsNull( ModB.ModAPI( "A.A", "B" ), "call api after re-reg" );
+         */
       }
-
-      private static string A_Ext ( object e ) => e.ToString() + "A";
    }
 }

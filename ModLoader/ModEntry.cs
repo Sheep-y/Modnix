@@ -63,8 +63,10 @@ namespace Sheepy.Modnix {
             cmd = action.Substring( 0, sep );
             name = action.Substring( sep + 1 ).TrimStart();
          }
-         if ( ! LowerAndIsEmpty( cmd, out action ) ) {
+         if ( ! LowerAndIsEmpty( cmd, out cmd ) ) {
             switch ( cmd ) {
+               case "api_add"     : return AddApi( name, param );
+               case "api_remove"  : return RemoveApi( param );
                case "assembly"    : return GetAssembly( param );
                case "assemblies"  : return GetAssemblies( param );
                case "config"      : return LoadConfig( param );
@@ -76,9 +78,7 @@ namespace Sheepy.Modnix {
                case "mod_info"    : return new ModMeta().ImportFrom( GetMod( param )?.Metadata );
                case "mod_list"    : return ListMods( param );
                case "path"        : return GetPath( param );
-               case "register_api": return RegisterHandler( name, param );
                case "stacktrace"  : return Stacktrace();
-               case "unreg_action": return UnregisterAction( param );
                case "version"     : return GetVersion( param );
                default:
                   Func<string,object,object> handler;
@@ -153,9 +153,9 @@ namespace Sheepy.Modnix {
       #endregion
 
       #region API Extension
-      private object RegisterHandler ( string name, object param ) { try {
+      private object AddApi ( string name, object param ) { try {
          if ( LowerAndIsEmpty( name, out string cmd ) || ! cmd.Contains( "." ) || cmd.Length < 3  )
-            throw new ApplicationException( $"Invalid name for register_api, need a dot and at least 3 chars. Got \"{cmd}\"." );
+            throw new ApplicationException( $"Invalid name for register_api, need a dot and at least 3 chars. Got '{cmd}'." );
          if ( ! ( param is Func<string,object,object> func3 ) ) {
             if ( param is Func<object,object> func2 )
                func3 = ( _, augs ) => func2( augs );
@@ -164,7 +164,7 @@ namespace Sheepy.Modnix {
          }
          lock ( ApiExtension ) {
             if ( ApiExtension.ContainsKey( cmd ) )
-               throw new ApplicationException( "Cannot re-register api action " + cmd );
+               throw new ApplicationException( $"Cannot re-register api action 'cmd'." );
             ApiExtension.Add( cmd, func3 );
             ApiExtOwner.Add( cmd, this );
          }
@@ -175,7 +175,7 @@ namespace Sheepy.Modnix {
          return false;
       } }
 
-      private object UnregisterAction ( object param ) {
+      private object RemoveApi ( object param ) {
          if ( LowerAndIsEmpty( param, out string cmd ) ) return false;
          ModEntry owner;
 
