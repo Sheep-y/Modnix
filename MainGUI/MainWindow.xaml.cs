@@ -326,7 +326,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void RefreshModList () { try {
          Log( "Refreshing mod list" );
-          lock ( SynGetSet ) if ( SelectMods == null && SelectedMods.Any() ) {
+         lock ( SynGetSet ) if ( SelectMods == null && SelectedMods.Any() ) {
             SelectMods = new HashSet<string>( SelectedMods.Select( e => e.Path ) );
             SelectTab = TabSetModInfo.SelectedItem as TabItem;
          }
@@ -336,18 +336,20 @@ namespace Sheepy.Modnix.MainGUI {
          }
          GridModList.Items?.Refresh();
          GridModList.UpdateLayout();
-         if ( ModList != null && SelectMods != null && SelectMods.Count > 0 ) {
-            foreach ( var mod in ModList.OfType<ModInfo>() ) {
-               if ( SelectMods.Contains( mod.Path ) ) {
-                  GridModList.SelectedItem = mod;
-                  GridModList.ScrollIntoView( mod );
-                  if ( SelectTab != null ) TabSetModInfo.SelectedItem = SelectTab;
-                  break;
+         if ( ModList != null ) {
+            if ( SelectMods != null && SelectMods.Count > 0 ) {
+               foreach ( var mod in ModList.OfType<ModInfo>() ) {
+                  if ( SelectMods.Contains( mod.Path ) ) {
+                     GridModList.SelectedItem = mod;
+                     GridModList.ScrollIntoView( mod );
+                     if ( SelectTab != null ) TabSetModInfo.SelectedItem = SelectTab;
+                     break;
+                  }
                }
             }
+            SelectMods = null;
+            SelectTab = null;
          }
-         SelectMods = null;
-         SelectTab = null;
       } catch ( Exception ex ) { Log( ex ); } }
 
       private void SetSelectedMod ( ModInfo mod ) {
