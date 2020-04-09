@@ -81,7 +81,7 @@ namespace Sheepy.Modnix.Tests {
 
          Assert.AreEqual( false, ModA.ModAPI( "api_add" , null ), "no name null action" );
          Assert.AreEqual( true , ModA.ModAPI( "api_add A.A", ExtA ), "A.A => ExtA" );
-         Assert.AreEqual( true , ModA.ModAPI( "api_add A.B", ExtB ), "A.B => ExtB" );
+         Assert.AreEqual( true , ModA.ModAPI( "api_add  A.B", ExtB ), "A.B => ExtB" );
 
          Assert.AreEqual( false, ModA.ModAPI( "api_add AAA", ExtA ), "no dot" );
          Assert.AreEqual( false, ModA.ModAPI( "api_add .A", ExtA ), "too short" );
@@ -91,11 +91,11 @@ namespace Sheepy.Modnix.Tests {
 
          Assert.AreEqual( "0A", ModB.ModAPI( "a.A", "0" ), "call api a.A" );
          Assert.AreEqual( "c0B", ModB.ModAPI( "A.b c", "0" ), "call api A.b" );
-         Assert.AreEqual( false, ModB.ModAPI( "api_remove", "A.B" ), "api_remove non-owner" );
-         Assert.AreEqual( true , ModA.ModAPI( "api_remove", "a.b" ), "api_remove owner" );
+         Assert.AreEqual( false, ModB.ModAPI( "api_remove A.B" ), "api_remove non-owner" );
+         Assert.AreEqual( true , ModA.ModAPI( " api_remove   a.b " ), "api_remove owner" );
          Assert.AreEqual( null , ModA.ModAPI( "A.b c", "0" ), "call after api_remove" );
 
-         Assert.AreEqual( true , ModB.ModAPI( "api_add A.B", ExtB ), "A.B => ExtB (ModB)" );
+         Assert.AreEqual( true , ModB.ModAPI( " api_add   A.B ", ExtB ), "A.B => ExtB (ModB)" );
          Assert.AreEqual( "c0B", ModA.ModAPI( "A.b c", "0" ), "call api A.b (Mod B)" );
 
          /*

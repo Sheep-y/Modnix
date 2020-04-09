@@ -66,7 +66,7 @@ namespace Sheepy.Modnix {
          if ( ! LowerAndIsEmpty( cmd, out cmd ) ) {
             switch ( cmd ) {
                case "api_add"     : return AddApi( name, param );
-               case "api_remove"  : return RemoveApi( param );
+               case "api_remove"  : return RemoveApi( name );
                case "assembly"    : return GetAssembly( param );
                case "assemblies"  : return GetAssemblies( param );
                case "config"      : return LoadConfig( param );
