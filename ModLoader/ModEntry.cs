@@ -271,7 +271,7 @@ namespace Sheepy.Modnix {
          if ( "save".Equals( profile ) || "write".Equals( profile ) ) return SaveConfig( param );
          string txt;
          var type = param as Type;
-         if ( param == null || type != null ) {
+         if ( param == null || type != null) {
             if ( type == typeof( string ) )
                return GetConfigText();
             var confFile = CheckConfigFile();
@@ -284,6 +284,7 @@ namespace Sheepy.Modnix {
          } else {
             txt = GetConfigText();
             if ( txt == null ) return param;
+            if ( param is string ) return txt;
             JsonConvert.PopulateObject( txt, param, ModMetaJson.JsonOptions );
          }
          lock ( Metadata )
