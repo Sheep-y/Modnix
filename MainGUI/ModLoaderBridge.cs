@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Sheepy.Logging;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -30,6 +31,7 @@ namespace Sheepy.Modnix.MainGUI {
             logger.Filters.Add( LogFilters.AddPrefix( "Loader┊" ) );
             App.Log( "Setup ModLoader" );
             ModLoader.Setup();
+            Sandbox.EnqueueSandbox();
          }
       } }
 
@@ -269,15 +271,13 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       private string GetConfigFromSandbox () {
-         Log( $"Creating sandbox for {Mod.Metadata.Id}" );
-         var domain = AppDomain.CreateDomain( Mod.Metadata.Id, null, new AppDomainSetup { DisallowCodeDownload = true } );
+         Sandbox proxy = null;
          try {
-            var proxy = domain.CreateInstanceFromAndUnwrap( Assembly.GetExecutingAssembly().Location, typeof( Sandbox ).FullName ) as Sandbox;
-            proxy.Initiate();
-            foreach ( var dll in Mod.Metadata.Dlls.Select( e => e.Path ) ) {
-               Log( $"Sandbox loading {dll}" );
-               proxy.LoadDll( dll );
-               if ( proxy.HasError ) return proxy.GetError();
+            var dll = Mod.Metadata.Dlls;
+            proxy = Sandbox.GetSandbox();
+            if ( dll != null ) {
+               Log( $"Sandbox loading {dll.Length} dlls." );
+               proxy.LoadDlls( dll.Select( e => e.Path ).ToArray() );
             }
             var typeName = Mod.Metadata.ConfigType;
             Log( $"Sandbox resolving {typeName}" );
@@ -286,11 +286,10 @@ namespace Sheepy.Modnix.MainGUI {
             Log( ex );
             return null;
          } finally {
-            if ( domain != null )
-               Task.Run( () => { try {
-                  Log( $"Unloading sandbox {Mod.Metadata.Id}" );
-                  AppDomain.Unload( domain );
-               } catch ( Exception ex ) { Log( ex ); } } );
+            if ( proxy?.Domain != null ) try {
+               Log( $"Unloading sandbox {Mod.Metadata.Id}" );
+               AppDomain.Unload( proxy?.Domain );
+            } catch ( Exception ex ) { Log( ex ); }
          }
       }
 
@@ -591,6 +590,7 @@ namespace Sheepy.Modnix.MainGUI {
    }
 
    public class Sandbox : MarshalByRefObject {
+      public AppDomain Domain { get; private set; }
       private AppControl App;
       private HashSet<Assembly> ModDlls;
       private Exception Error;
@@ -600,7 +600,15 @@ namespace Sheepy.Modnix.MainGUI {
          Application.ResourceAssembly = Assembly.GetExecutingAssembly();
       } catch ( Exception ex ) { Error = ex; } }
 
-      public void LoadDll ( string path ) { try {
+
+      public void LoadDlls ( string[] paths ) {
+         foreach ( var dll in paths ) {
+            LoadDll( dll );
+            if ( Error != null ) break;
+         }
+      }
+
+      private void LoadDll ( string path ) { try {
          if ( ModDlls == null ) {
             ModDlls = new HashSet<Assembly>();
             ModMetaJson.TrimVersion( new Version() ); // Call something to load ModLoader.
@@ -617,8 +625,36 @@ namespace Sheepy.Modnix.MainGUI {
          return null;
       } catch ( Exception ex ) { Error = ex; return null; } }
 
-      public bool HasError => Error != null;
       public string GetError () => Error?.ToString();
+
+      private static readonly ConcurrentQueue<Sandbox> Cache = new ConcurrentQueue<Sandbox>();
+      
+      internal static Sandbox GetSandbox () {
+         Cache.TryDequeue( out Sandbox cache );
+         EnqueueSandbox();
+         return cache ?? CreateSandbox();
+      }
+
+      internal static void EnqueueSandbox () {
+         if ( Cache.IsEmpty ) Task.Run( async () => {
+            await Task.Delay( 500 ); // Given current task some room, i.e. app launch and conf parsing
+            Cache.Enqueue( CreateSandbox() );
+         } );
+      }
+
+      private static Sandbox CreateSandbox () {
+         AppControl.Instance.Log( $"Creating sandbox" );
+         var domain = AppDomain.CreateDomain( "Modnix config sandbox", null, new AppDomainSetup { DisallowCodeDownload = true } );
+         try {
+            var proxy = domain.CreateInstanceFromAndUnwrap( Assembly.GetExecutingAssembly().Location, typeof( Sandbox ).FullName ) as Sandbox;
+            proxy.Domain = domain;
+            proxy.Initiate();
+            return proxy;
+         } catch ( Exception ex ) {
+            AppControl.Instance.Log( ex );
+            return null;
+         }
+      }
    }
 
    public static class NativeMethods {
