@@ -241,11 +241,11 @@ namespace Sheepy.Modnix.MainGUI {
       private ModLoaderBridge _ModBridge;
       internal ModLoaderBridge ModBridge { get => Get( ref _ModBridge ); set => Set( ref _ModBridge, value ); }
 
-      internal void CheckStatusAsync ( bool listMods ) {
+      internal Task CheckStatusTask ( bool listMods ) {
          Log( "Queuing status check" );
          if ( listMods )
-            Task.Run( (Action) GetModList );
-         Task.Run( (Action) CheckStatus );
+            Task.Run( GetModList );
+         return Task.Run( CheckStatus );
       }
 
       private void CheckStatus () { try {
@@ -400,9 +400,9 @@ namespace Sheepy.Modnix.MainGUI {
          CurrentGame = new GameInstallation( path );
       }
 
-      internal void DoSetupAsync () {
+      internal Task DoSetupTask () {
          Log( "Queuing setup" );
-         Task.Run( (Action) DoSetup );
+         return Task.Run( DoSetup );
       }
 
       private void DoSetup () { try {
@@ -517,9 +517,9 @@ namespace Sheepy.Modnix.MainGUI {
          RunAndWait( CurrentGame.GameDir, "cmd", $"/c mklink /d \"{name}\" \"{ModFolder}\"", true );
       }
 
-      internal void DoRestoreAsync () {
+      internal Task DoRestoreTask () {
          Log( "Queuing restore" );
-         Task.Run( (Action) DoRestore );
+         return Task.Run( DoRestore );
       }
 
       private void DoRestore () { try {
@@ -536,9 +536,9 @@ namespace Sheepy.Modnix.MainGUI {
          GUI.Prompt( AppAction.REVERT, PromptFlag.ERROR, ex );
       } }
 
-      internal void CheckUpdateAsync () {
+      internal Task CheckUpdateTask () {
          Log( "Queuing update check" );
-         Task.Run( (Action) CheckUpdate );
+         return Task.Run( CheckUpdate );
       }
 
       private Updater _UpdateChecker;
@@ -628,7 +628,7 @@ namespace Sheepy.Modnix.MainGUI {
          }
       } catch ( SystemException ex ) { Log( ex ); } }
 
-      internal Task DoModActionAsync ( AppAction action, IEnumerable<ModInfo> mods ) {
+      internal Task ModActionTask ( AppAction action, IEnumerable<ModInfo> mods ) {
          Log( $"Queuing {action} of {mods.Count()} mods" );
          return Task.WhenAll(
             mods.Select( mod => Task.Run( () => DoModAction( action, mod ) )
@@ -654,7 +654,7 @@ namespace Sheepy.Modnix.MainGUI {
          }
       }
 
-      internal Task<string[][]> AddModAsync ( string[] files ) {
+      internal Task<string[][]> AddModTask ( string[] files ) {
          Log( $"Queuing add mod of {string.Join( "\n", files )}" );
          return Task.WhenAll( files.Select( file => Task.Run( () => AddMod( file ) ) ) );
       }

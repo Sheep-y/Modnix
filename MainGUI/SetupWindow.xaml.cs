@@ -40,7 +40,7 @@ namespace Sheepy.Modnix.MainGUI {
             switch ( info ) {
                case GuiInfo.VISIBILITY :
                   RefreshInfo();
-                  App.CheckStatusAsync( false );
+                  App.CheckStatusTask( false );
                   Show();
                   break;
                case GuiInfo.APP_UPDATE :
@@ -98,7 +98,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void BrowseGame () {
          if ( SharedGui.BrowseGame() )
-            App.CheckStatusAsync( false );
+            App.CheckStatusTask( false );
       }
 
       private void DoSetup () {
@@ -111,7 +111,7 @@ namespace Sheepy.Modnix.MainGUI {
          TextMessage.Text = LogContent;
          TextMessage.ScrollToEnd();
          RefreshInfo();
-         App.DoSetupAsync();
+         App.DoSetupTask();
       }
 
       public void Prompt ( AppAction action, PromptFlag flags = PromptFlag.NONE, Exception ex = null ) { this.Dispatch( () => { try {

@@ -85,7 +85,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void ShowWindow () {
          Log( "Checking app status" );
-         App.CheckStatusAsync( true );
+         App.CheckStatusTask( true );
          if ( ! App.ParamSkipStartupCheck )
             CheckUpdate( false );
          Show();
@@ -226,7 +226,7 @@ namespace Sheepy.Modnix.MainGUI {
             case "no_game" :
                if ( SharedGui.BrowseGame() ) {
                   App.SaveSettings();
-                  App.CheckStatusAsync( false );
+                  App.CheckStatusTask( false );
                }
                break;
             default:
@@ -238,13 +238,13 @@ namespace Sheepy.Modnix.MainGUI {
       private void DoSetup () {
          Log( "Calling setup" );
          SharedGui.IsAppWorking = true;
-         App.DoSetupAsync();
+         App.DoSetupTask();
       }
 
       private void DoRestore () {
          Log( "Calling restore" );
          SharedGui.IsAppWorking = true;
-         App.DoRestoreAsync();
+         App.DoRestoreTask();
       }
 
       private void ButtonModDir_Click ( object sender, RoutedEventArgs e ) { try {
@@ -383,7 +383,7 @@ namespace Sheepy.Modnix.MainGUI {
             return;
          }
          SharedGui.IsAppWorking = true;
-         App.AddModAsync( dialog.FileNames ).ContinueWith( task => {
+         App.AddModTask( dialog.FileNames ).ContinueWith( task => {
             if ( task.IsFaulted ) Prompt( AppAction.ADD_MOD, PromptFlag.ERROR, task.Exception );
             lock ( SynGetSet ) {
                SelectMods = new HashSet<string>( task.Result.SelectMany( e => e ) );
@@ -577,7 +577,7 @@ namespace Sheepy.Modnix.MainGUI {
                   MessageBoxButton.YesNoCancel, MessageBoxImage.Question, MessageBoxResult.Cancel );
             if ( ans == MessageBoxResult.Cancel ) return;
             if ( ans == MessageBoxResult.Yes ) {
-               var delConf = App.DoModActionAsync( AppAction.DELETE_CONFIG, reset );
+               var delConf = App.ModActionTask( AppAction.DELETE_CONFIG, reset );
                if ( ! delConf.Wait( 30_000 ) || delConf.IsFaulted ) {
                   Prompt( AppAction.DELETE_CONFIG, PromptFlag.ERROR, (Exception) delConf.Exception ?? new TimeoutException() );
                   return;
@@ -589,7 +589,7 @@ namespace Sheepy.Modnix.MainGUI {
             if ( ans == MessageBoxResult.Cancel ) return;
          }
          SharedGui.IsAppWorking = true;
-         App.DoModActionAsync( AppAction.DEL_MOD, mods ).ContinueWith( result => {
+         App.ModActionTask( AppAction.DEL_MOD, mods ).ContinueWith( result => {
             SharedGui.IsAppWorking = false;
             if ( result.IsFaulted ) Prompt( AppAction.DEL_MOD, PromptFlag.ERROR, result.Exception );
             this.Dispatch( () => ButtonRefreshMod_Click( sender, evt ) );
@@ -634,7 +634,7 @@ namespace Sheepy.Modnix.MainGUI {
          Log( "Checking update" );
          Update = "checking";
          RefreshUpdateStatus();
-         App.CheckUpdateAsync();
+         App.CheckUpdateTask();
       } catch ( Exception ex ) { Log( ex ); } }
 
       private void UpdateChecked () { try {
