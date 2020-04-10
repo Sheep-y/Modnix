@@ -191,7 +191,7 @@
                                  </StackPanel>
                               </Button>
                            </Grid>
-                           <RichTextBox x:Name="RichModInfo" IsReadOnly="True" IsDocumentEnabled="True" VerticalScrollBarVisibility="Auto" BorderBrush="{x:Null}" TabIndex="500" TextChanged="RichModInfo_TextChanged">
+                           <RichTextBox x:Name="RichModInfo" IsReadOnly="True" IsDocumentEnabled="True" VerticalScrollBarVisibility="Auto" BorderBrush="{x:Null}" TabIndex="500" TextChanged="RichModInfo_TextChanged" PreviewKeyDown="RichModInfo_PreviewKeyDown">
                               <RichTextBox.Background>
                                  <ImageBrush x:Name="BkgdModeInfo" ImageSource="Resources/img/modder.png" Stretch="Uniform" Opacity="0.5" >
                                     <ImageBrush.RelativeTransform>

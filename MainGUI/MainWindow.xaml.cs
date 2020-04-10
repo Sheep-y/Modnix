@@ -820,5 +820,14 @@ namespace Sheepy.Modnix.MainGUI {
          Log( $"Opening {url}" );
          Process.Start( url );
       }
+
+      private void RichModInfo_PreviewKeyDown ( object sender, KeyEventArgs e ) { try {
+         if ( RichModInfo.IsReadOnly ) return;
+         if ( e.Key != Key.Enter ) return;
+         var sel = RichModInfo.Selection;
+         new TextRange( sel.Start, sel.End ).Text = "\r";
+         RichModInfo.CaretPosition = sel.End.GetNextInsertionPosition( LogicalDirection.Forward );
+         e.Handled = true;
+      } catch ( Exception ex ) { Log( ex ); } }
    }
 }
