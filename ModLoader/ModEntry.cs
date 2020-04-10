@@ -199,10 +199,7 @@ namespace Sheepy.Modnix {
             if ( Logger != null ) return Logger;
             Logger = new LoggerProxy( ModLoader.Log ){ Level = LogLevel ?? ModLoader.Settings.LogLevel };
          }
-         var filters = Logger.Filters;
-         filters.Add( LogFilters.IgnoreDuplicateExceptions );
-         filters.Add( LogFilters.AutoMultiParam );
-         filters.Add( LogFilters.AddPrefix( Metadata.Id + ModLoader.LOG_DIVIDER ) );
+         Logger.Filters.Add( LogFilters.AddPrefix( Metadata.Id + ModLoader.LOG_DIVIDER ) );
          return Logger;
       }
 
@@ -244,7 +241,8 @@ namespace Sheepy.Modnix {
 
       private StackTrace Stacktrace ( string name ) {
          var trace = new StackTrace( 2 );
-         DoLog( name, trace );
+         Func<string> DumpTrace = () =>  "Stacktrace" + trace.ToString() ;
+         DoLog( name, DumpTrace );
          return trace;
       }
 

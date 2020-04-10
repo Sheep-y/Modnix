@@ -178,8 +178,10 @@ namespace Sheepy.Modnix {
          if ( Log != null ) throw new InvalidOperationException();
          Log = logger ?? throw new NullReferenceException( nameof( logger ) );
          logger.Filters.Clear();
-         logger.Filters.Add( LogFilters.FormatParams );
-         logger.Filters.Add( LogFilters.ResolveLazy );
+         Log.Filters.Add( LogFilters.IgnoreDuplicateExceptions );
+         Log.Filters.Add( LogFilters.AutoMultiParam );
+         Log.Filters.Add( LogFilters.FormatParams );
+         Log.Filters.Add( LogFilters.ResolveLazy );
          if ( clear ) Log.Clear();
          LoaderVersion = Assembly.GetExecutingAssembly().GetName().Version;
          Log.Info( "{0}/{1}; {2}", typeof( ModLoader ).FullName, LoaderVersion, DateTime.Now.ToString( "u" ) );

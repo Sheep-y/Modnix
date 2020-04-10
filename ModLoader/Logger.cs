@@ -427,22 +427,37 @@ namespace Sheepy.Logging {
 
       public static LogFilter AddPrefix ( string prefix ) {
          return ( entry ) => {
-            if ( entry.Message is Exception ) {
+            if ( entry.Message is string txt ) {
+               entry.Message = prefix + txt;
+            } else if ( entry.Args == null || entry.Args.Length == 0 ) {
                entry.Args = new object[]{ entry.Message };
                entry.Message = prefix + "{0}";
-            } else
-               entry.Message = prefix + entry.Message?.ToString();
+            } else {
+               var len = entry.Args.Length;
+               var newArg = new object[ len + 1 ];
+               Array.Copy( entry.Args, 0, newArg, 1, len );
+               newArg[ 0 ] = entry.Message;
+               entry.Args = newArg;
+               entry.Message = prefix;
+            }
             return true;
          };
       }
 
       public static LogFilter AddPostfix ( string postfix ) {
          return ( entry ) => {
-            if ( entry.Message is Exception ) {
+            if ( entry.Message is string txt ) {
+               entry.Message = txt + postfix;
+            } else if ( entry.Args == null || entry.Args.Length == 0 ) {
                entry.Args = new object[]{ entry.Message };
                entry.Message = "{0}" + postfix;
-            } else
-               entry.Message = entry.Message?.ToString() + postfix;
+            } else {
+               var len = entry.Args.Length;
+               var newArg = new object[ len + 1 ];
+               Array.Copy( entry.Args, newArg, len );
+               newArg[ len ] = postfix;
+               entry.Args = newArg;
+            }
             return true;
          };
       }

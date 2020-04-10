@@ -184,6 +184,34 @@ namespace Sheepy.Logging.Tests {
 
          Assert.AreEqual( null, Error, "OnError" );
       }
-   }
 
+      [TestMethod()] public void MultipleFilters () {
+         var Logger = new LoggerProxy( Log );
+         var filters = Logger.Filters;
+         filters.Add( LogFilters.AddPrefix( "Pre>" ) );
+
+         Log.WriteDelay = 0;
+         Log.Filters.Add( LogFilters.IgnoreDuplicateExceptions );
+         Log.Filters.Add( LogFilters.AutoMultiParam );
+         Log.Filters.Add( LogFilters.FormatParams );
+         Log.Filters.Add( LogFilters.ResolveLazy );
+         Log.Filters.Add( LogFilters.AddPostfix( "<Post" ) );
+
+         Logger.Info( "ARST" );
+         Assert.IsTrue( LogContent.Contains( "Pre>ARST" ), "Simple Log" );
+
+         Logger.Info( "A", "R", null, "S", "T" );
+         Assert.IsTrue( LogContent.Contains( ">A R null S T<" ), "Format multi params" );
+
+         Logger.Info( ( Func<string> ) ( () => "QWFP" ) );
+         Assert.IsTrue( LogContent.Contains( ">QWFP" ), "Resolve lazy" );
+
+         Exception subject = new Exception();
+         Logger.Error( subject );
+         Assert.IsTrue( LogContent.Contains( "Pre>System.Exception:" ), "Exception is logged" );
+         var len = LogSize;
+         Logger.Error( "Error: {0}", subject );
+         Assert.IsTrue( LogSize == len, "Duplicate is suppressed" );
+      }
+   }
 }
