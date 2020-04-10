@@ -591,7 +591,6 @@ namespace Sheepy.Modnix.MainGUI {
 
    public class Sandbox : MarshalByRefObject {
       public AppDomain Domain { get; private set; }
-      private AppControl App;
       private HashSet<Assembly> ModDlls;
       private Exception Error;
 
@@ -637,7 +636,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       internal static void EnqueueSandbox () {
          if ( Cache.IsEmpty ) Task.Run( async () => {
-            await Task.Delay( 500 ); // Given current task some room, i.e. app launch and conf parsing
+            await Task.Delay( 500 ).ConfigureAwait( false ); // Given main task some room, i.e. app launch and conf parsing
             Cache.Enqueue( CreateSandbox() );
          } );
       }

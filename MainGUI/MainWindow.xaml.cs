@@ -29,7 +29,6 @@ namespace Sheepy.Modnix.MainGUI {
       public MainWindow () { try {
          InitializeComponent();
          GameStatusTimer = new Timer( CheckGameRunning, null, Timeout.Infinite, Timeout.Infinite );
-         RefreshModTimer = new Timer( RefreshModTick, null, Timeout.Infinite, Timeout.Infinite );
          SetupGUI();
          RefreshGUI();
       } catch ( Exception ex ) { Console.WriteLine( ex ); } }
@@ -41,7 +40,6 @@ namespace Sheepy.Modnix.MainGUI {
       private void Window_Closed ( object sender, EventArgs e ) {
          GameStatusTimer.Change( Timeout.Infinite, Timeout.Infinite );
          GameStatusTimer.Dispose();
-         RefreshModTimer?.Dispose();
          App.SaveSettings();
       }
 
@@ -394,17 +392,13 @@ namespace Sheepy.Modnix.MainGUI {
          } );
       }
 
-      private void ButtonRefreshMod_Click ( object sender = null, RoutedEventArgs evt = null ) {
+      private async void ButtonRefreshMod_Click ( object sender = null, RoutedEventArgs evt = null ) {
          if ( AbortByCheckSave() ) return;
          SetModList( null );
-         // Add new mod can happens without visible refresh, and if the mod is not new it'd look like Modnix did nothing. So we need a delay.
-         RefreshModTimer.Change( 100, Timeout.Infinite );
          if ( SharedGui.IsGameRunning ) CheckGameRunning();
-      }
-
-      private void RefreshModTick ( object _ ) {
+         // Add new mod can happens without visible refresh, and if the mod is not new it'd look like Modnix did nothing. So we need a delay.
+         await Task.Delay( 100 ).ConfigureAwait( false );
          App.GetModList();
-         RefreshModTimer.Change( Timeout.Infinite, Timeout.Infinite );
       }
 
       private void GridModList_SelectionChanged ( object sender, SelectionChangedEventArgs evt ) {
