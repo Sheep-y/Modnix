@@ -15,6 +15,7 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
 using static System.Globalization.CultureInfo;
 
 namespace Sheepy.Modnix.MainGUI {
@@ -546,6 +547,10 @@ namespace Sheepy.Modnix.MainGUI {
          RichModInfo.CaretPosition = sel.End.GetNextInsertionPosition( LogicalDirection.Forward );
          e.Handled = true;
       } catch ( Exception ex ) { Log( ex ); } }
+
+      // Fix RichTextBox Hyperlink navigation https://stackoverflow.com/a/54472110/893578
+      private void Hyperlink_RequestNavigate ( object sender, RequestNavigateEventArgs  e ) =>
+         Process.Start( e.Uri.ToString() );
 
       private void ButtonConfReset_Click ( object sender, RoutedEventArgs e ) {
          CurrentMod?.Do( AppAction.RESET_CONFIG );

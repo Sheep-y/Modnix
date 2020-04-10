@@ -192,6 +192,11 @@
                               </Button>
                            </Grid>
                            <RichTextBox x:Name="RichModInfo" IsReadOnly="True" IsDocumentEnabled="True" VerticalScrollBarVisibility="Auto" BorderBrush="{x:Null}" TabIndex="500" TextChanged="RichModInfo_TextChanged" PreviewKeyDown="RichModInfo_PreviewKeyDown">
+                              <RichTextBox.Resources>
+                                 <Style TargetType="Hyperlink">
+                                    <EventSetter Event="RequestNavigate" Handler="Hyperlink_RequestNavigate" />
+                                 </Style>
+                              </RichTextBox.Resources>
                               <RichTextBox.Background>
                                  <ImageBrush x:Name="BkgdModeInfo" ImageSource="Resources/img/modder.png" Stretch="Uniform" Opacity="0.5" >
                                     <ImageBrush.RelativeTransform>
