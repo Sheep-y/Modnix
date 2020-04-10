@@ -254,20 +254,33 @@ namespace Sheepy.Modnix {
       #region Config
       private bool ConfigChecked;
 
+      private Type GetConfigType ( Type type ) {
+         if ( type != null ) return type;
+         var typeName = Metadata.ConfigType;
+         if ( ! string.IsNullOrEmpty( typeName ) ) {
+            foreach ( var asm in ModAssemblies ) {
+               type = asm.GetType( typeName );
+               if ( type != null ) return type;
+            }
+         }
+         return typeof( JObject );
+      }
+
       private object LoadConfig ( string profile, object param ) { try {
          LowerAndIsEmpty( profile, out profile );
          if ( "save".Equals( profile ) || "write".Equals( profile ) ) return SaveConfig( param );
-         if ( param == null ) param = typeof( JObject );
          string txt;
-         if ( param is Type type ) {
+         var type = param as Type;
+         if ( param == null || type != null ) {
             if ( type == typeof( string ) )
                return GetConfigText();
             var confFile = CheckConfigFile();
-            if ( type.FullName.Equals( Metadata.ConfigType ) && confFile == null )
+            if ( type?.FullName.Equals( Metadata.ConfigType ) == true && confFile == null )
                return Activator.CreateInstance( type ); // Skip text conversion when using ConfigType and no config file found.
             txt = GetConfigText( confFile );
-            if ( txt == null ) return Activator.CreateInstance( type );
-            param = ModMetaJson.Parse( txt, type );
+            if ( txt == null ) return Activator.CreateInstance( GetConfigType( type ) );
+            if ( param == null && ( txt.IndexOf( '{' ) < 0 || txt.IndexOf( '}' ) < 0 ) ) return txt;
+            param = ModMetaJson.Parse( txt, GetConfigType( type ) );
          } else {
             txt = GetConfigText();
             if ( txt == null ) return param;
