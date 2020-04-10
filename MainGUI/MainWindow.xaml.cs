@@ -497,7 +497,7 @@ namespace Sheepy.Modnix.MainGUI {
          
          var txt = RichModInfo.Document.TextRange().Text?.Trim();
          LabelConfNotice.Visibility = Visibility.Collapsed;
-         if ( txt?.Length >= 2 && txt[ 0 ] == '{' && txt[ txt.Length-1 ] == '}' ) {
+         if ( txt?.Length >= 2 && ( txt[ 0 ] == '{' || txt[ txt.Length-1 ] == '}' ) ) {
             var cancel = new CancellationTokenSource();
             lock ( SynGetSet ) {
                if ( ConfValidation?.IsCancellationRequested == false ) ConfValidation.Cancel();
@@ -506,9 +506,13 @@ namespace Sheepy.Modnix.MainGUI {
             Task.Run( () => { try {
                if ( cancel.IsCancellationRequested ) return;
                _ = JsonConvert.DeserializeObject( txt );
-            } catch ( JsonException ) {
-               if ( cancel.IsCancellationRequested ) return;
-               this.Dispatch( () => LabelConfNotice.Visibility = Visibility.Visible );
+            } catch ( JsonException ex ) {
+               this.Dispatch( () => {
+                  if ( cancel.IsCancellationRequested ) return;
+                  var pos = ex.Message.IndexOf( ". Path " );
+                  LabelConfNotice.Content = pos > 0 ? "Json error." + ex.Message.Substring( pos + 1 ) : "Not valid json config.";
+                  LabelConfNotice.Visibility = Visibility.Visible;
+               } );
             } } );
          }
       }
