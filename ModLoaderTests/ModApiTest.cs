@@ -97,16 +97,6 @@ namespace Sheepy.Modnix.Tests {
 
          Assert.AreEqual( true , ModB.ModAPI( " api_add   A.B ", ExtB ), "A.B => ExtB (ModB)" );
          Assert.AreEqual( "c0B", ModA.ModAPI( "A.b c", "0" ), "call api A.b (Mod B)" );
-
-         /*
-         Assert.AreEqual( false, ModB.ModAPI( "reg_action", "a.a" ), "re-reg_action A.A" );
-         Assert.AreEqual( false, ModB.ModAPI( "reg_handler", (Func<object,string>) A_Ext ), "reg_handler after failed reg_action" );
-         Assert.AreEqual( false, ModB.ModAPI( "unreg_action", "A.A" ), "unreg_action non-owner" );
-
-         Assert.AreEqual( true, ModA.ModAPI( "unreg_action", "a.a" ), "unreg_action owner" );
-         Assert.AreEqual( true, ModB.ModAPI( "reg_action", "a.a" ), "reg_action B" );
-         Assert.IsNull( ModB.ModAPI( "A.A", "B" ), "call api after re-reg" );
-         */
       }
    }
 }
