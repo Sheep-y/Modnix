@@ -481,6 +481,8 @@ namespace Sheepy.Modnix.MainGUI {
          }
       }
 
+      private CancellationTokenSource ConfValidation;
+
       private void RefreshConfButtions () {
          if ( CurrentMod == null ) return;
          ButtonConfSave.IsEnabled = ButtonConfReset.IsEnabled = CurrentMod.Is( ModQuery.EDITING );
@@ -495,10 +497,19 @@ namespace Sheepy.Modnix.MainGUI {
          
          var txt = RichModInfo.Document.TextRange().Text?.Trim();
          LabelConfNotice.Visibility = Visibility.Collapsed;
-         if ( txt?.Length >= 2 && txt[ 0 ] == '{' && txt[ txt.Length-1 ] == '}' ) try {
-            _ = JsonConvert.DeserializeObject( txt );
-         } catch ( JsonException ) {
-            LabelConfNotice.Visibility = Visibility.Visible;
+         if ( txt?.Length >= 2 && txt[ 0 ] == '{' && txt[ txt.Length-1 ] == '}' ) {
+            var cancel = new CancellationTokenSource();
+            lock ( SynGetSet ) {
+               if ( ConfValidation?.IsCancellationRequested == false ) ConfValidation.Cancel();
+               ConfValidation = cancel;
+            }
+            Task.Run( () => { try {
+               if ( cancel.IsCancellationRequested ) return;
+               _ = JsonConvert.DeserializeObject( txt );
+            } catch ( JsonException ) {
+               if ( cancel.IsCancellationRequested ) return;
+               this.Dispatch( () => LabelConfNotice.Visibility = Visibility.Visible );
+            } } );
          }
       }
 
@@ -528,6 +539,15 @@ namespace Sheepy.Modnix.MainGUI {
          CurrentMod?.Do( AppAction.EDIT_CONFIG, RichModInfo.Document.TextRange().Text );
          RefreshConfButtions();
       }
+
+      private void RichModInfo_PreviewKeyDown ( object sender, KeyEventArgs e ) { try {
+         if ( RichModInfo.IsReadOnly ) return;
+         if ( e.Key != Key.Enter ) return;
+         var sel = RichModInfo.Selection;
+         new TextRange( sel.Start, sel.End ).Text = "\r";
+         RichModInfo.CaretPosition = sel.End.GetNextInsertionPosition( LogicalDirection.Forward );
+         e.Handled = true;
+      } catch ( Exception ex ) { Log( ex ); } }
 
       private void ButtonConfReset_Click ( object sender, RoutedEventArgs e ) {
          CurrentMod?.Do( AppAction.RESET_CONFIG );
@@ -820,14 +840,5 @@ namespace Sheepy.Modnix.MainGUI {
          Log( $"Opening {url}" );
          Process.Start( url );
       }
-
-      private void RichModInfo_PreviewKeyDown ( object sender, KeyEventArgs e ) { try {
-         if ( RichModInfo.IsReadOnly ) return;
-         if ( e.Key != Key.Enter ) return;
-         var sel = RichModInfo.Selection;
-         new TextRange( sel.Start, sel.End ).Text = "\r";
-         RichModInfo.CaretPosition = sel.End.GetNextInsertionPosition( LogicalDirection.Forward );
-         e.Handled = true;
-      } catch ( Exception ex ) { Log( ex ); } }
    }
 }
