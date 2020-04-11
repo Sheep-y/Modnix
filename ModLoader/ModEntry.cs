@@ -271,10 +271,10 @@ namespace Sheepy.Modnix {
          if ( "save".Equals( profile ) || "write".Equals( profile ) ) return SaveConfig( param );
          string txt;
          var type = param as Type;
-         if ( param == null || type != null) {
-            if ( type == typeof( string ) )
-               return GetConfigText();
+         if ( param == null || type != null ) {
             var confFile = CheckConfigFile();
+            if ( type == typeof( string ) )
+               return GetConfigText( confFile );
             if ( type?.FullName.Equals( Metadata.ConfigType ) == true && confFile == null )
                return Activator.CreateInstance( type ); // Skip text conversion when using ConfigType and no config file found.
             txt = GetConfigText( confFile );
