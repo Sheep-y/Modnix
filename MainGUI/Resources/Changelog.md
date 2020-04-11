@@ -9,6 +9,8 @@ Modnix Changelog
 * New: Read game's console log and Modnix's changelog in log tab. Loader and console log may be filtered.
 * New: Mod that logs an error or warning will be detected, highlighted, and show a notice in mod info.
 * New: Add Mod now supports .gz and .bz2.  Refined mod name logic for adding and scanning mods.
+* Fix: Hyperlinks are now clickable in mod info panel.
+* Fix: Setup now keep only one PPML backup. This removes a potential logged error during setup.
 * Fix: Embedded mod_info with BOM can now be correctly read.
 * Fix: Mods with multiple non-static initialiser classes are now called with the correct classes.
 * Fix: Mod api log action will return true when successfully added to log queue.
@@ -26,7 +28,8 @@ Modnix Changelog
 * Mod: Upgrade PPML+ to 0.3.  PPML+ is now properly initialised.
 * Mod: New mod_info field "LoadIndex" and "ConfigType". ConfigType replaces DefaultConfig; simpler, faster, and less prone to error.
 * Mod: New api action "api_add", "api_remove", "assemblies", "dir", "stacktrace".
-* Mod: Log action now supports log level and flush.  Config action now supports save / write.
+* Mod: Log action now supports log level and flush.
+* Mod: Config action now supports save / write, and will use ConfigType by default if found.
 * Mod: "path" api action now supports Modnix / Loader path.
 * Mod: Mod api actions are now case-insensitive, including registered extensions.
 * Mod: Multiple dll declarations no longer allowed in order to keep things simple.
