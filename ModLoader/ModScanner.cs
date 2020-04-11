@@ -239,10 +239,6 @@ namespace Sheepy.Modnix {
                Log.Warn( "{0} is a reserved mod id.", meta.Id );
                return false;
          }
-         if ( meta.Dlls != null && meta.Dlls.Length > 1 ) {
-            Log.Warn( "Multiple Dlls declaration not allowded" );
-            return false;
-         }
          return true;
       }
       #endregion
