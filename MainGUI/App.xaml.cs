@@ -841,6 +841,7 @@ namespace Sheepy.Modnix.MainGUI {
       internal bool RenameCodeFile ( string file, string toName ) { try {
          string subject = Path.Combine( CodeDir, file   );
          string target  = Path.Combine( CodeDir, toName );
+         DeleteCodeFile( toName );
          App.Log( $"Renaming {subject} to {toName}" );
          File.Move( subject, target );
          return File.Exists( target );
