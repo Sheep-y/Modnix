@@ -17,6 +17,7 @@ Modnix Changelog
 * Fix: Unknown mod api action will trigger a warning.
 * Fix: Mods without dll will no longer crash gui mod list.
 * Fix: Func<string> log params will now be resolved to string.
+* Fix: Release build now skips pre-release updates and development builds now check them.
 * App: Scan all game bar records for Phoenix Point path.
 * App: Compress resources to make file size smaller.
 * Gui: Mod list now shows load order, and sort by mod name by default.
