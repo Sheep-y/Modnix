@@ -34,8 +34,9 @@ and [Troubleshooting](https://github.com/Sheep-y/Modnix/wiki/Troubleshooting-Mod
 
 See the [Wiki](https://github.com/Sheep-y/Modnix/wiki#wiki-wrapper) for mod specs.
 
-See [my mods](https://github.com/Sheep-y/PhoenixPt-Mods/) for examples of dual PPML/Modnix support.
-(Not the best examples, given their complexity, but that's all we have for now.)
+See [Version Text](https://github.com/Sheep-y/PhoenixPt-Mods/tree/master/Unpublished/VersionText) for
+a tutorial mod with configuration and dual PPML/Modnix support.
+A video to explain it step by step has been recorded and being edited.
 
 You can try to get support on the #mods channel on [official Discord](https://discordapp.com/invite/phoenixpoint).
 
