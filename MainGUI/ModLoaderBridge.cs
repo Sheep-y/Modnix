@@ -281,7 +281,7 @@ namespace Sheepy.Modnix.MainGUI {
             }
             var typeName = Mod.Metadata.ConfigType;
             Log( $"Sandbox resolving {typeName}" );
-            return Mod.CacheDefaultConfigText( proxy.Stringify( typeName ) ) ?? proxy.GetError();
+            return Mod.CacheDefaultConfigText( proxy.Stringify( typeName ) ) ?? proxy.GetError() ?? new TypeLoadException( $"Not found: '{typeName}'" ).ToString();
          } catch ( Exception ex ) {
             Log( ex );
             return null;
