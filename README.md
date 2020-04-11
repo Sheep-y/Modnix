@@ -1,17 +1,16 @@
 # Modnix
 
-⮞⮞⮞ [Downloads](https://github.com/Sheep-y/Modnix/releases) ⮜⮜⮜
-
-3 minutes quick start: https://youtu.be/lNn5KfW__TA
-
 Modnix is a mod loader and mod manager for [Phoenix Point](https://phoenixpoint.info/), [Snapshot Games](http://www.snapshotgames.com/) 2019.
 
-Supporting three mod formats,
-it is designed to succeed (replace) [Phoenix Point](https://github.com/RealityMachina/PhoenixPointModInjector/#readme) [Mod Loader](https://github.com/Ijwu/PhoenixPointModLoader/)s.
+⮞⮞⮞ [Download](https://github.com/Sheep-y/Modnix/releases) ⮜⮜⮜
 
-Modnix is a lot more complicated than PPML,
-in order to give everyone a better modding experience.
-I try my best, but if you find bugs, please report on [GitHub](https://github.com/Sheep-y/Modnix/issues) or [Nexus](https://www.nexusmods.com/phoenixpoint/mods/43?tab=bugs).
+[![3 min. quick start](https://raw.githubusercontent.com/Sheep-y/Modnix/master/res/Video_QuickStart.jpg)](https://youtu.be/lNn5KfW__TA)
+
+Supporting three mod formats,
+Modnix is designed to succeed (replace) [Phoenix Point](https://github.com/RealityMachina/PhoenixPointModInjector/#readme) [Mod Loader](https://github.com/Ijwu/PhoenixPointModLoader/)s.
+
+It is a lot more feature-packed and thus more complicated than PPML.
+If you find bugs, please report on [GitHub](https://github.com/Sheep-y/Modnix/issues) or [Nexus](https://www.nexusmods.com/phoenixpoint/mods/43?tab=bugs).
 
 ## User Features
 
@@ -27,16 +26,16 @@ and [Troubleshooting](https://github.com/Sheep-y/Modnix/wiki/Troubleshooting-Mod
 ## Modder Features
 
 1. Mods can be built to support PPML, Modnix, and any future tools, without explicit Modnix dependency.
-2. Display mod information to users, such as author and links, with embedded or stand-alone info file.
-3. Mod are placed in their own folder, with optinal config file managed by Modnix.
+2. Display mod information to users, such as author and links, with embedded or stand-alone files.
+3. Mod are placed in their own folder, with optinal round-trip json config managed by Modnix.
 4. Declarative mod dependencies and conflicts.  Opt-in pre-splash loading.
-5. Non-binding api for mod config, unified background logger, query game versions, get mod list etc.
+5. Extensible API for mod config, unified background logger, query game versions, get mod list etc.
 
 See the [Wiki](https://github.com/Sheep-y/Modnix/wiki#wiki-wrapper) for mod specs.
 
 See [Version Text](https://github.com/Sheep-y/PhoenixPt-Mods/tree/master/Unpublished/VersionText) for
 a tutorial mod with configuration and dual PPML/Modnix support.
-A video to explain it step by step has been recorded and being edited.
+A video to explain it step by step has been recorded and is being edited.
 
 You can try to get support on the #mods channel on [official Discord](https://discordapp.com/invite/phoenixpoint).
 
