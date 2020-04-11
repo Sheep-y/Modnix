@@ -1,6 +1,10 @@
 Modnix Changelog
 
-# Version 2.0
+# Version ?
+
+* Mod: "config" api action now supports "default" spec.
+
+# Version 2.0, 2020-04-11
 
 * New: Mods may now be manually disabled.
 * New: Status panels and their buttons may now be minified to give more space to mod info.

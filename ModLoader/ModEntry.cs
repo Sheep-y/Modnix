@@ -269,30 +269,29 @@ namespace Sheepy.Modnix {
       private object LoadConfig ( string profile, object param ) { try {
          LowerAndIsEmpty( profile, out profile );
          if ( "save".Equals( profile ) || "write".Equals( profile ) ) return SaveConfig( param );
-         string txt;
+         var isDefault = "default".Equals( profile );
+         var confFile = isDefault ? null : CheckConfigFile();
          var type = param as Type;
-         if ( param == null || type != null ) {
-            var confFile = CheckConfigFile();
-            if ( type == typeof( string ) )
-               return GetConfigText( confFile );
-            if ( type?.FullName.Equals( Metadata.ConfigType ) == true && confFile == null )
-               return Activator.CreateInstance( type ); // Skip text conversion when using ConfigType and no config file found.
-            txt = GetConfigText( confFile );
+         if ( type?.FullName.Equals( Metadata.ConfigType ) == true && confFile == null )
+            return Activator.CreateInstance( type ); // Skip text conversion when using ConfigType and not reading from config file
+
+         string txt = isDefault ? GetDefaultConfigText() : GetConfigText( confFile );
+         if ( param == null || type != null ) { // No param or param is a Type, need to create new instance.
+            if ( type == typeof( string ) ) return txt;
             if ( txt == null ) return Activator.CreateInstance( GetConfigType( type ) );
             if ( param == null && ( txt.IndexOf( '{' ) < 0 || txt.IndexOf( '}' ) < 0 ) ) return txt;
             param = ModMetaJson.Parse( txt, GetConfigType( type ) );
          } else {
-            txt = GetConfigText();
             if ( txt == null ) return param;
             if ( param is string ) return txt;
             JsonConvert.PopulateObject( txt, param, ModMetaJson.JsonOptions );
          }
-         lock ( Metadata )
-            if ( Metadata.ConfigType == null ) RunCheckConfig( param.GetType() );
+         if ( Metadata.ConfigType == null ) RunCheckConfig( param?.GetType() );
          return param;
       } catch ( Exception e ) { Error( e ); return null; } }
 
       private void RunCheckConfig ( Type confType ) {
+         if ( confType == null ) return;
          lock ( Metadata ) {
             if ( ConfigChecked ) return;
             ConfigChecked = true;
@@ -312,7 +311,7 @@ namespace Sheepy.Modnix {
          } );
       }
 
-      private Task SaveConfig ( object param ) { try {
+      private Task SaveConfig ( object param ) {
          if ( param == null ) return null;
          var syn = new object();
          lock ( syn ) return Task.Run( () => { lock ( syn ) {
@@ -320,7 +319,7 @@ namespace Sheepy.Modnix {
                str = ModMetaJson.Stringify( param );
             WriteConfigText( str );
          } } );
-      } catch ( Exception e ) { Error( e ); return null; } }
+      }
 
       public bool HasConfig { get { lock ( Metadata ) {
          return Metadata.ConfigType != null || Metadata.DefaultConfig != null || Metadata.ConfigText != null || CheckConfigFile() != null;
