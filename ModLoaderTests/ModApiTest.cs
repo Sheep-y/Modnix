@@ -5,8 +5,11 @@ using System.Collections.Generic;
 using static System.Reflection.BindingFlags;
 using System.IO;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace Sheepy.Modnix.Tests {
+
+   internal class ModConfigClass { public int Config_Version = 1; }
 
    [TestClass()]
    public class ModApiTest {
@@ -25,8 +28,7 @@ namespace Sheepy.Modnix.Tests {
          typeof( ModScanner ).GetMethod( "ResolveMods", NonPublic | Static ).Invoke( null, new object[0] );
       }
 
-      private const string TEST_CONFIG_MOD = @"({ Id : ""test.config"", ConfigType: ""ModConfigClass"" })";
-      private class ModConfigClass { public int Config_Version = 1; }
+      private const string TEST_CONFIG_MOD = @"({ Id : ""test.config"", ConfigType: ""Sheepy.Modnix.Tests.ModConfigClass"" })";
 
       [TestMethod()] public void ConfigTest () {
          var modFile = Path.Combine( Path.GetTempPath(), "mod_info.js" );
@@ -35,15 +37,31 @@ namespace Sheepy.Modnix.Tests {
             var parseMod = typeof( ModScanner ).GetMethod( "ParseMod", Public | NonPublic | Static )
                .CreateDelegate( typeof( Func<string,string,ModEntry> ) ) as Func<string,string,ModEntry>;
             var mod = parseMod( modFile, null );
-            Assert.AreEqual( "ModConfigClass", mod.Metadata.ConfigType, "Mod can be parsed" );
+            Assert.AreEqual( typeof( ModConfigClass ).FullName, mod.Metadata.ConfigType, "Test mod is parsed" );
             
             ModScanner.AllMods.Add( mod );
             var asmList = new Assembly[]{ Assembly.GetExecutingAssembly() }.ToList();
             typeof( ModEntry ).GetField( "ModAssemblies", Public | NonPublic | Instance ).SetValue( mod, asmList );
             Assert.IsNotNull( mod.ModAPI( "assembly" ), "Assembly set" );
+            Assert.AreEqual( true, mod.ModAPI( "config delete" ), "Delete config" );
 
             var implicitDef = mod.ModAPI( "config" );
+            var config =  implicitDef as ModConfigClass;
             Assert.AreEqual( typeof( ModConfigClass ), implicitDef?.GetType(), "ConfigType is working" );
+            Assert.AreEqual( 1, config.Config_Version, "Config_Version = 1" );
+
+            config.Config_Version = 2;
+            var task = mod.ModAPI( "config save", config ) as Task;
+            Assert.IsNotNull( task, "config save returns Task" );
+            task.Wait( 3000 );
+            Assert.IsTrue( task.IsCompleted, "config saved" );
+            Assert.IsNull( task.Exception, "config saved without error" );
+
+            config = mod.ModAPI( "config" ) as ModConfigClass;
+            Assert.AreEqual( 2, config?.Config_Version, "Config_Version = 2" );
+
+            config = mod.ModAPI( "config default" ) as ModConfigClass;
+            Assert.AreEqual( 1, config?.Config_Version, "Explicit default Config_Version = 1" );
          } finally {
             ModScanner.AllMods.RemoveAll( e => e.Metadata.Id.Equals( "test.config" ) );
             if ( File.Exists( modFile ) ) File.Delete( modFile );

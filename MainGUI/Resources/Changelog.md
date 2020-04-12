@@ -2,7 +2,7 @@ Modnix Changelog
 
 # Version ?
 
-* Mod: "config" api action now supports "default" spec.
+* Mod: "config" api action now supports "default" and "delete" spec.
 
 # Version 2.0, 2020-04-11
 

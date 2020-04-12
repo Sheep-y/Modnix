@@ -122,7 +122,7 @@ namespace Sheepy.Modnix {
       private static TextSet AssignTextSetProp ( TextSet e, string prop, object val ) {
          prop = prop.Trim();
          var txt = val.ToString().Trim();
-         if ( prop.Length <= 0 || txt.Length <= 0 ) return e;
+         if ( prop.Length == 0 || txt.Length == 0 ) return e;
          if ( e.Default == null ) {
             e.Default = txt;
             e.Dict = new Dictionary<string, string>();

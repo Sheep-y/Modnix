@@ -91,7 +91,7 @@ namespace Sheepy.Modnix {
 
       private static bool LowerAndIsEmpty ( object param, out string text ) {
          text = param?.ToString().Trim().ToLowerInvariant();
-         return string.IsNullOrWhiteSpace( text );
+         return string.IsNullOrEmpty( text );
       }
 
       private static Assembly GameAssembly;
@@ -267,8 +267,12 @@ namespace Sheepy.Modnix {
       }
 
       private object LoadConfig ( string profile, object param ) { try {
-         LowerAndIsEmpty( profile, out profile );
-         if ( "save".Equals( profile ) || "write".Equals( profile ) ) return SaveConfig( param );
+         if ( profile?.Length > 0 && ! LowerAndIsEmpty( profile, out profile ) ) {
+            switch ( profile ) {
+               case "save": case "write":  return SaveConfig( param );
+               case "delete":  return DeleteConfig();
+            }
+         }
          var isDefault = "default".Equals( profile );
          var confFile = isDefault ? null : CheckConfigFile();
          var type = param as Type;
@@ -319,6 +323,13 @@ namespace Sheepy.Modnix {
                str = ModMetaJson.Stringify( param );
             WriteConfigText( str );
          } } );
+      }
+
+      private bool DeleteConfig () {
+         var confFile = CheckConfigFile();
+         if ( confFile == null ) return true;
+         File.Delete( confFile );
+         return ! File.Exists( confFile );
       }
 
       public bool HasConfig { get { lock ( Metadata ) {
