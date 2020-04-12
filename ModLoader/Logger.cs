@@ -409,21 +409,29 @@ namespace Sheepy.Logging {
             param = lazy();
       }
 
-      // Log each exception once.  Exceptions are the same if their ToString are same.
-      public static LogFilter IgnoreDuplicateExceptions { get {
+      // Log each exception once.  The rest only log type and message.  Exceptions are the same if their ToString are same.
+      public static LogFilter IgnoreDuplicateExceptions ( string dummyNotice = null ) {
          HashSet< string > ignored = new HashSet<string>();
          return ( entry ) => {
+            bool ignore = false;
             if ( entry.Message is Exception ex ) ;
             else if ( entry.Args?.Length == 1 && entry.Args[0] is Exception err ) ex = err;
             else return true;
             string txt = ex.ToString();
             lock( ignored ) {
-               if ( ignored.Contains( txt ) ) return false;
-               ignored.Add( txt );
+               ignore = ignored.Contains( txt );
+               if ( ! ignore ) ignored.Add( txt );
             }
+            if ( ! ignore ) return true;
+            if ( dummyNotice == null ) return false;
+            var buf = new StringBuilder( ex.GetType().FullName );
+            if ( ! string.IsNullOrEmpty( ex.Message ) ) buf.Append( ": " ).Append( ex.Message );
+            if ( dummyNotice.Length > 0 ) buf.Append( ' ' ).Append( dummyNotice );
+            if ( entry.Message is Exception ) entry.Message = buf;
+            else entry.Args[0] = buf;
             return true;
          };
-      } }
+      }
 
       public static LogFilter AddPrefix ( string prefix ) {
          return ( entry ) => {

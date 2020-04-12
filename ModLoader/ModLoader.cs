@@ -178,7 +178,7 @@ namespace Sheepy.Modnix {
          if ( Log != null ) throw new InvalidOperationException();
          Log = logger ?? throw new NullReferenceException( nameof( logger ) );
          logger.Filters.Clear();
-         Log.Filters.Add( LogFilters.IgnoreDuplicateExceptions );
+         Log.Filters.Add( LogFilters.IgnoreDuplicateExceptions( "(same stacktrace as before)" ) );
          Log.Filters.Add( LogFilters.AutoMultiParam );
          Log.Filters.Add( LogFilters.FormatParams );
          Log.Filters.Add( LogFilters.ResolveLazy );

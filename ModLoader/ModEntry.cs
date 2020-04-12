@@ -199,6 +199,7 @@ namespace Sheepy.Modnix {
             if ( Logger != null ) return Logger;
             Logger = new LoggerProxy( ModLoader.Log ){ Level = LogLevel ?? ModLoader.Settings.LogLevel };
          }
+         Logger.Filters.Add( LogFilters.IgnoreDuplicateExceptions() );
          Logger.Filters.Add( LogFilters.AddPrefix( Metadata.Id + ModLoader.LOG_DIVIDER ) );
          return Logger;
       }

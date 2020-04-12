@@ -141,7 +141,7 @@ namespace Sheepy.Logging.Tests {
 
       [TestMethod()] public void IngoreDupErrorFilter () {
          Log.WriteDelay = 0;
-         Log.Filters.Add( LogFilters.IgnoreDuplicateExceptions );
+         Log.Filters.Add( LogFilters.IgnoreDuplicateExceptions() );
 
          Exception subject = new Exception();
          Log.Error( subject );
@@ -191,7 +191,7 @@ namespace Sheepy.Logging.Tests {
          filters.Add( LogFilters.AddPrefix( "Pre>" ) );
 
          Log.WriteDelay = 0;
-         Log.Filters.Add( LogFilters.IgnoreDuplicateExceptions );
+         Log.Filters.Add( LogFilters.IgnoreDuplicateExceptions() );
          Log.Filters.Add( LogFilters.AutoMultiParam );
          Log.Filters.Add( LogFilters.FormatParams );
          Log.Filters.Add( LogFilters.ResolveLazy );
