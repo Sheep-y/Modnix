@@ -286,7 +286,7 @@ namespace Sheepy.Modnix {
             if ( param == null && ( txt.IndexOf( '{' ) < 0 || txt.IndexOf( '}' ) < 0 ) ) return txt;
             param = ModMetaJson.Parse( txt, GetConfigType( type ) );
          } else {
-            if ( txt == null ) return param;
+            if ( txt == null || isDefault ) return param;
             if ( param is string ) return txt;
             JsonConvert.PopulateObject( txt, param, ModMetaJson.JsonOptions );
          }

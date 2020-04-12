@@ -41,11 +41,13 @@ namespace Sheepy.Modnix.Tests {
             Assert.AreEqual( true, mod.ModAPI( "config delete" ), "Delete config" );
 
             // String config tests
-            var textConf = "line1\nline2";
-            Assert.AreEqual( "default", mod.ModAPI( "config", "default" ), "default text" );
+            const string defConf = "def\tault";
+            const string textConf = "line1\nline2";
+            Assert.AreEqual( defConf, mod.ModAPI( "config", defConf ), "default text" );
             SaveConfig( mod, textConf, "text" );
-            Assert.AreEqual( textConf, mod.ModAPI( "config", "default" ), "config text" );
+            Assert.AreEqual( textConf, mod.ModAPI( "config", defConf ), "config text" );
             Assert.AreEqual( textConf, mod.ModAPI( "config", typeof( string ) ), "config string type" );
+            Assert.AreEqual( defConf, mod.ModAPI( "config default", defConf ), "config def text" );
             Assert.AreEqual( true, mod.ModAPI( "config delete" ), "Delete text config" );
 
             // Json config tests
