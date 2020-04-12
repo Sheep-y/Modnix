@@ -594,9 +594,9 @@ namespace Sheepy.Modnix.MainGUI {
          if ( AbortByCheckSave() ) return;
          var mods = GridModList.SelectedItems.OfType<ModInfo>();
          var reset = mods.Where( e => e.Is( ModQuery.HAS_CONFIG_FILE ) ).ToList();
-         var msg = "Delete Mods:\r\r" + string.Join( "\r", mods.Select( e => e.Name + ( e.Is( ModQuery.HAS_CONFIG_FILE ) ? " (Delete config?)" : "" ) ) );
+         var msg = "\r\r" + string.Join( "\r", mods.Select( e => e.Name + ( e.Is( ModQuery.HAS_CONFIG_FILE ) ? " (Delete config?)" : "" ) ) );
          if ( reset.Count > 0 ) {
-            var ans = MessageBox.Show( msg + "\r\r(No to delete mods but keep configs)", "Delete Mod",
+            var ans = MessageBox.Show( "Delete Mods and Config?\r(No to delete mods but keep configs)" + msg, "Delete Mod",
                   MessageBoxButton.YesNoCancel, MessageBoxImage.Question, MessageBoxResult.Cancel );
             if ( ans == MessageBoxResult.Cancel ) return;
             if ( ans == MessageBoxResult.Yes ) {
@@ -607,7 +607,7 @@ namespace Sheepy.Modnix.MainGUI {
                }
             }
          } else {
-            var ans = MessageBox.Show( msg, "Delete Mod",
+            var ans = MessageBox.Show( "Delete Mods?" + msg, "Delete Mod",
                   MessageBoxButton.OKCancel, MessageBoxImage.Question, MessageBoxResult.Cancel );
             if ( ans == MessageBoxResult.Cancel ) return;
          }
