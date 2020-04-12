@@ -77,8 +77,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Resources\PPML_0_3.dll" />
-    <EmbeddedResource Include="Resources\SimpleInjector.dll" />
+    <EmbeddedResource Include="Resources\PPML_0_2.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

@@ -25,7 +25,7 @@ namespace Sheepy.Modnix {
       public static LoaderSettings Settings { get { lock( MOD_PATH ) { return _Settings; } } set { lock( MOD_PATH ) { _Settings = value; } } }
 
       public static Version LoaderVersion, GameVersion;
-      internal readonly static Version PPML_COMPAT = new Version( 0, 3 );
+      internal readonly static Version PPML_COMPAT = new Version( 0, 2 );
       private static bool PpmlInitialised;
 
       public static string ModDirectory { get; private set; }
@@ -52,12 +52,12 @@ namespace Sheepy.Modnix {
       } }
 
       private static void PatchMenuCrt () { try {
-         var patcher = HarmonyInstance.Create( typeof( ModLoader ).Namespace );
+         var patcher = harmony as HarmonyInstance;
+         if ( patcher == null) harmony = patcher = HarmonyInstance.Create( typeof( ModLoader ).Namespace );
          patcher.Patch(
             GetGameAssembly().GetType( "PhoenixPoint.Common.Game.PhoenixGame" ).GetMethod( "MenuCrt", NonPublic | Instance ),
             postfix: new HarmonyMethod( typeof( ModLoader ).GetMethod( nameof( MainPhase ), NonPublic | Static ) )
          );
-         harmony = patcher;
          RunMainPhaseOnInit = false; // Disable fallback
       } catch ( Exception ex ) { Log.Error( ex ); } }
 
@@ -69,7 +69,7 @@ namespace Sheepy.Modnix {
       private static void MainPhase () {
          RunMainPhaseOnInit = false;
          LoadMods( "Init" ); // PPML v0.1
-         LoadMods( "Initialize" ); // PPML v0.2+
+         LoadMods( "Initialize" ); // PPML v0.2
          LoadMods( "MainMod" ); // Modnix
          if ( harmony != null ) UnpatchMenuCrt();
       }
@@ -107,9 +107,7 @@ namespace Sheepy.Modnix {
          Log.Trace( "Resolving {0}", name );
          var app = domain as AppDomain ?? AppDomain.CurrentDomain;
          if ( name.StartsWith( "PhoenixPointModLoader,", StringComparison.OrdinalIgnoreCase ) )
-            return app.Load( GetResourceBytes( "PPML_0_3.dll" ) );
-         if ( name.StartsWith( "SimpleInjector,", StringComparison.OrdinalIgnoreCase ) )
-            return app.Load( GetResourceBytes( "SimpleInjector.dll" ) );
+            return app.Load( GetResourceBytes( "PPML_0_2.dll" ) );
          if ( name.StartsWith( "System." ) && dll.Name.Contains( ',' ) ) { // Generic system library lookup
             var file = dll.Name.Substring( 0, dll.Name.IndexOf( ',' ) ) + ".dll";
             var target = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.Windows ), "Microsoft.NET/Framework/v4.0.30319", file );
@@ -120,21 +118,6 @@ namespace Sheepy.Modnix {
          }
          return null;
       } catch ( Exception ex ) { Log?.Error( ex ); return null; } }
-
-      private static void LoadPpmlPlus () {
-         var asm = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault( e => e.FullName.StartsWith( "PhoenixPointModLoader," ) );
-         if ( asm == null ) return;
-         lock ( asm ) {
-            if ( PpmlInitialised ) return;
-            PpmlInitialised = true;
-         }
-         Log.Info( "Initialising PPML+." );
-         var init = asm.GetType( "PhoenixPointModLoader.PhoenixPointModLoader" )?.GetMethod( "Initialize", Static | Public );
-         if ( init == null ) Log.Warn( "Cannot find PhoenixPointModLoader.Initialize, PPML+ may not be initialized properly." );
-         try {
-            init.Invoke( null, new object[]{} );
-         } catch ( Exception ex ) { Log.Error( ex ); }
-      }
 
       private static Stream GetResourceStream ( string path ) {
          path = ".Resources." + path;
@@ -243,8 +226,6 @@ namespace Sheepy.Modnix {
             Log.Error( "Cannot find {1}.{2} in {0}", dll.Location, typeName, methodName );
             return;
          }
-
-         if ( "Initialize".Equals( methodName ) ) LoadPpmlPlus();
 
          var augs = new List<object>();
          foreach ( var aug in func.GetParameters() )
