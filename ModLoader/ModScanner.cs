@@ -274,20 +274,28 @@ namespace Sheepy.Modnix {
          ModEntry best = clones[0];
          foreach ( var mod in clones ) {
             if ( mod == best ) continue;
-            if ( CompareMod( mod, best ) == 1 )
+            if ( CompareModVersion( mod, best ) == 1 )
                best = mod;
          }
          return best;
       }
 
-      private static int CompareMod ( ModEntry x, ModEntry y ) {
+      private static int CompareModIndex ( ModEntry x, ModEntry y ) {
          var diff = CompareAttr( x.Index, y.Index );
          if ( diff != 0 ) return diff;
          diff = CompareAttr( x.Key, y.Key );
          if ( diff != 0 ) return diff;
-         diff = CompareAttr( x.Metadata.Version, y.Metadata.Version );
+         return CompareModFallback( x, y );
+      }
+
+      private static int CompareModVersion ( ModEntry x, ModEntry y ) {
+         var diff = CompareAttr( x.Metadata.Version, y.Metadata.Version );
          if ( diff != 0 ) return diff;
-         diff = CompareAttr( x.LastModified.GetValueOrDefault(), y.LastModified.GetValueOrDefault() );
+         return CompareModFallback( x, y );
+      }
+
+      private static int CompareModFallback ( ModEntry x, ModEntry y ) {
+         var diff = CompareAttr( x.LastModified.GetValueOrDefault(), y.LastModified.GetValueOrDefault() );
          if ( diff != 0 ) return diff;
          if ( x.Path == null || y.Path == null ) return CompareAttr( x.Path, y.Path );
          return CompareAttr( new FileInfo( x.Path ).Length, new FileInfo( y.Path ).Length );
@@ -306,7 +314,7 @@ namespace Sheepy.Modnix {
          EnabledMods.Clear();
          EnabledMods.AddRange( AllMods.Where( e => ! e.Disabled ) );
          Log.Info( "Resolving {0} mods", EnabledMods.Count );
-         EnabledMods.Sort( CompareMod ); // Make determinstic
+         EnabledMods.Sort( CompareModIndex );
          RemoveDisabledMods();
          RemoveDuplicateMods();
          RemoveUnfulfilledMods();
