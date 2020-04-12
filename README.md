@@ -15,8 +15,8 @@ If you find bugs, please report on [GitHub](https://github.com/Sheep-y/Modnix/is
 ## User Features
 
 1. Easy to use.  One-click setup, simple mod manager, detailed diagnostic log.
-2. Advanced mods, such as *real* Skip Intro, and can load PPML 0.1, 0.2, *and* 0.3 mods.
-3. Create and reset mod configs for compatible mods.
+2. Advanced mods, such as *real* Skip Intro, and can load PPML 0.1 and 0.2 mods plus Modnix mods.
+3. See and edit mod config for compatible mods.
 4. Quick access to mod files, communities, resources, and of course the game.
 
 See the [Wiki](https://github.com/Sheep-y/Modnix/wiki#wiki-wrapper) for documentation,
