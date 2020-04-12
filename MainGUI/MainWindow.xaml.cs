@@ -130,10 +130,10 @@ namespace Sheepy.Modnix.MainGUI {
          if ( IsDisableButton ) {
             icon = "check";
             AccessTextModDisable.Text = "Disable";
-            ButtonModDisable.IsEnabled = SelectedMods.Any();
+            ButtonModDisable.IsEnabled = SelectedMods.Any() && SharedGui.CanModify;
          } else {
             AccessTextModDisable.Text = "Enable";
-            ButtonModDisable.IsEnabled = SelectedMods.Any( e => ! e.Is( ModQuery.FORCE_DISABLED ) );
+            ButtonModDisable.IsEnabled = SelectedMods.Any( e => ! e.Is( ModQuery.FORCE_DISABLED ) ) && SharedGui.CanModify;
          }
          IconModDisable.Source = new BitmapImage( new Uri( $"/Resources/img/{icon}.png", UriKind.Relative ) );
 
@@ -480,7 +480,8 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void RefreshConfButtions () {
          if ( CurrentMod == null ) return;
-         ButtonConfSave.IsEnabled = ButtonConfReset.IsEnabled = CurrentMod.Is( ModQuery.EDITING );
+         ButtonConfReset.IsEnabled = CurrentMod.Is( ModQuery.EDITING );
+         ButtonConfSave.IsEnabled = ButtonConfReset.IsEnabled && SharedGui.CanModify;
          string icon = "floppy";
          if ( IsConfEmpty ) {
             icon = "cross";

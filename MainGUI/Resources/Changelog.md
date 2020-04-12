@@ -1,5 +1,9 @@
 Modnix Changelog
 
+# Version ?
+
+* Fix: Save, Enable, and Disable buttons are now disabled when app is busy or game is running.
+
 # Version 2.1, 2020-04-12
 
 * Fix: Downgraded to PPML 0.2 because of mod incompatibility of PPML 0.3. (#16)
