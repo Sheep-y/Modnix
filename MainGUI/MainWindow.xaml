@@ -150,7 +150,7 @@
                      <ColumnDefinition Width="10"/>
                      <ColumnDefinition/>
                   </Grid.ColumnDefinitions>
-                  <TabControl x:Name="TabSetModInfo" Grid.ColumnSpan="5" TabStripPlacement="Bottom" Margin="0,10,0,5" SelectionChanged="TabSetModInfo_SelectionChanged">
+                  <TabControl x:Name="TabSetModInfo" Grid.ColumnSpan="5" TabStripPlacement="Bottom" Margin="0,10,0,5" SelectionChanged="TabSetModInfo_SelectionChanged" TabIndex="566">
                      <TabItem x:Name="TabModInfo">
                         <TabItem.Header>
                            <StackPanel Orientation="Horizontal">
@@ -172,19 +172,19 @@
                                  <ColumnDefinition/>
                               </Grid.ColumnDefinitions>
                               <Label x:Name="LabelConfNotice" Content="Json syntax error" Grid.ColumnSpan="5" HorizontalContentAlignment="Center" Padding="0,0,0,3" Foreground="Red" />
-                              <Button x:Name="ButtonConfReset" Grid.Row="1" Padding="0,3" Click="ButtonConfReset_Click">
+                              <Button x:Name="ButtonConfReset" Grid.Row="1" Padding="0,3" Click="ButtonConfReset_Click" TabIndex="533">
                                  <StackPanel Orientation="Horizontal">
                                     <Image Source="Resources/img/undo.png" Width="16" Margin="0,0,5,0"/>
                                     <AccessText Text="Reset"/>
                                  </StackPanel>
                               </Button>
-                              <Button x:Name="ButtonConfProfile" Grid.Row="1" Grid.Column="2" Padding="0,3" Click="ButtonConfProfile_Click">
+                              <Button x:Name="ButtonConfProfile" Grid.Row="1" Grid.Column="2" Padding="0,3" Click="ButtonConfProfile_Click" TabIndex="533">
                                  <StackPanel Orientation="Horizontal">
                                     <Image Source="Resources/img/gears.png" Width="16"  Margin="0,0,5,0"/>
                                     <AccessText Text="Default"/>
                                  </StackPanel>
                               </Button>
-                              <Button x:Name="ButtonConfSave" Grid.Row="1" Grid.Column="4" Padding="0,3" Click="ButtonConfSave_Click">
+                              <Button x:Name="ButtonConfSave" Grid.Row="1" Grid.Column="4" Padding="0,3" Click="ButtonConfSave_Click" TabIndex="533">
                                  <StackPanel Orientation="Horizontal">
                                     <Image x:Name="IconConfSave" Source="Resources/img/floppy.png" Width="16" Margin="0,0,5,0" />
                                     <AccessText x:Name="AccessTextConfSave" Text="Save"/>
