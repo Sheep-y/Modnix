@@ -89,7 +89,7 @@ namespace Sheepy.Modnix {
          return container.Substring( 0, len ) == subject.Substring( 0, len );
       }
 
-      public static ModEntry ParseMod ( string file, string container ) { try {
+      private static ModEntry ParseMod ( string file, string container ) { try {
          ModMeta meta;
          if ( file.EndsWith( ".dll", StringComparison.OrdinalIgnoreCase ) ) {
             meta = ParseDllInfo( file );

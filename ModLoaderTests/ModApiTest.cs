@@ -3,6 +3,8 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using static System.Reflection.BindingFlags;
+using System.IO;
+using System.Reflection;
 
 namespace Sheepy.Modnix.Tests {
 
@@ -21,6 +23,31 @@ namespace Sheepy.Modnix.Tests {
          ModScanner.AllMods.Add( ModB );
          ModScanner.AllMods.Add( ModC );
          typeof( ModScanner ).GetMethod( "ResolveMods", NonPublic | Static ).Invoke( null, new object[0] );
+      }
+
+      private const string TEST_CONFIG_MOD = @"({ Id : ""test.config"", ConfigType: ""ModConfigClass"" })";
+      private class ModConfigClass { public int Config_Version = 1; }
+
+      [TestMethod()] public void ConfigTest () {
+         var modFile = Path.Combine( Path.GetTempPath(), "mod_info.js" );
+         File.WriteAllText( modFile, TEST_CONFIG_MOD );
+         try {
+            var parseMod = typeof( ModScanner ).GetMethod( "ParseMod", Public | NonPublic | Static )
+               .CreateDelegate( typeof( Func<string,string,ModEntry> ) ) as Func<string,string,ModEntry>;
+            var mod = parseMod( modFile, null );
+            Assert.AreEqual( "ModConfigClass", mod.Metadata.ConfigType, "Mod can be parsed" );
+            
+            ModScanner.AllMods.Add( mod );
+            var asmList = new Assembly[]{ Assembly.GetExecutingAssembly() }.ToList();
+            typeof( ModEntry ).GetField( "ModAssemblies", Public | NonPublic | Instance ).SetValue( mod, asmList );
+            Assert.IsNotNull( mod.ModAPI( "assembly" ), "Assembly set" );
+
+            var implicitDef = mod.ModAPI( "config" );
+            Assert.AreEqual( typeof( ModConfigClass ), implicitDef?.GetType(), "ConfigType is working" );
+         } finally {
+            ModScanner.AllMods.RemoveAll( e => e.Metadata.Id.Equals( "test.config" ) );
+            if ( File.Exists( modFile ) ) File.Delete( modFile );
+         }
       }
 
       [TestMethod()] public void ContextTest () {
