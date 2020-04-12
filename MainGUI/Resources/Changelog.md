@@ -4,6 +4,7 @@ Modnix Changelog
 
 * Fix: General resolution of mods now does not factor Version when determining mod order.
 * Fix: Resolution of duplicate mods now prioritises Version and ignore LoadIndex. (#14)
+* Gui: Remove "can create config file" notice.  Config is now handled by the config tag.
 * Mod: "config" api action now supports "default" and "delete" spec.
 * Mod: Logged exceptions are now ignored per-mod. Same exception from multiple mods will be shorted but not ignored.
 

@@ -454,10 +454,6 @@ namespace Sheepy.Modnix.MainGUI {
                if ( path == self ) selfRun.Text = txt;
                else list.Add( txt );
             }
-         if ( Mod.HasConfig ) {
-            var config = Mod.CheckConfigFile();
-            list.Add( config != null ? $"\r{fileName(config)} [Config]" : "\r(Can create config file)" );
-         }
          if ( Docs != null ) {
             foreach ( var row in Docs )
                if ( row.Value != "embedded" )
