@@ -1,8 +1,11 @@
 Modnix Changelog
 
-# Version ?
+# Version 2.1
 
+* Fix: General resolution of mods now does not factor Version when determining mod order.
+* Fix: Resolution of duplicate mods now prioritises Version and ignore LoadIndex. (#14)
 * Mod: "config" api action now supports "default" and "delete" spec.
+* Mod: Logged exceptions are now ignored per-mod. Same exception from multiple mods will be shorted but not ignored.
 
 # Version 2.0, 2020-04-11
 
@@ -44,17 +47,18 @@ Modnix Changelog
 # Version 1.0, 2020-03-23
 
 * New: Enable verbose logging in config file and GUI. Also extends to mods that log through Modnix.
-* Fix: Deleting configured mods with their config no longer hangs the manager.
-* Fix: Reset config now really reset to default config, instead of rewriting current config.
+* Fix: Deleting configured mods with their config no longer hangs the manager. (#5)
+* Fix: Reset config now really reset to default config, instead of rewriting current config. (#12)
 * Fix: Files embedded with the "Resource" build action are now detected.
 * Fix: Obsolete methods are no longer skipped.
 * Fix: Partial versions are now completely zero-filled, instead of partially.
 * Fix: Typo in revert injection message.
-* App: Faster injection status detection by checking only known injection points.
+* Fix: Static mod classes are now scanned. (#11)
+* App: Faster injection status detection by checking only known injection points. (#10)
 * Gui: When selecting multiple mods, no longer bold disabled mods.
 * Gui: Loader Log button now shows log in-panel, good for a quick check.  Diagnostic Log renamed to Manager Log.
-* Gui: Rewrote post-setup message to be less intimidating and mention where to resetup.
-* Mod: Faster mod scanning by skipping nested classes, non-public classes, abstract classes, interfaces, enums, and system-generated classes.
+* Gui: Rewrote post-setup message to be less intimidating and mention where to re-setup.
+* Mod: Faster mod scanning by skipping nested classes, non-public classes, abstract classes, interfaces, enums, and system-generated classes. (#9)
 * Mod: Faster mod scanning by skipping non-public methods and shortcut Prefix/Postfix.
 * Mod: Rename Conflicts to Disables to better reflect its purpose.
 * Mod: Replace all mod initialiser params with a single mod api delegate param.
@@ -100,9 +104,9 @@ Modnix Changelog
 * New: Detect game folder from system program path.
 * New: Detect game folder from the Program Files on all hard drives, and skip all non-hard drives.  This replace old hardcoded checks.
 * New: Detect whether game is running, and disables / enables buttons accordingly.
-* New: If mod is in a subfolder, prompt and delete whole subfolder.
+* New: If mod is in a subfolder, prompt and delete whole subfolder. (#5)
 * New: Remove empty folders left by deleting a mod.
-* Fix: Mod list refresh button now works.
+* Fix: Mod list refresh button now works. (#4)
 * Gui: Installer no longer scan for mods.
 * Gui: All log messages are duplicated to standard out, instead of silence after GUI shows up.
 
