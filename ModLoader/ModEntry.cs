@@ -329,6 +329,10 @@ namespace Sheepy.Modnix {
          var confFile = CheckConfigFile();
          if ( confFile == null ) return true;
          File.Delete( confFile );
+         lock ( Metadata ) {
+            Metadata.ConfigText = null;
+            if ( Metadata.ConfigType != null ) Metadata.DefaultConfig = null;
+         }
          return ! File.Exists( confFile );
       }
 

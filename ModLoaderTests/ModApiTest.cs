@@ -28,7 +28,7 @@ namespace Sheepy.Modnix.Tests {
          typeof( ModScanner ).GetMethod( "ResolveMods", NonPublic | Static ).Invoke( null, new object[0] );
       }
 
-      private const string TEST_CONFIG_MOD = @"({ Id : ""test.config"", ConfigType: ""Sheepy.Modnix.Tests.ModConfigClass"" })";
+      private const string TEST_CONFIG_MOD = @"({ Id : ""test.config""})";
 
       [TestMethod()] public void ConfigTest () {
          var modFile = Path.Combine( Path.GetTempPath(), "mod_info.js" );
@@ -37,13 +37,22 @@ namespace Sheepy.Modnix.Tests {
             var parseMod = typeof( ModScanner ).GetMethod( "ParseMod", Public | NonPublic | Static )
                .CreateDelegate( typeof( Func<string,string,ModEntry> ) ) as Func<string,string,ModEntry>;
             var mod = parseMod( modFile, null );
-            Assert.AreEqual( typeof( ModConfigClass ).FullName, mod.Metadata.ConfigType, "Test mod is parsed" );
-            
-            ModScanner.AllMods.Add( mod );
+            Assert.AreEqual( "test.config", mod.Metadata.Id, "Test mod is parsed" );
+            Assert.AreEqual( true, mod.ModAPI( "config delete" ), "Delete config" );
+
+            // String config tests
+            var textConf = "line1\nline2";
+            Assert.AreEqual( "default", mod.ModAPI( "config", "default" ), "default text" );
+            SaveConfig( mod, textConf, "text" );
+            Assert.AreEqual( textConf, mod.ModAPI( "config", "default" ), "config text" );
+            Assert.AreEqual( textConf, mod.ModAPI( "config", typeof( string ) ), "config string type" );
+            Assert.AreEqual( true, mod.ModAPI( "config delete" ), "Delete text config" );
+
+            // Json config tests
+            lock ( mod.Metadata ) mod.Metadata.ConfigType = typeof( ModConfigClass ).FullName;
             var asmList = new Assembly[]{ Assembly.GetExecutingAssembly() }.ToList();
             typeof( ModEntry ).GetField( "ModAssemblies", Public | NonPublic | Instance ).SetValue( mod, asmList );
             Assert.IsNotNull( mod.ModAPI( "assembly" ), "Assembly set" );
-            Assert.AreEqual( true, mod.ModAPI( "config delete" ), "Delete config" );
 
             var implicitDef = mod.ModAPI( "config" );
             var config =  implicitDef as ModConfigClass;
@@ -51,11 +60,7 @@ namespace Sheepy.Modnix.Tests {
             Assert.AreEqual( 1, config.Config_Version, "Config_Version = 1" );
 
             config.Config_Version = 2;
-            var task = mod.ModAPI( "config save", config ) as Task;
-            Assert.IsNotNull( task, "config save returns Task" );
-            task.Wait( 3000 );
-            Assert.IsTrue( task.IsCompleted, "config saved" );
-            Assert.IsNull( task.Exception, "config saved without error" );
+            SaveConfig( mod, config, "json2" );
 
             config = mod.ModAPI( "config" ) as ModConfigClass;
             Assert.AreEqual( 2, config?.Config_Version, "Config_Version = 2" );
@@ -63,9 +68,16 @@ namespace Sheepy.Modnix.Tests {
             config = mod.ModAPI( "config default" ) as ModConfigClass;
             Assert.AreEqual( 1, config?.Config_Version, "Explicit default Config_Version = 1" );
          } finally {
-            ModScanner.AllMods.RemoveAll( e => e.Metadata.Id.Equals( "test.config" ) );
             if ( File.Exists( modFile ) ) File.Delete( modFile );
          }
+      }
+
+      private void SaveConfig ( ModEntry mod, object param, string type ) {
+         var task = mod.ModAPI( "config save", param ) as Task;
+         Assert.IsNotNull( task, $"config save {type} returns Task" );
+         task.Wait( 3000 );
+         Assert.IsTrue( task.IsCompleted, $"config {type} saved" );
+         Assert.IsNull( task.Exception, $"config {type} saved without error" );
       }
 
       [TestMethod()] public void ContextTest () {
