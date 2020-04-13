@@ -19,7 +19,7 @@ namespace Sheepy.Modnix {
       // For mod manager
       public bool CheckUpdate = true;
       public DateTime? LastCheckUpdate = null;
-      public string UpdateChannel = "release";
+      public string UpdateChannel = "dev";
       public string GamePath = null;
       public bool MinifyLoaderPanel = false;
       public bool MinifyGamePanel = true;
@@ -53,41 +53,75 @@ namespace Sheepy.Modnix {
       public long Index { get { lock ( Metadata ) { return LoadIndex ?? Metadata.LoadIndex; } } }
 
       #region API
+      private static readonly Dictionary<string,MethodInfo> NativeApi = new Dictionary<string, MethodInfo>();
       private static readonly Dictionary<string,Func<string,object,object>> ApiExtension = new Dictionary<string, Func<string, object, object>>();
       private static readonly Dictionary<string,ModEntry> ApiExtOwner = new Dictionary<string, ModEntry>();
 
+      private static void AddNativeApi ( string command, string method ) {
+         NativeApi.Add( command, typeof( ModEntry ).GetMethod( method, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static ) );
+      }
+
+      internal static void InitiateNativeApi () { lock ( NativeApi ) {
+         if ( NativeApi.Count > 0 ) return;
+         AddNativeApi( "api_add"   , nameof( AddApi ) );
+         AddNativeApi( "api_info"  , nameof( InfoApi ) );
+         AddNativeApi( "api_list"  , nameof( ListApi ) );
+         AddNativeApi( "api_remove", nameof( RemoveApi ) );
+         AddNativeApi( "assembly"  , nameof( GetAssembly ) );
+         AddNativeApi( "assemblies", nameof( GetAssemblies ) );
+         AddNativeApi( "config"    , nameof( LoadConfig ) );
+         AddNativeApi( "dir"       , nameof( GetDir ) );
+         AddNativeApi( "log"       , nameof( DoLog ) );
+         AddNativeApi( "logger"    , nameof( GetLogger ) );
+         AddNativeApi( "mod_info"  , nameof( GetModInfo ) );
+         AddNativeApi( "mod_list"  , nameof( ListMods ) );
+         AddNativeApi( "path"      , nameof( GetPath ) );
+         AddNativeApi( "stacktrace", nameof( Stacktrace ) );
+         AddNativeApi( "version"   , nameof( GetVersion ) );
+      } }
+
       public object ModAPI ( string action, object param = null ) { try {
-         string cmd = action = action.Trim(), name = "";
-         int sep = action.IndexOf( ' ' );
-         if ( sep > 0 ) {
-            cmd = action.Substring( 0, sep );
-            name = action.Substring( sep + 1 ).TrimStart();
-         }
+         action = action.Trim();
+         IsMultiPart( action, out string cmd, out string spec );
          if ( ! LowerAndIsEmpty( cmd, out cmd ) ) {
             switch ( cmd ) {
-               case "api_add"     : return AddApi( name, param );
-               case "api_remove"  : return RemoveApi( name );
-               case "assembly"    : return GetAssembly( param );
-               case "assemblies"  : return GetAssemblies( param );
-               case "config"      : return LoadConfig( name, param );
-               case "dir"         : return GetDir( param );
-               case "log"         : return DoLog( name, param );
-               case "logger"      : return GetLogFunc( param );
-               case "mod_info"    : return new ModMeta().ImportFrom( GetMod( param )?.Metadata );
-               case "mod_list"    : return ListMods( param );
-               case "path"        : return GetPath( param );
-               case "stacktrace"  : return Stacktrace( name );
-               case "version"     : return GetVersion( param );
+               case "api_add"    : return AddApi( spec, param );
+               case "api_info"   : return InfoApi( param );
+               case "api_list"   : return ListApi( param );
+               case "api_remove" : return RemoveApi( spec );
+               case "assembly"   : return GetAssembly( param );
+               case "assemblies" : return GetAssemblies( param );
+               case "config"     : return LoadConfig( spec, param );
+               case "dir"        : return GetDir( param );
+               case "log"        : return DoLog( spec, param );
+               case "logger"     : return GetLogger( param );
+               case "mod_info"   : return GetModInfo( param );
+               case "mod_list"   : return ListMods( param );
+               case "path"       : return GetPath( param );
+               case "stacktrace" : return Stacktrace( spec );
+               case "version"    : return GetVersion( param );
                default:
                   Func<string,object,object> handler;
                   lock ( ApiExtension ) ApiExtension.TryGetValue( cmd, out handler );
-                  if ( handler != null ) return handler( name, param );
+                  if ( handler != null ) return handler( spec, param );
                   break;
             }
          }
          Warn( "Unknown api action '{0}'", action );
          return null;
       } catch ( Exception ex ) { Error( ex ); return null; } }
+
+      private static bool IsMultiPart ( string text, out string firstWord, out string rest ) {
+         int pos = text.IndexOf( ' ' );
+         if ( pos <= 0 ) {
+            firstWord = text;
+            rest = "";
+            return false;
+         }
+         firstWord = text.Substring( 0, pos );
+         rest = text.Substring( pos + 1 ).TrimStart();
+         return true;
+      }
 
       private static bool LowerAndIsEmpty ( object param, out string text ) {
          text = param?.ToString().Trim().ToLowerInvariant();
@@ -141,42 +175,43 @@ namespace Sheepy.Modnix {
          return System.IO.Path.GetDirectoryName( path );
       }
 
-      private static IEnumerable<string> ListMods ( object target ) {
-         var list = ModScanner.EnabledMods.Select( e => { lock ( e.Metadata ) return e.Metadata.Id; } );
-         if ( target == null ) return list;
-         if ( target is string txt ) return list.Where( e => e.IndexOf( txt, StringComparison.OrdinalIgnoreCase ) >= 0 );
-         if ( target is Regex reg ) return list.Where( e => reg.IsMatch( e ) );
+      private static IEnumerable<string> ListMods ( object target ) =>
+         FilterStringList( ModScanner.EnabledMods.Select( e => e.Metadata.Id ), target );
+
+      private static IEnumerable<string> FilterStringList ( IEnumerable<string> list, object param ) {
+         if ( param == null ) return list;
+         if ( param is string txt ) return list.Where( e => e.IndexOf( txt, StringComparison.OrdinalIgnoreCase ) >= 0 );
+         if ( param is Regex reg ) return list.Where( e => reg.IsMatch( e ) );
          return null;
       }
       #endregion
 
       #region API Extension
-      private object AddApi ( string name, object param ) { try {
+      private bool AddApi ( string name, object param ) { try {
          if ( LowerAndIsEmpty( name, out string cmd ) || ! cmd.Contains( "." ) || cmd.Length < 3  )
-            throw new ApplicationException( $"Invalid name for register_api, need a dot and at least 3 chars. Got '{cmd}'." );
+            throw new ApplicationException( $"Invalid name for api_add, need a dot and at least 3 chars. Got '{cmd}'." );
          if ( ! ( param is Func<string,object,object> func3 ) ) {
             if ( param is Func<object,object> func2 )
                func3 = ( _, augs ) => func2( augs );
             else
-               throw new ApplicationException( "register_api parameter be Func< object, object > or Func< string, object, object >" );
+               throw new ApplicationException( "api_add parameter must be Func< object, object > or Func< string, object, object >" );
          }
          lock ( ApiExtension ) {
             if ( ApiExtension.ContainsKey( cmd ) )
-               throw new ApplicationException( $"Cannot re-register api action 'cmd'." );
+               throw new ApplicationException( $"Cannot re-register api 'cmd'." );
             ApiExtension.Add( cmd, func3 );
             ApiExtOwner.Add( cmd, this );
          }
-         Info( "Registered api action {0}", cmd );
+         Info( "Registered api '{0}'", cmd );
          return true;
       } catch ( ApplicationException ex ) {
          Warn( ex.Message );
          return false;
       } }
 
-      private object RemoveApi ( object param ) {
+      private bool RemoveApi ( object param ) {
          if ( LowerAndIsEmpty( param, out string cmd ) ) return false;
          ModEntry owner;
-
          lock ( ApiExtension ) ApiExtOwner.TryGetValue( cmd, out owner );
          if ( owner != this ) {
             Warn( $"unreg_action '{cmd}' " + owner == null ? "not found." : "not owner" );
@@ -188,6 +223,21 @@ namespace Sheepy.Modnix {
          }
          Info( "Unregistered api action {0}", cmd );
          return true;
+      }
+
+      private MethodInfo InfoApi ( object param ) {
+         if ( param == null ) return null;
+         string name = param?.ToString().Trim().ToLowerInvariant();
+         if ( NativeApi.TryGetValue( name, out MethodInfo info ) ) return info;
+         if ( ApiExtension.TryGetValue( name, out Func<string,object,object> func ) ) return func?.Method;
+         return null;
+      }
+
+      private IEnumerable<string> ListApi ( object param ) {
+         InitiateNativeApi();
+         string[] list;
+         lock ( ApiExtension ) list = ApiExtension.Keys.ToArray();
+         return FilterStringList( NativeApi.Keys.Concat( list ), param );
       }
       #endregion
 
@@ -204,7 +254,7 @@ namespace Sheepy.Modnix {
          return Logger;
       }
 
-      private Delegate GetLogFunc ( object param ) {
+      private Delegate GetLogger ( object param ) {
          string txt = null;
          if ( param is Type t ) txt = t.Name;
          else if ( param is string s ) txt = s;
@@ -216,6 +266,12 @@ namespace Sheepy.Modnix {
             case "TraceLevel"     : return (Action<TraceLevel,object,object[]>) Logger.Log;
          }
          return null;
+      }
+
+      private ModMeta GetModInfo ( object param ) {
+         ModEntry mod = GetMod( param );
+         if ( mod == null ) return Metadata;
+         return new ModMeta().ImportFrom( mod.Metadata );
       }
 
       private bool DoLog ( string level, object param ) {
