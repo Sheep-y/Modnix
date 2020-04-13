@@ -147,10 +147,12 @@ namespace Sheepy.Modnix.Tests {
          Assert.AreEqual( false, ModA.ModAPI( "api_add A.A", ExtA ), "duplucate reg" );
          Assert.AreEqual( false, ModA.ModAPI( "api_add A.C", null ), "null action" );
          Assert.AreEqual( false, ModA.ModAPI( "api_add A.C", ExtC ), "Invalid action" );
+         Assert.AreEqual( false, ModA.ModAPI( "api_add A.C DEF", ExtC ), "Extra spec" );
 
          Assert.AreEqual( "0A", ModB.ModAPI( "a.A", "0" ), "call api a.A" );
          Assert.AreEqual( "c0B", ModB.ModAPI( "A.b c", "0" ), "call api A.b" );
          Assert.AreEqual( false, ModB.ModAPI( "api_remove A.B" ), "api_remove non-owner" );
+         Assert.AreEqual( false, ModA.ModAPI( "api_remove A.B CDE" ), "api_remove extra spec" );
          Assert.AreEqual( true , ModA.ModAPI( " api_remove   a.b " ), "api_remove owner" );
          Assert.AreEqual( null , ModA.ModAPI( "A.b c", "0" ), "call after api_remove" );
 

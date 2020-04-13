@@ -188,42 +188,47 @@ namespace Sheepy.Modnix {
 
       #region API Extension
       private bool AddApi ( string name, object param ) { try {
+         if ( IsMultiPart( name, out name, out string type ) )
+            throw new ArgumentException( $"Unknown specifier '{type}'." );
          if ( LowerAndIsEmpty( name, out string cmd ) || ! cmd.Contains( "." ) || cmd.Length < 3  )
-            throw new ApplicationException( $"Invalid name for api_add, need a dot and at least 3 chars. Got '{cmd}'." );
+            throw new ArgumentException( $"Invalid name for api_add, need a dot and at least 3 chars. Got '{cmd}'." );
          if ( ! ( param is Func<string,object,object> func3 ) ) {
             if ( param is Func<object,object> func2 )
                func3 = ( _, augs ) => func2( augs );
             else
-               throw new ApplicationException( "api_add parameter must be Func< object, object > or Func< string, object, object >" );
+               throw new ArgumentException( "api_add parameter must be Func< object, object > or Func< string, object, object >" );
          }
          lock ( ApiExtension ) {
             if ( ApiExtension.ContainsKey( cmd ) )
-               throw new ApplicationException( $"Cannot re-register api 'cmd'." );
+               throw new InvalidOperationException( $"Cannot re-register api 'cmd'." );
             ApiExtension.Add( cmd, func3 );
             ApiExtOwner.Add( cmd, this );
          }
          Info( "Registered api '{0}'", cmd );
          return true;
-      } catch ( ApplicationException ex ) {
+      } catch ( Exception ex ) {
          Warn( ex.Message );
          return false;
       } }
 
-      private bool RemoveApi ( object param ) {
+      private bool RemoveApi ( object param ) { try {
          if ( LowerAndIsEmpty( param, out string cmd ) ) return false;
+         if ( IsMultiPart( cmd, out cmd, out string type ) )
+            throw new ArgumentException( $"Unknown specifier '{type}'." );
          ModEntry owner;
          lock ( ApiExtension ) ApiExtOwner.TryGetValue( cmd, out owner );
-         if ( owner != this ) {
-            Warn( $"unreg_action '{cmd}' " + owner == null ? "not found." : "not owner" );
-            return false;
-         }
+         if ( owner != this )
+            throw new UnauthorizedAccessException( $"api_remove '{cmd}' by not owner" );
          lock ( ApiExtension ) {
             ApiExtension.Remove( cmd );
             ApiExtOwner.Remove( cmd );
          }
          Info( "Unregistered api action {0}", cmd );
          return true;
-      }
+      } catch ( Exception ex ) {
+         Warn( ex.Message );
+         return false;
+      } }
 
       private MethodInfo InfoApi ( object param ) {
          if ( param == null ) return null;
@@ -326,8 +331,8 @@ namespace Sheepy.Modnix {
       private object LoadConfig ( string profile, object param ) { try {
          if ( profile?.Length > 0 && ! LowerAndIsEmpty( profile, out profile ) ) {
             switch ( profile ) {
-               case "save": case "write":  return SaveConfig( param );
-               case "delete":  return DeleteConfig();
+               case "save" : case "write" :  return SaveConfig( param );
+               case "delete" :  return DeleteConfig();
             }
          }
          var isDefault = "default".Equals( profile );
