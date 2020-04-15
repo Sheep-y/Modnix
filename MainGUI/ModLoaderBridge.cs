@@ -9,6 +9,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Runtime.Remoting;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -284,6 +285,7 @@ namespace Sheepy.Modnix.MainGUI {
             return Mod.CacheDefaultConfigText( proxy.Stringify( typeName ) ) ?? proxy.GetError() ?? new TypeLoadException( $"Not found: '{typeName}'" ).ToString();
          } catch ( Exception ex ) {
             Log( ex );
+            if ( ex is RemotingException ) AppControl.Instance.GetModList(); // Trigger mod refresh on remote error
             return null;
          } finally {
             if ( proxy?.Domain != null ) try {
@@ -326,7 +328,8 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void BuildConfig ( FlowDocument doc ) { lock ( Mod ) {
          Log( "Showing conf. Editing " + EditingConfig?.Length ?? "null" );
-         doc.TextRange().Text = EditingConfig ?? WpfHelper.Lf2Cr( Mod.GetConfigText() ?? Mod.GetDefaultConfigText() ?? GetConfigFromSandbox() )?.Trim() ?? "";
+         doc.TextRange().Text = EditingConfig ?? WpfHelper.Lf2Cr( Mod.GetConfigText() ?? Mod.GetDefaultConfigText() ?? GetConfigFromSandbox() )?.Trim()
+               ?? "Error occured. Please try refresh mod list.\r\rIf problem persists, please report issue.";
       } }
 
       private void BuildSupportDoc ( ModDoc type, FlowDocument doc, string[] fileList ) { try {
@@ -346,7 +349,7 @@ namespace Sheepy.Modnix.MainGUI {
          }
          if ( text.StartsWith( "{\\rtf", StringComparison.Ordinal ) ) try {
             using ( var mem = new MemoryStream( Encoding.ASCII.GetBytes( text ) ) )
-               doc.TextRange().Load( mem, System.Windows.DataFormats.Rtf );
+               doc.TextRange().Load( mem, DataFormats.Rtf );
             return;
          } catch ( ArgumentException ex ) { Log( ex ); }
          doc.TextRange().Text = WpfHelper.Lf2Cr( text );
