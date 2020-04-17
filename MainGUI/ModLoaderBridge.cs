@@ -10,6 +10,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.Remoting;
+using System.Runtime.Remoting.Lifetime;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -286,11 +287,11 @@ namespace Sheepy.Modnix.MainGUI {
          } catch ( Exception ex ) {
             Log( ex );
             if ( ex is RemotingException ) AppControl.Instance.GetModList(); // Trigger mod refresh on remote error
-            return null;
+            return ex.ToString();
          } finally {
-            if ( proxy?.Domain != null ) try {
-               Log( $"Unloading sandbox {Mod.Metadata.Id}" );
-               AppDomain.Unload( proxy?.Domain );
+            try {
+               ( RemotingServices.GetLifetimeService( proxy ) as ILease ).Register( proxy );
+               AppDomain.Unload( proxy.Domain );
             } catch ( Exception ex ) { Log( ex ); }
          }
       }
@@ -329,7 +330,7 @@ namespace Sheepy.Modnix.MainGUI {
       private void BuildConfig ( FlowDocument doc ) { lock ( Mod ) {
          Log( "Showing conf. Editing " + EditingConfig?.Length ?? "null" );
          doc.TextRange().Text = EditingConfig ?? WpfHelper.Lf2Cr( Mod.GetConfigText() ?? Mod.GetDefaultConfigText() ?? GetConfigFromSandbox() )?.Trim()
-               ?? "Error occured. Please try refresh mod list.\r\rIf problem persists, please report issue.";
+               ?? "Error occured, please try refresh mod list.\r\rIf problem persists, please report issue.";
       } }
 
       private void BuildSupportDoc ( ModDoc type, FlowDocument doc, string[] fileList ) { try {
@@ -592,7 +593,7 @@ namespace Sheepy.Modnix.MainGUI {
       } catch ( SystemException ) { } }
    }
 
-   public class Sandbox : MarshalByRefObject {
+   public class Sandbox : MarshalByRefObject, ISponsor {
       public AppDomain Domain { get; private set; }
       private HashSet<Assembly> ModDlls;
       private Exception Error;
@@ -649,6 +650,7 @@ namespace Sheepy.Modnix.MainGUI {
          var domain = AppDomain.CreateDomain( "Modnix config sandbox", null, new AppDomainSetup { DisallowCodeDownload = true } );
          try {
             var proxy = domain.CreateInstanceFromAndUnwrap( Assembly.GetExecutingAssembly().Location, typeof( Sandbox ).FullName ) as Sandbox;
+            ( RemotingServices.GetLifetimeService( proxy ) as ILease ).Register( proxy );
             proxy.Domain = domain;
             proxy.Initiate();
             return proxy;
@@ -657,6 +659,8 @@ namespace Sheepy.Modnix.MainGUI {
             return null;
          }
       }
+
+      public TimeSpan Renewal ( ILease lease ) => Domain != null ? TimeSpan.FromMinutes( 30 ) : TimeSpan.Zero;
    }
 
    public static class NativeMethods {

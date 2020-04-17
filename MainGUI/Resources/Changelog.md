@@ -2,6 +2,7 @@ Modnix Changelog
 
 # Version 2.2
 
+* Fix: Config panel no longer throws RemotingException when a config is first accessed after five minutes from launch or last config. (#20)
 * Fix: When config panel can't show config, it will display an error instead of stuck on old tab.
 * Fix: Launch game will now wait for the config save prompt, if any. (#21)
 * Fix: Save, Enable, and Disable buttons are now disabled when app is busy or game is running.
