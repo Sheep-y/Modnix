@@ -287,15 +287,15 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       private void ButtonOnline_Click  ( object sender, RoutedEventArgs e ) {
-         App.LaunchGame( "online" );
          if ( AbortByCheckSave() ) return;
+         App.LaunchGame( "online" );
          SetInfo( GuiInfo.GAME_RUNNING, true );
          GameStatusTimer.Change( Timeout.Infinite, 10_000 ); // Should be overrode by activate/deactivate, but just in case
       }
 
       private void ButtonOffline_Click ( object sender, RoutedEventArgs e ) {
-         App.LaunchGame( "offline" );
          if ( AbortByCheckSave() ) return;
+         App.LaunchGame( "offline" );
          SetInfo( GuiInfo.GAME_RUNNING, true );
          GameStatusTimer.Change( Timeout.Infinite, 10_000 ); // Should be overrode by activate/deactivate, but just in case
       }

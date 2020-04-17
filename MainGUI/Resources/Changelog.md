@@ -1,9 +1,10 @@
 Modnix Changelog
 
-# Version ?
+# Version 2.2
 
-* Fix: Save, Enable, and Disable buttons are now disabled when app is busy or game is running.
 * Fix: When config panel can't show config, it will display an error instead of stuck on old tab.
+* Fix: Launch game will now wait for the config save prompt, if any. (#21)
+* Fix: Save, Enable, and Disable buttons are now disabled when app is busy or game is running.
 * Mod: New api "api_list" and "api_info".
 * Mod: "api_add" and "api_remove" now rejects if there are content after api key.
 
