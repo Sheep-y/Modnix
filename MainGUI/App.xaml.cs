@@ -417,7 +417,7 @@ namespace Sheepy.Modnix.MainGUI {
          CurrentGame.WriteCodeFile( AppRes.LOADER  , AssemblyLoader.GetResourceStream( AppRes.LOADER   ) );
          CurrentGame.WriteCodeFile( AppRes.INJECTOR, AssemblyLoader.GetResourceStream( AppRes.INJECTOR ) );
          CurrentGame.RunInjector( "/y" );
-         CheckInjectionStatus();
+         CheckInjectionStatus( true );
          if ( CurrentGame.Status == "modnix" ) {
             SaveSettings();
             // Migrate mods
