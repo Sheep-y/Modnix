@@ -19,7 +19,7 @@ namespace Sheepy.Modnix {
       // For mod manager
       public bool CheckUpdate = true;
       public DateTime? LastCheckUpdate = null;
-      public string UpdateChannel = "dev";
+      public string UpdateChannel = "release";
       public string GamePath = null;
       public bool MinifyLoaderPanel = false;
       public bool MinifyGamePanel = true;
