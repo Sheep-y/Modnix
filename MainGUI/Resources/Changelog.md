@@ -7,7 +7,7 @@ Modnix Changelog
 * Mod: "assembly" and "assemblies" now support "ppml", "phoenixpointmodloader", and "phoenix point mod loader" param.
 * Mod: Getting "assemblies" of "modnix" or "loader" now includes ppml if it has been loaded.
 
-# Version 2.2, 2020-04-18
+# Version 2.2, 2020-04-17
 
 * Fix: Config panel no longer throws RemotingException when a config is first accessed after five minutes from launch or last config. (#20)
 * Fix: When config panel can't show config, it will display an error instead of stuck on old tab.
