@@ -107,7 +107,7 @@ namespace Sheepy.Modnix {
                   break;
             }
          }
-         Warn( "Unknown api action '{0}'", action );
+         Warn( "Unknown api action '{0}'", cmd );
          return null;
       } catch ( Exception ex ) { Error( ex ); return null; } }
 
