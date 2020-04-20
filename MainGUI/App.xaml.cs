@@ -583,9 +583,9 @@ namespace Sheepy.Modnix.MainGUI {
                Log( "Adding warnings to mods with runtime notices." );
                foreach ( var mod in list ) {
                   if ( ! mod.Is( ModQuery.ENABLED ) ) continue;
-                  if ( ModWithError.Contains( mod.Id ) ) ModBridge.AddLoaderLogNotice( mod, "runtime_error" );
-                  else if ( ModWithWarning.Contains( mod.Id ) ) ModBridge.AddLoaderLogNotice( mod, "runtime_warning" );
-                  else if ( ModWithConfWarn.Contains( mod.Id ) ) ModBridge.AddLoaderLogNotice( mod, "config_mismatch" );
+                  if ( ModWithError.Contains( mod.Id ) ) ModLoaderBridge.AddLoaderLogNotice( mod, "runtime_error" );
+                  else if ( ModWithWarning.Contains( mod.Id ) ) ModLoaderBridge.AddLoaderLogNotice( mod, "runtime_warning" );
+                  else if ( ModWithConfWarn.Contains( mod.Id ) ) ModLoaderBridge.AddLoaderLogNotice( mod, "config_mismatch" );
                }
             }
             GUI.SetInfo( GuiInfo.MOD_LIST, list );

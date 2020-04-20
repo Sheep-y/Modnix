@@ -1,5 +1,10 @@
 Modnix Changelog
 
+# Version 2.3, ?
+
+* New: A mod's LoadIndex and LogLevel now take effect after manually changed in Modnix.conf.
+* Gui: "JetBrains.Annotations.dll" will now be deleted from game root and Mods folder. Come with PPML 0.1 but is unused.
+
 # Version 2.2, 2020-04-18
 
 * Fix: Config panel no longer throws RemotingException when a config is first accessed after five minutes from launch or last config. (#20)
