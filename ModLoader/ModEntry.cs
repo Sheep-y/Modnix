@@ -130,17 +130,26 @@ namespace Sheepy.Modnix {
 
       private static Assembly GameAssembly;
 
-      private Assembly GetAssembly ( object target ) => GetAssemblies( target )?.FirstOrDefault();
+      private Assembly GetAssembly ( object target ) => GetAssemblies( target ).FirstOrDefault();
 
       private IEnumerable < Assembly > GetAssemblies ( object target ) {
          if ( LowerAndIsEmpty( target, out string id ) ) return ModAssemblies ?? Enumerable.Empty<Assembly>();
          switch ( id ) {
             case "loader" : case "modnix" :
-               return new Assembly[]{ Assembly.GetExecutingAssembly() };
+               var ppml = ModLoader.PpmlAssembly;
+               var loaderList = new Assembly[ ppml == null ? 1 : 2 ];
+               loaderList[0] = Assembly.GetExecutingAssembly();
+               if ( ppml != null ) loaderList[1] = ppml;
+               return loaderList;
+
+            case "phoenixpointmodloader" : case "phoenix point mod loader" : case "ppml" :
+               return new Assembly[]{ ModLoader.PpmlAssembly };
+
             case "phoenixpoint" : case "phoenix point" : case "game" :
                if ( GameAssembly == null ) // No need to lock. No conflict.
                   GameAssembly = Array.Find( AppDomain.CurrentDomain.GetAssemblies(), e => e.FullName.StartsWith( "Assembly-CSharp," ) );
                return new Assembly[]{ GameAssembly };
+
             default:
                return ModScanner.GetModById( id )?.ModAssemblies ?? Enumerable.Empty<Assembly>();
          }

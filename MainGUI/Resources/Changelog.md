@@ -4,6 +4,8 @@ Modnix Changelog
 
 * New: A mod's LoadIndex and LogLevel now take effect after manually changed in Modnix.conf.
 * Gui: "JetBrains.Annotations.dll" will now be deleted from game root and Mods folder. Come with PPML 0.1 but is unused.
+* Mod: "assembly" and "assemblies" now support "ppml", "phoenixpointmodloader", and "phoenix point mod loader" param.
+* Mod: Getting "assemblies" of "modnix" or "loader" now includes ppml if it has been loaded.
 
 # Version 2.2, 2020-04-18
 

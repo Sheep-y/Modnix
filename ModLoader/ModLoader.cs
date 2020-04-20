@@ -101,13 +101,15 @@ namespace Sheepy.Modnix {
          LoadSettings();
       } } catch ( Exception ex ) { Log?.Error( ex ); } }
 
+      internal static volatile Assembly PpmlAssembly;
+
       // Dynamically load embedded dll
       private static Assembly ModLoaderResolve  ( object domain, ResolveEventArgs dll ) { try {
          var name = dll.Name;
          Log.Trace( "Resolving {0}", name );
          var app = domain as AppDomain ?? AppDomain.CurrentDomain;
          if ( name.StartsWith( "PhoenixPointModLoader,", StringComparison.OrdinalIgnoreCase ) )
-            return app.Load( GetResourceBytes( "PPML_0_2.dll" ) );
+            return PpmlAssembly = app.Load( GetResourceBytes( "PPML_0_2.dll" ) );
          if ( name.StartsWith( "System." ) && dll.Name.Contains( ',' ) ) { // Generic system library lookup
             var file = dll.Name.Substring( 0, dll.Name.IndexOf( ',' ) ) + ".dll";
             var target = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.Windows ), "Microsoft.NET/Framework/v4.0.30319", file );
