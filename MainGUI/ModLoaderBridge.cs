@@ -112,7 +112,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       private static ModEntry Mod ( ModInfo mod ) => ( mod as GridModItem )?.Mod;
 
-      internal void AddLoaderLogNotice ( ModInfo mod, string reason ) => Mod( mod ).AddNotice( TraceEventType.Warning, reason );
+      internal static void AddLoaderLogNotice ( ModInfo mod, string reason ) => Mod( mod ).AddNotice( TraceEventType.Warning, reason );
       
       internal void DeleteMod ( ModInfo mod ) {
          var path = Path.GetDirectoryName( mod.Path );

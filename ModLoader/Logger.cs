@@ -13,7 +13,7 @@ namespace Sheepy.Logging {
    public abstract class Logger {
 
       protected Logger () {
-         ReaderWriterLockSlim locker = new ReaderWriterLockSlim();
+         var locker = new ReaderWriterLockSlim();
          _Reader  = new LoggerReadLockHelper ( locker );
          _Writer  = new LoggerWriteLockHelper( locker );
          _Filters = new RwlsList<LogFilter>( _Reader, _Writer );
@@ -22,7 +22,7 @@ namespace Sheepy.Logging {
       // ============ Self Prop ============
 
       protected SourceLevels _Level = SourceLevels.Information;
-      protected string _TimeFormat = "yyyy-MM-ddTHH:mm:ssz", _Prefix = null, _Postfix = null;
+      protected string _TimeFormat = "yyyy-MM-ddTHH:mm:ssz";
       protected readonly RwlsList< LogFilter > _Filters;
       protected Action< Exception > _OnError = null;
 
@@ -58,7 +58,7 @@ namespace Sheepy.Logging {
       public virtual void Log ( TraceEventType level, object message, params object[] args ) {
          if ( ( level & (TraceEventType) Level ) != level ) return;
          if ( args?.Length == 0 ) args = null;
-         _Log( new LogEntry(){ Time = DateTime.Now, Level = level, Message = message, Args = args } );
+         _Log( new LogEntry{ Time = DateTime.Now, Level = level, Message = message, Args = args } );
       }
 
       public void Log ( TraceLevel level, object message, params object[] args ) {
@@ -114,7 +114,7 @@ namespace Sheepy.Logging {
             if ( ! filter( entry ) ) return null;
          } catch ( Exception ex ) { CallOnError( ex ); }
 
-         string txt = entry.Message?.ToString();
+         var txt = entry.Message?.ToString();
          if ( string.IsNullOrEmpty( txt ) ) return null;
 
          if ( entry.Args?.Length > 0 && txt != null ) try {
@@ -178,7 +178,7 @@ namespace Sheepy.Logging {
       // ============ Implementations ============
 
       protected override void _Log ( LogEntry entry ) {
-         int delay = WriteDelay;
+         var delay = WriteDelay;
          lock ( _Queue ) {
             _Queue.Add( entry );
             if ( delay > 0 ) {
@@ -210,7 +210,7 @@ namespace Sheepy.Logging {
             try {
                StartProcess();
                foreach ( LogEntry line in entries ) try {
-                  string txt = EntryToString( line, filters );
+                  var txt = EntryToString( line, filters );
                   if ( ! string.IsNullOrEmpty( txt ) )
                      ProcessEntry( line, txt, timeFormat );
                } catch ( Exception ex ) {
@@ -235,7 +235,7 @@ namespace Sheepy.Logging {
    // Log to file.  Log is processed and written in a threadpool thread.
    public class FileLogger : BackgroundLogger {
       public FileLogger ( string file, int writeDelay = 500 ) : base ( writeDelay ) {
-         if ( string.IsNullOrWhiteSpace( file ) ) throw new ArgumentNullException( "file" );
+         if ( string.IsNullOrWhiteSpace( file ) ) throw new ArgumentNullException( nameof( file ) );
          LogFile = file.Trim();
          _TimeFormat += ' ';
       }
@@ -342,8 +342,8 @@ namespace Sheepy.Logging {
       public static bool AutoMultiParam ( LogEntry entry ) {
          if ( entry.Args == null || entry.Args.Length == 0 ) return true;
          if ( entry.Message is string txt && txt.Contains( '{' ) && txt.Contains( '}' ) ) return true;
-         int len = entry.Args.Length + 1;
-         object[] newArg = new object[ len + 1 ];
+         var len = entry.Args.Length + 1;
+         var newArg = new object[ len + 1 ];
          newArg[ 0 ] = entry.Message;
          entry.Args.CopyTo( newArg, 1 );
          entry.Args = newArg;
@@ -361,7 +361,7 @@ namespace Sheepy.Logging {
                if ( text != null ) return text;
             }
          }
-         StringBuilder buf = new StringBuilder( paramCount * 4 );
+         var buf = new StringBuilder( paramCount * 4 );
          for ( int i = 0 ; i < paramCount ; i++ )
             buf.Append( '{' ).Append( i ).Append( "} " );
          text = buf.ToString( 0, buf.Length - 1 );
@@ -385,7 +385,7 @@ namespace Sheepy.Logging {
          if ( param == null ) return "null";
          if ( level > 10 ) return "...";
          if ( param is ICollection collections ) {
-            StringBuilder result = new StringBuilder().Append( collections.GetType().Name ).Append( "{ " );
+            var result = new StringBuilder().Append( collections.GetType().Name ).Append( "{ " );
             foreach ( var e in collections ) result.Append( RecurFormatParam( e, level + 1 ) ).Append( ", " );
             --result.Length;
             return result.Append( " }" ).ToString();
@@ -411,13 +411,13 @@ namespace Sheepy.Logging {
 
       // Log each exception once.  The rest only log type and message.  Exceptions are the same if their ToString are same.
       public static LogFilter IgnoreDuplicateExceptions ( string dummyNotice = null ) {
-         HashSet< string > ignored = new HashSet<string>();
+         var ignored = new HashSet<string>();
          return ( entry ) => {
-            bool ignore = false;
+            var ignore = false;
             if ( entry.Message is Exception ex ) ;
             else if ( entry.Args?.Length == 1 && entry.Args[0] is Exception err ) ex = err;
             else return true;
-            string txt = ex.ToString();
+            var txt = ex.ToString();
             lock( ignored ) {
                ignore = ignored.Contains( txt );
                if ( ! ignore ) ignored.Add( txt );
