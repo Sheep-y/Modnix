@@ -24,7 +24,7 @@ namespace Sheepy.Logging {
       protected SourceLevels _Level = SourceLevels.Information;
       protected string _TimeFormat = "yyyy-MM-ddTHH:mm:ssz";
       protected readonly RwlsList< LogFilter > _Filters;
-      protected Action< Exception > _OnError = null;
+      protected Action< Exception > _OnError;
 
       protected readonly LoggerReadLockHelper  _Reader;
       protected readonly LoggerWriteLockHelper _Writer; // lock( _Writer ) during queue process, to ensure sequential output
@@ -107,9 +107,9 @@ namespace Sheepy.Logging {
       // ============ Implementations ============
 
       // Internal method to convert an entry to string. Return null if any filter says no or input/result is null.
-      protected virtual string EntryToString ( LogEntry entry, IEnumerable<LogFilter> filters = null ) {
+      protected virtual string EntryToString ( LogEntry entry, LogFilter[] filters = null ) {
          if ( entry == null ) return null;
-         if ( filters == null ) filters = _Filters;
+         if ( filters == null ) filters = _Filters.ToArray();
          foreach ( LogFilter filter in filters ) try {
             if ( ! filter( entry ) ) return null;
          } catch ( Exception ex ) { CallOnError( ex ); }
