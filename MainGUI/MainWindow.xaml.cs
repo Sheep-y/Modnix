@@ -315,7 +315,6 @@ namespace Sheepy.Modnix.MainGUI {
       private IEnumerable<ModInfo> SelectedMods => GridModList.SelectedItems.OfType<ModInfo>();
       private HashSet<string> SelectMods;
       private TabItem SelectTab;
-      private readonly Timer RefreshModTimer;
 
       private void SetModList ( IEnumerable<ModInfo> list ) {
          ModList = list;
