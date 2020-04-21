@@ -882,6 +882,14 @@ namespace Sheepy.Modnix.MainGUI {
       }
    }
 
+   internal static class Utils {
+      internal static string ReadFile ( string file ) {
+         using ( var reader = new StreamReader( new FileStream( file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete ) ) ) {
+            return reader.ReadToEnd();
+         }
+      }
+   }
+
    internal static class ExtCls {
       internal static string FixSlash ( this string path ) => path.Replace( '/', Path.DirectorySeparatorChar );
    }

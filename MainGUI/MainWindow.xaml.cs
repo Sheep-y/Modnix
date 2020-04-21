@@ -782,7 +782,7 @@ namespace Sheepy.Modnix.MainGUI {
          else if ( isLicense ) TextLicense.Text = ApplyLogFilter( ModMetaJson.ReadAsText( AssemblyLoader.GetResourceStream( "License.txt" ) ) );
          else if ( isLoader || isConsole ) {
             try {
-               TextLicense.Text = ApplyLogFilter( File.ReadAllText( isLoader ? App.LoaderLog : App.ConsoleLog ) );
+               TextLicense.Text = ApplyLogFilter( Utils.ReadFile( isLoader ? App.LoaderLog : App.ConsoleLog ) );
             } catch ( SystemException ex ) {
                if ( isConsole && SharedGui.IsGameRunning )
                   TextLicense.Text = "The game locks the console log.  Cannot read it when game is running.";
