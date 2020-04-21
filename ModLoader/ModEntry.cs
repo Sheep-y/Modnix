@@ -273,11 +273,10 @@ namespace Sheepy.Modnix {
          if ( param is Type t ) txt = t.Name;
          else if ( param is string s ) txt = s;
          else return null;
-         CreateLogger();
          switch ( txt ) {
-            case "TraceEventType" : return (Action<TraceEventType,object,object[]>) Logger.Log;
-            case "SourceLevels"   : return (Action<SourceLevels,object,object[]>) Logger.Log;
-            case "TraceLevel"     : return (Action<TraceLevel,object,object[]>) Logger.Log;
+            case "TraceEventType" : return (Action<TraceEventType,object,object[]>) CreateLogger().Log;
+            case "SourceLevels"   : return (Action<SourceLevels,object,object[]>) CreateLogger().Log;
+            case "TraceLevel"     : return (Action<TraceLevel,object,object[]>) CreateLogger().Log;
          }
          return null;
       }
