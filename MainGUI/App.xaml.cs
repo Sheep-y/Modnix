@@ -59,6 +59,7 @@ namespace Sheepy.Modnix.MainGUI {
       internal const string PAST_DL2 = "PhoenixPointModLoader.dll";
       internal const string PAST_MOD = "Mods";
       internal const string MOD_LOG  = "ModnixLoader.log";
+      internal const string GAME_LOG = "Console.log";
       internal const string EPIC_DIR = ".egstore";
 
       private string[] UNSAFE_DLL = new string[] { AppRes.LOADER, AppRes.INJECTOR, AppRes.CECI_DLL, AppRes.HARM_DLL, JBA_DLL, PAST, PAST_DL1, PAST_DL2 };
@@ -372,6 +373,7 @@ namespace Sheepy.Modnix.MainGUI {
       #endregion
 
       internal void LaunchGame ( string type ) { try {
+         CurrentGame.DeleteRootFile( GAME_LOG );
          if ( type == "online" ) {
             if ( CurrentGame.GameType == "epic" ) {
                Log( "Launching through epic game launcher" );

@@ -26,7 +26,6 @@ namespace Sheepy.Modnix {
 
       public static Version LoaderVersion, GameVersion;
       internal readonly static Version PPML_COMPAT = new Version( 0, 2 );
-      private static bool PpmlInitialised;
 
       public static string ModDirectory { get; private set; }
 
@@ -185,7 +184,7 @@ namespace Sheepy.Modnix {
          var ver = game.GetType( "Base.Build.RuntimeBuildInfo" ).GetProperty( "Version" ).GetValue( null )?.ToString();
          Log.Info( "{0}/{1}", Path.GetFileNameWithoutExtension( game.CodeBase ), ver );
          GameVersion = Version.Parse( ver );
-      } } catch ( Exception ex ) { Log?.Error( ex ); } }
+      } } catch ( Exception ex ) { Log?.Error( ex ); } } 
       #endregion
 
       #region Loading Mods
