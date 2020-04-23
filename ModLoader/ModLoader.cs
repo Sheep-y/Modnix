@@ -140,7 +140,7 @@ namespace Sheepy.Modnix {
          var confFile = Path.Combine( ModDirectory, CONF_FILE );
          if ( File.Exists( confFile ) ) try {
             Log.Info( $"Loading {confFile}" );
-            Settings = ModMetaJson.Parse<LoaderSettings>( File.ReadAllText( confFile ) );
+            Settings = ModMetaJson.Parse<LoaderSettings>( Tools.ReadFile( confFile ) );
          } catch ( Exception ex ) { Log.Error( ex ); }
          if ( Settings == null ) {
             Log.Info( $"Using default settings, because cannot find or parse {confFile}" );
@@ -278,5 +278,11 @@ namespace Sheepy.Modnix {
 
    internal static class Tools {
       internal static string FixSlash ( this string path ) => path.Replace( '/', Path.DirectorySeparatorChar );
+   
+      private static StreamReader Read ( string file ) =>
+         new StreamReader( new FileStream( file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete ), Encoding.UTF8, true );
+
+      internal static string ReadFile ( string file ) { using ( var reader = Read( file ) ) return reader.ReadToEnd(); }
+      internal static string ReadLine ( string file ) { using ( var reader = Read( file ) ) return reader.ReadLine(); }
    }
 }

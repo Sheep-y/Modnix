@@ -783,10 +783,7 @@ namespace Sheepy.Modnix.MainGUI {
             try {
                TextLicense.Text = ApplyLogFilter( Utils.ReadFile( isLoader ? App.LoaderLog : App.ConsoleLog ) );
             } catch ( SystemException ex ) {
-               if ( isConsole && SharedGui.IsGameRunning )
-                  TextLicense.Text = "The game locks the console log.  Cannot read it when game is running.";
-               else
-                  TextLicense.Text = ex.ToString();
+               TextLicense.Text = ex.ToString();
             }
             ConsoleLogTime = new FileInfo( App.ConsoleLog ).LastWriteTime;
             LoaderLogTime  = new FileInfo( App.LoaderLog  ).LastWriteTime;

@@ -337,7 +337,7 @@ namespace Sheepy.Modnix.MainGUI {
          string text = null;
          if ( Docs.TryGetValue( type, out string file ) && ! "embedded".Equals( file, StringComparison.Ordinal ) ) {
             Log( $"Reading {type} {file}" );
-            text = File.ReadAllText( file );
+            text = Utils.ReadFile( file );
          } else {
             Log( $"Reading embedded {type} from {Path}" );
             var buf = new StringBuilder();

@@ -454,7 +454,7 @@ namespace Sheepy.Modnix {
             if ( meta.ConfigText != null )
                return meta.ConfigText;
          if ( confFile == null ) confFile = CheckConfigFile();
-         return meta.ConfigText = confFile != null ? File.ReadAllText( confFile, Encoding.UTF8 ) : GetDefaultConfigText();
+         return meta.ConfigText = confFile != null ? Tools.ReadFile( confFile ) : GetDefaultConfigText();
       } catch ( Exception ex ) { Error( ex ); return null; } }
 
       public string CacheDefaultConfigText ( string config ) {

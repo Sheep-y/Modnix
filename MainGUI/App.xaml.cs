@@ -320,7 +320,7 @@ namespace Sheepy.Modnix.MainGUI {
             if ( File.Exists( logFile ) &&
                  File.GetLastWriteTime( logFile ) > File.GetLastWriteTime( Path.Combine( CurrentGame.CodeDir, GAME_DLL ) ) ) {
                Log( $"Parsing {logFile}" );
-               var line = File.ReadLines( logFile ).ElementAtOrDefault( 1 );
+               var line = Utils.ReadLine( logFile );
                var match = Regex.Match( line ?? "", "Assembly-CSharp/([^ ;]+)", RegexOptions.IgnoreCase );
                if ( match.Success )
                   return match.Value.Substring( 16 );
@@ -890,11 +890,11 @@ namespace Sheepy.Modnix.MainGUI {
    }
 
    internal static class Utils {
-      internal static string ReadFile ( string file ) {
-         using ( var reader = new StreamReader( new FileStream( file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete ) ) ) {
-            return reader.ReadToEnd();
-         }
-      }
+      private static StreamReader Read ( string file ) =>
+         new StreamReader( new FileStream( file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete ), Encoding.UTF8, true );
+
+      internal static string ReadFile ( string file ) { using ( var reader = Read( file ) ) return reader.ReadToEnd(); }
+      internal static string ReadLine ( string file ) { using ( var reader = Read( file ) ) return reader.ReadLine(); }
    }
 
    internal static class ExtCls {

@@ -104,7 +104,7 @@ namespace Sheepy.Modnix {
             var default_id = Path.GetFileNameWithoutExtension( file );
             if ( string.IsNullOrWhiteSpace( default_id ) || default_id.Equals( "mod_info", StringComparison.OrdinalIgnoreCase ) )
                default_id = container;
-            meta = ParseInfoJs( File.ReadAllText( file, Encoding.UTF8 ).Trim(), default_id );
+            meta = ParseInfoJs( Tools.ReadFile( file ).Trim(), default_id );
             if ( meta == null ) return null;
             if ( ! meta.HasContent )
                meta.Dlls = Directory.EnumerateFiles( Path.GetDirectoryName( file ), "*.dll" )
