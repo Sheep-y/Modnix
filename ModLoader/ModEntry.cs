@@ -55,7 +55,7 @@ namespace Sheepy.Modnix {
       #region API
       private static readonly Dictionary<string,MethodInfo> NativeApi = new Dictionary<string, MethodInfo>();
       private static readonly Dictionary<string,Func<string,object,object>> ApiExtension = new Dictionary<string, Func<string, object, object>>();
-      private static readonly Dictionary<string,ModEntry> ApiExtOwner = new Dictionary<string, ModEntry>();
+      private static readonly Dictionary<string,KeyValuePair<ModEntry,MethodInfo>> ApiExtOwner = new Dictionary<string, KeyValuePair<ModEntry,MethodInfo>>();
 
       private static void AddNativeApi ( string command, string method ) {
          NativeApi.Add( command, typeof( ModEntry ).GetMethod( method, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static ) );
@@ -201,17 +201,19 @@ namespace Sheepy.Modnix {
             throw new ArgumentException( $"Unknown specifier '{type}'." );
          if ( LowerAndIsEmpty( name, out string cmd ) || ! cmd.Contains( "." ) || cmd.Length < 3  )
             throw new ArgumentException( $"Invalid name for api_add, need a dot and at least 3 chars. Got '{cmd}'." );
+         MethodInfo info;
          if ( ! ( param is Func<string,object,object> func3 ) ) {
-            if ( param is Func<object,object> func2 )
-               func3 = ( _, augs ) => func2( augs );
-            else
+            if ( ! ( param is Func<object,object> func2 ) )
                throw new ArgumentException( "api_add parameter must be Func< object, object > or Func< string, object, object >" );
-         }
+            func3 = ( _, augs ) => func2( augs );
+            info = func2.Method;
+         } else
+            info = func3.Method;
          lock ( ApiExtension ) {
             if ( ApiExtension.ContainsKey( cmd ) )
                throw new InvalidOperationException( $"Cannot re-register api 'cmd'." );
             ApiExtension.Add( cmd, func3 );
-            ApiExtOwner.Add( cmd, this );
+            ApiExtOwner.Add( cmd, new KeyValuePair<ModEntry, MethodInfo>( this, info ) );
          }
          Info( "Registered api '{0}'", cmd );
          return true;
@@ -224,10 +226,10 @@ namespace Sheepy.Modnix {
          if ( LowerAndIsEmpty( param, out string cmd ) ) return false;
          if ( IsMultiPart( cmd, out cmd, out string type ) )
             throw new ArgumentException( $"Unknown specifier '{type}'." );
-         ModEntry owner;
-         lock ( ApiExtension ) ApiExtOwner.TryGetValue( cmd, out owner );
-         if ( owner != this )
-            throw new UnauthorizedAccessException( $"api_remove '{cmd}' by not owner" );
+         KeyValuePair<ModEntry, MethodInfo> info;
+         lock ( ApiExtension ) ApiExtOwner.TryGetValue( cmd, out info );
+         if ( info.Key != this )
+            throw new UnauthorizedAccessException( $"Non-owner cannot api_remove '{cmd}'. Owner is '{info.Key?.Metadata?.Id}'." );
          lock ( ApiExtension ) {
             ApiExtension.Remove( cmd );
             ApiExtOwner.Remove( cmd );
@@ -241,9 +243,9 @@ namespace Sheepy.Modnix {
 
       private MethodInfo InfoApi ( object param ) {
          if ( param == null ) return null;
-         string name = param?.ToString().Trim().ToLowerInvariant();
+         var name = param?.ToString().Trim().ToLowerInvariant();
          if ( NativeApi.TryGetValue( name, out MethodInfo info ) ) return info;
-         if ( ApiExtension.TryGetValue( name, out Func<string,object,object> func ) ) return func?.Method;
+         if ( ApiExtOwner.TryGetValue( name, out KeyValuePair<ModEntry, MethodInfo> owner ) ) return owner.Value;
          return null;
       }
 
