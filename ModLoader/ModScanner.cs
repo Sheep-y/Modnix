@@ -268,7 +268,7 @@ namespace Sheepy.Modnix {
       }
 
       private static ModEntry FindLatestMod ( ModEntry[] clones ) {
-         ModEntry best = clones[0];
+         var best = clones[0];
          foreach ( var mod in clones ) {
             if ( mod == best ) continue;
             if ( CompareModVersion( mod, best ) == 1 )

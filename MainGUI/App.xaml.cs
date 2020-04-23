@@ -271,7 +271,12 @@ namespace Sheepy.Modnix.MainGUI {
          GUI.SetInfo( GuiInfo.GAME_RUNNING, IsGameRunning() );
          if ( InjectorInPlace() ) {
             if ( CheckVersion )
-               Task.Run( () => GUI.SetInfo( GuiInfo.GAME_VER, CheckGameVer() ) );
+               Task.Run( () => {
+                  var ver = CheckGameVer();
+                  var gameVer = ver == "1.0" ? new Version( 1, 0, 999999 ) : Version.Parse( ver );
+                  ModLoader.GameVersion = gameVer;
+                  GUI.SetInfo( GuiInfo.GAME_VER, ver );
+               } );
             if ( CheckInjected() ) {
                GUI.SetInfo( GuiInfo.APP_STATE, CurrentGame.Status );
                return;
@@ -812,14 +817,14 @@ namespace Sheepy.Modnix.MainGUI {
 
       internal void WriteCodeFile ( string file, byte[] content ) {
          if ( content == null ) throw new ArgumentNullException( nameof( content ) );
-         string target = Path.Combine( CodeDir, file );
+         var target = Path.Combine( CodeDir, file );
          App.Log( $"Writing {content.Length} bytes to {target}" );
          File.WriteAllBytes( target, content );
       }
 
       internal void WriteCodeFile ( string file, Stream source ) {
          if ( source == null ) throw new ArgumentNullException( nameof( source ) );
-         string target = Path.Combine( CodeDir, file );
+         var target = Path.Combine( CodeDir, file );
          App.Log( $"Writing to {target}" );
          using ( var writer = new FileStream( target, FileMode.Create ) ) {
             source.CopyTo( writer );
@@ -827,7 +832,7 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       internal bool DeleteRootFile ( string file ) { try {
-         string subject = Path.Combine( GameDir, file );
+         var subject = Path.Combine( GameDir, file );
          if ( ! File.Exists( subject ) ) return false;
          App.Log( $"Deleting {subject}" );
          File.Delete( subject );
@@ -835,7 +840,7 @@ namespace Sheepy.Modnix.MainGUI {
       } catch ( Exception ex ) { return App.Log( ex, false ); } }
 
       internal bool DeleteCodeFile ( string file ) { try {
-         string subject = Path.Combine( CodeDir, file );
+         var subject = Path.Combine( CodeDir, file );
          if ( ! File.Exists( subject ) ) return false;
          App.Log( $"Deleting {subject}" );
          File.Delete( subject );
@@ -843,8 +848,8 @@ namespace Sheepy.Modnix.MainGUI {
       } catch ( Exception ex ) { return App.Log( ex, false ); } }
 
       internal bool RenameCodeFile ( string file, string toName ) { try {
-         string subject = Path.Combine( CodeDir, file   );
-         string target  = Path.Combine( CodeDir, toName );
+         var subject = Path.Combine( CodeDir, file   );
+         var target  = Path.Combine( CodeDir, toName );
          DeleteCodeFile( toName );
          App.Log( $"Renaming {subject} to {toName}" );
          File.Move( subject, target );
