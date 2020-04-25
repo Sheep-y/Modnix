@@ -423,6 +423,14 @@ namespace Sheepy.Modnix.MainGUI {
                ButtonAddMod_Click( sender, e ); break;
             case Key.Delete :
                ButtonModDelete_Click( sender, e ); break;
+            case Key.Home :
+               GridModList.SelectedIndex = 0;
+               GridModList.ScrollIntoView( GridModList.SelectedItem );
+               break;
+            case Key.End :
+               GridModList.SelectedIndex = ModList.Count() - 1;
+               GridModList.ScrollIntoView( GridModList.SelectedItem );
+               break;
             default:
                return;
          }
