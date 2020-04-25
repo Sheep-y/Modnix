@@ -416,6 +416,18 @@ namespace Sheepy.Modnix.MainGUI {
          else
             row.Foreground = Brushes.Navy;
       }
+
+      private void GridModList_PreviewKeyDown ( object sender, KeyEventArgs e ) {
+         switch ( e.Key ) {
+            case Key.Insert :
+               ButtonAddMod_Click( sender, e ); break;
+            case Key.Delete :
+               ButtonModDelete_Click( sender, e ); break;
+            default:
+               return;
+         }
+         e.Handled = true;
+      }
       #endregion
 
       #region Mod Info Area
