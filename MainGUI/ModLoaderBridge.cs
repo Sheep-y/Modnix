@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json;
-using Sheepy.Logging;
+﻿using Sheepy.Logging;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -215,7 +214,7 @@ namespace Sheepy.Modnix.MainGUI {
                lock ( this ) EditingConfig = null;
                return;
             case AppAction.DELETE_CONFIG :
-               DeleteConfig();
+               Mod.DeleteConfig();
                return;
             case AppAction.SET_CONFIG_PROFILE :
                lock ( this ) EditingConfig = WpfHelper.Lf2Cr( Mod.GetDefaultConfigText() ?? GetConfigFromSandbox() );
@@ -258,18 +257,10 @@ namespace Sheepy.Modnix.MainGUI {
          string conf;
          lock ( this ) conf = EditingConfig?.Trim();
          if ( string.IsNullOrEmpty( conf ) )
-            DeleteConfig();
+            Mod.DeleteConfig();
          else
             Mod.WriteConfigText( conf.Replace( '\r', '\n' ) );
          lock ( this ) EditingConfig = null;
-      }
-
-      private void DeleteConfig () {
-         var file = Mod.CheckConfigFile();
-         if ( file != null ) {
-            Log( $"Deleting {file}" );
-            File.Delete( file );
-         }
       }
 
       private string GetConfigFromSandbox () {

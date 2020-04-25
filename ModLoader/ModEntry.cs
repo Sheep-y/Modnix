@@ -397,7 +397,7 @@ namespace Sheepy.Modnix {
          } } );
       }
 
-      private bool DeleteConfig () {
+      public bool DeleteConfig () {
          var confFile = CheckConfigFile();
          if ( confFile == null ) return true;
          File.Delete( confFile );
