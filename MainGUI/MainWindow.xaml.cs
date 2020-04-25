@@ -541,11 +541,16 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void RichModInfo_PreviewKeyDown ( object sender, KeyEventArgs e ) { try {
          if ( RichModInfo.IsReadOnly ) return;
-         if ( e.Key != Key.Enter ) return;
-         var sel = RichModInfo.Selection;
-         new TextRange( sel.Start, sel.End ).Text = "\r";
-         RichModInfo.CaretPosition = sel.End.GetNextInsertionPosition( LogicalDirection.Forward );
-         e.Handled = true;
+         if ( e.Key == Key.S && ( e.KeyboardDevice.IsKeyDown( Key.LeftCtrl ) || e.KeyboardDevice.IsKeyDown( Key.RightCtrl ) ) ) {
+            ButtonConfSave_Click( sender, e );
+            e.Handled = true;
+
+         } else if ( e.Key == Key.Enter ) {
+            var sel = RichModInfo.Selection;
+            new TextRange( sel.Start, sel.End ).Text = "\r";
+            RichModInfo.CaretPosition = sel.End.GetNextInsertionPosition( LogicalDirection.Forward );
+            e.Handled = true;
+         }
       } catch ( Exception ex ) { Log( ex ); } }
 
       // Fix RichTextBox Hyperlink navigation https://stackoverflow.com/a/54472110/893578
