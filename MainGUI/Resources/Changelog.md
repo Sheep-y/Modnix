@@ -9,6 +9,7 @@ Modnix Changelog
 * Gui: Press Ctrl+S in config editor to save.  Press Ins/Del on mod list to Add/Delete mods, and Home/End to move to top/bottom.
 * Gui: Mods with runtime warnings but no runtime errors are now highlighted in Blue instead of OrangeRed.
 * Gui: Console log is now deleted before game launch. It cannot be properly deleted by loader / mods.
+* Gui: Log panels and config editor now use monospace font (Consolas). Thanks Tahvohck on GitHub.
 * Gui: Setup now deletes "JetBrains.Annotations.dll" from game root and Mods folder. Come with PPML 0.1 but is unused.
 * Mod: "assembly" and "assemblies" now support "ppml", "phoenixpointmodloader", and "phoenix point mod loader" param.
 * Mod: Getting "assemblies" of "modnix" or "loader" now includes ppml if it has been loaded.

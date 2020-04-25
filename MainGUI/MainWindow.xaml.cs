@@ -475,6 +475,7 @@ namespace Sheepy.Modnix.MainGUI {
                TabSetModInfo.SelectedItem = TabModInfo;
             var isConfig = TabSetModInfo.SelectedItem == TabModConfig;
             RichModInfo.IsReadOnly = ! isConfig;
+            RichModInfo.FontFamily = new FontFamily( isConfig ? "Consolas" : "Segoe UI" );
             PanelConfAction.Visibility = isConfig ? Visibility.Visible : Visibility.Collapsed;
 
             if ( CurrentMod != null ) {
