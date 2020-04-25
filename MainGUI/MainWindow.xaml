@@ -389,8 +389,8 @@
                   <ColumnDefinition Width="163*"/>
                   <ColumnDefinition Width="623*"/>
                </Grid.ColumnDefinitions>
-               <TextBox x:Name="TextLog" Text="" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Visible" IsReadOnly="True" IsReadOnlyCaretVisible="True" Margin="0,5" TabIndex="2300" Grid.ColumnSpan="2"/>
-               <TextBox x:Name="TextLicense" Text="" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Visible" IsReadOnly="True" IsReadOnlyCaretVisible="True" Margin="0,5" TabIndex="2300" Visibility="Hidden" Grid.ColumnSpan="2" />
+               <TextBox x:Name="TextLog" Text="" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Visible" IsReadOnly="True" IsReadOnlyCaretVisible="True" Margin="0,5" TabIndex="2300" Grid.ColumnSpan="2" FontFamily="Consolas"/>
+               <TextBox x:Name="TextLicense" Text="" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Visible" IsReadOnly="True" IsReadOnlyCaretVisible="True" Margin="0,5" TabIndex="2300" Visibility="Hidden" Grid.ColumnSpan="2" FontFamily="Consolas" />
             </Grid>
          </DockPanel>
       </TabItem>
