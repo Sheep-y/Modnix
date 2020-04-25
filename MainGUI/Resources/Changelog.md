@@ -3,11 +3,16 @@ Modnix Changelog
 # Version 2.3, ?
 
 * New: A mod's LoadIndex and LogLevel now take effect after manually changed in Modnix.conf.
-* Gui: "JetBrains.Annotations.dll" will now be deleted from game root and Mods folder. Come with PPML 0.1 but is unused.
-* Gui: Console log may now be read when the game is running. Thanks Silent on Discord for suggesting it is possible.
+* Fix: Mod manager now use game version when parsing mods. This aligns it with mod loader, when game version is known.
+* Fix: Config deletion (by saving a blank config) now property resets config memory.
+* Fix: "api_info" now return original method instead of internal wrapper method, when original has two parameters.
+* Gui: Press Ctrl+S in config editor to save.  Press Ins/Del on mod list to Add/Delete mods, and Home/End to move to top/bottom.
+* Gui: Mods with runtime warnings but no runtime errors are now highlighted in Blue instead of OrangeRed.
 * Gui: Console log is now deleted before game launch. It cannot be properly deleted by loader / mods.
+* Gui: Setup now deletes "JetBrains.Annotations.dll" from game root and Mods folder. Come with PPML 0.1 but is unused.
 * Mod: "assembly" and "assemblies" now support "ppml", "phoenixpointmodloader", and "phoenix point mod loader" param.
 * Mod: Getting "assemblies" of "modnix" or "loader" now includes ppml if it has been loaded.
+* All text files reading (logs, configs, documents etc.) now ignore write locks. Thanks Silent on Discord.
 
 # Version 2.2, 2020-04-17
 
