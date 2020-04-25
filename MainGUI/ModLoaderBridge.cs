@@ -179,8 +179,10 @@ namespace Sheepy.Modnix.MainGUI {
                return path != AppControl.Instance.ModFolder && Directory.EnumerateFileSystemEntries( path ).Count() > 1;
             case ModQuery.IS_CHILD :
                return Mod.Parent != null;
+            case ModQuery.ERROR :
+               return Mod.GetNotices().Any( e => e.Level == TraceEventType.Error || e.Level == TraceEventType.Critical );
             case ModQuery.WARNING :
-               return Mod.GetNotices().Any( e => e.Level == TraceEventType.Warning || e.Level == TraceEventType.Error || e.Level == TraceEventType.Critical );
+               return Mod.GetNotices().Any( e => e.Level == TraceEventType.Warning );
             case ModQuery.EDITING :
                return EditingConfig != null && ! EditingConfig.Trim().Equals( WpfHelper.Lf2Cr( Mod.GetConfigText()?.Trim() ) );
             case ModQuery.HAS_CONFIG :
@@ -405,7 +407,7 @@ namespace Sheepy.Modnix.MainGUI {
                case TraceEventType.Error    :
                   txt.Foreground = Brushes.Red; break;
                case TraceEventType.Warning  :
-                  txt.Foreground = Brushes.OrangeRed; break;
+                  txt.Foreground = Brushes.Blue; break;
                default :
                   txt.Foreground = Brushes.DarkBlue; break;
             }

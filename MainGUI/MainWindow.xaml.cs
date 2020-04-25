@@ -411,10 +411,12 @@ namespace Sheepy.Modnix.MainGUI {
          var mod = row.Item as ModInfo;
          if ( mod == null || ! mod.Is( ModQuery.ENABLED ) )
             row.Foreground = Brushes.Gray;
-         else if ( mod.Is( ModQuery.WARNING ) )
+         else if ( mod.Is( ModQuery.ERROR ) )
             row.Foreground = Brushes.OrangeRed;
+         else if ( mod.Is( ModQuery.WARNING ) )
+            row.Foreground = Brushes.Blue;
          else
-            row.Foreground = Brushes.Navy;
+            row.Foreground = Brushes.Black;
       }
 
       private void GridModList_PreviewKeyDown ( object sender, KeyEventArgs e ) {
