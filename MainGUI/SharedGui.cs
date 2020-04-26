@@ -30,7 +30,8 @@ namespace Sheepy.Modnix.MainGUI {
    internal enum ModDoc { NONE, SUMMARY, INFO, CONFIG, README, CHANGELOG, LICENSE }
 
    public enum AppAction { NONE,
-      SETUP, REVERT, LAUNCH_GAME, ADD_MOD, DEL_MOD, ENABLE_MOD, DISABLE_MOD,
+      CHECK_UPDATE, SETUP, REVERT, LAUNCH_GAME,
+      ADD_MOD, DEL_MOD, ENABLE_MOD, DISABLE_MOD,
       EDIT_CONFIG, SAVE_CONFIG, RESET_CONFIG, DELETE_CONFIG, SET_CONFIG_PROFILE }
 
    [Flags]
@@ -124,6 +125,7 @@ namespace Sheepy.Modnix.MainGUI {
       internal static void Prompt ( AppAction action, PromptFlag flags, Exception ex, Action OnRestart ) { try {
          string actionTxt;
          switch ( action ) {
+            case AppAction.CHECK_UPDATE : actionTxt = "Check Update"; break;
             case AppAction.SETUP : actionTxt = "Setup"; break;
             case AppAction.REVERT : actionTxt = "Revert"; break;
             case AppAction.ADD_MOD : actionTxt = "Add Mod"; break;

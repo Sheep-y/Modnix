@@ -30,7 +30,7 @@ namespace Sheepy.Modnix.MainGUI {
       private readonly AppControl App = AppControl.Instance;
       private JsonSerializerSettings JsonOptions;
 
-      internal Updater () {
+      public Updater () {
          ServicePointManager.Expect100Continue = true;
          ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
          JsonOptions = new JsonSerializerSettings() {

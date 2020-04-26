@@ -685,7 +685,15 @@ namespace Sheepy.Modnix.MainGUI {
          Log( "Checking update" );
          Update = "checking";
          RefreshUpdateStatus();
-         App.CheckUpdateTask();
+         App.CheckUpdateTask().ContinueWith( task => {
+            if ( task.IsFaulted ) {
+               if ( manual ) Prompt( AppAction.CHECK_UPDATE, PromptFlag.ERROR, task.Exception );
+               return;
+            }
+            SetInfo( GuiInfo.APP_UPDATE, task.Result );
+            if ( task.Result == null && manual )
+               MessageBox.Show( "No update.", "Check Update", MessageBoxButton.OK, MessageBoxImage.Information );
+         } );
       } catch ( Exception ex ) { Log( ex ); } }
 
       private void UpdateChecked () { try {

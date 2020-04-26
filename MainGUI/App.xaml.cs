@@ -545,18 +545,15 @@ namespace Sheepy.Modnix.MainGUI {
          GUI.Prompt( AppAction.REVERT, PromptFlag.ERROR, ex );
       } }
 
-      internal Task CheckUpdateTask () {
+      internal Task<GithubRelease> CheckUpdateTask () {
          Log( "Queuing update check" );
          return Task.Run( CheckUpdate );
       }
 
       private Updater _UpdateChecker;
-      private Updater UpdateChecker { get => Get( ref _UpdateChecker ); set => Set( ref _UpdateChecker, value ); }
+      private Updater UpdateChecker { get => Singleton( ref _UpdateChecker ); }
 
-      private void CheckUpdate () { try {
-         if ( UpdateChecker == null ) UpdateChecker = new Updater();
-         GUI.SetInfo( GuiInfo.APP_UPDATE, UpdateChecker.FindUpdate( Myself.Version ) );
-      } catch ( Exception ex ) { Log( ex ); } }
+      private GithubRelease CheckUpdate() => UpdateChecker.FindUpdate( Myself.Version );
       #endregion
 
       #region Mods
@@ -724,6 +721,14 @@ namespace Sheepy.Modnix.MainGUI {
 
       private static T Get < T > ( ref T field ) {
          lock ( SynGetSet ) return field;
+      }
+
+      private static T Singleton < T > ( ref T field ) where T : class, new() {
+         lock ( SynGetSet ) return field ?? ( field = new T() );
+      }
+
+      private static T Singleton < T > ( ref T field, Func<T> creator ) where T : class {
+         lock ( SynGetSet ) return field ?? ( field = creator() );
       }
 
       internal static void Explore ( string filename ) {
