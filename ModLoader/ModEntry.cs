@@ -201,19 +201,18 @@ namespace Sheepy.Modnix {
             throw new ArgumentException( $"Unknown specifier '{type}'." );
          if ( LowerAndIsEmpty( name, out string cmd ) || ! cmd.Contains( "." ) || cmd.Length < 3  )
             throw new ArgumentException( $"Invalid name for api_add, need a dot and at least 3 chars. Got '{cmd}'." );
-         MethodInfo info;
-         if ( ! ( param is Func<string,object,object> func3 ) ) {
-            if ( ! ( param is Func<object,object> func2 ) )
-               throw new ArgumentException( "api_add parameter must be Func< object, object > or Func< string, object, object >" );
-            func3 = ( _, augs ) => func2( augs );
-            info = func2.Method;
-         } else
-            info = func3.Method;
+         if ( param is Func<string,object,object> func3 ) ;
+         else if ( param is Delegate func )
+            func3 = WrapExtension( func );
+         else
+            func3 = null;
+         if ( func3 == null )
+            throw new ArgumentException( "api_add parameter must be compatible with Func<object, object> or Func<string,object, object>. Got " + param.ToString() );
          lock ( ApiExtension ) {
             if ( ApiExtension.ContainsKey( cmd ) )
                throw new InvalidOperationException( $"Cannot re-register api 'cmd'." );
             ApiExtension.Add( cmd, func3 );
-            ApiExtOwner.Add( cmd, new KeyValuePair<ModEntry, MethodInfo>( this, info ) );
+            ApiExtOwner.Add( cmd, new KeyValuePair<ModEntry, MethodInfo>( this, ( param as Delegate ).Method ) );
          }
          Info( "Registered api '{0}'", cmd );
          return true;
@@ -221,6 +220,19 @@ namespace Sheepy.Modnix {
          Warn( ex.Message );
          return false;
       } }
+
+      private Func<string, object, object> WrapExtension ( Delegate func ) {
+         var augs = func.GetMethodInfo().GetParameters();
+         if ( augs.Length == 1 ) {
+            if ( augs[0].ParameterType != typeof( object ) ) return null;
+            return ( _, b ) => func.DynamicInvoke( new object[] { b } );
+         } else if ( augs.Length == 2 ) {
+            if ( augs[0].ParameterType != typeof( object ) && augs[0].ParameterType != typeof( string ) ) return null;
+            if ( augs[1].ParameterType != typeof( object ) ) return null;
+            return ( a, b ) => func.DynamicInvoke( new object[] { a, b } );
+         }
+         return null;
+      }
 
       private bool RemoveApi ( object param ) { try {
          if ( LowerAndIsEmpty( param, out string cmd ) ) return false;

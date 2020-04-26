@@ -13,6 +13,7 @@ Modnix Changelog
 * Gui: Setup now deletes "JetBrains.Annotations.dll" from game root and Mods folder. Come with PPML 0.1 but is unused.
 * Mod: "assembly" and "assemblies" now support "ppml", "phoenixpointmodloader", and "phoenix point mod loader" param.
 * Mod: Getting "assemblies" of "modnix" or "loader" now includes ppml if it has been loaded.
+* Mod: "add_api" now accepts method of any return type, including void (null) and value types, not limited to objects.
 * All text files reading (logs, configs, documents etc.) now ignore write locks. Thanks Silent on Discord.
 
 # Version 2.2, 2020-04-17
