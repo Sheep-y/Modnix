@@ -199,19 +199,15 @@ namespace Sheepy.Modnix {
       private bool AddApi ( string name, object param ) { try {
          if ( IsMultiPart( name, out name, out string type ) )
             throw new ArgumentException( $"Unknown specifier '{type}'." );
-         if ( LowerAndIsEmpty( name, out string cmd ) || ! cmd.Contains( "." ) || cmd.Length < 3  )
+         if ( LowerAndIsEmpty( name, out string cmd ) || ! cmd.Contains( "." ) || cmd.Length < 3 )
             throw new ArgumentException( $"Invalid name for api_add, need a dot and at least 3 chars. Got '{cmd}'." );
-         if ( param is Func<string,object,object> func3 ) ;
-         else if ( param is Delegate func )
-            func3 = WrapExtension( func );
-         else
-            func3 = null;
-         if ( func3 == null )
+         var func = param is Delegate dele ? dele as Func<string,object,object> ?? WrapExtension( dele ) : null;
+         if ( func == null )
             throw new ArgumentException( "api_add parameter must be compatible with Func<object, object> or Func<string,object, object>. Got " + param.ToString() );
          lock ( ApiExtension ) {
             if ( ApiExtension.ContainsKey( cmd ) )
                throw new InvalidOperationException( $"Cannot re-register api 'cmd'." );
-            ApiExtension.Add( cmd, func3 );
+            ApiExtension.Add( cmd, func );
             ApiExtOwner.Add( cmd, new KeyValuePair<ModEntry, MethodInfo>( this, ( param as Delegate ).Method ) );
          }
          Info( "Registered api '{0}'", cmd );
