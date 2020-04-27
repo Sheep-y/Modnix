@@ -6,10 +6,10 @@
         xmlns:local="clr-namespace:Sheepy.Modnix.MainGUI"
         mc:Ignorable="d"
         WindowStartupLocation="CenterScreen"
-        Title="Modnix" Height="550" Width="820" Activated="Window_Activated" Deactivated="Window_Deactivated" Closed="Window_Closed" Closing="Window_Closing">
+        Title="Modnix" Height="550" Width="820" Activated="Window_Activated" Deactivated="Window_Deactivated" Closed="Window_Closed" Closing="Window_Closing" SourceInitialized="Window_SourceInitialized">
    <TabControl>
       <TabItem x:Name="TabMods" Header="Mods">
-         <Grid Margin="10">
+         <Grid x:Name="gridMods" Margin="10">
             <Grid.ColumnDefinitions>
                <ColumnDefinition Width="4*"/>
                <ColumnDefinition Width="5" MinWidth="5" MaxWidth="5"/>
@@ -243,7 +243,7 @@
                         </TabItem.Header>
                      </TabItem>
                   </TabControl>
-                  <Button x:Name="ButtonModOpenModDir" Grid.Row="1" Padding="5" IsEnabled="False" Click="ButtonModOpenModDir_Click" TabIndex="600">
+                  <Button x:Name="ButtonModOpenModDir" Grid.Row="1" Padding="5" IsEnabled="False" Click="ButtonModOpenModDir_Click" TabIndex="600" Grid.IsSharedSizeScope="True">
                      <StackPanel Orientation="Horizontal">
                         <Image Source="Resources/img/folder.png" Width="16" Margin="0,0,5,0"/>
                         <AccessText Text="Explore"/>

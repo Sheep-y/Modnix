@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 namespace Sheepy.Modnix {
 
    public class LoaderSettings {
-      public int SettingVersion = 20200403;
+      public int SettingVersion = 20200427;
       public SourceLevels LogLevel = SourceLevels.Information;
       // For mod manager
       public bool CheckUpdate = true;
@@ -23,6 +23,11 @@ namespace Sheepy.Modnix {
       public string GamePath = null;
       public bool MinifyLoaderPanel = false;
       public bool MinifyGamePanel = true;
+      public bool MaximiseWindow = false;
+      public double WindowLeft = -1;
+      public double WindowTop = -1;
+      public double WindowWidth = -1;
+      public double WindowHeight = -1;
       // For mod loader, set by manager
       public Dictionary< string, ModSettings > Mods;
    }

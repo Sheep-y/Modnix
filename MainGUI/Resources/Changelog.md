@@ -11,7 +11,8 @@ Modnix Changelog
 * Gui: Console log is now deleted before game launch. It cannot be properly deleted by loader / mods.
 * Gui: Log panels and config editor now use monospace font (Consolas). Thanks Tahvohck on GitHub.
 * Gui: Setup now deletes "JetBrains.Annotations.dll" from game root and Mods folder. Come with PPML 0.1 but is unused.
-* Gui: Manually check update now prompt a message on no updates or error.
+* Gui: Manually check update now prompt a message on no updates or error. Thanks Silent on NexusMods.
+* Gui: Windows position is now remembered. Thanks Silent on Discord.
 * Mod: "assembly" and "assemblies" now support "ppml", "phoenixpointmodloader", and "phoenix point mod loader" param.
 * Mod: Getting "assemblies" of "modnix" or "loader" now includes ppml if it has been loaded.
 * Mod: "add_api" now accepts method of any return type, including void (null) and value types, not limited to objects.

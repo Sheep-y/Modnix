@@ -34,6 +34,17 @@ namespace Sheepy.Modnix.MainGUI {
          RefreshGUI();
       } catch ( Exception ex ) { Console.WriteLine( ex ); } }
 
+      private void Window_SourceInitialized ( object sender, EventArgs e ) {
+         if ( App.ParamSkipStartupCheck ) return;
+         SetCollapseState();
+         var settings =  App.Settings;
+         if ( settings.WindowLeft >= 0 ) Left = settings.WindowLeft;
+         if ( settings.WindowTop >= 0  ) Top = settings.WindowTop;
+         if ( settings.WindowWidth >= 0 ) Width = settings.WindowWidth;
+         if ( settings.WindowHeight >= 0 ) Height = settings.WindowHeight;
+         if ( settings.MaximiseWindow ) WindowState = WindowState.Maximized;
+      }
+
       private void Window_Closing ( object sender, System.ComponentModel.CancelEventArgs evt ) {
          if ( AbortByCheckSave() ) evt.Cancel = true;
       }
@@ -41,6 +52,20 @@ namespace Sheepy.Modnix.MainGUI {
       private void Window_Closed ( object sender, EventArgs e ) {
          GameStatusTimer.Change( Timeout.Infinite, Timeout.Infinite );
          GameStatusTimer.Dispose();
+         var settings =  App.Settings;
+         if ( WindowState == WindowState.Maximized ) {
+            settings.WindowLeft = RestoreBounds.Left;
+            settings.WindowTop = RestoreBounds.Top;
+            settings.WindowWidth = RestoreBounds.Width;
+            settings.WindowHeight = RestoreBounds.Height;
+            settings.MaximiseWindow = true;
+         } else {
+            settings.WindowLeft = Left;
+            settings.WindowTop = Top;
+            settings.WindowWidth = Width;
+            settings.WindowHeight = Height;
+            settings.MaximiseWindow = false;
+         }
          App.SaveSettings();
       }
 
@@ -101,22 +126,26 @@ namespace Sheepy.Modnix.MainGUI {
          CheckLogRefresh();
       }
 
-      private void RefreshAppButtons () { try {
+      private void SetCollapseState () {
          bool minApp = App.Settings.MinifyLoaderPanel, minGame = App.Settings.MinifyGamePanel;
-         Log( "Refreshing app buttons" );
-         ButtonSetup.IsEnabled = ! SharedGui.IsAppWorking && SharedGui.AppState != null;
          ButtonSetup.Visibility = ButtonUserGuide.Visibility = ButtonWiki.Visibility =
             minApp ? Visibility.Collapsed : Visibility.Visible;
          ButtonMinifyLoader.Content = minApp ? "＋" : "—";
 
-         ButtonRunOnline.IsEnabled  = ButtonRunOffline.IsEnabled  = SharedGui.CanModify && SharedGui.IsGameFound;
-         ButtonRunOnline.Foreground = ButtonRunOffline.Foreground = 
-            ButtonRunOnline.IsEnabled && SharedGui.AppState != null && ! SharedGui.IsInjected ? Brushes.Red : Brushes.Black;
          ButtonWebsite.Visibility = ButtonForum.Visibility = ButtonReddit.Visibility =
             ButtonTwitter.Visibility = ButtonCanny.Visibility = ButtonDiscord.Visibility =
             minGame ? Visibility.Collapsed : Visibility.Visible;
          GameButtonGap1.Height = GameButtonGap2.Height = new GridLength( minGame ? 0 : 5, GridUnitType.Pixel );
          ButtonMinifyGame.Content = minGame ? "＋" : "—";
+      }
+
+      private void RefreshAppButtons () { try {
+         Log( "Refreshing app buttons" );
+         ButtonSetup.IsEnabled = ! SharedGui.IsAppWorking && SharedGui.AppState != null;
+         ButtonRunOnline.IsEnabled  = ButtonRunOffline.IsEnabled  = SharedGui.CanModify && SharedGui.IsGameFound;
+         ButtonRunOnline.Foreground = ButtonRunOffline.Foreground = 
+            ButtonRunOnline.IsEnabled && SharedGui.AppState != null && ! SharedGui.IsInjected ? Brushes.Red : Brushes.Black;
+         SetCollapseState();
 
          RefreshConfButtions();
 
