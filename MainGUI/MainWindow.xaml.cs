@@ -38,6 +38,8 @@ namespace Sheepy.Modnix.MainGUI {
          if ( App.ParamSkipStartupCheck ) return;
          SetCollapseState();
          var settings =  App.Settings;
+         if ( settings.ModInfoWeight > 0 ) gridMods.ColumnDefinitions[0].Width = new GridLength( settings.ModInfoWeight, GridUnitType.Star );
+         if ( settings.ModListWeight > 0 ) gridMods.ColumnDefinitions[2].Width = new GridLength( settings.ModListWeight, GridUnitType.Star );
          if ( settings.WindowLeft >= 0 ) Left = settings.WindowLeft;
          if ( settings.WindowTop >= 0  ) Top = settings.WindowTop;
          if ( settings.WindowWidth >= 0 ) Width = settings.WindowWidth;
@@ -53,6 +55,8 @@ namespace Sheepy.Modnix.MainGUI {
          GameStatusTimer.Change( Timeout.Infinite, Timeout.Infinite );
          GameStatusTimer.Dispose();
          var settings =  App.Settings;
+         settings.ModInfoWeight = gridMods.ColumnDefinitions[0].Width.Value;
+         settings.ModListWeight = gridMods.ColumnDefinitions[2].Width.Value;
          if ( WindowState == WindowState.Maximized ) {
             settings.WindowLeft = RestoreBounds.Left;
             settings.WindowTop = RestoreBounds.Top;
