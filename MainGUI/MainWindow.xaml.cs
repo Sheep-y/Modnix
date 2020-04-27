@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -347,6 +348,7 @@ namespace Sheepy.Modnix.MainGUI {
       private IEnumerable<ModInfo> ListedMods => GridModList.ItemsSource.OfType<ModInfo>();
       private IEnumerable<ModInfo> SelectedMods => GridModList.SelectedItems.OfType<ModInfo>();
       private HashSet<string> SelectMods;
+      private SortDescription? LastSort;
       private TabItem SelectTab;
 
       private void SetModList ( IEnumerable<ModInfo> list ) {
@@ -361,12 +363,19 @@ namespace Sheepy.Modnix.MainGUI {
             SelectMods = new HashSet<string>( SelectedMods.Select( e => e.Path ) );
             SelectTab = TabSetModInfo.SelectedItem as TabItem;
          }
+         if ( GridModList.ItemsSource != null )
+            LastSort = CollectionViewSource.GetDefaultView( GridModList.ItemsSource )?.SortDescriptions.FirstOrDefault();
          if ( GridModList.ItemsSource != ModList ) {
             Log( "New mod list" );
             GridModList.ItemsSource = ModList;
          }
          GridModList.Items?.Refresh();
          GridModList.UpdateLayout();
+         if ( LastSort.HasValue && ModList != null ) {
+            var sorts = CollectionViewSource.GetDefaultView( ModList ).SortDescriptions;
+            sorts.Clear();
+            sorts.Add( LastSort.Value );
+         }
          if ( ModList != null ) {
             if ( SelectMods != null && SelectMods.Count > 0 ) {
                foreach ( var mod in ModList.OfType<ModInfo>() ) {

@@ -7,6 +7,7 @@ Modnix Changelog
 * Fix: Mod config deletion (by saving a blank config in mod manager) now property resets config memory.
 * Fix: "api_info" now return original method instead of internal wrapper method, when original has two parameters.
 * Fix: "add_api" now accepts method of any return type, including void (null) and value types, not limited to objects.
+* Fix: Mod list now preserve sort over refresh, instead of always reverting to name ascending.
 * Gui: Press Ctrl+S in config editor to save.  Press Ins/Del on mod list to Add/Delete mods, and Home/End to move to top/bottom.
 * Gui: Mods with runtime warnings but no runtime errors are now highlighted in Blue instead of OrangeRed.
 * Gui: Console log is now deleted before game launch. It cannot be properly deleted by loader / mods.
