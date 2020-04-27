@@ -1,10 +1,10 @@
 Modnix Changelog
 
-# Version 2.3, ?
+# Version 2.3, Soon
 
 * New: A mod's LoadIndex and LogLevel now take effect after manually changed in Modnix.conf.
 * Fix: Mod manager now use game version when parsing mods. This aligns it with mod loader, when game version is known.
-* Fix: Config deletion (by saving a blank config) now property resets config memory.
+* Fix: Config deletion (by saving a blank config in mod manager) now property resets config memory.
 * Fix: "api_info" now return original method instead of internal wrapper method, when original has two parameters.
 * Gui: Press Ctrl+S in config editor to save.  Press Ins/Del on mod list to Add/Delete mods, and Home/End to move to top/bottom.
 * Gui: Mods with runtime warnings but no runtime errors are now highlighted in Blue instead of OrangeRed.
