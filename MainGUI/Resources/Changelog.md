@@ -16,6 +16,7 @@ Modnix Changelog
 * Gui: Setup now deletes "JetBrains.Annotations.dll" from game root and Mods folder. Come with PPML 0.1 but is unused.
 * Gui: Manually check update now prompt a message on no updates or error. Thanks Silent on NexusMods.
 * Gui: Windows and splitter position now remembered. Restoration can be skipped by /s switch. Requested by Silent on Discord.
+* Gui: New config to control game launch parameters. Requested by Tahvohck on Discord.
 * Mod: "assembly" and "assemblies" now support "ppml", "phoenixpointmodloader", and "phoenix point mod loader" param.
 * Mod: Getting "assemblies" of "modnix" or "loader" now includes ppml if and only if the embedded ppml is loaded.
 * All text files reading (logs, configs, documents etc.) now ignore write locks. Thanks Silent on Discord.

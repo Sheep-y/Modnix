@@ -382,7 +382,7 @@ namespace Sheepy.Modnix.MainGUI {
          if ( type == "online" ) {
             if ( CurrentGame.GameType == "epic" ) {
                Log( "Launching through epic game launcher" );
-               Process.Start( "com.epicgames.launcher://apps/Iris?action=launch" );
+               Process.Start( Settings.EgsCommand ?? "com.epicgames.launcher://apps/Iris?action=launch", Settings.EgsParameter );
                return;
             }
          } else {
@@ -392,6 +392,7 @@ namespace Sheepy.Modnix.MainGUI {
                p.StartInfo.UseShellExecute = false;
                p.StartInfo.FileName = exe;
                p.StartInfo.WorkingDirectory = CurrentGame.GameDir;
+               p.StartInfo.Arguments = Settings.OfflineParameter;
                p.Start();
             }
             return;

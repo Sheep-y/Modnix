@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 namespace Sheepy.Modnix {
 
    public class LoaderSettings {
-      public int SettingVersion = 20200427;
+      public int SettingVersion = 20200428;
       public SourceLevels LogLevel = SourceLevels.Information;
       // For mod manager
       public bool LogMonitor = false;
@@ -31,6 +31,9 @@ namespace Sheepy.Modnix {
       public double WindowTop = -1;
       public double WindowWidth = -1;
       public double WindowHeight = -1;
+      public string OfflineParameter = "";
+      public string EgsCommand = "com.epicgames.launcher://apps/Iris?action=launch";
+      public string EgsParameter = "";
       // For mod loader, set by manager
       public Dictionary< string, ModSettings > Mods;
    }
