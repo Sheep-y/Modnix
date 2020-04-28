@@ -39,13 +39,20 @@ namespace Sheepy.Modnix.MainGUI {
          if ( App.ParamSkipStartupCheck ) return;
          try {
             SetCollapseState();
-            var settings =  App.Settings;
-            if ( settings.ModInfoWeight > 0 ) gridMods.ColumnDefinitions[0].Width = new GridLength( settings.ModInfoWeight, GridUnitType.Star );
-            if ( settings.ModListWeight > 0 ) gridMods.ColumnDefinitions[2].Width = new GridLength( settings.ModListWeight, GridUnitType.Star );
-            if ( settings.WindowLeft >= 0 ) Left = settings.WindowLeft;
-            if ( settings.WindowTop >= 0  ) Top = settings.WindowTop;
-            if ( settings.WindowWidth >= 0 ) Width = settings.WindowWidth;
-            if ( settings.WindowHeight >= 0 ) Height = settings.WindowHeight;
+            var settings = App.Settings;
+            var area = new System.Drawing.Rectangle( (int) settings.WindowLeft, (int) settings.WindowTop, (int) settings.WindowWidth, (int) settings.WindowHeight );
+            foreach ( var screen in System.Windows.Forms.Screen.AllScreens ) {
+               if ( screen.WorkingArea.Contains( area ) ) {
+                  Log( "Restoring window position on " + screen.DeviceName );
+                  if ( settings.ModInfoWeight > 0 ) gridMods.ColumnDefinitions[0].Width = new GridLength( settings.ModInfoWeight, GridUnitType.Star );
+                  if ( settings.ModListWeight > 0 ) gridMods.ColumnDefinitions[2].Width = new GridLength( settings.ModListWeight, GridUnitType.Star );
+                  if ( settings.WindowLeft >= 0 ) Left = settings.WindowLeft;
+                  if ( settings.WindowTop >= 0  ) Top = settings.WindowTop;
+                  if ( settings.WindowWidth >= 0 ) Width = settings.WindowWidth;
+                  if ( settings.WindowHeight >= 0 ) Height = settings.WindowHeight;
+                  break;
+               }
+            }
             if ( settings.MaximiseWindow ) WindowState = WindowState.Maximized;
          } catch ( Exception ex ) { Log( ex ); }
       }
@@ -374,7 +381,7 @@ namespace Sheepy.Modnix.MainGUI {
          }
          GridModList.Items?.Refresh();
          GridModList.UpdateLayout();
-         if ( LastSort.HasValue && ModList != null ) {
+         if ( LastSort.HasValue && LastSort.Value.PropertyName != null && ModList != null ) {
             var sorts = CollectionViewSource.GetDefaultView( ModList ).SortDescriptions;
             sorts.Clear();
             sorts.Add( LastSort.Value );
