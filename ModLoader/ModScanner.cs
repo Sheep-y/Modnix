@@ -104,7 +104,7 @@ namespace Sheepy.Modnix {
             var default_id = Path.GetFileNameWithoutExtension( file );
             if ( string.IsNullOrWhiteSpace( default_id ) || default_id.Equals( "mod_info", StringComparison.OrdinalIgnoreCase ) )
                default_id = container;
-            meta = ParseInfoJs( File.ReadAllText( file, Encoding.UTF8 ).Trim(), default_id );
+            meta = ParseInfoJs( Tools.ReadFile( file ).Trim(), default_id );
             if ( meta == null ) return null;
             if ( ! meta.HasContent )
                meta.Dlls = Directory.EnumerateFiles( Path.GetDirectoryName( file ), "*.dll" )
@@ -122,10 +122,7 @@ namespace Sheepy.Modnix {
             return null;
          }
          Log.Info( "Found mod {0} at {1} ({2} dlls)", meta.Id, file, meta.Dlls?.Length ?? 0 );
-         var result = new ModEntry( file, meta );
-         if ( result.LogLevel < ModLoader.Settings.LogLevel )
-            result.LogLevel = ModLoader.Settings.LogLevel;
-         return result;
+         return new ModEntry( file, meta );
       } catch ( Exception ex ) { Log.Warn( ex ); return null; } }
 
       private static ModMeta ParseInfoJs ( string js, string default_id = null ) { try {
@@ -271,7 +268,7 @@ namespace Sheepy.Modnix {
       }
 
       private static ModEntry FindLatestMod ( ModEntry[] clones ) {
-         ModEntry best = clones[0];
+         var best = clones[0];
          foreach ( var mod in clones ) {
             if ( mod == best ) continue;
             if ( CompareModVersion( mod, best ) == 1 )
@@ -314,21 +311,28 @@ namespace Sheepy.Modnix {
          EnabledMods.Clear();
          EnabledMods.AddRange( AllMods.Where( e => ! e.Disabled ) );
          Log.Info( "Resolving {0} mods", EnabledMods.Count );
+         ApplyUserOverride();
          EnabledMods.Sort( CompareModIndex );
-         RemoveDisabledMods();
          RemoveDuplicateMods();
          RemoveUnfulfilledMods();
          RemoveConflictMods();
       }
 
-      private static void RemoveDisabledMods () {
+      private static void ApplyUserOverride () {
          var settings = ModLoader.Settings.Mods;
          if ( settings == null ) return;
-         Log.Verbo( "Check manually disabled mods" );
+         Log.Verbo( "Check manual mod settings" );
          foreach ( var mod in EnabledMods.ToArray() ) {
             if ( ! settings.TryGetValue( mod.Key, out ModSettings modSetting ) ) continue;
-            if ( ! modSetting.Disabled ) continue;
-            DisableAndRemoveMod( mod, "manual", "Mod {0} is manually disabled.", mod.Key );
+            if ( modSetting.Disabled )
+               DisableAndRemoveMod( mod, "manual", "Mod {0} is manually disabled.", mod.Key );
+            else if ( modSetting.LoadIndex.HasValue ) {
+               Log.Verbo( "Mod {0} LoadIndex manually set to {1}", mod.Key, modSetting.LoadIndex);
+               lock ( mod.Metadata ) mod.Metadata.LoadIndex = modSetting.LoadIndex.Value;
+            } else if ( modSetting.LogLevel.HasValue ) {
+               Log.Verbo( "Mod {0} LogLevel set to {1}", mod.Key, modSetting.LogLevel );
+               lock ( mod ) mod.LogLevel = modSetting.LogLevel.Value;
+            }
          }
       }
 

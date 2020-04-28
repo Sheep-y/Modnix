@@ -1,0 +1,4 @@
+﻿[*.cs]
+
+# CC0120: Your Switch maybe include default clause
+dotnet_diagnostic.CC0120.severity = suggestion

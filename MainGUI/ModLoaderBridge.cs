@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json;
-using Sheepy.Logging;
+﻿using Sheepy.Logging;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -112,7 +111,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       private static ModEntry Mod ( ModInfo mod ) => ( mod as GridModItem )?.Mod;
 
-      internal void AddLoaderLogNotice ( ModInfo mod, string reason ) => Mod( mod ).AddNotice( TraceEventType.Warning, reason );
+      internal static void AddLoaderLogNotice ( ModInfo mod, string reason ) => Mod( mod ).AddNotice( TraceEventType.Warning, reason );
       
       internal void DeleteMod ( ModInfo mod ) {
          var path = Path.GetDirectoryName( mod.Path );
@@ -180,8 +179,10 @@ namespace Sheepy.Modnix.MainGUI {
                return path != AppControl.Instance.ModFolder && Directory.EnumerateFileSystemEntries( path ).Count() > 1;
             case ModQuery.IS_CHILD :
                return Mod.Parent != null;
+            case ModQuery.ERROR :
+               return Mod.GetNotices().Any( e => e.Level == TraceEventType.Error || e.Level == TraceEventType.Critical );
             case ModQuery.WARNING :
-               return Mod.GetNotices().Any( e => e.Level == TraceEventType.Warning || e.Level == TraceEventType.Error || e.Level == TraceEventType.Critical );
+               return Mod.GetNotices().Any( e => e.Level == TraceEventType.Warning );
             case ModQuery.EDITING :
                return EditingConfig != null && ! EditingConfig.Trim().Equals( WpfHelper.Lf2Cr( Mod.GetConfigText()?.Trim() ) );
             case ModQuery.HAS_CONFIG :
@@ -215,7 +216,7 @@ namespace Sheepy.Modnix.MainGUI {
                lock ( this ) EditingConfig = null;
                return;
             case AppAction.DELETE_CONFIG :
-               DeleteConfig();
+               Mod.DeleteConfig();
                return;
             case AppAction.SET_CONFIG_PROFILE :
                lock ( this ) EditingConfig = WpfHelper.Lf2Cr( Mod.GetDefaultConfigText() ?? GetConfigFromSandbox() );
@@ -232,7 +233,7 @@ namespace Sheepy.Modnix.MainGUI {
          if ( Settings?.Disabled != true ) return;
          Log( $"Enabling mod {Mod.Metadata.Id}" );
          Settings.Disabled = false;
-         if ( Settings.IsDefaultSettings ) {
+         if ( Settings.GetIsDefaultSettings() ) {
             var settings = AppControl.Instance.Settings;
             settings.Mods.Remove( Mod.Key );
             if ( settings.Mods.Count == 0 )
@@ -258,18 +259,10 @@ namespace Sheepy.Modnix.MainGUI {
          string conf;
          lock ( this ) conf = EditingConfig?.Trim();
          if ( string.IsNullOrEmpty( conf ) )
-            DeleteConfig();
+            Mod.DeleteConfig();
          else
             Mod.WriteConfigText( conf.Replace( '\r', '\n' ) );
          lock ( this ) EditingConfig = null;
-      }
-
-      private void DeleteConfig () {
-         var file = Mod.CheckConfigFile();
-         if ( file != null ) {
-            Log( $"Deleting {file}" );
-            File.Delete( file );
-         }
       }
 
       private string GetConfigFromSandbox () {
@@ -337,7 +330,7 @@ namespace Sheepy.Modnix.MainGUI {
          string text = null;
          if ( Docs.TryGetValue( type, out string file ) && ! "embedded".Equals( file, StringComparison.Ordinal ) ) {
             Log( $"Reading {type} {file}" );
-            text = File.ReadAllText( file );
+            text = Utils.ReadFile( file );
          } else {
             Log( $"Reading embedded {type} from {Path}" );
             var buf = new StringBuilder();
@@ -414,7 +407,7 @@ namespace Sheepy.Modnix.MainGUI {
                case TraceEventType.Error    :
                   txt.Foreground = Brushes.Red; break;
                case TraceEventType.Warning  :
-                  txt.Foreground = Brushes.OrangeRed; break;
+                  txt.Foreground = Brushes.Blue; break;
                default :
                   txt.Foreground = Brushes.DarkBlue; break;
             }

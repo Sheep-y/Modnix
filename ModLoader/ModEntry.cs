@@ -14,15 +14,26 @@ using System.Threading.Tasks;
 namespace Sheepy.Modnix {
 
    public class LoaderSettings {
-      public int SettingVersion = 20200403;
+      public int SettingVersion = 20200428;
       public SourceLevels LogLevel = SourceLevels.Information;
       // For mod manager
+      public bool LogMonitor = false;
       public bool CheckUpdate = true;
       public DateTime? LastCheckUpdate = null;
       public string UpdateChannel = "release";
       public string GamePath = null;
+      public double ModInfoWeight = -1;
+      public double ModListWeight = -1;
       public bool MinifyLoaderPanel = false;
       public bool MinifyGamePanel = true;
+      public bool MaximiseWindow = false;
+      public double WindowLeft = -1;
+      public double WindowTop = -1;
+      public double WindowWidth = -1;
+      public double WindowHeight = -1;
+      public string OfflineParameter = "";
+      public string EgsCommand = "com.epicgames.launcher://apps/Iris?action=launch";
+      public string EgsParameter = "";
       // For mod loader, set by manager
       public Dictionary< string, ModSettings > Mods;
    }
@@ -31,7 +42,7 @@ namespace Sheepy.Modnix {
       public bool Disabled;
       public SourceLevels? LogLevel;
       public long? LoadIndex;
-      public bool IsDefaultSettings => ! Disabled && LogLevel == null && LoadIndex == null;
+      public bool GetIsDefaultSettings () => ! Disabled && ! LogLevel.HasValue && ! LoadIndex.HasValue;
    }
 
    public class ModEntry : ModSettings {
@@ -55,7 +66,7 @@ namespace Sheepy.Modnix {
       #region API
       private static readonly Dictionary<string,MethodInfo> NativeApi = new Dictionary<string, MethodInfo>();
       private static readonly Dictionary<string,Func<string,object,object>> ApiExtension = new Dictionary<string, Func<string, object, object>>();
-      private static readonly Dictionary<string,ModEntry> ApiExtOwner = new Dictionary<string, ModEntry>();
+      private static readonly Dictionary<string,KeyValuePair<ModEntry,MethodInfo>> ApiExtOwner = new Dictionary<string, KeyValuePair<ModEntry,MethodInfo>>();
 
       private static void AddNativeApi ( string command, string method ) {
          NativeApi.Add( command, typeof( ModEntry ).GetMethod( method, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static ) );
@@ -107,7 +118,7 @@ namespace Sheepy.Modnix {
                   break;
             }
          }
-         Warn( "Unknown api action '{0}'", action );
+         Warn( "Unknown api action '{0}'", cmd );
          return null;
       } catch ( Exception ex ) { Error( ex ); return null; } }
 
@@ -130,17 +141,26 @@ namespace Sheepy.Modnix {
 
       private static Assembly GameAssembly;
 
-      private Assembly GetAssembly ( object target ) => GetAssemblies( target )?.FirstOrDefault();
+      private Assembly GetAssembly ( object target ) => GetAssemblies( target ).FirstOrDefault();
 
       private IEnumerable < Assembly > GetAssemblies ( object target ) {
          if ( LowerAndIsEmpty( target, out string id ) ) return ModAssemblies ?? Enumerable.Empty<Assembly>();
          switch ( id ) {
             case "loader" : case "modnix" :
-               return new Assembly[]{ Assembly.GetExecutingAssembly() };
+               var ppml = ModLoader.PpmlAssembly;
+               var loaderList = new Assembly[ ppml == null ? 1 : 2 ];
+               loaderList[0] = Assembly.GetExecutingAssembly();
+               if ( ppml != null ) loaderList[1] = ppml;
+               return loaderList;
+
+            case "phoenixpointmodloader" : case "phoenix point mod loader" : case "ppml" :
+               return new Assembly[]{ ModLoader.PpmlAssembly };
+
             case "phoenixpoint" : case "phoenix point" : case "game" :
                if ( GameAssembly == null ) // No need to lock. No conflict.
                   GameAssembly = Array.Find( AppDomain.CurrentDomain.GetAssemblies(), e => e.FullName.StartsWith( "Assembly-CSharp," ) );
                return new Assembly[]{ GameAssembly };
+
             default:
                return ModScanner.GetModById( id )?.ModAssemblies ?? Enumerable.Empty<Assembly>();
          }
@@ -190,19 +210,16 @@ namespace Sheepy.Modnix {
       private bool AddApi ( string name, object param ) { try {
          if ( IsMultiPart( name, out name, out string type ) )
             throw new ArgumentException( $"Unknown specifier '{type}'." );
-         if ( LowerAndIsEmpty( name, out string cmd ) || ! cmd.Contains( "." ) || cmd.Length < 3  )
+         if ( LowerAndIsEmpty( name, out string cmd ) || ! cmd.Contains( "." ) || cmd.Length < 3 )
             throw new ArgumentException( $"Invalid name for api_add, need a dot and at least 3 chars. Got '{cmd}'." );
-         if ( ! ( param is Func<string,object,object> func3 ) ) {
-            if ( param is Func<object,object> func2 )
-               func3 = ( _, augs ) => func2( augs );
-            else
-               throw new ArgumentException( "api_add parameter must be Func< object, object > or Func< string, object, object >" );
-         }
+         var func = param is Delegate dele ? dele as Func<string,object,object> ?? WrapExtension( dele ) : null;
+         if ( func == null )
+            throw new ArgumentException( "api_add parameter must be compatible with Func<object, object> or Func<string,object, object>. Got " + param.ToString() );
          lock ( ApiExtension ) {
             if ( ApiExtension.ContainsKey( cmd ) )
                throw new InvalidOperationException( $"Cannot re-register api 'cmd'." );
-            ApiExtension.Add( cmd, func3 );
-            ApiExtOwner.Add( cmd, this );
+            ApiExtension.Add( cmd, func );
+            ApiExtOwner.Add( cmd, new KeyValuePair<ModEntry, MethodInfo>( this, ( param as Delegate ).Method ) );
          }
          Info( "Registered api '{0}'", cmd );
          return true;
@@ -211,14 +228,27 @@ namespace Sheepy.Modnix {
          return false;
       } }
 
+      private Func<string, object, object> WrapExtension ( Delegate func ) {
+         var augs = func.GetMethodInfo().GetParameters();
+         if ( augs.Length == 1 ) {
+            if ( augs[0].ParameterType != typeof( object ) ) return null;
+            return ( _, b ) => func.DynamicInvoke( new object[] { b } );
+         } else if ( augs.Length == 2 ) {
+            if ( augs[0].ParameterType != typeof( object ) && augs[0].ParameterType != typeof( string ) ) return null;
+            if ( augs[1].ParameterType != typeof( object ) ) return null;
+            return ( a, b ) => func.DynamicInvoke( new object[] { a, b } );
+         }
+         return null;
+      }
+
       private bool RemoveApi ( object param ) { try {
          if ( LowerAndIsEmpty( param, out string cmd ) ) return false;
          if ( IsMultiPart( cmd, out cmd, out string type ) )
             throw new ArgumentException( $"Unknown specifier '{type}'." );
-         ModEntry owner;
-         lock ( ApiExtension ) ApiExtOwner.TryGetValue( cmd, out owner );
-         if ( owner != this )
-            throw new UnauthorizedAccessException( $"api_remove '{cmd}' by not owner" );
+         KeyValuePair<ModEntry, MethodInfo> info;
+         lock ( ApiExtension ) ApiExtOwner.TryGetValue( cmd, out info );
+         if ( info.Key != this )
+            throw new UnauthorizedAccessException( $"Non-owner cannot api_remove '{cmd}'. Owner is '{info.Key?.Metadata?.Id}'." );
          lock ( ApiExtension ) {
             ApiExtension.Remove( cmd );
             ApiExtOwner.Remove( cmd );
@@ -232,9 +262,9 @@ namespace Sheepy.Modnix {
 
       private MethodInfo InfoApi ( object param ) {
          if ( param == null ) return null;
-         string name = param?.ToString().Trim().ToLowerInvariant();
+         var name = param?.ToString().Trim().ToLowerInvariant();
          if ( NativeApi.TryGetValue( name, out MethodInfo info ) ) return info;
-         if ( ApiExtension.TryGetValue( name, out Func<string,object,object> func ) ) return func?.Method;
+         if ( ApiExtOwner.TryGetValue( name, out KeyValuePair<ModEntry, MethodInfo> owner ) ) return owner.Value;
          return null;
       }
 
@@ -264,11 +294,10 @@ namespace Sheepy.Modnix {
          if ( param is Type t ) txt = t.Name;
          else if ( param is string s ) txt = s;
          else return null;
-         CreateLogger();
          switch ( txt ) {
-            case "TraceEventType" : return (Action<TraceEventType,object,object[]>) Logger.Log;
-            case "SourceLevels"   : return (Action<SourceLevels,object,object[]>) Logger.Log;
-            case "TraceLevel"     : return (Action<TraceLevel,object,object[]>) Logger.Log;
+            case "TraceEventType" : return (Action<TraceEventType,object,object[]>) CreateLogger().Log;
+            case "SourceLevels"   : return (Action<SourceLevels,object,object[]>) CreateLogger().Log;
+            case "TraceLevel"     : return (Action<TraceLevel,object,object[]>) CreateLogger().Log;
          }
          return null;
       }
@@ -387,7 +416,7 @@ namespace Sheepy.Modnix {
          } } );
       }
 
-      private bool DeleteConfig () {
+      public bool DeleteConfig () {
          var confFile = CheckConfigFile();
          if ( confFile == null ) return true;
          File.Delete( confFile );
@@ -444,7 +473,7 @@ namespace Sheepy.Modnix {
             if ( meta.ConfigText != null )
                return meta.ConfigText;
          if ( confFile == null ) confFile = CheckConfigFile();
-         return meta.ConfigText = confFile != null ? File.ReadAllText( confFile, Encoding.UTF8 ) : GetDefaultConfigText();
+         return meta.ConfigText = confFile != null ? Tools.ReadFile( confFile ) : GetDefaultConfigText();
       } catch ( Exception ex ) { Error( ex ); return null; } }
 
       public string CacheDefaultConfigText ( string config ) {

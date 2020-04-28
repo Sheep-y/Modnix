@@ -75,6 +75,20 @@ namespace Sheepy.Logging.Tests {
          Assert.IsFalse( File.Exists( Log .LogFile ), "Proxy is clearing 1st Log" );
          Assert.IsFalse( File.Exists( Log2.LogFile ), "Proxy is clearing 2nd Log" );
 
+         Log2.Level = System.Diagnostics.SourceLevels.Verbose;
+         proxy.Level = System.Diagnostics.SourceLevels.Information;
+         proxy.Verbo( "Verbose filtered" );
+         proxy.Flush();
+         Assert.IsFalse( File.Exists( Log .LogFile ), "Proxy is not forwarding low levels" );
+         Assert.IsFalse( File.Exists( Log2.LogFile ), "Proxy is not forwarding low levels 2" );
+
+         proxy.Level = System.Diagnostics.SourceLevels.Verbose;
+         proxy.Verbo( "Verbose written" );
+         proxy.Flush();
+         Assert.IsFalse( File.Exists( Log .LogFile ), "Proxy is not writing to low levels" );
+         Assert.IsTrue( File.Exists( Log2.LogFile ), "Proxy is writing to low levels 2" );
+         proxy.Clear();
+
          try {
             new LoggerProxy( false ).Clear();
             Assert.IsTrue( false, "Proxy failed to disallow clear" );

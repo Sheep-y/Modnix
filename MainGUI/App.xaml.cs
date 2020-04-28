@@ -27,7 +27,7 @@ namespace Sheepy.Modnix.MainGUI {
 
    public abstract class ArchiveReader {
       protected readonly string ArchivePath;
-      public ArchiveReader ( string path ) { ArchivePath = path; }
+      protected ArchiveReader ( string path ) { ArchivePath = path; }
       public abstract string[] ListFiles ();
       public abstract string[] Install ( string modFolder );
       protected void Log ( object msg ) => AppControl.Instance.Log( msg );
@@ -52,15 +52,17 @@ namespace Sheepy.Modnix.MainGUI {
       internal const string APP_EXT  = ".exe";
       internal const string GAME_EXE = "PhoenixPointWin64.exe";
       internal const string GAME_DLL = "Assembly-CSharp.dll";
+      internal const string JBA_DLL  = "JetBrains.Annotations.dll";
       internal const string PAST     = "PhoenixPointModLoaderInjector.exe";
       internal const string PAST_BK  = "PhoenixPointModLoaderInjector.exe.orig";
       internal const string PAST_DL1 = "PPModLoader.dll";
       internal const string PAST_DL2 = "PhoenixPointModLoader.dll";
       internal const string PAST_MOD = "Mods";
       internal const string MOD_LOG  = "ModnixLoader.log";
+      internal const string GAME_LOG = "Console.log";
       internal const string EPIC_DIR = ".egstore";
 
-      private string[] UNSAFE_DLL = new string[] { AppRes.LOADER, AppRes.INJECTOR, AppRes.CECI_DLL, AppRes.HARM_DLL, PAST, PAST_DL1, PAST_DL2 };
+      private string[] UNSAFE_DLL = new string[] { AppRes.LOADER, AppRes.INJECTOR, AppRes.CECI_DLL, AppRes.HARM_DLL, JBA_DLL, PAST, PAST_DL1, PAST_DL2 };
       internal readonly string ModFolder = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.MyDocuments ), MOD_PATH );
 
       private string _ModGuiExe;
@@ -269,7 +271,12 @@ namespace Sheepy.Modnix.MainGUI {
          GUI.SetInfo( GuiInfo.GAME_RUNNING, IsGameRunning() );
          if ( InjectorInPlace() ) {
             if ( CheckVersion )
-               Task.Run( () => GUI.SetInfo( GuiInfo.GAME_VER, CheckGameVer() ) );
+               Task.Run( () => {
+                  var ver = CheckGameVer();
+                  var gameVer = ver == "1.0" ? new Version( 1, 0, 999999 ) : Version.Parse( ver );
+                  ModLoader.GameVersion = gameVer;
+                  GUI.SetInfo( GuiInfo.GAME_VER, ver );
+               } );
             if ( CheckInjected() ) {
                GUI.SetInfo( GuiInfo.APP_STATE, CurrentGame.Status );
                return;
@@ -313,7 +320,7 @@ namespace Sheepy.Modnix.MainGUI {
             if ( File.Exists( logFile ) &&
                  File.GetLastWriteTime( logFile ) > File.GetLastWriteTime( Path.Combine( CurrentGame.CodeDir, GAME_DLL ) ) ) {
                Log( $"Parsing {logFile}" );
-               var line = File.ReadLines( logFile ).ElementAtOrDefault( 1 );
+               var line = Utils.ReadLine( logFile );
                var match = Regex.Match( line ?? "", "Assembly-CSharp/([^ ;]+)", RegexOptions.IgnoreCase );
                if ( match.Success )
                   return match.Value.Substring( 16 );
@@ -371,10 +378,11 @@ namespace Sheepy.Modnix.MainGUI {
       #endregion
 
       internal void LaunchGame ( string type ) { try {
+         CurrentGame.DeleteRootFile( GAME_LOG );
          if ( type == "online" ) {
             if ( CurrentGame.GameType == "epic" ) {
                Log( "Launching through epic game launcher" );
-               Process.Start( "com.epicgames.launcher://apps/Iris?action=launch" );
+               Process.Start( Settings.EgsCommand ?? "com.epicgames.launcher://apps/Iris?action=launch", Settings.EgsParameter );
                return;
             }
          } else {
@@ -384,6 +392,7 @@ namespace Sheepy.Modnix.MainGUI {
                p.StartInfo.UseShellExecute = false;
                p.StartInfo.FileName = exe;
                p.StartInfo.WorkingDirectory = CurrentGame.GameDir;
+               p.StartInfo.Arguments = Settings.OfflineParameter;
                p.Start();
             }
             return;
@@ -429,6 +438,7 @@ namespace Sheepy.Modnix.MainGUI {
             // Cleanup - accident prevention. Old dlls at game base may override dlls in the managed folder.
             foreach ( var file in UNSAFE_DLL )
                CurrentGame.DeleteRootFile( file );
+            //CurrentGame.DeleteCodeFile( JBA_DLL );
             GUI.Prompt( AppAction.SETUP, flags );
          } else
             throw new ApplicationException( "Modnix injection failed" );
@@ -536,18 +546,15 @@ namespace Sheepy.Modnix.MainGUI {
          GUI.Prompt( AppAction.REVERT, PromptFlag.ERROR, ex );
       } }
 
-      internal Task CheckUpdateTask () {
+      internal Task<GithubRelease> CheckUpdateTask () {
          Log( "Queuing update check" );
          return Task.Run( CheckUpdate );
       }
 
       private Updater _UpdateChecker;
-      private Updater UpdateChecker { get => Get( ref _UpdateChecker ); set => Set( ref _UpdateChecker, value ); }
+      private Updater UpdateChecker { get => Singleton( ref _UpdateChecker ); }
 
-      private void CheckUpdate () { try {
-         if ( UpdateChecker == null ) UpdateChecker = new Updater();
-         GUI.SetInfo( GuiInfo.APP_UPDATE, UpdateChecker.FindUpdate( Myself.Version ) );
-      } catch ( Exception ex ) { Log( ex ); } }
+      private GithubRelease CheckUpdate() => UpdateChecker.FindUpdate( Myself.Version );
       #endregion
 
       #region Mods
@@ -581,9 +588,9 @@ namespace Sheepy.Modnix.MainGUI {
                Log( "Adding warnings to mods with runtime notices." );
                foreach ( var mod in list ) {
                   if ( ! mod.Is( ModQuery.ENABLED ) ) continue;
-                  if ( ModWithError.Contains( mod.Id ) ) ModBridge.AddLoaderLogNotice( mod, "runtime_error" );
-                  else if ( ModWithWarning.Contains( mod.Id ) ) ModBridge.AddLoaderLogNotice( mod, "runtime_warning" );
-                  else if ( ModWithConfWarn.Contains( mod.Id ) ) ModBridge.AddLoaderLogNotice( mod, "config_mismatch" );
+                  if ( ModWithError.Contains( mod.Id ) ) ModLoaderBridge.AddLoaderLogNotice( mod, "runtime_error" );
+                  else if ( ModWithWarning.Contains( mod.Id ) ) ModLoaderBridge.AddLoaderLogNotice( mod, "runtime_warning" );
+                  else if ( ModWithConfWarn.Contains( mod.Id ) ) ModLoaderBridge.AddLoaderLogNotice( mod, "config_mismatch" );
                }
             }
             GUI.SetInfo( GuiInfo.MOD_LIST, list );
@@ -717,6 +724,14 @@ namespace Sheepy.Modnix.MainGUI {
          lock ( SynGetSet ) return field;
       }
 
+      private static T Singleton < T > ( ref T field ) where T : class, new() {
+         lock ( SynGetSet ) return field ?? ( field = new T() );
+      }
+
+      private static T Singleton < T > ( ref T field, Func<T> creator ) where T : class {
+         lock ( SynGetSet ) return field ?? ( field = creator() );
+      }
+
       internal static void Explore ( string filename ) {
          Process.Start( "explorer.exe", $"/select, \"{filename}\"" );
       }
@@ -808,14 +823,14 @@ namespace Sheepy.Modnix.MainGUI {
 
       internal void WriteCodeFile ( string file, byte[] content ) {
          if ( content == null ) throw new ArgumentNullException( nameof( content ) );
-         string target = Path.Combine( CodeDir, file );
+         var target = Path.Combine( CodeDir, file );
          App.Log( $"Writing {content.Length} bytes to {target}" );
          File.WriteAllBytes( target, content );
       }
 
       internal void WriteCodeFile ( string file, Stream source ) {
          if ( source == null ) throw new ArgumentNullException( nameof( source ) );
-         string target = Path.Combine( CodeDir, file );
+         var target = Path.Combine( CodeDir, file );
          App.Log( $"Writing to {target}" );
          using ( var writer = new FileStream( target, FileMode.Create ) ) {
             source.CopyTo( writer );
@@ -823,7 +838,7 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       internal bool DeleteRootFile ( string file ) { try {
-         string subject = Path.Combine( GameDir, file );
+         var subject = Path.Combine( GameDir, file );
          if ( ! File.Exists( subject ) ) return false;
          App.Log( $"Deleting {subject}" );
          File.Delete( subject );
@@ -831,7 +846,7 @@ namespace Sheepy.Modnix.MainGUI {
       } catch ( Exception ex ) { return App.Log( ex, false ); } }
 
       internal bool DeleteCodeFile ( string file ) { try {
-         string subject = Path.Combine( CodeDir, file );
+         var subject = Path.Combine( CodeDir, file );
          if ( ! File.Exists( subject ) ) return false;
          App.Log( $"Deleting {subject}" );
          File.Delete( subject );
@@ -839,8 +854,8 @@ namespace Sheepy.Modnix.MainGUI {
       } catch ( Exception ex ) { return App.Log( ex, false ); } }
 
       internal bool RenameCodeFile ( string file, string toName ) { try {
-         string subject = Path.Combine( CodeDir, file   );
-         string target  = Path.Combine( CodeDir, toName );
+         var subject = Path.Combine( CodeDir, file   );
+         var target  = Path.Combine( CodeDir, toName );
          DeleteCodeFile( toName );
          App.Log( $"Renaming {subject} to {toName}" );
          File.Move( subject, target );
@@ -878,6 +893,14 @@ namespace Sheepy.Modnix.MainGUI {
          }
          return mem.ToArray();
       }
+   }
+
+   internal static class Utils {
+      private static StreamReader Read ( string file ) =>
+         new StreamReader( new FileStream( file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete ), Encoding.UTF8, true );
+
+      internal static string ReadFile ( string file ) { using ( var reader = Read( file ) ) return reader.ReadToEnd(); }
+      internal static string ReadLine ( string file ) { using ( var reader = Read( file ) ) return reader.ReadLine(); }
    }
 
    internal static class ExtCls {

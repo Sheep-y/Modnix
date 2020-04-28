@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -34,13 +35,51 @@ namespace Sheepy.Modnix.MainGUI {
          RefreshGUI();
       } catch ( Exception ex ) { Console.WriteLine( ex ); } }
 
-      private void Window_Closing ( object sender, System.ComponentModel.CancelEventArgs evt ) {
+      private void Window_SourceInitialized ( object sender, EventArgs e ) {
+         if ( App.ParamSkipStartupCheck ) return;
+         try {
+            SetCollapseState();
+            var settings = App.Settings;
+            var area = new System.Drawing.Rectangle( (int) settings.WindowLeft, (int) settings.WindowTop, (int) settings.WindowWidth, (int) settings.WindowHeight );
+            foreach ( var screen in System.Windows.Forms.Screen.AllScreens ) {
+               if ( screen.WorkingArea.Contains( area ) ) {
+                  Log( "Restoring window position on " + screen.DeviceName );
+                  if ( settings.ModInfoWeight > 0 ) gridMods.ColumnDefinitions[0].Width = new GridLength( settings.ModInfoWeight, GridUnitType.Star );
+                  if ( settings.ModListWeight > 0 ) gridMods.ColumnDefinitions[2].Width = new GridLength( settings.ModListWeight, GridUnitType.Star );
+                  if ( settings.WindowLeft >= 0 ) Left = settings.WindowLeft;
+                  if ( settings.WindowTop >= 0  ) Top = settings.WindowTop;
+                  if ( settings.WindowWidth >= 0 ) Width = settings.WindowWidth;
+                  if ( settings.WindowHeight >= 0 ) Height = settings.WindowHeight;
+                  break;
+               }
+            }
+            if ( settings.MaximiseWindow ) WindowState = WindowState.Maximized;
+         } catch ( Exception ex ) { Log( ex ); }
+      }
+
+      private void Window_Closing ( object sender, CancelEventArgs evt ) {
          if ( AbortByCheckSave() ) evt.Cancel = true;
       }
 
       private void Window_Closed ( object sender, EventArgs e ) {
          GameStatusTimer.Change( Timeout.Infinite, Timeout.Infinite );
          GameStatusTimer.Dispose();
+         var settings =  App.Settings;
+         settings.ModInfoWeight = gridMods.ColumnDefinitions[0].Width.Value;
+         settings.ModListWeight = gridMods.ColumnDefinitions[2].Width.Value;
+         if ( WindowState == WindowState.Maximized ) {
+            settings.WindowLeft = RestoreBounds.Left;
+            settings.WindowTop = RestoreBounds.Top;
+            settings.WindowWidth = RestoreBounds.Width;
+            settings.WindowHeight = RestoreBounds.Height;
+            settings.MaximiseWindow = true;
+         } else {
+            settings.WindowLeft = Left;
+            settings.WindowTop = Top;
+            settings.WindowWidth = Width;
+            settings.WindowHeight = Height;
+            settings.MaximiseWindow = false;
+         }
          App.SaveSettings();
       }
 
@@ -79,8 +118,8 @@ namespace Sheepy.Modnix.MainGUI {
          }
       } catch ( Exception ex ) { Log( ex ); } } ); }
 
-      private void Window_Activated ( object sender, EventArgs e ) => GameStatusTimer.Change( 100, 3000 );
-      private void Window_Deactivated ( object sender, EventArgs e ) => GameStatusTimer.Change( Timeout.Infinite, Timeout.Infinite );
+      private void Window_Activated ( object sender, EventArgs e ) => GameStatusTimer.Change( 100, ShouldMonitorLog ? 500 : 3000 );
+      private void Window_Deactivated ( object sender, EventArgs e ) { if ( ! ShouldMonitorLog ) GameStatusTimer.Change( Timeout.Infinite, Timeout.Infinite ); }
 
       private void ShowWindow () {
          Log( "Checking app status" );
@@ -101,22 +140,26 @@ namespace Sheepy.Modnix.MainGUI {
          CheckLogRefresh();
       }
 
-      private void RefreshAppButtons () { try {
+      private void SetCollapseState () {
          bool minApp = App.Settings.MinifyLoaderPanel, minGame = App.Settings.MinifyGamePanel;
-         Log( "Refreshing app buttons" );
-         ButtonSetup.IsEnabled = ! SharedGui.IsAppWorking && SharedGui.AppState != null;
          ButtonSetup.Visibility = ButtonUserGuide.Visibility = ButtonWiki.Visibility =
             minApp ? Visibility.Collapsed : Visibility.Visible;
          ButtonMinifyLoader.Content = minApp ? "＋" : "—";
 
-         ButtonRunOnline.IsEnabled  = ButtonRunOffline.IsEnabled  = SharedGui.CanModify && SharedGui.IsGameFound;
-         ButtonRunOnline.Foreground = ButtonRunOffline.Foreground = 
-            ButtonRunOnline.IsEnabled && SharedGui.AppState != null && ! SharedGui.IsInjected ? Brushes.Red : Brushes.Black;
          ButtonWebsite.Visibility = ButtonForum.Visibility = ButtonReddit.Visibility =
             ButtonTwitter.Visibility = ButtonCanny.Visibility = ButtonDiscord.Visibility =
             minGame ? Visibility.Collapsed : Visibility.Visible;
          GameButtonGap1.Height = GameButtonGap2.Height = new GridLength( minGame ? 0 : 5, GridUnitType.Pixel );
          ButtonMinifyGame.Content = minGame ? "＋" : "—";
+      }
+
+      private void RefreshAppButtons () { try {
+         Log( "Refreshing app buttons" );
+         ButtonSetup.IsEnabled = ! SharedGui.IsAppWorking && SharedGui.AppState != null;
+         ButtonRunOnline.IsEnabled  = ButtonRunOffline.IsEnabled  = SharedGui.CanModify && SharedGui.IsGameFound;
+         ButtonRunOnline.Foreground = ButtonRunOffline.Foreground = 
+            ButtonRunOnline.IsEnabled && SharedGui.AppState != null && ! SharedGui.IsInjected ? Brushes.Red : Brushes.Black;
+         SetCollapseState();
 
          RefreshConfButtions();
 
@@ -195,6 +238,7 @@ namespace Sheepy.Modnix.MainGUI {
          p.Inlines.Add( state );
          RichAppInfo.Document.Replace( p );
          CheckLogVerbo.IsChecked = ( App.Settings.LogLevel & SourceLevels.Verbose ) == SourceLevels.Verbose;
+         CheckLogMonitor.IsChecked = App.Settings.LogMonitor;
       } catch ( Exception ex ) { Log( ex ); } }
 
       private void ButtonHideLoader_Click ( object sender, RoutedEventArgs e ) {
@@ -290,14 +334,14 @@ namespace Sheepy.Modnix.MainGUI {
          if ( AbortByCheckSave() ) return;
          App.LaunchGame( "online" );
          SetInfo( GuiInfo.GAME_RUNNING, true );
-         GameStatusTimer.Change( Timeout.Infinite, 10_000 ); // Should be overrode by activate/deactivate, but just in case
+         GameStatusTimer.Change( 3_000, ShouldMonitorLog ? 500 : Timeout.Infinite );
       }
 
       private void ButtonOffline_Click ( object sender, RoutedEventArgs e ) {
          if ( AbortByCheckSave() ) return;
          App.LaunchGame( "offline" );
          SetInfo( GuiInfo.GAME_RUNNING, true );
-         GameStatusTimer.Change( Timeout.Infinite, 10_000 ); // Should be overrode by activate/deactivate, but just in case
+         GameStatusTimer.Change( 3_000,  ShouldMonitorLog ? 500 : Timeout.Infinite );
       }
 
       private void ButtonCanny_Click   ( object sender, RoutedEventArgs e ) => OpenUrl( "canny", e );
@@ -314,8 +358,8 @@ namespace Sheepy.Modnix.MainGUI {
       private IEnumerable<ModInfo> ListedMods => GridModList.ItemsSource.OfType<ModInfo>();
       private IEnumerable<ModInfo> SelectedMods => GridModList.SelectedItems.OfType<ModInfo>();
       private HashSet<string> SelectMods;
+      private SortDescription? LastSort;
       private TabItem SelectTab;
-      private readonly Timer RefreshModTimer;
 
       private void SetModList ( IEnumerable<ModInfo> list ) {
          ModList = list;
@@ -329,12 +373,19 @@ namespace Sheepy.Modnix.MainGUI {
             SelectMods = new HashSet<string>( SelectedMods.Select( e => e.Path ) );
             SelectTab = TabSetModInfo.SelectedItem as TabItem;
          }
+         if ( GridModList.ItemsSource != null )
+            LastSort = CollectionViewSource.GetDefaultView( GridModList.ItemsSource )?.SortDescriptions.FirstOrDefault();
          if ( GridModList.ItemsSource != ModList ) {
             Log( "New mod list" );
             GridModList.ItemsSource = ModList;
          }
          GridModList.Items?.Refresh();
          GridModList.UpdateLayout();
+         if ( LastSort.HasValue && LastSort.Value.PropertyName != null && ModList != null ) {
+            var sorts = CollectionViewSource.GetDefaultView( ModList ).SortDescriptions;
+            sorts.Clear();
+            sorts.Add( LastSort.Value );
+         }
          if ( ModList != null ) {
             if ( SelectMods != null && SelectMods.Count > 0 ) {
                foreach ( var mod in ModList.OfType<ModInfo>() ) {
@@ -412,10 +463,32 @@ namespace Sheepy.Modnix.MainGUI {
          var mod = row.Item as ModInfo;
          if ( mod == null || ! mod.Is( ModQuery.ENABLED ) )
             row.Foreground = Brushes.Gray;
-         else if ( mod.Is( ModQuery.WARNING ) )
+         else if ( mod.Is( ModQuery.ERROR ) )
             row.Foreground = Brushes.OrangeRed;
+         else if ( mod.Is( ModQuery.WARNING ) )
+            row.Foreground = Brushes.Blue;
          else
-            row.Foreground = Brushes.Navy;
+            row.Foreground = Brushes.Black;
+      }
+
+      private void GridModList_PreviewKeyDown ( object sender, KeyEventArgs e ) {
+         switch ( e.Key ) {
+            case Key.Insert :
+               ButtonAddMod_Click( sender, e ); break;
+            case Key.Delete :
+               ButtonModDelete_Click( sender, e ); break;
+            case Key.Home :
+               GridModList.SelectedIndex = 0;
+               GridModList.ScrollIntoView( GridModList.SelectedItem );
+               break;
+            case Key.End :
+               GridModList.SelectedIndex = ModList.Count() - 1;
+               GridModList.ScrollIntoView( GridModList.SelectedItem );
+               break;
+            default:
+               return;
+         }
+         e.Handled = true;
       }
       #endregion
 
@@ -454,6 +527,7 @@ namespace Sheepy.Modnix.MainGUI {
                TabSetModInfo.SelectedItem = TabModInfo;
             var isConfig = TabSetModInfo.SelectedItem == TabModConfig;
             RichModInfo.IsReadOnly = ! isConfig;
+            RichModInfo.FontFamily = new FontFamily( isConfig ? "Consolas" : "Segoe UI" );
             PanelConfAction.Visibility = isConfig ? Visibility.Visible : Visibility.Collapsed;
 
             if ( CurrentMod != null ) {
@@ -542,11 +616,16 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void RichModInfo_PreviewKeyDown ( object sender, KeyEventArgs e ) { try {
          if ( RichModInfo.IsReadOnly ) return;
-         if ( e.Key != Key.Enter ) return;
-         var sel = RichModInfo.Selection;
-         new TextRange( sel.Start, sel.End ).Text = "\r";
-         RichModInfo.CaretPosition = sel.End.GetNextInsertionPosition( LogicalDirection.Forward );
-         e.Handled = true;
+         if ( e.Key == Key.S && ( e.KeyboardDevice.IsKeyDown( Key.LeftCtrl ) || e.KeyboardDevice.IsKeyDown( Key.RightCtrl ) ) ) {
+            ButtonConfSave_Click( sender, e );
+            e.Handled = true;
+
+         } else if ( e.Key == Key.Enter ) {
+            var sel = RichModInfo.Selection;
+            new TextRange( sel.Start, sel.End ).Text = "\r";
+            RichModInfo.CaretPosition = sel.End.GetNextInsertionPosition( LogicalDirection.Forward );
+            e.Handled = true;
+         }
       } catch ( Exception ex ) { Log( ex ); } }
 
       // Fix RichTextBox Hyperlink navigation https://stackoverflow.com/a/54472110/893578
@@ -658,7 +737,15 @@ namespace Sheepy.Modnix.MainGUI {
          Log( "Checking update" );
          Update = "checking";
          RefreshUpdateStatus();
-         App.CheckUpdateTask();
+         App.CheckUpdateTask().ContinueWith( task => {
+            if ( task.IsFaulted ) {
+               if ( manual ) Prompt( AppAction.CHECK_UPDATE, PromptFlag.ERROR, task.Exception );
+               return;
+            }
+            SetInfo( GuiInfo.APP_UPDATE, task.Result );
+            if ( task.Result == null && manual )
+               MessageBox.Show( "No update.", "Check Update", MessageBoxButton.OK, MessageBoxImage.Information );
+         } );
       } catch ( Exception ex ) { Log( ex ); } }
 
       private void UpdateChecked () { try {
@@ -705,6 +792,16 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void CheckLogVerbo_Checked ( object sender, RoutedEventArgs e ) {
          App.SetLogLevel( CheckLogVerbo.IsChecked == true ? SourceLevels.Verbose : SourceLevels.Information );
+      }
+
+      private bool ShouldMonitorLog => CheckLogMonitor.IsChecked == true;
+
+      private void CheckLogMonitor_Checked ( object sender, RoutedEventArgs e ) {
+         var monitor = ShouldMonitorLog;
+         if ( App.Settings.LogMonitor == monitor ) return;
+         App.Settings.LogMonitor = monitor;
+         if ( monitor ) GameStatusTimer.Change( 500, 500 );
+         else GameStatusTimer.Change( Timeout.Infinite, Timeout.Infinite );
       }
 
       private void ButtonLogSave_Click ( object sender, RoutedEventArgs e ) { try {
@@ -771,6 +868,7 @@ namespace Sheepy.Modnix.MainGUI {
          TextLog.Visibility = isGui ? Visibility.Visible : Visibility.Collapsed;
          TextLicense.Visibility = isGui ? Visibility.Collapsed : Visibility.Visible;
          CheckLogVerbo.Visibility = isGui ? Visibility.Visible : Visibility.Collapsed;
+         CheckLogMonitor.Visibility = isLoader || isConsole ? Visibility.Visible : Visibility.Collapsed;
          ButtonLogClear.Visibility = isGui ? Visibility.Visible : Visibility.Collapsed;
          LabelLogFilter.Visibility = TextLogFilter.Visibility = isGui || isChange || isLicense ? Visibility.Collapsed : Visibility.Visible;
          ButtonLoaderLog.IsChecked = isLoader;
@@ -782,13 +880,11 @@ namespace Sheepy.Modnix.MainGUI {
          else if ( isLicense ) TextLicense.Text = ApplyLogFilter( ModMetaJson.ReadAsText( AssemblyLoader.GetResourceStream( "License.txt" ) ) );
          else if ( isLoader || isConsole ) {
             try {
-               TextLicense.Text = ApplyLogFilter( File.ReadAllText( isLoader ? App.LoaderLog : App.ConsoleLog ) );
+               TextLicense.Text = ApplyLogFilter( Utils.ReadFile( isLoader ? App.LoaderLog : App.ConsoleLog ) );
             } catch ( SystemException ex ) {
-               if ( isConsole && SharedGui.IsGameRunning )
-                  TextLicense.Text = "The game locks the console log.  Cannot read it when game is running.";
-               else
-                  TextLicense.Text = ex.ToString();
+               TextLicense.Text = ex.ToString();
             }
+            if ( ShouldMonitorLog ) TextLicense.ScrollToEnd();
             ConsoleLogTime = new FileInfo( App.ConsoleLog ).LastWriteTime;
             LoaderLogTime  = new FileInfo( App.LoaderLog  ).LastWriteTime;
          }
@@ -808,15 +904,16 @@ namespace Sheepy.Modnix.MainGUI {
          var isLoader  = ButtonLoaderLog.IsChecked  == true;
          var isConsole = ButtonConsoleLog.IsChecked == true;
          var file = isLoader ? App.LoaderLog : isConsole ? App.ConsoleLog : null;
-         var isLoaderLogUpdated =  File.Exists( App.LoaderLog ) && new FileInfo( App.LoaderLog ).LastAccessTime > LoaderLogTime.GetValueOrDefault() ;
+         var isLoaderLogUpdated = File.Exists( App.LoaderLog ) && new FileInfo( App.LoaderLog ).LastAccessTime > LoaderLogTime.GetValueOrDefault() ;
          if ( file != null ) {
-            if ( ! File.Exists( file ) ) ShowLog( "gui" );
-            if ( isLoader ) {
+            if ( ! File.Exists( file ) ) {
+               if ( ! SharedGui.IsGameRunning ) ShowLog( "gui" );
+            } else if ( isLoader ) {
                if ( isLoaderLogUpdated ) ShowLog( "loader" );
-            } else if ( new FileInfo( file ).LastAccessTime > ConsoleLogTime.GetValueOrDefault() )
-               ShowLog( isLoader ? "loader" : "console" );
+            } else if ( isConsole && new FileInfo( file ).LastAccessTime > ConsoleLogTime.GetValueOrDefault() )
+               ShowLog( "console" );
          }
-         if ( isLoaderLogUpdated ) {
+         if ( isLoaderLogUpdated && ! SharedGui.IsGameRunning ) {
             LoaderLogTime = new FileInfo( App.LoaderLog ).LastAccessTime;
             App.GetModList();
          }

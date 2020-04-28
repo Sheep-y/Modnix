@@ -26,7 +26,6 @@ namespace Sheepy.Modnix {
 
       public static Version LoaderVersion, GameVersion;
       internal readonly static Version PPML_COMPAT = new Version( 0, 2 );
-      private static bool PpmlInitialised;
 
       public static string ModDirectory { get; private set; }
 
@@ -101,13 +100,15 @@ namespace Sheepy.Modnix {
          LoadSettings();
       } } catch ( Exception ex ) { Log?.Error( ex ); } }
 
+      internal static volatile Assembly PpmlAssembly;
+
       // Dynamically load embedded dll
       private static Assembly ModLoaderResolve  ( object domain, ResolveEventArgs dll ) { try {
          var name = dll.Name;
          Log.Trace( "Resolving {0}", name );
          var app = domain as AppDomain ?? AppDomain.CurrentDomain;
          if ( name.StartsWith( "PhoenixPointModLoader,", StringComparison.OrdinalIgnoreCase ) )
-            return app.Load( GetResourceBytes( "PPML_0_2.dll" ) );
+            return PpmlAssembly = app.Load( GetResourceBytes( "PPML_0_2.dll" ) );
          if ( name.StartsWith( "System." ) && dll.Name.Contains( ',' ) ) { // Generic system library lookup
             var file = dll.Name.Substring( 0, dll.Name.IndexOf( ',' ) ) + ".dll";
             var target = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.Windows ), "Microsoft.NET/Framework/v4.0.30319", file );
@@ -139,7 +140,7 @@ namespace Sheepy.Modnix {
          var confFile = Path.Combine( ModDirectory, CONF_FILE );
          if ( File.Exists( confFile ) ) try {
             Log.Info( $"Loading {confFile}" );
-            Settings = ModMetaJson.Parse<LoaderSettings>( File.ReadAllText( confFile ) );
+            Settings = ModMetaJson.Parse<LoaderSettings>( Tools.ReadFile( confFile ) );
          } catch ( Exception ex ) { Log.Error( ex ); }
          if ( Settings == null ) {
             Log.Info( $"Using default settings, because cannot find or parse {confFile}" );
@@ -183,7 +184,7 @@ namespace Sheepy.Modnix {
          var ver = game.GetType( "Base.Build.RuntimeBuildInfo" ).GetProperty( "Version" ).GetValue( null )?.ToString();
          Log.Info( "{0}/{1}", Path.GetFileNameWithoutExtension( game.CodeBase ), ver );
          GameVersion = Version.Parse( ver );
-      } } catch ( Exception ex ) { Log?.Error( ex ); } }
+      } } catch ( Exception ex ) { Log?.Error( ex ); } } 
       #endregion
 
       #region Loading Mods
@@ -277,5 +278,11 @@ namespace Sheepy.Modnix {
 
    internal static class Tools {
       internal static string FixSlash ( this string path ) => path.Replace( '/', Path.DirectorySeparatorChar );
+   
+      private static StreamReader Read ( string file ) =>
+         new StreamReader( new FileStream( file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete ), Encoding.UTF8, true );
+
+      internal static string ReadFile ( string file ) { using ( var reader = Read( file ) ) return reader.ReadToEnd(); }
+      internal static string ReadLine ( string file ) { using ( var reader = Read( file ) ) return reader.ReadLine(); }
    }
 }
