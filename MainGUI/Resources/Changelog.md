@@ -1,6 +1,6 @@
 Modnix Changelog
 
-# Version 2.3, Soon
+# Version 2.3, 2020-04-28
 
 * New: A mod's LoadIndex and LogLevel now take effect after manually changed in Modnix.conf. Requested by Silent on Discord.
 * New: Monitor loader log and console log even when Modnix is in background. Requested by Silent on Discord.
