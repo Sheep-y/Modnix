@@ -233,7 +233,7 @@ namespace Sheepy.Modnix.MainGUI {
          if ( Settings?.Disabled != true ) return;
          Log( $"Enabling mod {Mod.Metadata.Id}" );
          Settings.Disabled = false;
-         if ( Settings.IsDefaultSettings ) {
+         if ( Settings.GetIsDefaultSettings() ) {
             var settings = AppControl.Instance.Settings;
             settings.Mods.Remove( Mod.Key );
             if ( settings.Mods.Count == 0 )

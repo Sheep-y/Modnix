@@ -42,7 +42,7 @@ namespace Sheepy.Modnix {
       public bool Disabled;
       public SourceLevels? LogLevel;
       public long? LoadIndex;
-      public bool IsDefaultSettings => ! Disabled && ! LogLevel.HasValue && ! LoadIndex.HasValue;
+      public bool GetIsDefaultSettings () => ! Disabled && ! LogLevel.HasValue && ! LoadIndex.HasValue;
    }
 
    public class ModEntry : ModSettings {
