@@ -2,19 +2,20 @@ Modnix Changelog
 
 # Version 2.3, Soon
 
-* New: A mod's LoadIndex and LogLevel now take effect after manually changed in Modnix.conf.
+* New: A mod's LoadIndex and LogLevel now take effect after manually changed in Modnix.conf. Requested by Silent on Discord.
+* New: Monitor loader log and console log even when Modnix is in background. Requested by Silent on Discord.
 * Fix: Mod manager now use game version when parsing mods. This aligns it with mod loader, when game version is known.
 * Fix: Mod config deletion (by saving a blank config in mod manager) now property resets config memory.
 * Fix: "api_info" now return original method instead of internal wrapper method, when original has two parameters.
 * Fix: "add_api" now accepts method of any return type, including void (null) and value types, not limited to objects.
-* Fix: Mod list now preserve sort over refresh, instead of always reverting to name ascending.
+* Fix: Mod list now preserve sort over refresh, instead of always reverting to name ascending. Thanks Silent on Discord.
 * Gui: Press Ctrl+S in config editor to save.  Press Ins/Del on mod list to Add/Delete mods, and Home/End to move to top/bottom.
 * Gui: Mods with runtime warnings but no runtime errors are now highlighted in Blue instead of OrangeRed.
 * Gui: Console log is now deleted before game launch. It cannot be properly deleted by loader / mods.
 * Gui: Log panels and config editor now use monospace font (Consolas). Thanks Tahvohck on GitHub.
 * Gui: Setup now deletes "JetBrains.Annotations.dll" from game root and Mods folder. Come with PPML 0.1 but is unused.
 * Gui: Manually check update now prompt a message on no updates or error. Thanks Silent on NexusMods.
-* Gui: Windows and splitter position now remembered. Restoration can be skipped by /s switch. Thanks Silent on Discord.
+* Gui: Windows and splitter position now remembered. Restoration can be skipped by /s switch. Requested by Silent on Discord.
 * Mod: "assembly" and "assemblies" now support "ppml", "phoenixpointmodloader", and "phoenix point mod loader" param.
 * Mod: Getting "assemblies" of "modnix" or "loader" now includes ppml if and only if the embedded ppml is loaded.
 * All text files reading (logs, configs, documents etc.) now ignore write locks. Thanks Silent on Discord.
@@ -31,8 +32,8 @@ Modnix Changelog
 
 # Version 2.1, 2020-04-12
 
-* Fix: Downgraded to PPML 0.2 because of mod incompatibility of PPML 0.3. (#16) Thanks Sangvis Ferri on Discord for reporting.
-* Fix: Some mods were not properly detected after Add Mod. (#18) Thanks Sangvis Ferri on Discord for reporting.
+* Fix: Downgraded to PPML 0.2 because of mod incompatibility of PPML 0.3. (#16) Thanks Sangvis Ferri on Discord.
+* Fix: Some mods were not properly detected after Add Mod. (#18) Thanks Sangvis Ferri on Discord.
 * Fix: General resolution of mods now does not factor Version when determining mod order.
 * Fix: Resolution of duplicate mods now prioritises Version and ignore LoadIndex. (#14)
 * Gui: Remove "can create config file" notice.  Config is now handled by the config tab.
@@ -113,15 +114,15 @@ Modnix Changelog
 * New: License button to display licenses of all images, parts, and libraries.
 * Fix: Game is now offline-launched in its folder, instead of Modnix folder.
 * Fix: Game is now detected when Modnix is placed in one to two levels of subfolder, in addition to root.
-* Fix: Manual setup package should no longer run in setup mode. Thanks Zyxpsilon on Discord for reporting.
+* Fix: Manual setup package should no longer run in setup mode. Thanks Zyxpsilon on Discord.
 * Fix: Mod loading order should now be consistent. (But subject to change in the future.)
 * Fix: Lang of mod info now accepts a single string as intended.
 * Fix: Embedded mod_info now have their Url, Contact, and Copyright applied.
 * Fix: Url and Contact no longer lowercase their keys.
 * Fix: Parameter defaults are now used for unrecognised initialiser parameters.
 * Fix: Mono.Cecil.dll is now deleted from Mods folder on setup, in addition to other loader dlls.
-* Fix: Typo on log label. Thanks javehaider on NexusMods for reporting.
-* Fix: Typo on button. Thanks javehaider and Lunazathoth on NexusMods for reporting.
+* Fix: Typo on log label. Thanks javehaider on NexusMods.
+* Fix: Typo on button. Thanks javehaider and Lunazathoth on NexusMods.
 * Gui: Improved app / injection / game status display and less unnecessary status checks.  Modnix keyvisual faintly visible.
 * Mod: In mod_info, Langs are changed to Lang, Urls changed to Url.  This make info fields consistent.
 * Mod: Overloaded mod initialisers are now allowed and the first declared will be used.

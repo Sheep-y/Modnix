@@ -339,6 +339,7 @@
                   </StackPanel>
                </Button>
                <CheckBox x:Name="CheckLogVerbo" VerticalAlignment="Center" DockPanel.Dock="Right" Content="Verbose" Margin="0,0,5,0" Checked="CheckLogVerbo_Checked" Unchecked="CheckLogVerbo_Checked" TabIndex="2250" />
+               <CheckBox x:Name="CheckLogMonitor" VerticalAlignment="Center" DockPanel.Dock="Right" Content="Monitor" Margin="0,0,5,0" Checked="CheckLogMonitor_Checked" Unchecked="CheckLogMonitor_Checked" TabIndex="2250" Visibility="Collapsed" />
                <Label x:Name="LabelLogTitle" Content="Manager Log" HorizontalAlignment="Center" VerticalAlignment="Center"/>
             </DockPanel>
             <Grid DockPanel.Dock="Bottom" Margin="0">

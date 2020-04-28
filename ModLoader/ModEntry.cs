@@ -17,6 +17,7 @@ namespace Sheepy.Modnix {
       public int SettingVersion = 20200427;
       public SourceLevels LogLevel = SourceLevels.Information;
       // For mod manager
+      public bool LogMonitor = false;
       public bool CheckUpdate = true;
       public DateTime? LastCheckUpdate = null;
       public string UpdateChannel = "dev";

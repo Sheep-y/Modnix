@@ -37,18 +37,20 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void Window_SourceInitialized ( object sender, EventArgs e ) {
          if ( App.ParamSkipStartupCheck ) return;
-         SetCollapseState();
-         var settings =  App.Settings;
-         if ( settings.ModInfoWeight > 0 ) gridMods.ColumnDefinitions[0].Width = new GridLength( settings.ModInfoWeight, GridUnitType.Star );
-         if ( settings.ModListWeight > 0 ) gridMods.ColumnDefinitions[2].Width = new GridLength( settings.ModListWeight, GridUnitType.Star );
-         if ( settings.WindowLeft >= 0 ) Left = settings.WindowLeft;
-         if ( settings.WindowTop >= 0  ) Top = settings.WindowTop;
-         if ( settings.WindowWidth >= 0 ) Width = settings.WindowWidth;
-         if ( settings.WindowHeight >= 0 ) Height = settings.WindowHeight;
-         if ( settings.MaximiseWindow ) WindowState = WindowState.Maximized;
+         try {
+            SetCollapseState();
+            var settings =  App.Settings;
+            if ( settings.ModInfoWeight > 0 ) gridMods.ColumnDefinitions[0].Width = new GridLength( settings.ModInfoWeight, GridUnitType.Star );
+            if ( settings.ModListWeight > 0 ) gridMods.ColumnDefinitions[2].Width = new GridLength( settings.ModListWeight, GridUnitType.Star );
+            if ( settings.WindowLeft >= 0 ) Left = settings.WindowLeft;
+            if ( settings.WindowTop >= 0  ) Top = settings.WindowTop;
+            if ( settings.WindowWidth >= 0 ) Width = settings.WindowWidth;
+            if ( settings.WindowHeight >= 0 ) Height = settings.WindowHeight;
+            if ( settings.MaximiseWindow ) WindowState = WindowState.Maximized;
+         } catch ( Exception ex ) { Log( ex ); }
       }
 
-      private void Window_Closing ( object sender, System.ComponentModel.CancelEventArgs evt ) {
+      private void Window_Closing ( object sender, CancelEventArgs evt ) {
          if ( AbortByCheckSave() ) evt.Cancel = true;
       }
 
@@ -109,8 +111,8 @@ namespace Sheepy.Modnix.MainGUI {
          }
       } catch ( Exception ex ) { Log( ex ); } } ); }
 
-      private void Window_Activated ( object sender, EventArgs e ) => GameStatusTimer.Change( 100, 3000 );
-      private void Window_Deactivated ( object sender, EventArgs e ) => GameStatusTimer.Change( Timeout.Infinite, Timeout.Infinite );
+      private void Window_Activated ( object sender, EventArgs e ) => GameStatusTimer.Change( 100, ShouldMonitorLog ? 500 : 3000 );
+      private void Window_Deactivated ( object sender, EventArgs e ) { if ( ! ShouldMonitorLog ) GameStatusTimer.Change( Timeout.Infinite, Timeout.Infinite ); }
 
       private void ShowWindow () {
          Log( "Checking app status" );
@@ -229,6 +231,7 @@ namespace Sheepy.Modnix.MainGUI {
          p.Inlines.Add( state );
          RichAppInfo.Document.Replace( p );
          CheckLogVerbo.IsChecked = ( App.Settings.LogLevel & SourceLevels.Verbose ) == SourceLevels.Verbose;
+         CheckLogMonitor.IsChecked = App.Settings.LogMonitor;
       } catch ( Exception ex ) { Log( ex ); } }
 
       private void ButtonHideLoader_Click ( object sender, RoutedEventArgs e ) {
@@ -324,14 +327,14 @@ namespace Sheepy.Modnix.MainGUI {
          if ( AbortByCheckSave() ) return;
          App.LaunchGame( "online" );
          SetInfo( GuiInfo.GAME_RUNNING, true );
-         GameStatusTimer.Change( Timeout.Infinite, 10_000 ); // Should be overrode by activate/deactivate, but just in case
+         GameStatusTimer.Change( 3_000, ShouldMonitorLog ? 500 : Timeout.Infinite );
       }
 
       private void ButtonOffline_Click ( object sender, RoutedEventArgs e ) {
          if ( AbortByCheckSave() ) return;
          App.LaunchGame( "offline" );
          SetInfo( GuiInfo.GAME_RUNNING, true );
-         GameStatusTimer.Change( Timeout.Infinite, 10_000 ); // Should be overrode by activate/deactivate, but just in case
+         GameStatusTimer.Change( 3_000,  ShouldMonitorLog ? 500 : Timeout.Infinite );
       }
 
       private void ButtonCanny_Click   ( object sender, RoutedEventArgs e ) => OpenUrl( "canny", e );
@@ -784,6 +787,16 @@ namespace Sheepy.Modnix.MainGUI {
          App.SetLogLevel( CheckLogVerbo.IsChecked == true ? SourceLevels.Verbose : SourceLevels.Information );
       }
 
+      private bool ShouldMonitorLog => CheckLogMonitor.IsChecked == true;
+
+      private void CheckLogMonitor_Checked ( object sender, RoutedEventArgs e ) {
+         var monitor = ShouldMonitorLog;
+         if ( App.Settings.LogMonitor == monitor ) return;
+         App.Settings.LogMonitor = monitor;
+         if ( monitor ) GameStatusTimer.Change( 500, 500 );
+         else GameStatusTimer.Change( Timeout.Infinite, Timeout.Infinite );
+      }
+
       private void ButtonLogSave_Click ( object sender, RoutedEventArgs e ) { try {
          var name =  ButtonLicense.IsChecked == true
                ? AppControl.LIVE_NAME + $" License"
@@ -848,6 +861,7 @@ namespace Sheepy.Modnix.MainGUI {
          TextLog.Visibility = isGui ? Visibility.Visible : Visibility.Collapsed;
          TextLicense.Visibility = isGui ? Visibility.Collapsed : Visibility.Visible;
          CheckLogVerbo.Visibility = isGui ? Visibility.Visible : Visibility.Collapsed;
+         CheckLogMonitor.Visibility = isLoader || isConsole ? Visibility.Visible : Visibility.Collapsed;
          ButtonLogClear.Visibility = isGui ? Visibility.Visible : Visibility.Collapsed;
          LabelLogFilter.Visibility = TextLogFilter.Visibility = isGui || isChange || isLicense ? Visibility.Collapsed : Visibility.Visible;
          ButtonLoaderLog.IsChecked = isLoader;
@@ -863,6 +877,7 @@ namespace Sheepy.Modnix.MainGUI {
             } catch ( SystemException ex ) {
                TextLicense.Text = ex.ToString();
             }
+            if ( ShouldMonitorLog ) TextLicense.ScrollToEnd();
             ConsoleLogTime = new FileInfo( App.ConsoleLog ).LastWriteTime;
             LoaderLogTime  = new FileInfo( App.LoaderLog  ).LastWriteTime;
          }
@@ -882,15 +897,16 @@ namespace Sheepy.Modnix.MainGUI {
          var isLoader  = ButtonLoaderLog.IsChecked  == true;
          var isConsole = ButtonConsoleLog.IsChecked == true;
          var file = isLoader ? App.LoaderLog : isConsole ? App.ConsoleLog : null;
-         var isLoaderLogUpdated =  File.Exists( App.LoaderLog ) && new FileInfo( App.LoaderLog ).LastAccessTime > LoaderLogTime.GetValueOrDefault() ;
+         var isLoaderLogUpdated = File.Exists( App.LoaderLog ) && new FileInfo( App.LoaderLog ).LastAccessTime > LoaderLogTime.GetValueOrDefault() ;
          if ( file != null ) {
-            if ( ! File.Exists( file ) ) ShowLog( "gui" );
-            if ( isLoader ) {
+            if ( ! File.Exists( file ) ) {
+               if ( ! SharedGui.IsGameRunning ) ShowLog( "gui" );
+            } else if ( isLoader ) {
                if ( isLoaderLogUpdated ) ShowLog( "loader" );
-            } else if ( new FileInfo( file ).LastAccessTime > ConsoleLogTime.GetValueOrDefault() )
-               ShowLog( isLoader ? "loader" : "console" );
+            } else if ( isConsole && new FileInfo( file ).LastAccessTime > ConsoleLogTime.GetValueOrDefault() )
+               ShowLog( "console" );
          }
-         if ( isLoaderLogUpdated ) {
+         if ( isLoaderLogUpdated && ! SharedGui.IsGameRunning ) {
             LoaderLogTime = new FileInfo( App.LoaderLog ).LastAccessTime;
             App.GetModList();
          }
