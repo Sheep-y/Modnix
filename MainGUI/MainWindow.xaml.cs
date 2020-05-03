@@ -916,6 +916,7 @@ namespace Sheepy.Modnix.MainGUI {
          if ( isLoaderLogUpdated && ! SharedGui.IsGameRunning ) {
             LoaderLogTime = new FileInfo( App.LoaderLog ).LastAccessTime;
             App.GetModList();
+            RefreshModInfo();
          }
       } ); }
       #endregion

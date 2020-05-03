@@ -3,6 +3,7 @@ Modnix Changelog
 # Version 2.3.1, in development
 
 * Fix: Game version now parsed correctly from loader log. (Regression from v2.3 due to text reader rewrite.)
+* Fix: Mods' runtime error/warning notices are now refreshed when mod log is updated.
 
 # Version 2.3, 2020-04-28
 
