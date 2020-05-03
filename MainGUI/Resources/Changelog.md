@@ -1,5 +1,10 @@
 Modnix Changelog
 
+# Version 2.3.1, 2020-05-03
+
+* Fix: Game version now parsed correctly from loader log. (Regression from v2.3 due to text reader rewrite.)
+* Fix: Mods' runtime error/warning notices are now refreshed when mod log is updated.
+
 # Version 2.3, 2020-04-28
 
 * New: A mod's LoadIndex and LogLevel now take effect after manually changed in Modnix.conf. Requested by Silent on Discord.
