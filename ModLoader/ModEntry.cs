@@ -146,7 +146,10 @@ namespace Sheepy.Modnix {
       private IEnumerable < Assembly > GetAssemblies ( object target ) {
          if ( LowerAndIsEmpty( target, out string id ) ) return ModAssemblies ?? Enumerable.Empty<Assembly>();
          switch ( id ) {
-            case "loader" : case "modnix" :
+            case "modnix" :
+               return new Assembly[]{ Assembly.GetExecutingAssembly() };
+
+            case "loader" :
                var ppml = ModLoader.PpmlAssembly;
                var loaderList = new Assembly[ ppml == null ? 1 : 2 ];
                loaderList[0] = Assembly.GetExecutingAssembly();
@@ -162,7 +165,9 @@ namespace Sheepy.Modnix {
                return new Assembly[]{ GameAssembly };
 
             default:
-               return ModScanner.GetModById( id )?.ModAssemblies ?? Enumerable.Empty<Assembly>();
+               var mod = ModScanner.GetModById( id );
+               if ( mod == null ) return null;
+               return mod.ModAssemblies ?? Enumerable.Empty<Assembly>();
          }
       }
 

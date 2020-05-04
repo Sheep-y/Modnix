@@ -1,5 +1,10 @@
 Modnix Changelog
 
+# Version 3, in development
+
+* Mod: "assemblies" api now returns null when mod is not found.
+* Mod: api( "assemblies", "modnix" ) no longer returns ppml assembly.
+
 # Version 2.3.1, 2020-05-03
 
 * Fix: Game version now parsed correctly from loader log. (Regression from v2.3 due to text reader rewrite.)
