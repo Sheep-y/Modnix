@@ -74,63 +74,8 @@ namespace Sheepy.Modnix.Tests {
          }
       }
 
-      private void SaveConfig ( ModEntry mod, object param, string type ) {
-         var task = mod.ModAPI( "config save", param ) as Task;
-         Assert.IsNotNull( task, $"config save {type} returns Task" );
-         task.Wait( 3000 );
-         Assert.IsTrue( task.IsCompleted, $"config {type} saved" );
-         Assert.IsNull( task.Exception, $"config {type} saved without error" );
-      }
-
       [TestMethod()] public void ContextTest () {
          Assert.AreEqual( 3, ModScanner.EnabledMods.Count, "mod count" );
-      }
-
-      [TestMethod()] public void VersionTest () {
-         Assert.AreEqual( ModA.Metadata.Version, ModA.ModAPI( "version", null ), "A null" );
-         Assert.AreEqual( ModA.Metadata.Version, ModA.ModAPI( "version", "" ), "A empty" );
-         Assert.AreEqual( ModA.Metadata.Version, ModA.ModAPI( "version", " " ), "A blank" );
-
-         Assert.AreEqual( ModLoader.LoaderVersion, ModA.ModAPI( "version", "Modnix" ), "modnix" );
-         Assert.AreEqual( ModLoader.LoaderVersion, ModA.ModAPI( "version", "loader" ), "loader" );
-         Assert.AreEqual( ModLoader.GameVersion, ModA.ModAPI( "version", "Phoenix Point" ), "pp" );
-         Assert.AreEqual( ModLoader.GameVersion, ModA.ModAPI( "version", "game" ), "game" );
-
-         Assert.AreEqual( ModB.Metadata.Version, ModA.ModAPI( "version", "Test.B" ), "Test.B" );
-         Assert.AreEqual( ZeroVersion, ModA.ModAPI( "version", "test.c" ), "test.c" );
-      }
-
-      [TestMethod()] public void PathTest () {
-         Assert.AreEqual( ModA.Path, ModA.ModAPI( "path", null ), "A null" );
-         Assert.AreEqual( ModA.Path, ModA.ModAPI( "path", "" ), "A empty" );
-         Assert.AreEqual( ModA.Path, ModA.ModAPI( "path", " " ), "A blank" );
-
-         Assert.AreEqual( ModLoader.ModDirectory, ModA.ModAPI( "path", "mods_root" ), "root" );
-
-         Assert.AreEqual( ModB.Path, ModA.ModAPI( "path", "Test.B" ), "Test.B" );
-         Assert.AreEqual( null, ModA.ModAPI( "path", "test.c" ), "test.c" );
-      }
-
-      [TestMethod()] public void ModInfoTest () {
-         Assert.AreEqual( ModA.Metadata.Id, ( ModA.ModAPI( "mod_info", null ) as ModMeta ).Id, "A null" );
-         Assert.AreEqual( ModA.Metadata.Id, ( ModA.ModAPI( "mod_info", "" ) as ModMeta ).Id, "A empty" );
-         Assert.AreEqual( ModA.Metadata.Id, ( ModA.ModAPI( "mod_info", " " ) as ModMeta ).Id, "A blank" );
-         Assert.AreEqual( ModB.Metadata.Id, ( ModA.ModAPI( "mod_info", "Test.B" ) as ModMeta ).Id, "Test.B" );
-         Assert.AreEqual( ModC.Metadata.Id, ( ModA.ModAPI( "mod_info", "test.c" ) as ModMeta ).Id, "test.c" );
-      }
-
-      [TestMethod()] public void ModListTest () {
-         var list = (IEnumerable<string>) ModA.ModAPI( "mod_list", null );
-         Assert.AreEqual( 3, list.Count(), "list count" );
-         Assert.IsTrue( list.Contains( ModA.Metadata.Id ), "A" );
-         Assert.IsTrue( list.Contains( ModB.Metadata.Id ), "B" );
-         Assert.IsTrue( list.Contains( ModC.Metadata.Id ), "C" );
-
-         list = (IEnumerable<string>) ModA.ModAPI( "mod_list", "test" );
-         Assert.AreEqual( 3, list.Count(), "test list count" );
-
-         list = (IEnumerable<string>) ModA.ModAPI( "mod_list", "none" );
-         Assert.AreEqual( 0, list.Count(), "empty list count" );
       }
 
       private static string ExtB ( object t, object e ) => t.ToString() + e.ToString() + "B";
@@ -173,6 +118,61 @@ namespace Sheepy.Modnix.Tests {
 
          Assert.AreEqual( true , ModB.ModAPI( " api_add   A.B ", (Func<object,object,string>) ExtB ), "A.B => ExtB (ModB)" );
          Assert.AreEqual( "c0B", ModA.ModAPI( "A.b c", "0" ), "call api A.b (Mod B)" );
+      }
+
+      [TestMethod()] public void ModInfoTest () {
+         Assert.AreEqual( ModA.Metadata.Id, ( ModA.ModAPI( "mod_info", null ) as ModMeta ).Id, "A null" );
+         Assert.AreEqual( ModA.Metadata.Id, ( ModA.ModAPI( "mod_info", "" ) as ModMeta ).Id, "A empty" );
+         Assert.AreEqual( ModA.Metadata.Id, ( ModA.ModAPI( "mod_info", " " ) as ModMeta ).Id, "A blank" );
+         Assert.AreEqual( ModB.Metadata.Id, ( ModA.ModAPI( "mod_info", "Test.B" ) as ModMeta ).Id, "Test.B" );
+         Assert.AreEqual( ModC.Metadata.Id, ( ModA.ModAPI( "mod_info", "test.c" ) as ModMeta ).Id, "test.c" );
+      }
+
+      [TestMethod()] public void ModListTest () {
+         var list = (IEnumerable<string>) ModA.ModAPI( "mod_list", null );
+         Assert.AreEqual( 3, list.Count(), "list count" );
+         Assert.IsTrue( list.Contains( ModA.Metadata.Id ), "A" );
+         Assert.IsTrue( list.Contains( ModB.Metadata.Id ), "B" );
+         Assert.IsTrue( list.Contains( ModC.Metadata.Id ), "C" );
+
+         list = (IEnumerable<string>) ModA.ModAPI( "mod_list", "test" );
+         Assert.AreEqual( 3, list.Count(), "test list count" );
+
+         list = (IEnumerable<string>) ModA.ModAPI( "mod_list", "none" );
+         Assert.AreEqual( 0, list.Count(), "empty list count" );
+      }
+
+      private void SaveConfig ( ModEntry mod, object param, string type ) {
+         var task = mod.ModAPI( "config save", param ) as Task;
+         Assert.IsNotNull( task, $"config save {type} returns Task" );
+         task.Wait( 3000 );
+         Assert.IsTrue( task.IsCompleted, $"config {type} saved" );
+         Assert.IsNull( task.Exception, $"config {type} saved without error" );
+      }
+
+      [TestMethod()] public void PathTest () {
+         Assert.AreEqual( ModA.Path, ModA.ModAPI( "path", null ), "A null" );
+         Assert.AreEqual( ModA.Path, ModA.ModAPI( "path", "" ), "A empty" );
+         Assert.AreEqual( ModA.Path, ModA.ModAPI( "path", " " ), "A blank" );
+
+         Assert.AreEqual( ModLoader.ModDirectory, ModA.ModAPI( "path", "mods_root" ), "root" );
+
+         Assert.AreEqual( ModB.Path, ModA.ModAPI( "path", "Test.B" ), "Test.B" );
+         Assert.AreEqual( null, ModA.ModAPI( "path", "test.c" ), "test.c" );
+      }
+
+      [TestMethod()] public void VersionTest () {
+         Assert.AreEqual( ModA.Metadata.Version, ModA.ModAPI( "version", null ), "A null" );
+         Assert.AreEqual( ModA.Metadata.Version, ModA.ModAPI( "version", "" ), "A empty" );
+         Assert.AreEqual( ModA.Metadata.Version, ModA.ModAPI( "version", " " ), "A blank" );
+
+         Assert.AreEqual( ModLoader.LoaderVersion, ModA.ModAPI( "version", "Modnix" ), "modnix" );
+         Assert.AreEqual( ModLoader.LoaderVersion, ModA.ModAPI( "version", "loader" ), "loader" );
+         Assert.AreEqual( ModLoader.GameVersion, ModA.ModAPI( "version", "Phoenix Point" ), "pp" );
+         Assert.AreEqual( ModLoader.GameVersion, ModA.ModAPI( "version", "game" ), "game" );
+
+         Assert.AreEqual( ModB.Metadata.Version, ModA.ModAPI( "version", "Test.B" ), "Test.B" );
+         Assert.AreEqual( ZeroVersion, ModA.ModAPI( "version", "test.c" ), "test.c" );
       }
    }
 }
