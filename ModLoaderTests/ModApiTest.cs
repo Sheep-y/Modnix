@@ -31,16 +31,21 @@ namespace Sheepy.Modnix.Tests {
       private const string TEST_CONFIG_MOD = @"({ Id : ""test.config""})";
 
       [TestMethod()] public void AssemblyTest () {
-         Assert.IsNull( ModA.ModAPI( "assembly" ), "ModA assembly" );
+         var loader = ModA.ModAPI( "assembly", "loader" ) as Assembly;
+         Assert.IsNotNull( loader, "loader assembly" );
+         Assert.AreEqual ( loader, ModA.ModAPI( "assembly", "loader" ), "loader assembly" );
 
-         var a = ModA.ModAPI( "assembly", "loader" ) as Assembly;
-         Assert.IsNotNull( a, "loader assembly" );
-         Assert.AreEqual ( a, ModA.ModAPI( "assembly", "loader" ), "loader assembly" );
+         var a = ModA.ModAPI( "assemblies" );
+         Assert.IsNull( ModA.ModAPI( "assembly" ), "ModA assembly" );
+         Assert.IsNotNull( a, "ModA assemblies" );
+         Assert.AreEqual( 0, ( a as IEnumerable<Assembly> ).Count(), "ModA assemblies" );
+         Assert.IsNull( ModA.ModAPI( "assembly", "non-exist" ), "not found assembly" );
+         Assert.IsNull( ModA.ModAPI( "assemblies", "non-exist" ), "not found assemblies" );
 
          var list = ModA.ModAPI( "assemblies", "loader" ) as IEnumerable<Assembly>;
          Assert.IsNotNull( list, "loader assemblies" );
          Assert.AreEqual( 1, list.Count(), "loader assemblies count" );
-         Assert.AreEqual( a, list.First(), "loader assemblies[0]" );
+         Assert.AreEqual( loader, list.First(), "loader assemblies[0]" );
       }
 
       [TestMethod()] public void ConfigTest () {
@@ -168,7 +173,7 @@ namespace Sheepy.Modnix.Tests {
          var loader_dir = ModA.ModAPI( "dir", "loader" )?.ToString();
          var loader_path = ModA.ModAPI( "path", "loader" )?.ToString();
          
-         Assert.IsTrue( loader_path.EndsWith( "ModnixLoader.dll" ) , "Modnix path" );
+         Assert.IsTrue( loader_path.EndsWith( "Loader.dll" ) , "Modnix path" );
          Assert.IsTrue( mod_dir.EndsWith( "My Games\\Phoenix Point\\Mods" ), "Mod root" );
          Assert.AreEqual( loader_dir, Path.GetDirectoryName( loader_path ), "Modnix = mods root" );
 
