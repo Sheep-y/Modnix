@@ -14,10 +14,10 @@ namespace Sheepy.Modnix.Tests {
    [TestClass()]
    public class ModApiTest {
 
-      private static ModEntry ModA = new ModEntry( "//A", new ModMeta () { Id = "Test.A", Version = new Version( 1, 0, 0, 0 ) } );
-      private static ModEntry ModB = new ModEntry( "//B/b", new ModMeta () { Id = "Test.B", Version = new Version( 1, 2, 3, 4 ) } );
-      private static ModEntry ModC = new ModEntry( new ModMeta () { Id = "Test.C", Version = null } );
-      private static Version ZeroVersion = new Version( 0, 0, 0, 0 );
+      private static readonly ModEntry ModA = new ModEntry( "//A", new ModMeta () { Id = "Test.A", Version = new Version( 1, 0, 0, 0 ) } );
+      private static readonly ModEntry ModB = new ModEntry( "//B/b", new ModMeta () { Id = "Test.B", Version = new Version( 1, 2, 3, 4 ) } );
+      private static readonly ModEntry ModC = new ModEntry( new ModMeta () { Id = "Test.C", Version = null } );
+      private static readonly Version ZeroVersion = new Version( 0, 0, 0, 0 );
 
       [ClassInitializeAttribute] public static void TestInitialize ( TestContext _ ) {
          ModLoader.Setup();
@@ -146,6 +146,13 @@ namespace Sheepy.Modnix.Tests {
          Assert.AreEqual( true , ModA.ModAPI( "api_add  A.B", (Func<object,object,string>) ExtB ), "A.B => ExtB" );
          Assert.AreEqual( true , ModA.ModAPI( "api_add A.C", ExtC ), "A.C => ExtC" );
          Assert.AreEqual( true , ModA.ModAPI( "api_add A.E", ExtE ), "A.C => ExtE" );
+
+         var list = ModA.ModAPI( "api_list", "A." ) as IEnumerable<string>;
+         Assert.AreEqual( 4, list.Count(), "api_list.Length" );
+         Assert.AreEqual( "a.a", list.First(), "api_list[0]" );
+         Assert.AreEqual( ExtA.GetMethodInfo(), ModA.ModAPI( "api_info", "A.A" ), "api_info A.A" );
+         Assert.AreEqual( ExtC.GetMethodInfo(), ModA.ModAPI( "api_info", "A.C" ), "api_info A.C" );
+         Assert.AreEqual( ExtE.GetMethodInfo(), ModA.ModAPI( "api_info", "A.E" ), "api_info A.E" );
 
          Assert.AreEqual( false, ModA.ModAPI( "api_add AAA", ExtA ), "no dot" );
          Assert.AreEqual( false, ModA.ModAPI( "api_add .A", ExtA ), "too short" );
