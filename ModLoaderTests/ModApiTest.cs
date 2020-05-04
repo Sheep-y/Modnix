@@ -30,6 +30,19 @@ namespace Sheepy.Modnix.Tests {
 
       private const string TEST_CONFIG_MOD = @"({ Id : ""test.config""})";
 
+      [TestMethod()] public void AssemblyTest () {
+         Assert.IsNull( ModA.ModAPI( "assembly" ), "ModA assembly" );
+
+         var a = ModA.ModAPI( "assembly", "loader" ) as Assembly;
+         Assert.IsNotNull( a, "loader assembly" );
+         Assert.AreEqual ( a, ModA.ModAPI( "assembly", "loader" ), "loader assembly" );
+
+         var list = ModA.ModAPI( "assemblies", "loader" ) as IEnumerable<Assembly>;
+         Assert.IsNotNull( list, "loader assemblies" );
+         Assert.AreEqual( 1, list.Count(), "loader assemblies count" );
+         Assert.AreEqual( a, list.First(), "loader assemblies[0]" );
+      }
+
       [TestMethod()] public void ConfigTest () {
          var modFile = Path.Combine( Path.GetTempPath(), "mod_info.js" );
          File.WriteAllText( modFile, TEST_CONFIG_MOD );
@@ -151,11 +164,17 @@ namespace Sheepy.Modnix.Tests {
       }
 
       [TestMethod()] public void PathTest () {
+         var mod_dir = ModA.ModAPI( "dir", "mods_root" )?.ToString();
+         var loader_dir = ModA.ModAPI( "dir", "loader" )?.ToString();
+         var loader_path = ModA.ModAPI( "path", "loader" )?.ToString();
+         
+         Assert.IsTrue( loader_path.EndsWith( "ModnixLoader.dll" ) , "Modnix path" );
+         Assert.IsTrue( mod_dir.EndsWith( "My Games\\Phoenix Point\\Mods" ), "Mod root" );
+         Assert.AreEqual( loader_dir, Path.GetDirectoryName( loader_path ), "Modnix = mods root" );
+
          Assert.AreEqual( ModA.Path, ModA.ModAPI( "path", null ), "A null" );
          Assert.AreEqual( ModA.Path, ModA.ModAPI( "path", "" ), "A empty" );
          Assert.AreEqual( ModA.Path, ModA.ModAPI( "path", " " ), "A blank" );
-
-         Assert.AreEqual( ModLoader.ModDirectory, ModA.ModAPI( "path", "mods_root" ), "root" );
 
          Assert.AreEqual( ModB.Path, ModA.ModAPI( "path", "Test.B" ), "Test.B" );
          Assert.AreEqual( null, ModA.ModAPI( "path", "test.c" ), "test.c" );
