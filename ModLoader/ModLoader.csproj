@@ -81,7 +81,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>cd $(SolutionDir)MainGUI\
+    <PostBuildEvent>cd $(SolutionDir)Manager\
 mkdir Resources
 cd Resources
 "c:\Program Files\7-Zip\7z.exe" a -bd -bb0 -tgzip -mx=0 -mfb=258 $(TargetFileName).gz $(ProjectDir)$(OutDir)$(TargetFileName)
