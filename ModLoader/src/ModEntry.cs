@@ -186,7 +186,7 @@ namespace Sheepy.Modnix {
          switch ( id ) {
             case "mods_root" : return ModLoader.ModDirectory;
             case "loader" : case "modnix" :
-               return Assembly.GetExecutingAssembly().Location;
+               return ModLoader.LoaderPath;
             case "phoenixpoint" : case "phoenix point" : case "game" :
                return Process.GetCurrentProcess().MainModule?.FileName;
             default :
@@ -282,9 +282,9 @@ namespace Sheepy.Modnix {
       #endregion
 
       #region Logger
-      internal LoggerProxy Logger; // Created when and only when an initialiser accepts a logging function
+      private LoggerProxy Logger; // Created when and only when an initialiser accepts a logging function
 
-      private Logger CreateLogger () {
+      public Logger CreateLogger () {
          lock ( this ) {
             if ( Logger != null ) return Logger;
             Logger = new LoggerProxy( ModLoader.Log ){ Level = LogLevel ?? ModLoader.Settings.LogLevel };

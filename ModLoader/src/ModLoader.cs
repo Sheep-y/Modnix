@@ -28,6 +28,7 @@ namespace Sheepy.Modnix {
       internal readonly static Version PPML_COMPAT = new Version( 0, 2 );
 
       public static string ModDirectory { get; private set; }
+      public static string LoaderPath => Assembly.GetExecutingAssembly().Location;
 
       #region Initialisation
       private static bool RunMainPhaseOnInit;
@@ -205,6 +206,7 @@ namespace Sheepy.Modnix {
                   CallInit( mod, lib, type, phase );
             }
          }
+         Log.Verbo( "Phase {0} ended", phase );
          Log.Flush();
       } catch ( Exception ex ) { Log.Error( ex ); } }
 
