@@ -88,7 +88,6 @@
     <Compile Include="Updater.cs" />
     <EmbeddedResource Include="Resources\0Harmony.dll.gz" />
     <EmbeddedResource Include="Resources\7za.exe.gz" />
-    <None Include="app.config" />
     <None Include="Resources\Changelog.md" />
     <EmbeddedResource Include="Resources\Changelog.md.gz" />
     <None Include="Resources\License.txt" />

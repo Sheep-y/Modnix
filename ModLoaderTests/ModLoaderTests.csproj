@@ -65,9 +65,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\ModLoader\ModLoader.csproj">
       <Project>{E72A9BEB-E4D5-46BA-BEC2-732A7F40B181}</Project>
       <Name>ModLoader</Name>
