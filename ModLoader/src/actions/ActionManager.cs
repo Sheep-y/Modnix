@@ -12,7 +12,7 @@ namespace Sheepy.Modnix.Actions {
          ModAction[] actions;
          lock ( mod.Metadata ) actions = mod.Metadata.Actions;
          if ( actions == null ) return;
-         mod.CreateLogger().Info( "Running {0} actions" );
+         mod.CreateLogger().Info( "Running {0} actions", actions.Length );
 
          List<ModAction> evals = null;
          foreach ( var a in actions ) try {

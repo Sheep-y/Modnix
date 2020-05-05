@@ -32,6 +32,7 @@ namespace Sheepy.Modnix.Actions {
             if ( Params != null ) return;
             ModLoader.Log.Info( "Initiating runtime compiler" );
             HashSet<string> names = new HashSet<string>();
+            var dotNetDir = ModLoader.SystemDotNetDir;
 
             Params = new CompilerParameters();
             Params.CompilerOptions = "-t:library -p:x64 -o+";
@@ -40,6 +41,12 @@ namespace Sheepy.Modnix.Actions {
             refs.Add( ModLoader.LoaderPath );
             foreach ( var f in Directory.EnumerateFiles( Path.GetDirectoryName( ModLoader.LoaderPath ) ) ) {
                var name = Path.GetFileName( f );
+               /*
+               if ( name.StartsWith( "System." ) ) {
+                  refs.Add( Path.Combine( dotNetDir, name ) );
+                  names.Add( name );
+               } else if ( name.StartsWith( "Unity." ) || name.StartsWith( "UnityEngine." ) || Assemblies.Contains( name ) ) {
+               */
                if ( name.StartsWith( "System." ) || name.StartsWith( "Unity." ) || name.StartsWith( "UnityEngine." ) || Assemblies.Contains( name ) ) {
                   refs.Add( f );
                   names.Add( name );
@@ -98,15 +105,33 @@ namespace Sheepy.Modnix.Actions {
       }
 
       private MethodInfo Compile ( string code ) {
+         typeof( Path ).GetField( "DirectorySeparatorChar" ).SetValue( null, '/' );
+         //var mono = typeof( Uri ).Assembly.GetType( "System.MonoToolsLocator" )?.GetField( "Mono" );
+         var csc = typeof( Uri ).Assembly.GetType( "System.MonoToolsLocator" )?.GetField( "McsCSharpCompiler" );
+         //Log.Info( "{0} = {1}", mono, mono?.GetValue( null ) ?? "(not found)" );
+         Log.Info( "{0} = {1}", csc, csc?.GetValue( null ) ?? "(not found)" );
+         //mono.SetValue( null, "cmd" );
+         csc.SetValue( null, Path.Combine( ModLoader.SystemDotNetDir, "csc.exe" ) );
+         //Log.Info( "{0} = {1}", mono, mono?.GetValue( null ) ?? "(not found)" );
+         Log.Info( "{0} = {1}", csc, csc?.GetValue( null ) ?? "(not found)" );
+
          Log.Verbo( "Compiling {0} chars", code.Length );
-         var result = new CSharpCodeProvider().CompileAssemblyFromSource( Params, code );
-         if ( result.Errors.Count > 0 ) {
+         try {
+            var result = new CSharpCodeProvider().CompileAssemblyFromSource( Params, code );
+            if ( result.Errors.Count > 0 ) {
+               Log.Error( "Cannot compile {0}", code );
+               foreach ( var line in result.Errors )
+                  Log.Error( line );
+               return null;
+            }
+            return result.CompiledAssembly.GetType( "global::" + Mod.Key ).GetMethod( "Eval" );
+         } catch ( Exception ex ) {
             Log.Error( "Cannot compile {0}", code );
-            foreach ( var line in result.Errors )
-               Log.Error( line );
+            Log.Error( ex );
             return null;
+         } finally {
+            typeof( Path ).GetField( "DirectorySeparatorChar" ).SetValue( null, '\\' );
          }
-         return result.CompiledAssembly.GetType( "global::" + Mod.Key ).GetMethod( "Eval" );
       }
    }
 }
