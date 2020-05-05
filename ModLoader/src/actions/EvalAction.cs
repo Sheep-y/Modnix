@@ -1,4 +1,5 @@
-﻿using Microsoft.CSharp;
+﻿using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CSharp;
 using Sheepy.Logging;
 using System;
 using System.CodeDom.Compiler;
@@ -105,16 +106,8 @@ namespace Sheepy.Modnix.Actions {
       }
 
       private MethodInfo Compile ( string code ) {
-         typeof( Path ).GetField( "DirectorySeparatorChar" ).SetValue( null, '/' );
-         //var mono = typeof( Uri ).Assembly.GetType( "System.MonoToolsLocator" )?.GetField( "Mono" );
-         var csc = typeof( Uri ).Assembly.GetType( "System.MonoToolsLocator" )?.GetField( "McsCSharpCompiler" );
-         //Log.Info( "{0} = {1}", mono, mono?.GetValue( null ) ?? "(not found)" );
-         Log.Info( "{0} = {1}", csc, csc?.GetValue( null ) ?? "(not found)" );
-         //mono.SetValue( null, "cmd" );
-         csc.SetValue( null, Path.Combine( ModLoader.SystemDotNetDir, "csc.exe" ) );
-         //Log.Info( "{0} = {1}", mono, mono?.GetValue( null ) ?? "(not found)" );
-         Log.Info( "{0} = {1}", csc, csc?.GetValue( null ) ?? "(not found)" );
-
+         Log.Verbo( "Parsing {0} chars", code.Length );
+         //SyntaxFactory.ParseSyntaxTree()
          Log.Verbo( "Compiling {0} chars", code.Length );
          try {
             var result = new CSharpCodeProvider().CompileAssemblyFromSource( Params, code );

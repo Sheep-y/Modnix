@@ -8,7 +8,7 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>Sheepy.Modnix</RootNamespace>
     <AssemblyName>ModnixInjector</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
     <TargetFrameworkProfile />
@@ -47,12 +47,12 @@
     <Compile Include="Options.cs" />
     <Compile Include="Injector.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <None Include="app.config" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Mono.Cecil">
       <Version>0.11.2</Version>
     </PackageReference>
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>cd $(SolutionDir)Manager\

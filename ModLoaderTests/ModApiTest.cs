@@ -1,11 +1,11 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
-using System.Linq;
 using System.Collections.Generic;
-using static System.Reflection.BindingFlags;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using static System.Reflection.BindingFlags;
 
 namespace Sheepy.Modnix.Tests {
 
