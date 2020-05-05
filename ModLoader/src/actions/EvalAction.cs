@@ -1,5 +1,4 @@
-﻿using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CSharp;
+﻿using Microsoft.CSharp;
 using Sheepy.Logging;
 using System;
 using System.CodeDom.Compiler;
@@ -24,7 +23,7 @@ namespace Sheepy.Modnix.Actions {
          new EvalAction( mod ).Run( actions );
       }
 
-      private static readonly string[] Assemblies = new string[]{ "0Harmony.dll", "Newtonsoft.Json.dll" };
+      private static readonly string[] Assemblies = new string[]{ "mscorlib.dll", "Assembly-CSharp.dll", "Cinemachine.dll", "0Harmony.dll", "Newtonsoft.Json.dll" };
       private static StringBuilder Usings;
       private static CompilerParameters Params;
 
@@ -42,13 +41,7 @@ namespace Sheepy.Modnix.Actions {
             refs.Add( ModLoader.LoaderPath );
             foreach ( var f in Directory.EnumerateFiles( Path.GetDirectoryName( ModLoader.LoaderPath ) ) ) {
                var name = Path.GetFileName( f );
-               /*
-               if ( name.StartsWith( "System." ) ) {
-                  refs.Add( Path.Combine( dotNetDir, name ) );
-                  names.Add( name );
-               } else if ( name.StartsWith( "Unity." ) || name.StartsWith( "UnityEngine." ) || Assemblies.Contains( name ) ) {
-               */
-               if ( name.StartsWith( "System." ) || name.StartsWith( "Unity." ) || name.StartsWith( "UnityEngine." ) || Assemblies.Contains( name ) ) {
+               if ( name.StartsWith( "Mono." ) || name.StartsWith( "System." ) || name.StartsWith( "Unity." ) || name.StartsWith( "UnityEngine." ) || Assemblies.Contains( name ) ) {
                   refs.Add( f );
                   names.Add( name );
                }
@@ -56,11 +49,9 @@ namespace Sheepy.Modnix.Actions {
             ModLoader.Log.Verbo( "Added references {0}", names.ToArray() );
             names.Clear();
 
-            int capacity = 0;
             foreach ( var asm in AppDomain.CurrentDomain.GetAssemblies() ) try {
                Type[] types;
                if ( asm.IsDynamic || ! refs.Contains( asm.Location ) ) continue;
-               ModLoader.Log.Verbo( asm.Location );
                try {
                   types = asm.GetTypes();
                } catch ( ReflectionTypeLoadException rtlex ) { // Happens on System.dll
@@ -68,7 +59,8 @@ namespace Sheepy.Modnix.Actions {
                }
                foreach ( var t in types ) {
                   if ( t?.IsPublic != true ) continue;
-                  names.Add( t.Namespace );
+                  if ( ! string.IsNullOrEmpty( t.Namespace ) )
+                     names.Add( t.Namespace );
                }
             } catch ( Exception ex ) { ModLoader.Log.Warn( ex ); }
 
@@ -88,7 +80,7 @@ namespace Sheepy.Modnix.Actions {
 
       private string BuildActionCode ( ModAction[] actions ) {
          PrepareReferences();
-         Log.Verbo( "Buliding {0} eval actions", actions.Length );
+         Log.Verbo( "Building {0} eval actions", actions.Length );
          StringBuilder code = new StringBuilder( 2048 ), main = new StringBuilder( 256 );
          code.Append( "static class " ).Append( Mod.Key ).Append( "{" );
          code.Append( "static Sheepy.Modnix.ModEntry Mod;" );
@@ -106,10 +98,19 @@ namespace Sheepy.Modnix.Actions {
       }
 
       private MethodInfo Compile ( string code ) {
-         Log.Verbo( "Parsing {0} chars", code.Length );
-         //SyntaxFactory.ParseSyntaxTree()
+         //typeof( Path ).GetField( "DirectorySeparatorChar" ).SetValue( null, '/' );
+         var mono = typeof( Uri ).Assembly.GetType( "System.MonoToolsLocator" )?.GetField( "Mono" );
+         var csc = typeof( Uri ).Assembly.GetType( "System.MonoToolsLocator" )?.GetField( "McsCSharpCompiler" );
+         Log.Info( "{0} = {1}", mono, mono?.GetValue( null ) ?? "(not found)" );
+         Log.Info( "{0} = {1}", csc, csc?.GetValue( null ) ?? "(not found)" );
+         //mono.SetValue( null, "cmd" );
+         //csc.SetValue( null, Path.Combine( ModLoader.SystemDotNetDir, "csc.exe" ) );
+         //Log.Info( "{0} = {1}", mono, mono?.GetValue( null ) ?? "(not found)" );
+         //Log.Info( "{0} = {1}", csc, csc?.GetValue( null ) ?? "(not found)" );
+
          Log.Verbo( "Compiling {0} chars", code.Length );
          try {
+            Log.Flush();
             var result = new CSharpCodeProvider().CompileAssemblyFromSource( Params, code );
             if ( result.Errors.Count > 0 ) {
                Log.Error( "Cannot compile {0}", code );
@@ -122,8 +123,8 @@ namespace Sheepy.Modnix.Actions {
             Log.Error( "Cannot compile {0}", code );
             Log.Error( ex );
             return null;
-         } finally {
-            typeof( Path ).GetField( "DirectorySeparatorChar" ).SetValue( null, '\\' );
+         //} finally {
+         //   typeof( Path ).GetField( "DirectorySeparatorChar" ).SetValue( null, '\\' );
          }
       }
    }
