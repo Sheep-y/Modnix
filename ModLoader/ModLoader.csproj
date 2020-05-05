@@ -63,6 +63,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="src\actions\ActionManager.cs" />
     <Compile Include="src\actions\EvalAction.cs" />
     <Compile Include="src\utils\Logger.cs" />
     <Compile Include="src\ModEntry.cs" />

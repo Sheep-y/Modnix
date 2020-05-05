@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Sheepy.Logging;
+using Sheepy.Modnix.Actions;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -205,6 +206,7 @@ namespace Sheepy.Modnix {
                foreach ( var type in entries )
                   CallInit( mod, lib, type, phase );
             }
+            ActionManager.RunAction( mod, phase );
          }
          Log.Verbo( "Phase {0} ended", phase );
          Log.Flush();
