@@ -91,6 +91,7 @@ namespace Sheepy.Modnix {
       public static void Setup () { try { lock( MOD_PATH ) {
          if ( ModDirectory != null ) return;
          AppDomain.CurrentDomain.AssemblyResolve += ModLoaderResolve;
+         AppDomain.CurrentDomain.UnhandledException += ModLoaderException;
          ModDirectory = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.MyDocuments ), MOD_PATH );
          if ( Log == null ) {
             if ( ! Directory.Exists( ModDirectory ) )
@@ -122,6 +123,11 @@ namespace Sheepy.Modnix {
          }
          return null;
       } catch ( Exception ex ) { Log?.Error( ex ); return null; } }
+
+      private static void ModLoaderException ( object sender, UnhandledExceptionEventArgs e ) {
+         Log.Log( SourceLevels.Critical, e );
+         Log.Flush();
+      }
 
       private static Stream GetResourceStream ( string path ) {
          path = ".Resources." + path;
