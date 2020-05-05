@@ -100,8 +100,8 @@ namespace Sheepy.Modnix {
             LogGameVersion();
          }
          var corlib = new Uri( typeof( string ).Assembly.CodeBase ).LocalPath;
-         Log.Verbo( ".Net/{0}; mscorlib/{1} {2}", Environment.Version, FileVersionInfo.GetVersionInfo( corlib ).FileVersion, corlib );
          LoadSettings();
+         Log.Verbo( ".Net/{0}; mscorlib/{1} {2}", Environment.Version, FileVersionInfo.GetVersionInfo( corlib ).FileVersion, corlib );
       } } catch ( Exception ex ) { Log?.Error( ex ); } }
 
       internal static volatile Assembly PpmlAssembly;
