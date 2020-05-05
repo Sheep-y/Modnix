@@ -161,12 +161,15 @@ namespace Sheepy.Modnix.Tests {
       }
 
       [TestMethod()] public void ModMetaTest () {
-         var appver = ModMetaJson.ParseMod( @"{ Id:""simple"", Name:""Simple"", Requires:""lib"", Dlls:""dll"" }" );
-         Assert.IsNotNull( appver, "simple" );
-         Assert.AreEqual( "simple", appver.Id, "simple.id" );
-         Assert.AreEqual( "Simple", appver.Name.ToString(), "simple.name" );
-         Assert.AreEqual( "lib", appver.Requires[0].Id, "simple.requires" );
-         Assert.AreEqual( "dll", appver.Dlls[0].Path, "simple.dll" );
+         var meta = ModMetaJson.ParseMod( @"{ Id:""simple"", Name:""Simple"", Author: { en: ""EN"", zh: ""ZH"" }, ""Version"": ""1.0"", Requires:""lib"", Dlls:""dll"" }" );
+         Assert.IsNotNull( meta, "simple" );
+         Assert.AreEqual( "simple", meta.Id, "simple.id" );
+         Assert.AreEqual( "Simple", meta.Name.ToString(), "simple.name" );
+         Assert.AreEqual( "lib", meta.Requires[0].Id, "simple.requires" );
+         Assert.AreEqual( "dll", meta.Dlls[0].Path, "simple.dll" );
+         Assert.AreEqual( "EN", meta.Author.ToString(), "simple.author" );
+         Assert.AreEqual( "ZH", meta.Author.ToString("zh"), "simple.author.zh" );
+         Assert.AreEqual( new Version( 1,0,0,0 ), meta.Version, "simple.version" );
       }
 
    }
