@@ -25,7 +25,7 @@ namespace Sheepy.Modnix.Actions {
          } catch ( Exception ex ) { mod.CreateLogger().Error( ex ); }
 
          if ( evals != null ) try {
-            EvalAction.Run( mod, evals.ToArray() );
+            EvalAction.Run( mod, phase, evals.ToArray() );
          } catch ( Exception ex ) { mod.CreateLogger().Error( ex ); }
       }
 
