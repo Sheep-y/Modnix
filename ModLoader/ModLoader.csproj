@@ -63,11 +63,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Logger.cs" />
-    <Compile Include="ModEntry.cs" />
-    <Compile Include="ModLoader.cs" />
-    <Compile Include="ModParser.cs" />
-    <Compile Include="ModScanner.cs" />
+    <Compile Include="src\actions\EvalAction.cs" />
+    <Compile Include="src\utils\Logger.cs" />
+    <Compile Include="src\ModEntry.cs" />
+    <Compile Include="src\ModLoader.cs" />
+    <Compile Include="src\ModParser.cs" />
+    <Compile Include="src\ModScanner.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
