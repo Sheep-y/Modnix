@@ -228,6 +228,7 @@ namespace Sheepy.Modnix {
             Log.Warn( "Id must not be empty" );
             return false;
          }
+         // TODO: use mod logger warning
          switch ( key ) {
             case "modnix" : case "loader" :
             case "phoenixpoint" : case "phoenix point" : case "game" :
@@ -235,6 +236,10 @@ namespace Sheepy.Modnix {
             case "non-modnix" : case "nonmodnix" :
                Log.Warn( "{0} is a reserved mod id.", meta.Id );
                return false;
+         }
+         if ( meta.Mods != null && ( meta.Dlls != null || meta.Actions != null ) ) {
+            Log.Warn( "Mod Set cannot directly specify dlls and actions." );
+            return false;
          }
          return true;
       }

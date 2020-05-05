@@ -531,13 +531,14 @@ namespace Sheepy.Modnix {
 
       public string[]  Mods;
       public DllMeta[] Dlls;
+      public ModAction[] Actions;
 
       public   string  ConfigType;
       public   object  DefaultConfig;
       internal string  DefaultConfigText;
       internal string  ConfigText;
 
-      internal bool HasContent => Mods == null && Dlls == null;
+      internal bool HasContent => Mods == null && Dlls == null && Actions == null;
 
       internal ModMeta ImportFrom ( ModMeta overrider ) {
          lock ( this ) if ( overrider == null ) return this;
@@ -557,6 +558,7 @@ namespace Sheepy.Modnix {
             CopyNonNull( overrider.LoadIndex, ref LoadIndex );
             CopyNonNull( overrider.Mods, ref Mods );
             CopyNonNull( overrider.Dlls, ref Dlls );
+            CopyNonNull( overrider.Actions, ref Actions );
             CopyNonNull( overrider.ConfigType, ref ConfigType );
             CopyNonNull( overrider.DefaultConfig, ref DefaultConfig );
          }
@@ -590,6 +592,7 @@ namespace Sheepy.Modnix {
          NormAppVer( ref Disables );
          NormStringArray( ref Mods );
          NormDllMeta( ref Dlls );
+         NormModAction( ref Actions );
          ConfigType = NormString( ConfigType );
          if ( ConfigType != null ) DefaultConfig = null;
          return this;
@@ -649,6 +652,22 @@ namespace Sheepy.Modnix {
             val = val.Where( e => e?.Path != null ).ToArray();
          if ( val.Length == 0 ) val = null;
       }
+
+      private void NormModAction ( ref ModAction[] val ) {
+         if ( val == null ) return;
+         for ( int i = val.Length - 1 ; i >= 0 ; i-- ) {
+            var v = val[i];
+            v.Eval = NormString( v.Eval );
+            if ( v.Eval == null ) v = null;
+            v.Name = NormString( v.Name );
+            v.OnError = NormString( v.OnError );
+            NormStringArray( ref v.Phase );
+            if ( v.Phase == null ) v.Phase = new string[] { "MainMod" }; // TODO: Change to GameMod
+         }
+         if ( val.Any( e => e == null || e.Eval == null ) )
+            val = val.Where( e => e?.Eval != null ).ToArray();
+         if ( val.Length == 0 ) val = null;
+      }
       #endregion
    }
 
@@ -675,5 +694,12 @@ namespace Sheepy.Modnix {
    public class DllMeta {
       public string Path;
       public Dictionary< string, HashSet< string > > Methods;
+   }
+
+   public class ModAction {
+      public string Name;
+      public string Eval;
+      public string[] Phase;
+      public string OnError;
    }
 }
