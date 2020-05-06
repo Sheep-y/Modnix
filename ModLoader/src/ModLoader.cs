@@ -109,10 +109,11 @@ namespace Sheepy.Modnix {
       // Dynamically load embedded dll
       private static Assembly ModLoaderResolve  ( object domain, ResolveEventArgs dll ) { try {
          var name = dll.Name;
-         Log.Trace( "Resolving {0}", name );
          var app = domain as AppDomain ?? AppDomain.CurrentDomain;
-         if ( name.StartsWith( "PhoenixPointModLoader,", StringComparison.OrdinalIgnoreCase ) )
+         if ( name.StartsWith( "PhoenixPointModLoader,", StringComparison.OrdinalIgnoreCase ) ) {
+            Log.Info( "Loading embedded PPML" );
             return PpmlAssembly = app.Load( GetResourceBytes( "PPML_0_2.dll" ) );
+         }
          if ( name.StartsWith( "System." ) && dll.Name.Contains( ',' ) ) { // Generic system library lookup
             var file = dll.Name.Substring( 0, dll.Name.IndexOf( ',' ) ) + ".dll";
             var target = Path.Combine( DnFrameworkDir, file );
@@ -120,6 +121,9 @@ namespace Sheepy.Modnix {
                Log.Info( "Loading {0}", target );
                return Assembly.LoadFrom( target );
             }
+         } else {
+            Log.Warn( "Cannot resolve {0}", name );
+            Log.Flush(); // The app may crash right after the failure, so flush the log now
          }
          return null;
       } catch ( Exception ex ) { Log?.Error( ex ); return null; } }
