@@ -1,5 +1,9 @@
 Modnix Changelog
 
+# Version 2.3.2, in development
+
+* Fix: mod_info with Version field are now parsed correctly.
+
 # Version 2.3.1, 2020-05-03
 
 * Fix: Game version now parsed correctly from loader log. (Regression from v2.3 due to text reader rewrite.)
