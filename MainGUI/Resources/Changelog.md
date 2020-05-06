@@ -3,6 +3,8 @@ Modnix Changelog
 # Version 2.3.2, in development
 
 * Fix: mod_info with Version field are now parsed correctly.
+* Mod: "assemblies" api now returns null when mod is not found.
+* Mod: api( "assemblies", "modnix" ) no longer returns ppml assembly.
 
 # Version 2.3.1, 2020-05-03
 
