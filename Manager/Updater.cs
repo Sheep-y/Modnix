@@ -1,11 +1,7 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
-using System;
+﻿using System;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Net;
-using System.Net.NetworkInformation;
 using System.Text;
 
 namespace Sheepy.Modnix.MainGUI {
@@ -28,17 +24,10 @@ namespace Sheepy.Modnix.MainGUI {
       private const string RELEASE  = "https://api.github.com/repos/Sheep-y/Modnix/releases";
 
       private readonly AppControl App = AppControl.Instance;
-      private JsonSerializerSettings JsonOptions;
 
       public Updater () {
          ServicePointManager.Expect100Continue = true;
          ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-         JsonOptions = new JsonSerializerSettings() {
-            DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate,
-            Error = ( sender, err ) => App.Log( err ),
-            MissingMemberHandling = MissingMemberHandling.Ignore,
-            TraceWriter = new JsonLogger() { LevelFilter = TraceLevel.Info }
-         };
       }
 
       private bool Checking;
@@ -67,7 +56,7 @@ namespace Sheepy.Modnix.MainGUI {
             return App.Log<GithubRelease>( ModMetaJson.ReadAsText( wex.Response.GetResponseStream() ), null );
          }
 
-         if ( HasNewRelease( JsonConvert.DeserializeObject<GithubRelease[]>( json, JsonOptions ), update_from, out GithubRelease release ) )
+         if ( HasNewRelease( ModMetaJson.Parse<GithubRelease[]>( json ), update_from, out GithubRelease release ) )
             return release;
          return null;
       } catch ( Exception ex ) {
@@ -98,15 +87,6 @@ namespace Sheepy.Modnix.MainGUI {
             }
          } catch ( Exception ex ) { App.Log( ex ); }
          return false;
-      }
-   }
-
-   internal class JsonLogger : ITraceWriter {
-      internal AppControl App = AppControl.Instance;
-      public TraceLevel LevelFilter { get; set; }
-      public void Trace ( TraceLevel level, string message, Exception ex ) {
-         if ( level > LevelFilter ) return;
-         App.Log( message ?? ex?.ToString() );
       }
    }
 }

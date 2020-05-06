@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -575,8 +574,8 @@ namespace Sheepy.Modnix.MainGUI {
             }
             Task.Run( () => { try {
                if ( cancel.IsCancellationRequested ) return;
-               _ = JsonConvert.DeserializeObject( txt );
-            } catch ( JsonException ex ) {
+               _ = ModMetaJson.Parse<object>( txt );
+            } catch ( Exception ex ) {
                this.Dispatch( () => {
                   if ( cancel.IsCancellationRequested ) return;
                   var pos = ex.Message.IndexOf( ". Path " );
