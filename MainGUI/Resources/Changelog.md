@@ -5,6 +5,7 @@ Modnix Changelog
 * Fix: mod_info with Version field are now parsed correctly.
 * Mod: "assemblies" api now returns null when mod is not found.
 * Mod: api( "assemblies", "modnix" ) no longer returns ppml assembly.
+* Mod: Loader log now tries to capture game crashs originating from the scope of CLR.
 
 # Version 2.3.1, 2020-05-03
 
