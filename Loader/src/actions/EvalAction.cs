@@ -22,15 +22,16 @@ namespace Sheepy.Modnix.Actions {
          Mod = mod;
       }
 
-      internal static void Run ( ModEntry mod, ModAction actions ) {
+      internal static void Run ( ModEntry mod, Dictionary<string,object> actions ) {
          if ( actions == null ) return;
          new EvalAction( mod ).Run( actions ).Wait();
       }
       
-      private async Task Run ( ModAction action ) { try {
+      private async Task Run ( Dictionary<string,object> action ) { try {
          PrepareScript();
-         Log.Verbo( "Evaluating {0}", action.Eval );
-         var result = await CSharpScript.EvaluateAsync( action.Eval, Options ).ConfigureAwait( false );
+         var code = action["eval"].ToString();
+         Log.Verbo( "Evaluating {0}", code );
+         var result = await CSharpScript.EvaluateAsync( code, Options ).ConfigureAwait( false );
          Log.Info( result?.GetType().FullName ?? "null" );
          Log.Info( result );
       } catch ( Exception ex ) { Log.Error( ex ); } }

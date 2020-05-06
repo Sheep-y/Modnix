@@ -531,7 +531,7 @@ namespace Sheepy.Modnix {
 
       public string[]  Mods;
       public DllMeta[] Dlls;
-      public ModAction[] Actions;
+      public Dictionary<string,object>[] Actions;
 
       public   string  ConfigType;
       public   object  DefaultConfig;
@@ -592,7 +592,7 @@ namespace Sheepy.Modnix {
          NormAppVer( ref Disables );
          NormStringArray( ref Mods );
          NormDllMeta( ref Dlls );
-         NormModAction( ref Actions );
+         NormDictArray( ref Actions );
          ConfigType = NormString( ConfigType );
          if ( ConfigType != null ) DefaultConfig = null;
          return this;
@@ -653,19 +653,32 @@ namespace Sheepy.Modnix {
          if ( val.Length == 0 ) val = null;
       }
 
-      private void NormModAction ( ref ModAction[] val ) {
+      private void NormDictArray ( ref Dictionary<string,object>[] val ) {
          if ( val == null ) return;
          for ( int i = val.Length - 1 ; i >= 0 ; i-- ) {
-            var v = val[i];
-            v.Eval = NormString( v.Eval );
-            if ( v.Eval == null ) v = null;
-            v.Name = NormString( v.Name );
-            v.OnError = NormString( v.OnError );
-            NormStringArray( ref v.Phase );
-            if ( v.Phase == null ) v.Phase = new string[] { "MainMod" }; // TODO: Change to GameMod
+            var dict = val[i];
+            if ( dict != null ) {
+               foreach ( var pair in dict.ToArray() ) {
+                  if ( pair.Value == null ) dict.Remove( pair.Key );
+                  var val1 = pair.Value;
+                  if ( pair.Value is string str ) {
+                     var val2 = val1 = NormString( str );
+                     if ( val2 == null ) dict.Remove( pair.Key );
+                     else if ( ! str.Equals( val2 ) ) dict[ pair.Key ] = val2;
+                  }
+                  var key2 = NormString( pair.Key )?.ToLowerInvariant();
+                  if ( ! Object.Equals( key2, pair.Key ) ) {
+                     dict.Remove( pair.Key );
+                     if ( key2 != null && val1 != null ) dict.Add( key2, val1 );
+                  }
+               }
+               if ( dict.Count == 0 ) val[i] = null;
+               else if ( ! dict.ContainsKey( "Phase" ) )
+                  dict.Add( "Phase", "MainMod" ); // TODO: Change to GameMod
+            }
          }
-         if ( val.Any( e => e == null || e.Eval == null ) )
-            val = val.Where( e => e?.Eval != null ).ToArray();
+         if ( val.Any( e => e == null ) )
+            val = val.Where( e => e != null ).ToArray();
          if ( val.Length == 0 ) val = null;
       }
       #endregion
@@ -694,12 +707,5 @@ namespace Sheepy.Modnix {
    public class DllMeta {
       public string Path;
       public Dictionary< string, HashSet< string > > Methods;
-   }
-
-   public class ModAction {
-      public string Name;
-      public string Eval;
-      public string[] Phase;
-      public string OnError;
    }
 }

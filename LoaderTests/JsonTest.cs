@@ -158,6 +158,29 @@ namespace Sheepy.Modnix.Tests {
          meta.Normalise();
          Assert.AreEqual( "Abc", meta.Id, "Id 2" );
          Assert.AreEqual( "Abc", meta.Name.ToString(), "Name 2" );
+
+         meta.Actions = new Dictionary<string, object>[0];
+         meta.Normalise();
+         Assert.IsNull( meta.Actions, "Empty actions" );
+         meta.Actions = new Dictionary<string, object>[]{ null, null };
+         meta.Normalise();
+         Assert.IsNull( meta.Actions, "null actions" );
+
+         var emptyDict = new Dictionary<string, object>();
+         meta.Actions = new Dictionary<string, object>[]{ emptyDict };
+         meta.Normalise();
+         Assert.IsNull( meta.Actions, "Empty action" );
+         emptyDict.Add( "a", null );
+         emptyDict.Add( "", "b" );
+         meta.Actions = new Dictionary<string, object>[]{ emptyDict };
+         meta.Normalise();
+         Assert.IsNull( meta.Actions, "Empty action val and key" );
+
+         emptyDict.Add( " a ", " b " );
+         meta.Actions = new Dictionary<string, object>[]{ emptyDict };
+         meta.Normalise();
+         Assert.IsNotNull( meta.Actions, "Non-empty action val and key" );
+         Assert.AreEqual( "b", meta.Actions[0]["a"], "Action vals and keys are trimmed" );
       }
 
       [TestMethod()] public void ModMetaTest () {

@@ -9,13 +9,13 @@ namespace Sheepy.Modnix.Actions {
    internal class ActionManager {
 
       internal static void RunAction ( ModEntry mod, string phase ) { try {
-         ModAction[] all;
+         Dictionary<string,object>[] all;
          lock ( mod.Metadata ) all = mod.Metadata.Actions;
          if ( all == null ) return;
 
-         var actions =  new List<ModAction>();
+         var actions = new List<Dictionary<string,object>>();
          foreach ( var a in all ) {
-            if ( Array.IndexOf( a.Phase, phase ) < 0 ) continue;
+            if ( a["phase"]?.ToString().Contains( phase ) != true ) continue;
             actions.Add( a );
          }
          if ( actions.Count == 0 ) return;
