@@ -28,18 +28,19 @@ namespace Sheepy.Modnix.Actions {
       }
       
       private async Task Run ( ModAction action ) { try {
-         PrepareCompiler();
+         PrepareScript();
          Log.Verbo( "Evaluating {0}", action.Eval );
          var result = await CSharpScript.EvaluateAsync( action.Eval, Options ).ConfigureAwait( false );
          Log.Info( result?.GetType().FullName ?? "null" );
          Log.Info( result );
       } catch ( Exception ex ) { Log.Error( ex ); } }
 
-      private static readonly string[] Assemblies = new string[]{ "mscorlib.", "Assembly-CSharp.", "Cinemachine.", "0Harmony.", "Newtonsoft.Json." };
+      private static readonly string[] Assemblies = new string[]{ "mscorlib", "Assembly-CSharp,", "Cinemachine,", "0Harmony,", "Newtonsoft.Json," };
       private static ScriptOptions Options;
 
-      private static void PrepareCompiler () { lock ( Assemblies ) {
+      private static void PrepareScript () { lock ( Assemblies ) {
          if ( Options != null ) return;
+         ModLoader.Log.Info( "Initiating C# scriptor" );
 
          Options = ScriptOptions.Default
             .WithLanguageVersion( Microsoft.CodeAnalysis.CSharp.LanguageVersion.CSharp7_3 )
@@ -57,7 +58,7 @@ namespace Sheepy.Modnix.Actions {
             Type[] types;
             if ( asm.IsDynamic || ! CodePath.Equals( Path.GetDirectoryName( asm.Location ) ) ) continue;
             var name = asm.FullName;
-            ModLoader.Log.Trace( name );
+            //ModLoader.Log.Verbo( name );
             if ( name.StartsWith( "System" ) || name.StartsWith( "Unity." ) || name.StartsWith( "UnityEngine." ) ||
                   Assemblies.Any( e => name.StartsWith( e ) ) ) {
                assemblies.Add( asm );
@@ -76,9 +77,10 @@ namespace Sheepy.Modnix.Actions {
          names.Remove( "System.Xml.Xsl.Runtime" );
 
          var usings = names.ToArray();
+         Array.Sort( usings );
          Options = Options.WithReferences( assemblies.ToArray() ).WithImports( usings );
          string usingLog () => string.Join( ";", usings );
-         ModLoader.Log.Verbo( (Func<string>) usingLog );
+         ModLoader.Log.Verbo( "Namespaces found and added to scripts: {0}", (Func<string>) usingLog );
       } }
    }
 }
