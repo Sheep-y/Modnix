@@ -131,7 +131,7 @@ namespace Sheepy.Modnix {
          // Remove ( ... ) to make parsable json
          if ( js[0] == '(' && js[js.Length-1] == ')' )
             js = js.Substring( 1, js.Length - 2 ).Trim();
-         var meta = ModMetaJson.ParseMod( js ).Normalise();
+         var meta = Json.ParseMod( js ).Normalise();
          if ( meta.Id == null && default_id != null ) {
             meta.Id = default_id;
             meta.Normalise(); // Fill in Name
@@ -163,7 +163,7 @@ namespace Sheepy.Modnix {
                if ( ! ( resource is EmbeddedResource res ) || res.ResourceType != ResourceType.Embedded ) continue;
                if ( dotName.Any( e => res.Name.EndsWith( e, StringComparison.OrdinalIgnoreCase ) ) ) {
                   if ( text != null )
-                     text.Append( ModMetaJson.ReadAsText( res.GetResourceStream() ) );
+                     text.Append( Json.ReadAsText( res.GetResourceStream() ) );
                   return true;
                }
                if ( ! res.Name.EndsWith( ".resources", StringComparison.OrdinalIgnoreCase ) ) continue;
@@ -173,7 +173,7 @@ namespace Sheepy.Modnix {
                      var item = data.Key.ToString();
                      if ( names.Any( e => item.EndsWith( e, StringComparison.OrdinalIgnoreCase ) ) ) {
                         if ( text != null )
-                           text.Append( data.Value is Stream stream ? ModMetaJson.ReadAsText( stream ) : data.Value?.ToString() );
+                           text.Append( data.Value is Stream stream ? Json.ReadAsText( stream ) : data.Value?.ToString() );
                         return true;
                      }
                   }

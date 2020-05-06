@@ -574,7 +574,7 @@ namespace Sheepy.Modnix.MainGUI {
             }
             Task.Run( () => { try {
                if ( cancel.IsCancellationRequested ) return;
-               _ = ModMetaJson.Parse<object>( txt );
+               _ = Json.Parse<object>( txt );
             } catch ( Exception ex ) {
                this.Dispatch( () => {
                   if ( cancel.IsCancellationRequested ) return;
@@ -875,8 +875,8 @@ namespace Sheepy.Modnix.MainGUI {
          ButtonChangeLog.IsChecked = isChange;
          ButtonLicense.IsChecked = isLicense;
          if ( isGui ) TextLicense.Text = "";
-         else if ( isChange  ) TextLicense.Text = ApplyLogFilter( ModMetaJson.ReadAsText( AssemblyLoader.GetResourceStream( "Changelog.md" ) ) );
-         else if ( isLicense ) TextLicense.Text = ApplyLogFilter( ModMetaJson.ReadAsText( AssemblyLoader.GetResourceStream( "License.txt" ) ) );
+         else if ( isChange  ) TextLicense.Text = ApplyLogFilter( Json.ReadAsText( AssemblyLoader.GetResourceStream( "Changelog.md" ) ) );
+         else if ( isLicense ) TextLicense.Text = ApplyLogFilter( Json.ReadAsText( AssemblyLoader.GetResourceStream( "License.txt" ) ) );
          else if ( isLoader || isConsole ) {
             try {
                TextLicense.Text = ApplyLogFilter( Utils.ReadFile( isLoader ? App.LoaderLog : App.ConsoleLog ) );

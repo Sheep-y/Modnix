@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace Sheepy.Modnix {
 
-   public static class ModMetaJson {
+   public static class Json {
       public readonly static LoggerProxy JsonLogger = new JsonTraceLogger();
       public readonly static JsonSerializerSettings JsonOptions = new JsonSerializerSettings{
          Converters = new JsonConverter[]{ new ModMetaReader() }.ToList(),
@@ -90,10 +90,10 @@ namespace Sheepy.Modnix {
          switch ( prop.ToLowerInvariant() ) {
             case "id": e.Id = txt; break;
             case "min":
-               ModMetaJson.ParseVersion( txt, out e.Min );
+               Json.ParseVersion( txt, out e.Min );
                break;
             case "max":
-               ModMetaJson.ParseVersion( txt, out e.Max );
+               Json.ParseVersion( txt, out e.Max );
                break;
          }
          return e;
@@ -208,12 +208,12 @@ namespace Sheepy.Modnix {
          if ( token == JsonToken.Null || token == JsonToken.Undefined )
             result = null;
          else if ( token == JsonToken.String ) {
-            if ( ! ModMetaJson.ParseVersion( r.Value.ToString(), out result ) )
+            if ( ! Json.ParseVersion( r.Value.ToString(), out result ) )
                result = null;
          } else if ( token == JsonToken.Integer ) {
             result = new Version( (int) (long) r.Value, 0, 0, 0 );
          } else if ( token == JsonToken.Float ) {
-            if ( ! ModMetaJson.ParseVersion( FloatToString( r.Value ), out result ) )
+            if ( ! Json.ParseVersion( FloatToString( r.Value ), out result ) )
                result = null;
          } else
             throw new JsonException( $"String or number expected for Version" );

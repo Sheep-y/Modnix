@@ -153,7 +153,7 @@ namespace Sheepy.Modnix {
          var confFile = Path.Combine( ModDirectory, CONF_FILE );
          if ( File.Exists( confFile ) ) try {
             Log.Info( $"Loading {confFile}" );
-            Settings = ModMetaJson.Parse<LoaderSettings>( Tools.ReadFile( confFile ) );
+            Settings = Json.Parse<LoaderSettings>( Tools.ReadFile( confFile ) );
          } catch ( Exception ex ) { Log.Error( ex ); }
          if ( Settings == null ) {
             Log.Info( $"Using default settings, because cannot find or parse {confFile}" );
@@ -164,7 +164,7 @@ namespace Sheepy.Modnix {
 
       public static void SaveSettings () {
          var confFile = Path.Combine( ModDirectory, CONF_FILE );
-         var json = ModMetaJson.Stringify( Settings );
+         var json = Json.Stringify( Settings );
          if ( string.IsNullOrWhiteSpace( json ) ) return;
          if ( ! Directory.Exists( ModDirectory ) )
             Directory.CreateDirectory( ModDirectory );
@@ -182,8 +182,8 @@ namespace Sheepy.Modnix {
          if ( clear ) Log.Clear();
          LoaderVersion = Assembly.GetExecutingAssembly().GetName().Version;
          Log.Info( "{0}/{1}; {2}", typeof( ModLoader ).FullName, LoaderVersion, DateTime.Now.ToString( "u" ) );
-         ModMetaJson.JsonLogger.Masters.Clear();
-         ModMetaJson.JsonLogger.Masters.Add( Log );
+         Json.JsonLogger.Masters.Clear();
+         Json.JsonLogger.Masters.Add( Log );
       } }
 
       public static void SetLogLevel ( SourceLevels level ) { lock ( MOD_PATH ) {

@@ -380,11 +380,11 @@ namespace Sheepy.Modnix {
             if ( type == typeof( string ) ) return txt;
             if ( txt == null ) return Activator.CreateInstance( GetConfigType( type ) );
             if ( param == null && ( txt.IndexOf( '{' ) < 0 || txt.IndexOf( '}' ) < 0 ) ) return txt;
-            param = ModMetaJson.Parse( txt, GetConfigType( type ) );
+            param = Json.Parse( txt, GetConfigType( type ) );
          } else {
             if ( txt == null || isDefault ) return param;
             if ( param is string ) return txt;
-            JsonConvert.PopulateObject( txt, param, ModMetaJson.JsonOptions );
+            JsonConvert.PopulateObject( txt, param, Json.JsonOptions );
          }
          if ( Metadata.ConfigType == null ) RunCheckConfig( param?.GetType() );
          return param;
@@ -402,9 +402,9 @@ namespace Sheepy.Modnix {
             if ( confText == null ) return;
             CreateLogger().Info( "Verifying DefaultConfig in background" );
             var newInstance = Activator.CreateInstance( confType );
-            var newText = ModMetaJson.Stringify( newInstance );
-            var confObj = ModMetaJson.Parse( confText, confType );
-            confText = ModMetaJson.Stringify( confObj );
+            var newText = Json.Stringify( newInstance );
+            var confObj = Json.Parse( confText, confType );
+            confText = Json.Stringify( confObj );
             if ( confText.Equals( newText, StringComparison.Ordinal ) ) return;
             Warn( "Default config mismatch.\nGot: {0}\nNew: {1}", confText, newText );
          } catch ( Exception ex ) { Info( "Error when verifying config: {0}", ex ); }
@@ -416,7 +416,7 @@ namespace Sheepy.Modnix {
          var syn = new object();
          lock ( syn ) return Task.Run( () => { lock ( syn ) {
             if ( ! ( param is string str ) )
-               str = ModMetaJson.Stringify( param );
+               str = Json.Stringify( param );
             WriteConfigText( str );
          } } );
       }
@@ -468,7 +468,7 @@ namespace Sheepy.Modnix {
                }
             } catch ( Exception ex ) { Error( ex ); }
             if ( meta.DefaultConfig == null ) return null;
-            return meta.DefaultConfigText = ModMetaJson.Stringify( meta.DefaultConfig );
+            return meta.DefaultConfigText = Json.Stringify( meta.DefaultConfig );
          }
       } catch ( Exception ex ) { Error( ex ); return null; } }
 
@@ -506,7 +506,7 @@ namespace Sheepy.Modnix {
 
       public override string ToString () { lock ( Metadata ) {
          var txt = "Mod " + Metadata.Name;
-         if ( Metadata.Version != null ) txt += " " + ModMetaJson.TrimVersion( Metadata.Version );
+         if ( Metadata.Version != null ) txt += " " + Json.TrimVersion( Metadata.Version );
          if ( Disabled ) txt += " (Disabled)";
          return txt;
       } }

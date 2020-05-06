@@ -359,7 +359,7 @@ namespace Sheepy.Modnix.MainGUI {
          list.Add( new Image(){ Source = img, Stretch = Stretch.UniformToFill } );
          */
          list.Add( new Bold( new Run( meta.Name.ToString( "en" ) ) ) );
-         if ( meta.Version != null ) list.Add( $" \tVer {ModMetaJson.RegxVerTrim.Replace( Version.ToString(), "" )}" );
+         if ( meta.Version != null ) list.Add( $" \tVer {Json.RegxVerTrim.Replace( Version.ToString(), "" )}" );
          list.Add( $" \t{Type} mod" );
          if ( Is( ModQuery.HAS_CONFIG ) ) list.Add( ", can config" );
          if ( meta.Lang != null ) {
@@ -607,7 +607,7 @@ namespace Sheepy.Modnix.MainGUI {
       private void LoadDll ( string path ) { try {
          if ( ModDlls == null ) {
             ModDlls = new HashSet<Assembly>();
-            ModMetaJson.TrimVersion( new Version() ); // Call something to load ModLoader.
+            Json.TrimVersion( new Version() ); // Call something to load ModLoader.
          }
          ModDlls.Add( Assembly.LoadFrom( path ) );
       } catch ( Exception ex ) { Error = ex; } }
@@ -616,7 +616,7 @@ namespace Sheepy.Modnix.MainGUI {
          foreach ( var asm in ModDlls ) {
             var type = asm.GetType( typeName );
             if ( type == null ) continue;
-            return ModMetaJson.Stringify( Activator.CreateInstance( type ) );
+            return Json.Stringify( Activator.CreateInstance( type ) );
          }
          return null;
       } catch ( Exception ex ) { Error = ex; return null; } }

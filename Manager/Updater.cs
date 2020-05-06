@@ -48,15 +48,15 @@ namespace Sheepy.Modnix.MainGUI {
          string json = null;
          try {
             using ( WebResponse response = request.GetResponse() ) {
-               json = ModMetaJson.ReadAsText( request.GetResponse().GetResponseStream() );
+               json = Json.ReadAsText( request.GetResponse().GetResponseStream() );
                App.Log( json );
             }
          } catch ( WebException wex ) {
             App.Log( wex );
-            return App.Log<GithubRelease>( ModMetaJson.ReadAsText( wex.Response.GetResponseStream() ), null );
+            return App.Log<GithubRelease>( Json.ReadAsText( wex.Response.GetResponseStream() ), null );
          }
 
-         if ( HasNewRelease( ModMetaJson.Parse<GithubRelease[]>( json ), update_from, out GithubRelease release ) )
+         if ( HasNewRelease( Json.Parse<GithubRelease[]>( json ), update_from, out GithubRelease release ) )
             return release;
          return null;
       } catch ( Exception ex ) {
