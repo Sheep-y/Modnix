@@ -8,30 +8,24 @@ namespace Sheepy.Modnix.Actions {
 
    internal class ActionManager {
 
-      internal static void RunAction ( ModEntry mod, string phase ) {
-         ModAction[] actions;
-         lock ( mod.Metadata ) actions = mod.Metadata.Actions;
-         if ( actions == null ) return;
-         mod.CreateLogger().Info( "Running {0} actions", actions.Length );
+      internal static void RunAction ( ModEntry mod, string phase ) { try {
+         ModAction[] all;
+         lock ( mod.Metadata ) all = mod.Metadata.Actions;
+         if ( all == null ) return;
 
-         List<ModAction> evals = null;
-         foreach ( var a in actions ) try {
+         var actions =  new List<ModAction>();
+         foreach ( var a in all ) {
             if ( Array.IndexOf( a.Phase, phase ) < 0 ) continue;
-            if ( a.Eval != null ) {
-               if ( evals == null ) evals = new List<ModAction>();
-               evals.Add( a );
-            } else
-               RunAction( a );
-         } catch ( Exception ex ) { mod.CreateLogger().Error( ex ); }
+            actions.Add( a );
+         }
+         if ( actions.Count == 0 ) return;
 
-         if ( evals != null ) try {
-            EvalAction.Run( mod, phase, evals.ToArray() );
-         } catch ( Exception ex ) { mod.CreateLogger().Error( ex ); }
-      }
+         mod.CreateLogger().Info( "Running {0} actions", actions.Count );
+         foreach ( var a in actions ) {
+            EvalAction.Run( mod, a );
+         }
 
-      internal static void RunAction ( ModAction action ) {
-         throw new NotImplementedException();
-      }
+      } catch ( Exception ex ) { mod.CreateLogger().Error( ex ); } }
    }
 
 }
