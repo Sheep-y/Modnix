@@ -40,7 +40,7 @@ namespace Sheepy.Modnix.Actions {
 
       private static void PrepareScript () { lock ( Assemblies ) {
          if ( Options != null ) return;
-         ModLoader.Log.Info( "Initiating C# scriptor" );
+         ModLoader.Log.Info( "Initiating C# script evaluator" );
 
          Options = ScriptOptions.Default
             .WithLanguageVersion( Microsoft.CodeAnalysis.CSharp.LanguageVersion.CSharp7_3 )
@@ -77,10 +77,12 @@ namespace Sheepy.Modnix.Actions {
          names.Remove( "System.Xml.Xsl.Runtime" );
 
          var usings = names.ToArray();
-         Array.Sort( usings );
          Options = Options.WithReferences( assemblies.ToArray() ).WithImports( usings );
-         string usingLog () => string.Join( ";", usings );
-         ModLoader.Log.Verbo( "Namespaces found and added to scripts: {0}", (Func<string>) usingLog );
+         string usingLog () {
+            Array.Sort( usings );
+            return string.Join( ";", usings );
+         }
+         ModLoader.Log.Verbo( "{0} namespaces found and added to scripts: {0}", usings.Length, (Func<string>) usingLog );
       } }
    }
 }
