@@ -513,8 +513,9 @@ namespace Sheepy.Modnix {
    }
 
    public class ModMeta {
-      public string   Id;
-      public Version  Version;
+      public string    Id;
+      public Version   Version;
+      public string[]  Flags;
 
       public TextSet   Name;
       public string[]  Lang;
@@ -545,6 +546,7 @@ namespace Sheepy.Modnix {
          lock ( overrider ) {
             CopyNonNull( overrider.Id, ref Id );
             CopyNonNull( overrider.Version, ref Version );
+            CopyNonNull( overrider.Flags, ref Flags );
             CopyNonNull( overrider.Name, ref Name );
             CopyNonNull( overrider.Lang, ref Lang );
             CopyNonNull( overrider.Duration, ref Duration );
@@ -581,6 +583,8 @@ namespace Sheepy.Modnix {
          NormTextSet( ref Name );
          if ( Name == null && Id != null )
             Name = new TextSet{ Default = Id };
+         NormStringArray( ref Flags );
+         if ( Flags != null ) Flags = Flags.Select( e => e.ToLowerInvariant() ).ToArray();
          NormStringArray( ref Lang );
          Duration = NormString( Duration );
          NormTextSet( ref Description );
