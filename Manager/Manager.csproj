@@ -151,7 +151,7 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ModLoader\ModLoader.csproj">
+    <ProjectReference Include="..\Loader\Loader.csproj">
       <Project>{e72a9beb-e4d5-46ba-bec2-732a7f40b181}</Project>
       <Name>ModLoader</Name>
       <Private>False</Private>
