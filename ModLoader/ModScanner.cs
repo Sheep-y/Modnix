@@ -373,14 +373,21 @@ namespace Sheepy.Modnix {
             if ( mod.Disabled ) continue;
             var reqs = mod.Metadata.Requires;
             if ( reqs == null ) continue;
+            var requirements = new Dictionary<string, List<AppVer>>();
             foreach ( var req in reqs ) {
-               var ver = GetVersionById( req.Id );
-               var pass = ver != null;
-               if ( pass && req.Min != null && req.Min > ver ) pass = false;
-               if ( pass && req.Max != null && req.Max < ver ) pass = false;
-               if ( ! pass )
-                  DisableAndRemoveMod( mod, "require", "Mod {4} requirement {0} [{1},{2}] failed, found {3}",
-                     req.Id, req.Min, req.Max, ver, mod.Metadata.Id );
+               var id = NormaliseModId( req.Id );
+               if ( id == null ) continue;
+               if ( ! requirements.ContainsKey( id ) ) requirements[ id ] = new List<AppVer>();
+               requirements[ id ].Add( req );
+            }
+            foreach ( var reqSet in requirements ) {
+               if ( reqSet.Value.Count == 0 ) continue;
+               var ver = GetVersionById( reqSet.Key );
+               if ( ver == null || reqSet.Value.All( r => ( r.Min != null && r.Min > ver ) || ( r.Max != null && r.Max < ver ) ) ) {
+                  DisableAndRemoveMod( mod, "require", "Mod {2} requirement {0} failed, found {1}",
+                     reqSet.Key, ver, mod.Metadata.Id );
+                  break;
+               }
             }
          }
       }

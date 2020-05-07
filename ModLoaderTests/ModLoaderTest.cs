@@ -75,6 +75,8 @@ namespace Sheepy.Modnix.Tests {
          var PPMLMin   = new ModEntry( new ModMeta{ Id = "PPMLMin", Requires = new AppVer[]{ new AppVer( "ppml", Ver( "99.99" ) ) } }.Normalise() );
          var PPMLOk    = new ModEntry( new ModMeta{ Id = "PPMLOk" , Requires = new AppVer[]{ new AppVer( "PhoenixPointModLoader", Ver( "0.1" ) ) } }.Normalise() );
          var PPMLMax   = new ModEntry( new ModMeta{ Id = "PPMLMax", Requires = new AppVer[]{ new AppVer( "Phoenix Point Mod Loader", max : Ver( "0.0" ) ) } }.Normalise() );
+         var MultiOK   = new ModEntry( new ModMeta{ Id = "MultiOK", Requires = new AppVer[]{ new AppVer( "ppml", Ver( "1.0" ) ), new AppVer( "ppml", max : Ver( "0.2" ) ) } }.Normalise() );
+         var MultiFail = new ModEntry( new ModMeta{ Id = "MultiOK", Requires = new AppVer[]{ new AppVer( "ppml", Ver( "1.0" ) ), new AppVer( "ppml", max : Ver( "0.0" ) ) } }.Normalise() );
          var NonModnix = new ModEntry( new ModMeta{ Id = "NonModnix", Requires = new AppVer[]{ new AppVer( "NonModnix" ) } }.Normalise() );
          var Yes       = new ModEntry( new ModMeta{ Id = "NonModnix", Requires = new AppVer[]{ new AppVer( "ModnixOK" ) } }.Normalise() );
          var No        = new ModEntry( new ModMeta{ Id = "NonModnix", Requires = new AppVer[]{ new AppVer( "ModnixOK" ), new AppVer( "ModnixMax" ) } }.Normalise() );
@@ -91,12 +93,14 @@ namespace Sheepy.Modnix.Tests {
          AllMods.Add( PPMLMin );
          AllMods.Add( PPMLOk );
          AllMods.Add( PPMLMax );
+         AllMods.Add( MultiOK );
+         AllMods.Add( MultiFail );
          AllMods.Add( NonModnix );
 
          ModLoader.GameVersion = new Version( "1.0.12345" );
          ResolveMods();
 
-         Assert.AreEqual( 12, AllMods.Count );
+         Assert.AreEqual( 14, AllMods.Count );
          Assert.IsTrue ( ModnixMin.Disabled, "ModnixMin" );
          Assert.IsFalse( ModnixOk.Disabled, "ModnixOk" );
          Assert.IsTrue ( ModnixMax.Disabled, "ModnixMax" );
@@ -106,10 +110,11 @@ namespace Sheepy.Modnix.Tests {
          Assert.IsTrue ( PPMLMin.Disabled, "PPMLMin" );
          Assert.IsFalse( PPMLOk.Disabled, "PPMLOk" );
          Assert.IsTrue ( PPMLMax.Disabled, "PPMLMax" );
+         Assert.IsFalse( MultiOK.Disabled, "MultiOK" );
          Assert.IsTrue ( NonModnix.Disabled, "NonModnix" );
          Assert.IsFalse( Yes.Disabled, "Yes" );
          Assert.IsTrue ( No.Disabled, "No" );
-         Assert.AreEqual( 4, ModScanner.EnabledMods.Count );
+         Assert.AreEqual( 5, ModScanner.EnabledMods.Count );
       }
 
       [TestMethod()] public void ConflictTest () {

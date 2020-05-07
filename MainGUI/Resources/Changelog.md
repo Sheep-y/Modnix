@@ -1,6 +1,6 @@
 Modnix Changelog
 
-# Version 2.3.2, in development
+# Version 2.4, in development
 
 * Fix: mod_info with Version field are now parsed correctly.
 * Mod: "assemblies" api now returns null when mod is not found.
@@ -9,6 +9,7 @@ Modnix Changelog
 * Mod: Loader log now warns on unresolved assemblies.
 * Mod: Loader now logs mscorlib version and end of phases at verbose level.
 * Mod: Requires and Disables are now resolved together in each resolve loop, instead of only Requires.
+* Mod: Multiple requires on the same mod are now processed as "or" instead of "and".
 * Mod: Flags and Actions in mod_info (intended for Modnix 3) now leave a notice in Manager and log.
 
 # Version 2.3.1, 2020-05-03
