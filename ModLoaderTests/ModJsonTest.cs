@@ -140,7 +140,7 @@ namespace Sheepy.Modnix.Tests {
             Description = new TextSet{ Default = "a", Dict = new Dictionary<string, string>() },
             Author = new TextSet{ Default = " ", Dict = dict },
             Requires = new AppVer[0],
-            Disables = new AppVer[]{ new AppVer{ Id = "" } },
+            Disables = new AppVer[]{ new AppVer( "" ) },
             Dlls = new DllMeta[]{ new DllMeta{ Path = "" } },
          };
          meta.Normalise();

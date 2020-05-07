@@ -675,6 +675,14 @@ namespace Sheepy.Modnix {
       public string Id;
       public Version Min;
       public Version Max;
+
+      public AppVer () {}
+
+      public AppVer ( string id, Version min = null, Version max = null ) {
+         Id = id;
+         Min = min;
+         Max = max;
+      }
    }
 
    public class DllMeta {
