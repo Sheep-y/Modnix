@@ -66,18 +66,18 @@ namespace Sheepy.Modnix.Tests {
       }
 
       [TestMethod()] public void RequirementTest () {
-         var ModnixMin = new ModEntry( new ModMeta{ Id = "ModnixMin", Requires = new AppVer[]{ new AppVer{ Id = "Modnix", Min = Ver( "99.99" ) } } }.Normalise() );
-         var ModnixOk  = new ModEntry( new ModMeta{ Id = "ModnixOk" , Requires = new AppVer[]{ new AppVer{ Id = "Modnix", Min = Ver( "0.75" ) } } }.Normalise() );
-         var ModnixMax = new ModEntry( new ModMeta{ Id = "ModnixMax", Requires = new AppVer[]{ new AppVer{ Id = "Modnix", Max = Ver( "0.0" ) } } }.Normalise() );
-         var PPMin     = new ModEntry( new ModMeta{ Id = "PPMin", Requires = new AppVer[]{ new AppVer{ Id = "PhoenixPoint", Min = Ver( "1.0.23456" ) } } }.Normalise() );
-         var PPOk      = new ModEntry( new ModMeta{ Id = "PPOk" , Requires = new AppVer[]{ new AppVer{ Id = "PhoenixPoint", Min = Ver( "1.0.12345" ) } } }.Normalise() );
-         var PPMax     = new ModEntry( new ModMeta{ Id = "PPMax", Requires = new AppVer[]{ new AppVer{ Id = "Phoenix Point", Max = Ver( "1.0.4321" ) } } }.Normalise() );
-         var PPMLMin   = new ModEntry( new ModMeta{ Id = "PPMLMin", Requires = new AppVer[]{ new AppVer{ Id = "ppml", Min = Ver( "99.99" ) } } }.Normalise() );
-         var PPMLOk    = new ModEntry( new ModMeta{ Id = "PPMLOk" , Requires = new AppVer[]{ new AppVer{ Id = "PhoenixPointModLoader", Min = Ver( "0.1" ) } } }.Normalise() );
-         var PPMLMax   = new ModEntry( new ModMeta{ Id = "PPMLMax", Requires = new AppVer[]{ new AppVer{ Id = "Phoenix Point Mod Loader", Max = Ver( "0.0" ) } } }.Normalise() );
-         var NonModnix = new ModEntry( new ModMeta{ Id = "NonModnix", Requires = new AppVer[]{ new AppVer{ Id = "NonModnix" } } }.Normalise() );
-         var Yes       = new ModEntry( new ModMeta{ Id = "NonModnix", Requires = new AppVer[]{ new AppVer{ Id = "ModnixOK" } } }.Normalise() );
-         var No        = new ModEntry( new ModMeta{ Id = "NonModnix", Requires = new AppVer[]{ new AppVer{ Id = "ModnixOK" }, new AppVer{ Id = "ModnixMax" } } }.Normalise() );
+         var ModnixMin = new ModEntry( new ModMeta{ Id = "ModnixMin", Requires = new AppVer[]{ new AppVer( "Modnix", Ver( "99.99" ) ) } }.Normalise() );
+         var ModnixOk  = new ModEntry( new ModMeta{ Id = "ModnixOk" , Requires = new AppVer[]{ new AppVer( "Modnix", Ver( "0.75" ) ) } }.Normalise() );
+         var ModnixMax = new ModEntry( new ModMeta{ Id = "ModnixMax", Requires = new AppVer[]{ new AppVer( "Modnix", max : Ver( "0.0" ) ) } }.Normalise() );
+         var PPMin     = new ModEntry( new ModMeta{ Id = "PPMin", Requires = new AppVer[]{ new AppVer( "PhoenixPoint", Ver( "1.0.23456" ) ) } }.Normalise() );
+         var PPOk      = new ModEntry( new ModMeta{ Id = "PPOk" , Requires = new AppVer[]{ new AppVer( "PhoenixPoint", Ver( "1.0.12345" ) ) } }.Normalise() );
+         var PPMax     = new ModEntry( new ModMeta{ Id = "PPMax", Requires = new AppVer[]{ new AppVer( "Phoenix Point", max : Ver( "1.0.4321" ) ) } }.Normalise() );
+         var PPMLMin   = new ModEntry( new ModMeta{ Id = "PPMLMin", Requires = new AppVer[]{ new AppVer( "ppml", Ver( "99.99" ) ) } }.Normalise() );
+         var PPMLOk    = new ModEntry( new ModMeta{ Id = "PPMLOk" , Requires = new AppVer[]{ new AppVer( "PhoenixPointModLoader", Ver( "0.1" ) ) } }.Normalise() );
+         var PPMLMax   = new ModEntry( new ModMeta{ Id = "PPMLMax", Requires = new AppVer[]{ new AppVer( "Phoenix Point Mod Loader", max : Ver( "0.0" ) ) } }.Normalise() );
+         var NonModnix = new ModEntry( new ModMeta{ Id = "NonModnix", Requires = new AppVer[]{ new AppVer( "NonModnix" ) } }.Normalise() );
+         var Yes       = new ModEntry( new ModMeta{ Id = "NonModnix", Requires = new AppVer[]{ new AppVer( "ModnixOK" ) } }.Normalise() );
+         var No        = new ModEntry( new ModMeta{ Id = "NonModnix", Requires = new AppVer[]{ new AppVer( "ModnixOK" ), new AppVer( "ModnixMax" ) } }.Normalise() );
 
          var AllMods = ModScanner.AllMods;
          AllMods.Add( Yes );
@@ -115,10 +115,10 @@ namespace Sheepy.Modnix.Tests {
       [TestMethod()] public void ConflictTest () {
          // A conflicts with B, B conflicts with C, D conflicts with A B D.
          // A disables B, B is skipped, D disables A and B and skip itself, leaving C and D
-         var A = new ModEntry( new ModMeta{ Id = "A", Version = Ver( "1.2" ), Disables = new AppVer[]{ new AppVer{ Id = "B" }, new AppVer{ Id = "D", Min = Ver( "4.5" ) } } } );
-         var B = new ModEntry( new ModMeta{ Id = "B", Version = Ver( "2.3" ), Disables = new AppVer[]{ new AppVer{ Id = "C" } } } );
-         var C = new ModEntry( new ModMeta{ Id = "C", Version = Ver( "4.5" ), Disables = new AppVer[]{ new AppVer{ Id = "D", Max = Ver( "2.0" ) } } } );
-         var D = new ModEntry( new ModMeta{ Id = "D", Version = Ver( "3.4" ), Disables = new AppVer[]{ new AppVer{ Id = "A" }, new AppVer{ Id = "B" },  new AppVer{ Id = "D" } } } );
+         var A = new ModEntry( new ModMeta{ Id = "A", Version = Ver( "1.2" ), Disables = new AppVer[]{ new AppVer( "B" ), new AppVer( "D", Ver( "4.5" ) ) } } );
+         var B = new ModEntry( new ModMeta{ Id = "B", Version = Ver( "2.3" ), Disables = new AppVer[]{ new AppVer( "C" ) } } );
+         var C = new ModEntry( new ModMeta{ Id = "C", Version = Ver( "4.5" ), Disables = new AppVer[]{ new AppVer( "D", max : Ver( "2.0" ) ) } } );
+         var D = new ModEntry( new ModMeta{ Id = "D", Version = Ver( "3.4" ), Disables = new AppVer[]{ new AppVer( "A" ), new AppVer( "B" ),  new AppVer( "D" ) } } );
 
          var AllMods = ModScanner.AllMods;
          AllMods.Add( A );
