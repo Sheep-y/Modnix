@@ -312,6 +312,8 @@ namespace Sheepy.Modnix {
       #endregion
 
       #region Resolving
+      private static bool ResolveModAgain = true;
+
       private static void ResolveMods () {
          EnabledMods.Clear();
          EnabledMods.AddRange( AllMods.Where( e => ! e.Disabled ) );
@@ -319,8 +321,12 @@ namespace Sheepy.Modnix {
          ApplyUserOverride();
          EnabledMods.Sort( CompareModIndex );
          RemoveDuplicateMods();
-         RemoveUnfulfilledMods();
-         RemoveConflictMods();
+         var loopIndex = 0;
+         while ( ResolveModAgain && loopIndex++ < 20 ) {
+            ResolveModAgain = false;
+            RemoveUnfulfilledMods();
+            RemoveConflictMods();
+         }
       }
 
       private static void ApplyUserOverride () {
@@ -354,7 +360,7 @@ namespace Sheepy.Modnix {
       }
 
       private static void RemoveDuplicates ( ModEntry[] clones ) {
-         ModEntry keep = FindLatestMod( clones );
+         var keep = FindLatestMod( clones );
          foreach ( var mod in clones ) {
             if ( mod == keep ) continue;
             DisableAndRemoveMod( mod, "duplicate", "Mod {1} is a duplicate of {2}.", keep, mod.Path, keep.Path );
@@ -362,28 +368,21 @@ namespace Sheepy.Modnix {
       }
 
       private static void RemoveUnfulfilledMods () {
-         int loopIndex = 1;
-         bool NeedAnotherLoop;
-         do {
-            NeedAnotherLoop = false;
-            Log.Verbo( "Check mod requirements, loop {0}", loopIndex );
-            foreach ( var mod in EnabledMods.ToArray() ) {
-               if ( mod.Disabled ) continue;
-               var reqs = mod.Metadata.Requires;
-               if ( reqs == null ) continue;
-               foreach ( var req in reqs ) {
-                  var ver = GetVersionById( req.Id );
-                  var pass = ver != null;
-                  if ( pass && req.Min != null && req.Min > ver ) pass = false;
-                  if ( pass && req.Max != null && req.Max < ver ) pass = false;
-                  if ( ! pass ) {
-                     DisableAndRemoveMod( mod, "require", "Mod {4} requirement {0} [{1},{2}] failed, found {3}",
-                        req.Id, req.Min, req.Max, ver, mod.Metadata.Id );
-                     NeedAnotherLoop = true;
-                  }
-               }
+         Log.Verbo( "Check mod requirements" );
+         foreach ( var mod in EnabledMods.ToArray() ) {
+            if ( mod.Disabled ) continue;
+            var reqs = mod.Metadata.Requires;
+            if ( reqs == null ) continue;
+            foreach ( var req in reqs ) {
+               var ver = GetVersionById( req.Id );
+               var pass = ver != null;
+               if ( pass && req.Min != null && req.Min > ver ) pass = false;
+               if ( pass && req.Max != null && req.Max < ver ) pass = false;
+               if ( ! pass )
+                  DisableAndRemoveMod( mod, "require", "Mod {4} requirement {0} [{1},{2}] failed, found {3}",
+                     req.Id, req.Min, req.Max, ver, mod.Metadata.Id );
             }
-         } while ( NeedAnotherLoop && loopIndex++ <= 20 );
+         }
       }
 
       private static void RemoveConflictMods () {
@@ -410,6 +409,7 @@ namespace Sheepy.Modnix {
          mod.Disabled = true;
          mod.AddNotice( TraceEventType.Error, reason, augs );
          EnabledMods.Remove( mod );
+         ResolveModAgain = true;
       } }
 
       private static void AddManagerNotice ( TraceEventType level, ModEntry mod, string reason, string log, params object[] augs ) { lock ( mod ) {
