@@ -122,7 +122,10 @@ namespace Sheepy.Modnix {
             return null;
          }
          Log.Info( "Found mod {0} at {1} ({2} dlls)", meta.Id, file, meta.Dlls?.Length ?? 0 );
-         return new ModEntry( file, meta );
+         var mod = new ModEntry( file, meta );
+         if ( meta.Flags != null )
+            AddManagerNotice( TraceEventType.Warning, mod, "Mod Flags are not supported in Modnix 2.x.", "unspoorted_flags", mod, meta.Flags );
+         return mod;
       } catch ( Exception ex ) { Log.Warn( ex ); return null; } }
 
       private static ModMeta ParseInfoJs ( string js, string default_id = null ) { try {
@@ -316,6 +319,9 @@ namespace Sheepy.Modnix {
          RemoveDuplicateMods();
          RemoveUnfulfilledMods();
          RemoveConflictMods();
+         foreach ( var e in EnabledMods )
+            if ( e.Metadata.Actions != null )
+               AddManagerNotice( TraceEventType.Error, e, "Mod Actions are not supported in Modnix 2.x.", "unsupported_actions", e );
       }
 
       private static void ApplyUserOverride () {
@@ -405,6 +411,12 @@ namespace Sheepy.Modnix {
          mod.Disabled = true;
          mod.AddNotice( TraceEventType.Error, reason, augs );
          EnabledMods.Remove( mod );
+      } }
+
+      private static void AddManagerNotice ( TraceEventType level, ModEntry mod, string reason, string log, params object[] augs ) { lock ( mod ) {
+         if ( mod.Disabled ) return;
+         Log.Info( log, augs );
+         mod.AddNotice( level, reason, augs );
       } }
       #endregion
    }

@@ -7,7 +7,8 @@ Modnix Changelog
 * Mod: api( "assemblies", "modnix" ) no longer returns ppml assembly.
 * Mod: Loader log now tries to capture game crashs originating from the scope of CLR.
 * Mod: Loader log now warns on unresolved assemblies.
-* Mod: Loader log now contains mscorlib version at verbose level.
+* Mod: Loader now logs mscorlib version and end of phases at verbose level.
+* Mod: Flags and Actions in mod_info (intended for Modnix 3) now leave a notice in Manager and log.
 
 # Version 2.3.1, 2020-05-03
 
