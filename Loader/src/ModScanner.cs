@@ -411,6 +411,12 @@ namespace Sheepy.Modnix {
          mod.AddNotice( TraceEventType.Error, reason, augs );
          EnabledMods.Remove( mod );
       } }
+
+      private static void AddManagerNotice ( TraceEventType level, ModEntry mod, string reason, string log, params object[] augs ) { lock ( mod ) {
+         if ( mod.Disabled ) return;
+         Log.Info( log, augs );
+         mod.AddNotice( level, reason, augs );
+      } }
       #endregion
    }
 }

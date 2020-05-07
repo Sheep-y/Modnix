@@ -382,39 +382,46 @@ namespace Sheepy.Modnix.MainGUI {
             case "dlc"     : list.Add( "\rMod claims to not affect existing campaigns." ); break;
             case "perm"    : list.Add( "\rSaves made with this mod on may become dependent on this mod." ); break;
          }
-         foreach ( var notice in Mod.GetNotices() ) {
-            var txt = new Run();
-            switch ( notice.Message ) {
-               case "duplicate" :
-                  txt.Text = string.Format( "\rDisabled: Using {0}.", notice.Args[0]?.ToString() ); break;
-               case "require" :
-                  txt.Text = string.Format( "\rDisabled: Missing requirement {0}.", notice.Args[0]?.ToString() ); break;
-               case "disable" :
-                  txt.Text = string.Format( "\rDisabled by {0}.", notice.Args[0]?.ToString() ); break;
-               case "manual"  :
-                  txt.Text = "\rManually Disabled"; break;
-               case "runtime_error" :
-                  txt.Text = "\rRuntime error(s) detected on last run, may be not safe to use."; break;
-               case "runtime_warning" :
-                  txt.Text = "\rRuntime warning(s) detected on last run."; break;
-               case "config_mismatch" :
-                  txt.Text = "\rDefaultConfig different from new instance defaults."; break;
-               default :
-                  txt.Text = "\r" + notice.Message.ToString(); break;
-            }
-            switch ( notice.Level ) {
-               case TraceEventType.Critical :
-               case TraceEventType.Error    :
-                  txt.Foreground = Brushes.Red; break;
-               case TraceEventType.Warning  :
-                  txt.Foreground = Brushes.Blue; break;
-               default :
-                  txt.Foreground = Brushes.DarkBlue; break;
-            }
-            if ( notice.Args?.Length > 0 && notice.Args[0] is ModEntry cause )
-               WpfHelper.Linkify( txt, () => AppControl.Instance.GUI.SetInfo( GuiInfo.MOD, cause.Path ) );
-            list.Add( txt );
+         foreach ( var notice in Mod.GetNotices() )
+            list.Add( FormatNotice( notice ) );
+      }
+
+      private static Run FormatNotice ( LogEntry notice ) {
+         var txt = new Run();
+         switch ( notice.Message ) {
+            case "duplicate" :
+               txt.Text = string.Format( "\rDisabled: Using {0}.", notice.Args[0]?.ToString() ); break;
+            case "require" :
+               txt.Text = string.Format( "\rDisabled: Missing requirement {0}.", notice.Args[0]?.ToString() ); break;
+            case "disable" :
+               txt.Text = string.Format( "\rDisabled by {0}.", notice.Args[0]?.ToString() ); break;
+            case "manual"  :
+               txt.Text = "\rManually Disabled"; break;
+            case "runtime_error" :
+               txt.Text = "\rRuntime error(s) detected on last run, may be not safe to use."; break;
+            case "runtime_warning" :
+               txt.Text = "\rRuntime warning(s) detected on last run."; break;
+            case "config_mismatch" :
+               txt.Text = "\rDefaultConfig different from new instance defaults."; break;
+         case "unspported_flags" :
+            txt.Text = "Mod Flags requires Modnix 3 or above."; break;
+         case "unspported_actions" :
+            txt.Text = "Mod Actions requires Modnix 3 or above.\rMod may not work or only partially work."; break;
+            default :
+               txt.Text = "\r" + notice.Message.ToString(); break;
          }
+         switch ( notice.Level ) {
+            case TraceEventType.Critical :
+            case TraceEventType.Error    :
+               txt.Foreground = Brushes.Red; break;
+            case TraceEventType.Warning  :
+               txt.Foreground = Brushes.Blue; break;
+            default :
+               txt.Foreground = Brushes.DarkBlue; break;
+         }
+         if ( notice.Args?.Length > 0 && notice.Args[0] is ModEntry cause )
+         WpfHelper.Linkify( txt, () => AppControl.Instance.GUI.SetInfo( GuiInfo.MOD, cause.Path ) );
+         return txt;
       }
 
       private static void BuildProvidedDesc ( ModMeta meta, InlineCollection list ) {
