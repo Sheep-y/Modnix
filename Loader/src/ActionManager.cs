@@ -22,7 +22,7 @@ namespace Sheepy.Modnix.Actions {
 
          mod.CreateLogger().Info( "Running {0} actions", actions.Count );
          foreach ( var a in actions ) {
-            EvalAction.Run( mod, a );
+            //EvalAction.Run( mod, a );
          }
 
       } catch ( Exception ex ) { mod.CreateLogger().Error( ex ); } }
