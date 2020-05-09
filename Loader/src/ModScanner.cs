@@ -321,6 +321,7 @@ namespace Sheepy.Modnix {
          ApplyUserOverride();
          EnabledMods.Sort( CompareModIndex );
          RemoveDuplicateMods();
+         RemoveRecessMods();
          var loopIndex = 0;
          while ( ResolveModAgain && loopIndex++ < 20 ) {
             ResolveModAgain = false;
@@ -364,6 +365,23 @@ namespace Sheepy.Modnix {
          foreach ( var mod in clones ) {
             if ( mod == keep ) continue;
             DisableAndRemoveMod( mod, "duplicate", "Mod {1} is a duplicate of {2}.", keep, mod.Path, keep.Path );
+         }
+      }
+
+      private static void RemoveRecessMods () {
+         Log.Verbo( "Check mod avoidances" );
+         foreach ( var mod in EnabledMods.ToArray() ) {
+            if ( mod.Disabled ) continue;
+            var reqs = mod.Metadata.Avoids;
+            if ( reqs == null ) continue;
+            foreach ( var req in reqs ) {
+               var ver = GetVersionById( req.Id );
+               if ( ver == null ) continue;
+               if ( req.Min != null && req.Min > ver ) continue;
+               if ( req.Max != null && req.Max < ver ) continue;
+               DisableAndRemoveMod( mod, "avoid", "Mod {1} self-disabled, avoiding conflict with {0}", req.Id, mod.Metadata.Id );
+               break;
+            }
          }
       }
 

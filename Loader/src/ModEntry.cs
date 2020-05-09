@@ -526,6 +526,7 @@ namespace Sheepy.Modnix {
       public TextSet   Contact;
       public TextSet   Copyright;
 
+      public AppVer[]  Avoids;
       public AppVer[]  Requires;
       public AppVer[]  Disables;
       public long      LoadIndex;
@@ -555,6 +556,7 @@ namespace Sheepy.Modnix {
             CopyNonNull( overrider.Url, ref Url );
             CopyNonNull( overrider.Contact, ref Contact );
             CopyNonNull( overrider.Copyright, ref Copyright );
+            CopyNonNull( overrider.Avoids, ref Avoids );
             CopyNonNull( overrider.Requires, ref Requires );
             CopyNonNull( overrider.Disables, ref Disables );
             CopyNonNull( overrider.LoadIndex, ref LoadIndex );
@@ -592,6 +594,7 @@ namespace Sheepy.Modnix {
          NormTextSet( ref Url );
          NormTextSet( ref Contact );
          NormTextSet( ref Copyright );
+         NormAppVer( ref Avoids );
          NormAppVer( ref Requires );
          NormAppVer( ref Disables );
          NormStringArray( ref Mods );
