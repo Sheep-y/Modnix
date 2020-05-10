@@ -1,6 +1,6 @@
 Modnix Changelog
 
-# Version 2.4, in development
+# Version 2.4, 2020-05-10
 
 * New: Avoids field of mod_info - self-kill if target exists.
 * Fix: mod_info with Version field are now parsed correctly.
