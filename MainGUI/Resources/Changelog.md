@@ -6,15 +6,16 @@ Modnix Changelog
 * Fix: mod_info with Version field are now parsed correctly.
 * Fix: A mod's requirement(s) on itself are now ignored.
 * Fix: LoadIndex and LogLevel may be overrode together in modnix config, instead of index over level.
+* Fix: Config write error now popup a prompt, instead of crashing mod manager.
 * Mod: "assemblies" api now returns null when mod is not found.
 * Mod: api( "assemblies", "modnix" ) no longer returns ppml assembly.
-* Mod: Loader log now tries to capture game crashs originating from the scope of CLR.
-* Mod: Loader log now warns on unresolved assemblies.
-* Mod: Loader now logs mscorlib version and end of phases at verbose level.
 * Mod: Requires and Disables are now resolved together in each resolve loop, instead of only Requires.
 * Mod: Multiple requires on the same mod are now processed as "or" instead of "and".
 * Mod: Flags and Actions in mod_info (intended for Modnix 3) now trigger a notice in Manager and log.
-* Mod: A mod that try to mod_info.Disables itself now triggers a warning, same for Avoids/Requires.
+* Log: A mod that try to disable itself by mod_info now triggers a warning.
+* Log: Loader log now tries to capture game crashs originating from the scope of CLR.
+* Log: Loader log now warns on unresolved assemblies.
+* Log: Loader now logs mscorlib version and end of phases at verbose level.
 
 # Version 2.3.1, 2020-05-03
 
