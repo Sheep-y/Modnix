@@ -1,5 +1,9 @@
 Modnix Changelog
 
+# Version 3, in development
+
+* New: Show PPML version in app status.
+
 # Version 2.4, in development
 
 * New: Avoids field of mod_info - self-kill if target exists.
