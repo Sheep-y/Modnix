@@ -58,6 +58,7 @@
     <Otherwise />
   </Choose>
   <ItemGroup>
+    <Compile Include="ActionTest.cs" />
     <Compile Include="JsonTest.cs" />
     <Compile Include="LoggerTests.cs" />
     <Compile Include="ApiTest.cs" />
