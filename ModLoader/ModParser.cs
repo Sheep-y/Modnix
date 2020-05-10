@@ -12,6 +12,9 @@ using System.Threading.Tasks;
 
 namespace Sheepy.Modnix {
 
+   /// <summary>
+   /// A collection of objects and methods to make parsing mod json easier.
+   /// </summary>
    public static class ModMetaJson {
       public readonly static LoggerProxy JsonLogger = new JsonTraceLogger();
       public readonly static JsonSerializerSettings JsonOptions = new JsonSerializerSettings{
@@ -57,6 +60,9 @@ namespace Sheepy.Modnix {
       public static ModMeta ParseMod ( string json ) => Parse<ModMeta>( json );
    }
 
+   /// <summary>
+   /// Read verious mod info types in flexible format.
+   /// </summary>
    public class ModMetaReader : JsonConverter {
       public override bool CanWrite => false;
 
