@@ -153,16 +153,19 @@ namespace Sheepy.Modnix.MainGUI {
 
       internal LoaderSettings Settings => ModBridge.GetSettings();
 
-      internal void SaveSettings () {
+      internal void SaveSettings () { try {
          ModBridge.SaveSettings();
-      }
+      } catch ( Exception ex ) {
+         GUI.Prompt( AppAction.NONE, PromptFlag.ERROR,
+            new ApplicationException( "Cannot save settings. Check Anti-virus and make sure Mods folder is writable.", ex ) );
+      } }
 
       internal void SetLogLevel ( SourceLevels level ) {
          var settings = Settings;
          if ( settings.LogLevel == level ) return;
          ModLoader.SetLogLevel( level );
          settings.LogLevel = level;
-         ModBridge.SaveSettings();
+         SaveSettings();
       }
 
       // Parse command line arguments.

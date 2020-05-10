@@ -391,7 +391,7 @@ namespace Sheepy.Modnix {
             foreach ( var req in reqs ) {
                if ( ! GetVersionById( req.Id, out ModEntry target, out Version ver ) || target.Disabled ) continue;
                if ( target == mod ) {
-                  Log.Warn( "Mod {0} not allowed to disable itself with mod_info.Avoids.", req.Id );
+                  mod.CreateLogger().Warn( "Mod {0} not allowed to disable itself with mod_info.Avoids.", req.Id );
                   continue;
                }
                if ( req.Min != null && req.Min > ver ) continue;
@@ -418,7 +418,7 @@ namespace Sheepy.Modnix {
             foreach ( var reqSet in requirements ) {
                var found = GetVersionById( reqSet.Key, out ModEntry target, out Version ver );
                if ( target == mod ) {
-                  Log.Warn( "Mod {0} not allowed to depends on itself with mod_info.Requires", reqSet.Key );
+                  mod.CreateLogger().Warn( "Mod {0} not allowed to depends on itself with mod_info.Requires", reqSet.Key );
                   continue;
                }
                if ( found )
@@ -440,7 +440,7 @@ namespace Sheepy.Modnix {
             foreach ( var req in targets ) {
                if ( ! GetVersionById( req.Id, out ModEntry target, out Version ver ) || target.Disabled ) continue;
                if ( target == mod ) {
-                  Log.Warn( "Mod {0} not allowed to disable itself with mod_info.Disables.", req.Id );
+                  mod.CreateLogger().Warn( "Mod {0} not allowed to disable itself with mod_info.Disables.", req.Id );
                   continue;
                }
                if ( req.Min != null && req.Min > ver ) continue;
