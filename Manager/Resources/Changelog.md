@@ -2,7 +2,10 @@ Modnix Changelog
 
 # Version 2.4, in development
 
+* New: Avoids field of mod_info - self-kill if target exists.
 * Fix: mod_info with Version field are now parsed correctly.
+* Fix: A mod's requirement on itself will be ignored.
+* Fix: LoadIndex and LogLevel may be overrode together in modnix config, instead of index over level.
 * Mod: "assemblies" api now returns null when mod is not found.
 * Mod: api( "assemblies", "modnix" ) no longer returns ppml assembly.
 * Mod: Loader log now tries to capture game crashs originating from the scope of CLR.

@@ -101,7 +101,7 @@ namespace Sheepy.Modnix.Tests {
          AllMods.Add( MultiFail );
          AllMods.Add( NonModnix );
 
-         ModLoader.GameVersion = new Version( "1.0.12345" );
+         ModLoader.GameVersion = Ver( "1.0.12345" );
          ResolveMods();
 
          Assert.AreEqual( 14, AllMods.Count );

@@ -255,10 +255,8 @@ namespace Sheepy.Modnix {
 
       internal static bool GetVersionById ( string id, out ModEntry mod, out Version version ) {
          mod = null;
-         if ( string.IsNullOrEmpty( id ) ) {
-            version = ModLoader.LoaderVersion;
-            return true;
-         }
+         version = null;
+         if ( string.IsNullOrEmpty( id ) ) return false;
          id = NormaliseModId( id );
          switch ( id ) {
             case "modnix" : case "loader" : case "":
@@ -271,7 +269,6 @@ namespace Sheepy.Modnix {
                version = ModLoader.PPML_COMPAT;
                return true;
             case "non-modnix" : case "nonmodnix" :
-               version = null;
                return false;
             default:
                mod = _GetModById( id );
@@ -336,6 +333,7 @@ namespace Sheepy.Modnix {
          RemoveDuplicateMods();
          RemoveRecessMods();
          var loopIndex = 0;
+         ResolveModAgain = true;
          while ( ResolveModAgain && loopIndex++ < 20 ) {
             ResolveModAgain = false;
             RemoveUnfulfilledMods();
@@ -351,12 +349,15 @@ namespace Sheepy.Modnix {
             if ( ! settings.TryGetValue( mod.Key, out ModSettings modSetting ) ) continue;
             if ( modSetting.Disabled )
                DisableAndRemoveMod( mod, "manual", "Mod {0} is manually disabled.", mod.Key );
-            else if ( modSetting.LoadIndex.HasValue ) {
-               Log.Verbo( "Mod {0} LoadIndex manually set to {1}", mod.Key, modSetting.LoadIndex);
-               lock ( mod.Metadata ) mod.Metadata.LoadIndex = modSetting.LoadIndex.Value;
-            } else if ( modSetting.LogLevel.HasValue ) {
-               Log.Verbo( "Mod {0} LogLevel set to {1}", mod.Key, modSetting.LogLevel );
-               lock ( mod ) mod.LogLevel = modSetting.LogLevel.Value;
+            else {
+               if ( modSetting.LoadIndex.HasValue ) {
+                  Log.Verbo( "Mod {0} LoadIndex manually set to {1}", mod.Key, modSetting.LoadIndex);
+                  lock ( mod.Metadata ) mod.Metadata.LoadIndex = modSetting.LoadIndex.Value;
+               }
+               if ( modSetting.LogLevel.HasValue ) {
+                  Log.Verbo( "Mod {0} LogLevel set to {1}", mod.Key, modSetting.LogLevel );
+                  lock ( mod ) mod.LogLevel = modSetting.LogLevel.Value;
+               }
             }
          }
       }
@@ -388,10 +389,14 @@ namespace Sheepy.Modnix {
             var reqs = mod.Metadata.Avoids;
             if ( reqs == null ) continue;
             foreach ( var req in reqs ) {
-               if ( ! GetVersionById( req.Id, out _, out Version ver ) ) continue;
+               if ( ! GetVersionById( req.Id, out ModEntry target, out Version ver ) || target.Disabled ) continue;
+               if ( target == mod ) {
+                  Log.Warn( "Mod {0} not allowed to disable itself with mod_info.Avoids.", req.Id );
+                  continue;
+               }
                if ( req.Min != null && req.Min > ver ) continue;
                if ( req.Max != null && req.Max < ver ) continue;
-               DisableAndRemoveMod( mod, "avoid", "Mod {1} self-disabled, avoiding conflict with {0}", req.Id, mod.Metadata.Id );
+               DisableAndRemoveMod( mod, "avoid", "Mod {1} self-disabled to avoid {0}", req.Id, mod.Metadata.Id );
                break;
             }
          }
@@ -411,11 +416,15 @@ namespace Sheepy.Modnix {
                requirements[ id ].Add( req );
             }
             foreach ( var reqSet in requirements ) {
-               if ( reqSet.Value.Count == 0 ) continue;
-               if ( ! GetVersionById( reqSet.Key, out _, out Version ver ) ||
-                     reqSet.Value.All( r => ( r.Min != null && r.Min > ver ) || ( r.Max != null && r.Max < ver ) ) ) {
-                  DisableAndRemoveMod( mod, "require", "Mod {2} requirement {0} failed, found {1}",
-                     reqSet.Key, ver, mod.Metadata.Id );
+               var found = GetVersionById( reqSet.Key, out ModEntry target, out Version ver );
+               if ( target == mod ) {
+                  Log.Warn( "Mod {0} not allowed to depends on itself with mod_info.Requires", reqSet.Key );
+                  continue;
+               }
+               if ( found )
+                  found = reqSet.Value.Any( r => ( r.Min == null || r.Min <= ver ) && ( r.Max == null || r.Max >= ver ) );
+               if ( ! found ) {
+                  DisableAndRemoveMod( mod, "require", "Mod {2} requirement {0} failed, found {1}", reqSet.Key, ver, mod.Metadata.Id );
                   break;
                }
             }
@@ -429,9 +438,11 @@ namespace Sheepy.Modnix {
             var targets = mod.Metadata.Disables;
             if ( targets == null ) continue;
             foreach ( var req in targets ) {
-               var target = GetModById( req.Id );
-               if ( target == null || target == mod || target.Disabled ) continue;
-               var ver = GetVersionFromMod( target );
+               if ( ! GetVersionById( req.Id, out ModEntry target, out Version ver ) || target.Disabled ) continue;
+               if ( target == mod ) {
+                  Log.Warn( "Mod {0} not allowed to disable itself with mod_info.Disables.", req.Id );
+                  continue;
+               }
                if ( req.Min != null && req.Min > ver ) continue;
                if ( req.Max != null && req.Max < ver ) continue;
                DisableAndRemoveMod( target, "disable", "Mod {1} (v{3}) is disabled by {2} [{4},{5}]",
