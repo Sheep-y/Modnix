@@ -12,6 +12,9 @@ using System.Threading.Tasks;
 
 namespace Sheepy.Modnix {
 
+   /// <summary>
+   /// A collection of objects and methods to make parsing mod json easier.
+   /// </summary>
    public static class Json {
       public readonly static LoggerProxy JsonLogger = new JsonTraceLogger();
       public readonly static JsonSerializerSettings JsonOptions = new JsonSerializerSettings{
@@ -55,8 +58,20 @@ namespace Sheepy.Modnix {
       public static object Parse ( string json, Type type ) => JsonConvert.DeserializeObject( json, type, JsonOptions );
       public static string Stringify ( object val ) => JsonConvert.SerializeObject( val, Formatting.Indented, JsonOptions );
       public static ModMeta ParseMod ( string json ) => Parse<ModMeta>( json );
+
+      internal static JsonToken ReadAndSkipComment ( this JsonReader r ) {
+         r.Read();
+         return SkipComment( r );
+      }
+      internal static JsonToken SkipComment ( this JsonReader r ) {
+         while ( r.TokenType == JsonToken.Comment && r.Read() ) ;
+         return r.TokenType;
+      }
    }
 
+   /// <summary>
+   /// Read verious mod info types in flexible format.
+   /// </summary>
    public class ModMetaReader : JsonConverter {
       public override bool CanWrite => false;
 
@@ -226,17 +241,9 @@ namespace Sheepy.Modnix {
       }
    }
 
-   internal static class JsonReaderExtension {
-      internal static JsonToken ReadAndSkipComment ( this JsonReader r ) {
-         r.Read();
-         return SkipComment( r );
-      }
-      internal static JsonToken SkipComment ( this JsonReader r ) {
-         while ( r.TokenType == JsonToken.Comment && r.Read() ) ;
-         return r.TokenType;
-      }
-   }
-
+   /// <summary>
+   /// Forward Newtonsoft parsing messages to Sheepy.Logging
+   /// </summary>
    internal class JsonTraceLogger : LoggerProxy, ITraceWriter {
       internal JsonTraceLogger ( params Logger[] Masters ) : base( false, Masters ) { }
       public TraceLevel LevelFilter { get; set; }

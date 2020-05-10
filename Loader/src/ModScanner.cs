@@ -14,6 +14,9 @@ using static System.Reflection.BindingFlags;
 namespace Sheepy.Modnix {
    using DllEntryMeta = Dictionary< string, HashSet< string > >;
 
+   /// <summary>
+   /// Scan, sort, and resolve mods.
+   /// </summary>
    public static class ModScanner {
       public readonly static List<ModEntry> AllMods = new List<ModEntry>();
       public readonly static List<ModEntry> EnabledMods = new List<ModEntry>();
