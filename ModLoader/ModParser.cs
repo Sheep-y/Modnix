@@ -12,6 +12,9 @@ using System.Threading.Tasks;
 
 namespace Sheepy.Modnix {
 
+   /// <summary>
+   /// A collection of objects and methods to make parsing mod json easier.
+   /// </summary>
    public static class ModMetaJson {
       public readonly static LoggerProxy JsonLogger = new JsonTraceLogger();
       public readonly static JsonSerializerSettings JsonOptions = new JsonSerializerSettings{
@@ -57,6 +60,9 @@ namespace Sheepy.Modnix {
       public static ModMeta ParseMod ( string json ) => Parse<ModMeta>( json );
    }
 
+   /// <summary>
+   /// Read verious mod info types in flexible format.
+   /// </summary>
    public class ModMetaReader : JsonConverter {
       public override bool CanWrite => false;
 
@@ -86,7 +92,7 @@ namespace Sheepy.Modnix {
       private static AppVer[] ParseAppVerArray ( JsonReader reader ) => ParseArray<AppVer>( reader, ParseAppVer );
       private static AppVer AssignAppVerProp ( AppVer e, string prop, object val ) {
          var txt = val.ToString().Trim();
-         if ( txt.Length <= 0 ) return e;
+         if ( txt.Length == 0 ) return e;
          switch ( prop.ToLowerInvariant() ) {
             case "id": e.Id = txt; break;
             case "min":
@@ -208,16 +214,16 @@ namespace Sheepy.Modnix {
          if ( token == JsonToken.Null || token == JsonToken.Undefined )
             result = null;
          else if ( token == JsonToken.String ) {
-            if ( !ModMetaJson.ParseVersion( r.Value.ToString(), out result ) )
+            if ( ! ModMetaJson.ParseVersion( r.Value.ToString(), out result ) )
                result = null;
          } else if ( token == JsonToken.Integer ) {
             result = new Version( (int) (long) r.Value, 0, 0, 0 );
          } else if ( token == JsonToken.Float ) {
-            if ( !ModMetaJson.ParseVersion( FloatToString( r.Value ), out result ) )
+            if ( ! ModMetaJson.ParseVersion( FloatToString( r.Value ), out result ) )
                result = null;
          } else
             throw new JsonException( $"String or number expected for Version" );
-         r.ReadAndSkipComment();
+         r.SkipComment();
          return result;
       }
 

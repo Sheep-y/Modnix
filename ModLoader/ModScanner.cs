@@ -14,6 +14,9 @@ using static System.Reflection.BindingFlags;
 namespace Sheepy.Modnix {
    using DllEntryMeta = Dictionary< string, HashSet< string > >;
 
+   /// <summary>
+   /// Scan, sort, and resolve mods.
+   /// </summary>
    public static class ModScanner {
       public readonly static List<ModEntry> AllMods = new List<ModEntry>();
       public readonly static List<ModEntry> EnabledMods = new List<ModEntry>();
@@ -122,7 +125,10 @@ namespace Sheepy.Modnix {
             return null;
          }
          Log.Info( "Found mod {0} at {1} ({2} dlls)", meta.Id, file, meta.Dlls?.Length ?? 0 );
-         return new ModEntry( file, meta );
+         var mod = new ModEntry( file, meta );
+         if ( meta.Flags != null )
+            AddManagerNotice( TraceEventType.Warning, mod, "Mod Flags are not supported in Modnix 2.x.", "unspoorted_flags", mod, meta.Flags );
+         return mod;
       } catch ( Exception ex ) { Log.Warn( ex ); return null; } }
 
       private static ModMeta ParseInfoJs ( string js, string default_id = null ) { try {
@@ -245,20 +251,27 @@ namespace Sheepy.Modnix {
 
       internal static ModEntry GetModById ( string id ) => _GetModById( NormaliseModId( id ) );
 
-      internal static Version GetVersionById ( string id ) {
-         if ( string.IsNullOrEmpty( id ) ) return ModLoader.LoaderVersion;
+      internal static bool GetVersionById ( string id, out ModEntry mod, out Version version ) {
+         mod = null;
+         version = null;
+         if ( string.IsNullOrEmpty( id ) ) return false;
          id = NormaliseModId( id );
          switch ( id ) {
             case "modnix" : case "loader" : case "":
-               return ModLoader.LoaderVersion;
+               version = ModLoader.LoaderVersion;
+               return true;
             case "phoenixpoint" : case "phoenix point" : case "game" :
-               return ModLoader.GameVersion;
+               version = ModLoader.GameVersion;
+               return true;
             case "ppml" : case "ppml+" : case "phoenixpointmodloader" : case "phoenix point mod loader" :
-               return ModLoader.PPML_COMPAT;
+               version = ModLoader.PPML_COMPAT;
+               return true;
             case "non-modnix" : case "nonmodnix" :
-               return null;
+               return false;
             default:
-               return GetVersionFromMod( _GetModById( id ) );
+               mod = _GetModById( id );
+               version = GetVersionFromMod( mod );
+               return mod != null;
          }
       }
 
@@ -307,6 +320,8 @@ namespace Sheepy.Modnix {
       #endregion
 
       #region Resolving
+      private static bool ResolveModAgain = true;
+
       private static void ResolveMods () {
          EnabledMods.Clear();
          EnabledMods.AddRange( AllMods.Where( e => ! e.Disabled ) );
@@ -314,8 +329,17 @@ namespace Sheepy.Modnix {
          ApplyUserOverride();
          EnabledMods.Sort( CompareModIndex );
          RemoveDuplicateMods();
-         RemoveUnfulfilledMods();
-         RemoveConflictMods();
+         RemoveRecessMods();
+         var loopIndex = 0;
+         ResolveModAgain = true;
+         while ( ResolveModAgain && loopIndex++ < 20 ) {
+            ResolveModAgain = false;
+            RemoveUnfulfilledMods();
+            RemoveConflictMods();
+         }
+         foreach ( var e in EnabledMods )
+            if ( e.Metadata.Actions != null )
+               AddManagerNotice( TraceEventType.Error, e, "Mod Actions are not supported in Modnix 2.x.", "unsupported_actions", e );
       }
 
       private static void ApplyUserOverride () {
@@ -326,12 +350,15 @@ namespace Sheepy.Modnix {
             if ( ! settings.TryGetValue( mod.Key, out ModSettings modSetting ) ) continue;
             if ( modSetting.Disabled )
                DisableAndRemoveMod( mod, "manual", "Mod {0} is manually disabled.", mod.Key );
-            else if ( modSetting.LoadIndex.HasValue ) {
-               Log.Verbo( "Mod {0} LoadIndex manually set to {1}", mod.Key, modSetting.LoadIndex);
-               lock ( mod.Metadata ) mod.Metadata.LoadIndex = modSetting.LoadIndex.Value;
-            } else if ( modSetting.LogLevel.HasValue ) {
-               Log.Verbo( "Mod {0} LogLevel set to {1}", mod.Key, modSetting.LogLevel );
-               lock ( mod ) mod.LogLevel = modSetting.LogLevel.Value;
+            else {
+               if ( modSetting.LoadIndex.HasValue ) {
+                  Log.Verbo( "Mod {0} LoadIndex manually set to {1}", mod.Key, modSetting.LoadIndex);
+                  lock ( mod.Metadata ) mod.Metadata.LoadIndex = modSetting.LoadIndex.Value;
+               }
+               if ( modSetting.LogLevel.HasValue ) {
+                  Log.Verbo( "Mod {0} LogLevel set to {1}", mod.Key, modSetting.LogLevel );
+                  lock ( mod ) mod.LogLevel = modSetting.LogLevel.Value;
+               }
             }
          }
       }
@@ -349,36 +376,60 @@ namespace Sheepy.Modnix {
       }
 
       private static void RemoveDuplicates ( ModEntry[] clones ) {
-         ModEntry keep = FindLatestMod( clones );
+         var keep = FindLatestMod( clones );
          foreach ( var mod in clones ) {
             if ( mod == keep ) continue;
             DisableAndRemoveMod( mod, "duplicate", "Mod {1} is a duplicate of {2}.", keep, mod.Path, keep.Path );
          }
       }
 
+      private static void RemoveRecessMods () {
+         Log.Verbo( "Check mod avoidances" );
+         foreach ( var mod in EnabledMods.ToArray() ) {
+            if ( mod.Disabled ) continue;
+            var reqs = mod.Metadata.Avoids;
+            if ( reqs == null ) continue;
+            foreach ( var req in reqs ) {
+               if ( ! GetVersionById( req.Id, out ModEntry target, out Version ver ) || target.Disabled ) continue;
+               if ( target == mod ) {
+                  mod.CreateLogger().Warn( "Mod {0} not allowed to disable itself with mod_info.Avoids.", req.Id );
+                  continue;
+               }
+               if ( req.Min != null && req.Min > ver ) continue;
+               if ( req.Max != null && req.Max < ver ) continue;
+               DisableAndRemoveMod( mod, "avoid", "Mod {1} self-disabled to avoid {0}", req.Id, mod.Metadata.Id );
+               break;
+            }
+         }
+      }
+
       private static void RemoveUnfulfilledMods () {
-         int loopIndex = 1;
-         bool NeedAnotherLoop;
-         do {
-            NeedAnotherLoop = false;
-            Log.Verbo( "Check mod requirements, loop {0}", loopIndex );
-            foreach ( var mod in EnabledMods.ToArray() ) {
-               if ( mod.Disabled ) continue;
-               var reqs = mod.Metadata.Requires;
-               if ( reqs == null ) continue;
-               foreach ( var req in reqs ) {
-                  var ver = GetVersionById( req.Id );
-                  var pass = ver != null;
-                  if ( pass && req.Min != null && req.Min > ver ) pass = false;
-                  if ( pass && req.Max != null && req.Max < ver ) pass = false;
-                  if ( ! pass ) {
-                     DisableAndRemoveMod( mod, "require", "Mod {4} requirement {0} [{1},{2}] failed, found {3}",
-                        req.Id, req.Min, req.Max, ver, mod.Metadata.Id );
-                     NeedAnotherLoop = true;
-                  }
+         Log.Verbo( "Check mod requirements" );
+         foreach ( var mod in EnabledMods.ToArray() ) {
+            if ( mod.Disabled ) continue;
+            var reqs = mod.Metadata.Requires;
+            if ( reqs == null ) continue;
+            var requirements = new Dictionary<string, List<AppVer>>();
+            foreach ( var req in reqs ) {
+               var id = NormaliseModId( req.Id );
+               if ( id == null ) continue;
+               if ( ! requirements.ContainsKey( id ) ) requirements[ id ] = new List<AppVer>();
+               requirements[ id ].Add( req );
+            }
+            foreach ( var reqSet in requirements ) {
+               var found = GetVersionById( reqSet.Key, out ModEntry target, out Version ver );
+               if ( target == mod ) {
+                  mod.CreateLogger().Warn( "Mod {0} not allowed to depends on itself with mod_info.Requires", reqSet.Key );
+                  continue;
+               }
+               if ( found )
+                  found = reqSet.Value.Any( r => ( r.Min == null || r.Min <= ver ) && ( r.Max == null || r.Max >= ver ) );
+               if ( ! found ) {
+                  DisableAndRemoveMod( mod, "require", "Mod {2} requirement {0} failed, found {1}", reqSet.Key, ver, mod.Metadata.Id );
+                  break;
                }
             }
-         } while ( NeedAnotherLoop && loopIndex++ <= 20 );
+         }
       }
 
       private static void RemoveConflictMods () {
@@ -388,9 +439,11 @@ namespace Sheepy.Modnix {
             var targets = mod.Metadata.Disables;
             if ( targets == null ) continue;
             foreach ( var req in targets ) {
-               var target = GetModById( req.Id );
-               if ( target == null || target == mod || target.Disabled ) continue;
-               var ver = GetVersionFromMod( target );
+               if ( ! GetVersionById( req.Id, out ModEntry target, out Version ver ) || target.Disabled ) continue;
+               if ( target == mod ) {
+                  mod.CreateLogger().Warn( "Mod {0} not allowed to disable itself with mod_info.Disables.", req.Id );
+                  continue;
+               }
                if ( req.Min != null && req.Min > ver ) continue;
                if ( req.Max != null && req.Max < ver ) continue;
                DisableAndRemoveMod( target, "disable", "Mod {1} (v{3}) is disabled by {2} [{4},{5}]",
@@ -405,6 +458,13 @@ namespace Sheepy.Modnix {
          mod.Disabled = true;
          mod.AddNotice( TraceEventType.Error, reason, augs );
          EnabledMods.Remove( mod );
+         ResolveModAgain = true;
+      } }
+
+      private static void AddManagerNotice ( TraceEventType level, ModEntry mod, string reason, string log, params object[] augs ) { lock ( mod ) {
+         if ( mod.Disabled ) return;
+         Log.Info( log, augs );
+         mod.AddNotice( level, reason, augs );
       } }
       #endregion
    }

@@ -146,7 +146,10 @@ namespace Sheepy.Modnix {
       private IEnumerable < Assembly > GetAssemblies ( object target ) {
          if ( LowerAndIsEmpty( target, out string id ) ) return ModAssemblies ?? Enumerable.Empty<Assembly>();
          switch ( id ) {
-            case "loader" : case "modnix" :
+            case "modnix" :
+               return new Assembly[]{ Assembly.GetExecutingAssembly() };
+
+            case "loader" :
                var ppml = ModLoader.PpmlAssembly;
                var loaderList = new Assembly[ ppml == null ? 1 : 2 ];
                loaderList[0] = Assembly.GetExecutingAssembly();
@@ -162,13 +165,16 @@ namespace Sheepy.Modnix {
                return new Assembly[]{ GameAssembly };
 
             default:
-               return ModScanner.GetModById( id )?.ModAssemblies ?? Enumerable.Empty<Assembly>();
+               var mod = ModScanner.GetModById( id );
+               if ( mod == null ) return null;
+               return mod.ModAssemblies ?? Enumerable.Empty<Assembly>();
          }
       }
 
       private Version GetVersion ( object target ) {
          if ( LowerAndIsEmpty( target, out string id ) ) lock ( Metadata ) return Metadata.Version;
-         return ModScanner.GetVersionById( id );
+         ModScanner.GetVersionById( id, out _, out Version ver );
+         return ver;
       }
 
       private ModEntry GetMod ( object target ) {
@@ -181,7 +187,7 @@ namespace Sheepy.Modnix {
          switch ( id ) {
             case "mods_root" : return ModLoader.ModDirectory;
             case "loader" : case "modnix" :
-               return Assembly.GetExecutingAssembly().Location;
+               return ModLoader.LoaderPath;
             case "phoenixpoint" : case "phoenix point" : case "game" :
                return Process.GetCurrentProcess().MainModule?.FileName;
             default :
@@ -277,9 +283,9 @@ namespace Sheepy.Modnix {
       #endregion
 
       #region Logger
-      internal LoggerProxy Logger; // Created when and only when an initialiser accepts a logging function
+      private LoggerProxy Logger; // Created when and only when an initialiser accepts a logging function
 
-      private Logger CreateLogger () {
+      public Logger CreateLogger () {
          lock ( this ) {
             if ( Logger != null ) return Logger;
             Logger = new LoggerProxy( ModLoader.Log ){ Level = LogLevel ?? ModLoader.Settings.LogLevel };
@@ -510,6 +516,7 @@ namespace Sheepy.Modnix {
    public class ModMeta {
       public string   Id;
       public Version  Version;
+      public string[]  Flags;
 
       public TextSet   Name;
       public string[]  Lang;
@@ -520,25 +527,28 @@ namespace Sheepy.Modnix {
       public TextSet   Contact;
       public TextSet   Copyright;
 
+      public AppVer[]  Avoids;
       public AppVer[]  Requires;
       public AppVer[]  Disables;
       public long      LoadIndex;
 
       public string[]  Mods;
       public DllMeta[] Dlls;
+      public object Actions;
 
       public   string  ConfigType;
       public   object  DefaultConfig;
       internal string  DefaultConfigText;
       internal string  ConfigText;
 
-      internal bool HasContent => Mods == null && Dlls == null;
+      internal bool HasContent => Mods == null && Dlls == null && Actions == null;
 
       internal ModMeta ImportFrom ( ModMeta overrider ) {
          lock ( this ) if ( overrider == null ) return this;
          lock ( overrider ) {
             CopyNonNull( overrider.Id, ref Id );
             CopyNonNull( overrider.Version, ref Version );
+            CopyNonNull( overrider.Flags, ref Flags );
             CopyNonNull( overrider.Name, ref Name );
             CopyNonNull( overrider.Lang, ref Lang );
             CopyNonNull( overrider.Duration, ref Duration );
@@ -547,11 +557,13 @@ namespace Sheepy.Modnix {
             CopyNonNull( overrider.Url, ref Url );
             CopyNonNull( overrider.Contact, ref Contact );
             CopyNonNull( overrider.Copyright, ref Copyright );
+            CopyNonNull( overrider.Avoids, ref Avoids );
             CopyNonNull( overrider.Requires, ref Requires );
             CopyNonNull( overrider.Disables, ref Disables );
             CopyNonNull( overrider.LoadIndex, ref LoadIndex );
             CopyNonNull( overrider.Mods, ref Mods );
             CopyNonNull( overrider.Dlls, ref Dlls );
+            CopyNonNull( overrider.Actions, ref Actions );
             CopyNonNull( overrider.ConfigType, ref ConfigType );
             CopyNonNull( overrider.DefaultConfig, ref DefaultConfig );
          }
@@ -574,6 +586,7 @@ namespace Sheepy.Modnix {
          NormTextSet( ref Name );
          if ( Name == null && Id != null )
             Name = new TextSet{ Default = Id };
+         NormStringArray( ref Flags );
          NormStringArray( ref Lang );
          Duration = NormString( Duration );
          NormTextSet( ref Description );
@@ -581,6 +594,7 @@ namespace Sheepy.Modnix {
          NormTextSet( ref Url );
          NormTextSet( ref Contact );
          NormTextSet( ref Copyright );
+         NormAppVer( ref Avoids );
          NormAppVer( ref Requires );
          NormAppVer( ref Disables );
          NormStringArray( ref Mods );
@@ -665,6 +679,14 @@ namespace Sheepy.Modnix {
       public string Id;
       public Version Min;
       public Version Max;
+
+      public AppVer () {}
+
+      public AppVer ( string id, Version min = null, Version max = null ) {
+         Id = id;
+         Min = min;
+         Max = max;
+      }
    }
 
    public class DllMeta {
