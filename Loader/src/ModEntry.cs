@@ -173,7 +173,8 @@ namespace Sheepy.Modnix {
 
       private Version GetVersion ( object target ) {
          if ( LowerAndIsEmpty( target, out string id ) ) lock ( Metadata ) return Metadata.Version;
-         return ModScanner.GetVersionById( id );
+         ModScanner.GetVersionById( id, out _, out Version ver );
+         return ver;
       }
 
       private ModEntry GetMod ( object target ) {

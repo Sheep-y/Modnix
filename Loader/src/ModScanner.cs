@@ -253,20 +253,30 @@ namespace Sheepy.Modnix {
 
       internal static ModEntry GetModById ( string id ) => _GetModById( NormaliseModId( id ) );
 
-      internal static Version GetVersionById ( string id ) {
-         if ( string.IsNullOrEmpty( id ) ) return ModLoader.LoaderVersion;
+      internal static bool GetVersionById ( string id, out ModEntry mod, out Version version ) {
+         mod = null;
+         if ( string.IsNullOrEmpty( id ) ) {
+            version = ModLoader.LoaderVersion;
+            return true;
+         }
          id = NormaliseModId( id );
          switch ( id ) {
             case "modnix" : case "loader" : case "":
-               return ModLoader.LoaderVersion;
+               version = ModLoader.LoaderVersion;
+               return true;
             case "phoenixpoint" : case "phoenix point" : case "game" :
-               return ModLoader.GameVersion;
+               version = ModLoader.GameVersion;
+               return true;
             case "ppml" : case "ppml+" : case "phoenixpointmodloader" : case "phoenix point mod loader" :
-               return ModLoader.PPML_COMPAT;
+               version = ModLoader.PPML_COMPAT;
+               return true;
             case "non-modnix" : case "nonmodnix" :
-               return null;
+               version = null;
+               return false;
             default:
-               return GetVersionFromMod( _GetModById( id ) );
+               mod = _GetModById( id );
+               version = GetVersionFromMod( mod );
+               return mod != null;
          }
       }
 
@@ -378,8 +388,7 @@ namespace Sheepy.Modnix {
             var reqs = mod.Metadata.Avoids;
             if ( reqs == null ) continue;
             foreach ( var req in reqs ) {
-               var ver = GetVersionById( req.Id );
-               if ( ver == null ) continue;
+               if ( ! GetVersionById( req.Id, out _, out Version ver ) ) continue;
                if ( req.Min != null && req.Min > ver ) continue;
                if ( req.Max != null && req.Max < ver ) continue;
                DisableAndRemoveMod( mod, "avoid", "Mod {1} self-disabled, avoiding conflict with {0}", req.Id, mod.Metadata.Id );
@@ -403,8 +412,8 @@ namespace Sheepy.Modnix {
             }
             foreach ( var reqSet in requirements ) {
                if ( reqSet.Value.Count == 0 ) continue;
-               var ver = GetVersionById( reqSet.Key );
-               if ( ver == null || reqSet.Value.All( r => ( r.Min != null && r.Min > ver ) || ( r.Max != null && r.Max < ver ) ) ) {
+               if ( ! GetVersionById( reqSet.Key, out _, out Version ver ) ||
+                     reqSet.Value.All( r => ( r.Min != null && r.Min > ver ) || ( r.Max != null && r.Max < ver ) ) ) {
                   DisableAndRemoveMod( mod, "require", "Mod {2} requirement {0} failed, found {1}",
                      reqSet.Key, ver, mod.Metadata.Id );
                   break;
