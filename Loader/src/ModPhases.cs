@@ -16,7 +16,13 @@ namespace Sheepy.Modnix {
 
       public const char LOG_DIVIDER = '┊';
 
+      private static readonly HashSet<string> LoadedPhases = new HashSet<string>();
+
       public static void LoadMods ( string phase ) { try {
+         if ( ! phase.EndsWith( "OnShow" ) ) lock ( LoadedPhases ) {
+            if ( LoadedPhases.Contains( phase ) ) return;
+            LoadedPhases.Add( phase );
+         }
          Log.Info( "PHASE {0}", phase );
          foreach ( var mod in ModScanner.EnabledMods ) {
             lock ( mod.Metadata ) ;
