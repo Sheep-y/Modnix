@@ -205,24 +205,27 @@ namespace Sheepy.Modnix {
       public static void LoadMods ( string phase ) { try {
          Log.Info( "PHASE {0}", phase );
          foreach ( var mod in ModScanner.EnabledMods ) {
-            if ( mod.Metadata.Dlls == null ) continue;
-            foreach ( var dll in mod.Metadata.Dlls ) {
-               if ( dll.Methods == null ) continue;
-               if ( ! dll.Methods.TryGetValue( phase, out var entries ) ) continue;
-               var lib = LoadDll( mod, dll.Path );
-               if ( lib == null ) continue;
-               if ( mod.ModAssemblies == null )
-                  mod.ModAssemblies = new List<Assembly>();
-               if ( ! mod.ModAssemblies.Contains( lib ) )
-                  mod.ModAssemblies.Add( lib );
-               foreach ( var type in entries )
-                  CallInit( mod, lib, type, phase );
-            }
+            if ( mod.Metadata.Dlls == null )
+               foreach ( var dll in mod.Metadata.Dlls )
+                  RunPhaseOnDll( mod, dll, phase );
             ActionManager.RunAction( mod, phase );
          }
          Log.Verbo( "Phase {0} ended", phase );
          Log.Flush();
       } catch ( Exception ex ) { Log.Error( ex ); } }
+
+      public static void RunPhaseOnDll ( ModEntry mod, DllMeta dll, string phase ) { try {
+         if ( dll.Methods == null ) return;
+         if ( ! dll.Methods.TryGetValue( phase, out var entries ) ) return;
+         var lib = LoadDll( mod, dll.Path );
+         if ( lib == null ) return;
+         if ( mod.ModAssemblies == null )
+            mod.ModAssemblies = new List<Assembly>();
+         if ( ! mod.ModAssemblies.Contains( lib ) )
+            mod.ModAssemblies.Add( lib );
+         foreach ( var type in entries )
+            CallInit( mod, lib, type, phase );
+      } catch ( Exception ex ) { mod.Error( ex ); } }
 
       public static Assembly LoadDll ( ModEntry mod, string path ) { try {
          Log.Info( "Loading {0}", path );
