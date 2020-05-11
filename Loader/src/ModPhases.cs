@@ -41,7 +41,7 @@ namespace Sheepy.Modnix {
       } catch ( Exception ex ) { mod.Error( ex ); } }
 
       public static Assembly LoadDll ( ModEntry mod, string path ) { try {
-         mod.GetLogger().Info( "Loading {0}", path );
+         mod.Log().Info( "Loading {0}", path );
          var asm = Assembly.LoadFrom( path );
          if ( asm == null ) return null;
          if ( mod.ModAssemblies == null )
@@ -54,7 +54,7 @@ namespace Sheepy.Modnix {
       private readonly static Dictionary<Type,WeakReference<object>> ModInstances = new Dictionary<Type,WeakReference<object>>();
 
       public static object CallInit ( ModEntry mod, Assembly dll, string typeName, string methodName, Func< ParameterInfo, object > paramGetter ) { try {
-         Logger log = mod.GetLogger();
+         Logger log = mod.Log();
 
          var type = dll.GetType( typeName );
          if ( type == null ) {

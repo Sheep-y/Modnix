@@ -35,7 +35,7 @@ namespace Sheepy.Modnix.Actions {
          ActionDef[] all = mod.Metadata.Actions;
          if ( ! QuickScanActions( all, phase ) ) return; // Should move to ModScanner instead of rescanning every time.
 
-         Logger log = mod.GetLogger();
+         Logger log = mod.Log();
          log.Verbo( "Scanning {0} actions", all.Length );
          var actions = FilterActions( all, phase.ToLowerInvariant() );
          if ( actions == null ) return;
@@ -61,7 +61,7 @@ namespace Sheepy.Modnix.Actions {
                }
             }
          }
-      } catch ( Exception ex ) { mod.GetLogger().Error( ex ); } }
+      } catch ( Exception ex ) { mod.Log().Error( ex ); } }
 
       private static bool QuickScanActions ( ActionDef[] actions, string phase ) {
          foreach ( var act in actions ) {

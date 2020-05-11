@@ -6,6 +6,7 @@ Modnix Changelog
 * New: Mod Actions - a new system that allows mods to declare Actions and/or to support them.
 * Fix: .NET fallback resolver now use correct path separator.  Should have only cosmetic difference.
 * Mod: Removed deprecated logger and config param from mod initialisers. Use API instead.
+* Mod: api_add now accepts parameter-less functions such as Func<string> or Action.
 * Log: Mod loading messages are now logged with the mod's logger.
 * Other: Mod phases other than SplashMod now depends on correct Harmony to function. SplashMods can still be loaded without Harmony.
 
