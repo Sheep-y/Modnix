@@ -117,12 +117,16 @@ namespace Sheepy.Modnix {
             } else {
                API_Func handler;
                lock ( ApiExtension ) ApiExtension.TryGetValue( cmd, out handler );
-               if ( handler != null ) return handler( spec, param );
+               if ( handler != null ) {
+                  var result = handler( spec, param );
+                  if ( result is Exception err ) Warn( err );
+                  return result;
+               }
             }
          }
          Warn( "Unknown api action '{0}'", cmd );
          return null;
-      } catch ( Exception ex ) { Error( ex ); return ex; } }
+      } catch ( Exception ex ) { Warn( ex ); return ex; } }
 
       private static bool IsMultiPart ( string text, out string firstWord, out string rest ) {
          int pos = text.IndexOf( ' ' );

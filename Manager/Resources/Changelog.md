@@ -4,8 +4,9 @@ Modnix Changelog
 
 * New: Show PPML version in app status.
 * New: Mod Actions - a new system that allows mods to declare Actions and/or to support them.
+* Mod: Native API now returns Exception on error.  API extensions that return Exception will be logged as warning.
 * Mod: Logger and config param no longer supported for mod initialisers and will be passed null.  Use API instead.
-* Mod: DefaultConfig is no longer supported.  Use ConfigType instead.
+* Mod: DefaultConfig is no longer supported in mod_info.  Use ConfigType instead.
 * Log: Mod loading messages are now logged with the mod's logger.
 * Other: Mod phases other than SplashMod now depends on correct Harmony to function. SplashMods can still be loaded without Harmony.
  
