@@ -17,7 +17,7 @@ namespace Sheepy.Modnix.Actions.Tests {
             CreateDef( "eval", "Code2" ),
          };
 
-         var splash = ActionManager.FilterActions( defs, "SplashMod" );
+         var splash = ModActions.FilterActions( defs, "SplashMod" );
          Assert.AreEqual( 1, splash?.Count, "1 splash actions" );
          splash[0].TryGetValue( "skip", out object val );
          Assert.AreEqual( "splash", val, "splash field" );
@@ -26,7 +26,7 @@ namespace Sheepy.Modnix.Actions.Tests {
          splash[0].TryGetValue( "more", out val );
          Assert.AreEqual( "Def2", val, "splash def 2" );
 
-         var main = ActionManager.FilterActions( defs, "MainMod" );
+         var main = ModActions.FilterActions( defs, "MainMod" );
          Assert.AreEqual( 2, main?.Count, "2 main actions" );
       }
 
