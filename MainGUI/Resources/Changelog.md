@@ -1,5 +1,10 @@
 Modnix Changelog
 
+# Version 2.5, in development
+
+* Fix: .NET fallback resolver now use correct path separator.  Should have only cosmetic difference.
+* Mod: api_add now accepts parameter-less functions such as Func<string> or Action.
+
 # Version 2.4, 2020-05-10
 
 * New: Avoids field of mod_info - self-kill if target exists.

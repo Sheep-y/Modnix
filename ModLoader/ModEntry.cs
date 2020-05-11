@@ -59,7 +59,7 @@ namespace Sheepy.Modnix {
 
       public string Key { get { lock ( Metadata ) { return ModScanner.NormaliseModId( Metadata.Id ); } } }
       internal DateTime? LastModified => Path == null ? (DateTime?) null : new FileInfo( Path ).LastWriteTime;
-      internal List< Assembly > ModAssemblies = null;
+      internal List< Assembly > ModAssemblies = null; // Use List insead of HashSet to preserve order.
 
       public long Index { get { lock ( Metadata ) { return LoadIndex ?? Metadata.LoadIndex; } } }
 
@@ -236,7 +236,9 @@ namespace Sheepy.Modnix {
 
       private Func<string, object, object> WrapExtension ( Delegate func ) {
          var augs = func.GetMethodInfo().GetParameters();
-         if ( augs.Length == 1 ) {
+         if ( augs.Length == 0 ) {
+            return ( _, __ ) => func.DynamicInvoke( null );
+         } else if ( augs.Length == 1 ) {
             if ( augs[0].ParameterType != typeof( object ) ) return null;
             return ( _, b ) => func.DynamicInvoke( new object[] { b } );
          } else if ( augs.Length == 2 ) {

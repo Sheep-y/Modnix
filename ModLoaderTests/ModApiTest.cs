@@ -1,11 +1,11 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
-using System.Linq;
 using System.Collections.Generic;
-using static System.Reflection.BindingFlags;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using static System.Reflection.BindingFlags;
 
 namespace Sheepy.Modnix.Tests {
 
@@ -101,17 +101,19 @@ namespace Sheepy.Modnix.Tests {
       [TestMethod()] public void ModExtTest () {
          Func<object,string> ExtA = ( e )=> e.ToString() + "A";
          Predicate<object> ExtC = ( e ) => e == null;
-         Func<string> ExtD = () => "";
+         Action<Version> ExtD = ( _ ) => { };
          Action<object> ExtE = ( _ ) => { };
+         Action ExtF = () => { };
 
          Assert.AreEqual( false, ModA.ModAPI( "api_add" , null ), "no name null action" );
          Assert.AreEqual( true , ModA.ModAPI( "api_add A.A", ExtA ), "A.A => ExtA" );
          Assert.AreEqual( true , ModA.ModAPI( "api_add  A.B", (Func<object,object,string>) ExtB ), "A.B => ExtB" );
          Assert.AreEqual( true , ModA.ModAPI( "api_add A.C", ExtC ), "A.C => ExtC" );
          Assert.AreEqual( true , ModA.ModAPI( "api_add A.E", ExtE ), "A.C => ExtE" );
+         Assert.AreEqual( true , ModA.ModAPI( "api_add A.F", ExtF ), "A.C => ExtF" );
 
          var list = ModA.ModAPI( "api_list", "A." ) as IEnumerable<string>;
-         Assert.AreEqual( 4, list.Count(), "api_list.Length" );
+         Assert.AreEqual( 5, list.Count(), "api_list.Length" );
          Assert.AreEqual( "a.a", list.First(), "api_list[0]" );
          Assert.AreEqual( ExtA.GetMethodInfo(), ModA.ModAPI( "api_info", "A.A" ), "api_info A.A" );
          Assert.AreEqual( ExtC.GetMethodInfo(), ModA.ModAPI( "api_info", "A.C" ), "api_info A.C" );
@@ -128,7 +130,8 @@ namespace Sheepy.Modnix.Tests {
          Assert.AreEqual( "c0B", ModB.ModAPI( "A.b c", "0" ), "call api A.b" );
          Assert.AreEqual( true , ModB.ModAPI( "a.C", null ), "call api a.C null" );
          Assert.AreEqual( false, ModB.ModAPI( "a.C", "" ), "call api a.C non-null" );
-         Assert.AreEqual( null , ModA.ModAPI( "A.E", ExtD ), "call api a.e" );
+         Assert.AreEqual( null , ModA.ModAPI( "A.E", ExtD ), "call api A.E" );
+         Assert.AreEqual( null , ModA.ModAPI( "A.F", null ), "call api A.F" );
          Assert.AreEqual( false, ModB.ModAPI( "api_remove A.B" ), "api_remove non-owner" );
          Assert.AreEqual( false, ModA.ModAPI( "api_remove A.B CDE" ), "api_remove extra spec" );
          Assert.AreEqual( true , ModA.ModAPI( " api_remove   a.b " ), "api_remove owner" );
