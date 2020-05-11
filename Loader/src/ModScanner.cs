@@ -333,12 +333,12 @@ namespace Sheepy.Modnix {
          ApplyUserOverride();
          EnabledMods.Sort( CompareModIndex );
          RemoveDuplicateMods();
-         RemoveRecessMods();
          var loopIndex = 0;
          ResolveModAgain = true;
          while ( ResolveModAgain && loopIndex++ < 20 ) {
             ResolveModAgain = false;
             RemoveUnfulfilledMods();
+            RemoveRecessMods();
             RemoveConflictMods();
          }
       }
