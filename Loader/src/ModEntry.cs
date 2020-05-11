@@ -285,7 +285,7 @@ namespace Sheepy.Modnix {
       #region Logger
       private LoggerProxy Logger; // Created when and only when an initialiser accepts a logging function
 
-      public Logger CreateLogger () {
+      public Logger GetLogger () {
          lock ( this ) {
             if ( Logger != null ) return Logger;
             Logger = new LoggerProxy( ModLoader.Log ){ Level = LogLevel ?? ModLoader.Settings.LogLevel };
@@ -301,9 +301,9 @@ namespace Sheepy.Modnix {
          else if ( param is string s ) txt = s;
          else return null;
          switch ( txt ) {
-            case "TraceEventType" : return (Action<TraceEventType,object,object[]>) CreateLogger().Log;
-            case "SourceLevels"   : return (Action<SourceLevels,object,object[]>) CreateLogger().Log;
-            case "TraceLevel"     : return (Action<TraceLevel,object,object[]>) CreateLogger().Log;
+            case "TraceEventType" : return (Action<TraceEventType,object,object[]>) GetLogger().Log;
+            case "SourceLevels"   : return (Action<SourceLevels,object,object[]>) GetLogger().Log;
+            case "TraceLevel"     : return (Action<TraceLevel,object,object[]>) GetLogger().Log;
          }
          return null;
       }
@@ -332,7 +332,7 @@ namespace Sheepy.Modnix {
                }
                break;
          }
-         CreateLogger().Log( lv, param );
+         GetLogger().Log( lv, param );
          return true;
       }
 
@@ -343,9 +343,9 @@ namespace Sheepy.Modnix {
          return trace;
       }
 
-      internal void Info  ( object msg, params object[] augs ) => CreateLogger().Info ( msg, augs );
-      internal void Warn  ( object msg, params object[] augs ) => CreateLogger().Warn ( msg, augs );
-      internal void Error ( object msg ) => CreateLogger().Error( msg );
+      internal void Info  ( object msg, params object[] augs ) => GetLogger().Info ( msg, augs );
+      internal void Warn  ( object msg, params object[] augs ) => GetLogger().Warn ( msg, augs );
+      internal void Error ( object msg ) => GetLogger().Error( msg );
       #endregion
 
       #region Config
@@ -401,7 +401,7 @@ namespace Sheepy.Modnix {
             string confText;
             lock ( Metadata ) confText = GetDefaultConfigText();
             if ( confText == null ) return;
-            CreateLogger().Info( "Verifying DefaultConfig in background" );
+            GetLogger().Info( "Verifying DefaultConfig in background" );
             var newInstance = Activator.CreateInstance( confType );
             var newText = Json.Stringify( newInstance );
             var confObj = Json.Parse( confText, confType );
@@ -490,7 +490,7 @@ namespace Sheepy.Modnix {
       public void WriteConfigText ( string str ) { try {
          if ( string.IsNullOrWhiteSpace( str ) ) return;
          var path = GetConfigFile();
-         CreateLogger().Info( $"Writing {str.Length} chars to {path}" );
+         GetLogger().Info( $"Writing {str.Length} chars to {path}" );
          File.WriteAllText( path, str, Encoding.UTF8 );
          lock ( Metadata ) Metadata.ConfigText = str;
       } catch ( Exception ex ) { Error( ex ); } }

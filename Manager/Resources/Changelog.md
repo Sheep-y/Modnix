@@ -6,6 +6,7 @@ Modnix Changelog
 * New: Mod Actions - a new system that allows mods to declare Actions and/or to support them.
 * Fix: .NET fallback resolver now use correct path separator.  Should have only cosmetic difference.
 * Mod: Removed deprecated logger and config param from mod initialisers. Use API instead.
+* Log: Mod loading messages are now logged with the mod's logger.
 
 # Version 2.4, 2020-05-10
 

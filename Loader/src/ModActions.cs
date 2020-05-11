@@ -33,7 +33,7 @@ namespace Sheepy.Modnix.Actions {
       internal static void RunActions ( ModEntry mod, string phase ) { try {
          ActionDef[] all = mod.Metadata.Actions;
 
-         Logger log = mod.CreateLogger();
+         Logger log = mod.GetLogger();
          log.Verbo( "Scanning {0} actions", all.Length );
          var actions = FilterActions( all, phase.ToLowerInvariant() );
          if ( actions == null ) return;
@@ -59,7 +59,7 @@ namespace Sheepy.Modnix.Actions {
                }
             }
          }
-      } catch ( Exception ex ) { mod.CreateLogger().Error( ex ); } }
+      } catch ( Exception ex ) { mod.GetLogger().Error( ex ); } }
 
       public static List<ActionDef> FilterActions ( ActionDef[] list, string phase ) {
          phase = phase.ToLowerInvariant();

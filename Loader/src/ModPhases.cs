@@ -2,6 +2,7 @@
 using Sheepy.Modnix.Actions;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 
@@ -40,7 +41,7 @@ namespace Sheepy.Modnix {
       } catch ( Exception ex ) { mod.Error( ex ); } }
 
       public static Assembly LoadDll ( ModEntry mod, string path ) { try {
-         Log.Info( "Loading {0}", path );
+         mod.GetLogger().Info( "Loading {0}", path );
          var asm = Assembly.LoadFrom( path );
          if ( asm == null ) return null;
          if ( mod.ModAssemblies == null )
@@ -53,28 +54,31 @@ namespace Sheepy.Modnix {
       private readonly static Dictionary<Type,WeakReference<object>> ModInstances = new Dictionary<Type,WeakReference<object>>();
 
       public static object CallInit ( ModEntry mod, Assembly dll, string typeName, string methodName, Func< ParameterInfo, object > paramGetter ) { try {
+         Logger log = mod.GetLogger();
+
          var type = dll.GetType( typeName );
          if ( type == null ) {
-            Log.Error( "Cannot find type {1} in {0}", dll.Location, typeName );
+            log.Error( "Cannot find type {1} in {0}", dll.Location, typeName );
             return null;
          }
 
          var func = type.GetMethods( ModScanner.INIT_METHOD_FLAGS )?.FirstOrDefault( e => e.Name.Equals( methodName ) );
          if ( func == null ) {
-            Log.Error( "Cannot find {1}.{2} in {0}", dll.Location, typeName, methodName );
+            log.Error( "Cannot find {1}.{2} in {0}", dll.Location, typeName, methodName );
             return null;
          }
 
          var args = func.GetParameters().Select( paramGetter );
          Func<string> argTxt = () => string.Join( ", ", args.Select( e => e?.GetType()?.Name ?? "null" ) );
-         Log.Info( "Calling {1}.{2}({3}) in {0}", mod.Path, typeName, methodName, argTxt );
+         log.Log( ModActions.ACTION_METHOD.Equals( methodName ) ? SourceLevels.Verbose : SourceLevels.Information,
+            "Calling {1}.{2}({3}) in {0}", dll.Location, typeName, methodName, argTxt );
          object target = null;
          if ( ! func.IsStatic ) lock ( ModInstances ) {
             if ( ! ModInstances.TryGetValue( type, out WeakReference<object> wref ) || ! wref.TryGetTarget( out target ) )
                ModInstances[ type ] = new WeakReference<object>( target = Activator.CreateInstance( type ) );
          }
          var result = func.Invoke( target, args.ToArray() );
-         Log.Verbo( "Done calling {0}", mod.Path );
+         log.Trace( "Done calling {1}.{2}", typeName, methodName );
          return result;
       } catch ( Exception ex ) { return ex; } }
 
