@@ -351,8 +351,6 @@ namespace Sheepy.Modnix {
       #endregion
 
       #region Config
-      private bool ConfigChecked;
-
       private Type GetConfigType ( Type type ) {
          if ( type != null ) return type;
          var typeName = Metadata.ConfigType;
@@ -376,7 +374,7 @@ namespace Sheepy.Modnix {
          var confFile = isDefault ? null : CheckConfigFile();
          var type = param as Type;
          if ( type?.FullName.Equals( Metadata.ConfigType ) == true && confFile == null )
-            return Activator.CreateInstance( type ); // Skip text conversion when using ConfigType and not reading from config file
+            return Activator.CreateInstance( type ); // Skip text conversion when not reading from config file
 
          string txt = isDefault ? GetDefaultConfigText() : GetConfigText( confFile );
          if ( param == null || type != null ) { // No param or param is a Type, need to create new instance.
@@ -389,30 +387,8 @@ namespace Sheepy.Modnix {
             if ( param is string ) return txt;
             JsonConvert.PopulateObject( txt, param, Json.JsonOptions );
          }
-         if ( Metadata.ConfigType == null ) RunCheckConfig( param?.GetType() );
          return param;
       } catch ( Exception e ) { Error( e ); return null; } }
-
-      private void RunCheckConfig ( Type confType ) {
-         if ( confType == null ) return;
-         lock ( Metadata ) {
-            if ( ConfigChecked ) return;
-            ConfigChecked = true;
-         }
-         Task.Run( () => { try {
-            string confText;
-            lock ( Metadata ) confText = GetDefaultConfigText();
-            if ( confText == null ) return;
-            Log().Info( "Verifying DefaultConfig in background" );
-            var newInstance = Activator.CreateInstance( confType );
-            var newText = Json.Stringify( newInstance );
-            var confObj = Json.Parse( confText, confType );
-            confText = Json.Stringify( confObj );
-            if ( confText.Equals( newText, StringComparison.Ordinal ) ) return;
-            Warn( "Default config mismatch.\nGot: {0}\nNew: {1}", confText, newText );
-         } catch ( Exception ex ) { Info( "Error when verifying config: {0}", ex ); }
-         } );
-      }
 
       private Task SaveConfig ( object param ) {
          if ( param == null ) return null;
@@ -428,50 +404,40 @@ namespace Sheepy.Modnix {
          var confFile = CheckConfigFile();
          if ( confFile == null ) return true;
          File.Delete( confFile );
-         lock ( Metadata ) {
-            Metadata.ConfigText = null;
-            if ( Metadata.ConfigType != null ) Metadata.DefaultConfig = null;
-         }
+         lock ( Metadata ) Metadata.ConfigText = null;
          return ! File.Exists( confFile );
       }
 
       public bool HasConfig { get { lock ( Metadata ) {
-         return Metadata.ConfigType != null || Metadata.DefaultConfig != null || Metadata.ConfigText != null || CheckConfigFile() != null;
+         return Metadata.ConfigType != null || Metadata.ConfigText != null || CheckConfigFile() != null;
       } } }
 
       public string GetConfigFile () { try {
          if ( Path == null ) return null;
          var name = System.IO.Path.GetFileNameWithoutExtension( Path );
-         /*
-         if ( name.Equals( "mod_info", StringComparison.OrdinalIgnoreCase ) )
-            name = "mod_init";
-         */
          return System.IO.Path.Combine( System.IO.Path.GetDirectoryName( Path ), name + ".conf" );
       } catch ( Exception ex ) { Error( ex ); return null; } }
 
       public string CheckConfigFile () { try {
          var confFile = GetConfigFile();
-         /*
-         if ( confFile == null || ! File.Exists( confFile ) )
-            confFile = Path.Combine( Path.GetDirectoryName( path ), "mod_init.conf" );
-         */
          return File.Exists( confFile ) ? confFile : null;
       } catch ( Exception ex ) { Error( ex ); return null; } }
 
       public string GetDefaultConfigText () { try {
          var meta = Metadata;
          lock ( meta ) {
+            object config = null;
             if ( meta.DefaultConfigText != null ) return meta.DefaultConfigText;
             if ( meta.ConfigType != null && ModAssemblies != null ) try {
                foreach ( var asm in ModAssemblies ) {
                   var type = asm.GetType( meta.ConfigType );
                   if ( type == null ) continue;
-                  meta.DefaultConfig = Activator.CreateInstance( type );
+                  config = Activator.CreateInstance( type );
                   break;
                }
             } catch ( Exception ex ) { Error( ex ); }
-            if ( meta.DefaultConfig == null ) return null;
-            return meta.DefaultConfigText = Json.Stringify( meta.DefaultConfig );
+            if ( config == null ) return null;
+            return meta.DefaultConfigText = Json.Stringify( config );
          }
       } catch ( Exception ex ) { Error( ex ); return null; } }
 
@@ -539,7 +505,6 @@ namespace Sheepy.Modnix {
       public Dictionary<string,object>[] Actions;
 
       public   string  ConfigType;
-      public   object  DefaultConfig;
       internal string  DefaultConfigText;
       internal string  ConfigText;
 
@@ -567,7 +532,6 @@ namespace Sheepy.Modnix {
             CopyNonNull( overrider.Dlls, ref Dlls );
             CopyNonNull( overrider.Actions, ref Actions );
             CopyNonNull( overrider.ConfigType, ref ConfigType );
-            CopyNonNull( overrider.DefaultConfig, ref DefaultConfig );
          }
          lock ( this ) return this;
       }
@@ -604,7 +568,6 @@ namespace Sheepy.Modnix {
          NormDllMeta( ref Dlls );
          NormDictArray( ref Actions );
          ConfigType = NormString( ConfigType );
-         if ( ConfigType != null ) DefaultConfig = null;
          return this;
       } }
 

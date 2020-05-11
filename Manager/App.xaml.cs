@@ -567,7 +567,6 @@ namespace Sheepy.Modnix.MainGUI {
       private bool IsLoadingModList;
       private HashSet< string > ModWithError = new HashSet<string>();
       private HashSet< string > ModWithWarning = new HashSet<string>();
-      private HashSet< string > ModWithConfWarn = new HashSet<string>();
       private DateTime LoaderLogLastModified;
       private readonly Regex RegexModCaptureLine = new Regex( "^(?>[\\d:\\.]+) (EROR|WARN) ([^┊]+)┊", RegexOptions.Compiled );
 
@@ -587,13 +586,12 @@ namespace Sheepy.Modnix.MainGUI {
                Task.Run( CheckLogForError ),
             } );
             lock ( SynGetSet ) if ( list == null ) return;
-            lock ( ModWithError ) if ( ModWithError.Count > 0 || ModWithWarning.Count > 0 || ModWithConfWarn.Count > 0 ) {
+            lock ( ModWithError ) if ( ModWithError.Count > 0 || ModWithWarning.Count > 0 ) {
                Log( "Adding warnings to mods with runtime notices." );
                foreach ( var mod in list ) {
                   if ( ! mod.Is( ModQuery.ENABLED ) ) continue;
                   if ( ModWithError.Contains( mod.Id ) ) ModLoaderBridge.AddLoaderLogNotice( mod, "runtime_error" );
                   else if ( ModWithWarning.Contains( mod.Id ) ) ModLoaderBridge.AddLoaderLogNotice( mod, "runtime_warning" );
-                  else if ( ModWithConfWarn.Contains( mod.Id ) ) ModLoaderBridge.AddLoaderLogNotice( mod, "config_mismatch" );
                }
             }
             GUI.SetInfo( GuiInfo.MOD_LIST, list );
@@ -606,7 +604,6 @@ namespace Sheepy.Modnix.MainGUI {
          void ClearLogs () { lock ( ModWithError ) {
             ModWithError.Clear();
             ModWithWarning.Clear();
-            ModWithConfWarn.Clear();
          } }
          var file = LoaderLog;
          if ( ! File.Exists( file ) ) {
@@ -627,13 +624,11 @@ namespace Sheepy.Modnix.MainGUI {
                   string type = match.Groups[ 1 ].Value, id = match.Groups[ 2 ].Value;
                   if ( type.Equals( "EROR" ) )
                      ModWithError.Add( id );
-                  else if ( line.EndsWith( "┊Default config mismatch.", StringComparison.Ordinal ) )
-                     ModWithConfWarn.Add( id );
                   else
                      ModWithWarning.Add( id );
                }
             }
-            Log( $"Log parsed. Error {ModWithError.Count}, Warn {ModWithWarning.Count}, Config {ModWithConfWarn.Count}." );
+            Log( $"Log parsed. Error {ModWithError.Count}, Warn {ModWithWarning.Count}." );
             LoaderLogLastModified = mTime;
          }
       } catch ( SystemException ex ) { Log( ex ); } }
