@@ -36,11 +36,11 @@ namespace Sheepy.Modnix.Tests {
          Assert.AreEqual ( loader, ModA.ModAPI( "assembly", "loader" ), "loader assembly" );
 
          var a = ModA.ModAPI( "assemblies" );
-         Assert.IsNull( ModA.ModAPI( "assembly" ), "ModA assembly" );
+         Assert.AreEqual( null, ModA.ModAPI( "assembly" ), "ModA assembly" );
          Assert.IsNotNull( a, "ModA assemblies" );
          Assert.AreEqual( 0, ( a as IEnumerable<Assembly> ).Count(), "ModA assemblies" );
-         Assert.IsNull( ModA.ModAPI( "assembly", "non-exist" ), "not found assembly" );
-         Assert.IsNull( ModA.ModAPI( "assemblies", "non-exist" ), "not found assemblies" );
+         Assert.AreEqual( null, ModA.ModAPI( "assembly", "non-exist" ), "not found assembly" );
+         Assert.AreEqual( null, ModA.ModAPI( "assemblies", "non-exist" ), "not found assemblies" );
 
          var list = ModA.ModAPI( "assemblies", "loader" ) as IEnumerable<Assembly>;
          Assert.IsNotNull( list, "loader assemblies" );
@@ -105,7 +105,7 @@ namespace Sheepy.Modnix.Tests {
          Action<object> ExtE = ( _ ) => { };
          Action ExtF = () => { };
 
-         Assert.AreEqual( false, ModA.ModAPI( "api_add" , null ), "no name null action" );
+         IsException( ModA.ModAPI( "api_add" , null ), "no name null action" );
          Assert.AreEqual( true , ModA.ModAPI( "api_add A.A", ExtA ), "A.A => ExtA" );
          Assert.AreEqual( true , ModA.ModAPI( "api_add  A.B", (Func<object,object,string>) ExtB ), "A.B => ExtB" );
          Assert.AreEqual( true , ModA.ModAPI( "api_add A.C", ExtC ), "A.C => ExtC" );
@@ -119,12 +119,12 @@ namespace Sheepy.Modnix.Tests {
          Assert.AreEqual( ExtC.GetMethodInfo(), ModA.ModAPI( "api_info", "A.C" ), "api_info A.C" );
          Assert.AreEqual( ExtE.GetMethodInfo(), ModA.ModAPI( "api_info", "A.E" ), "api_info A.E" );
 
-         Assert.AreEqual( false, ModA.ModAPI( "api_add AAA", ExtA ), "no dot" );
-         Assert.AreEqual( false, ModA.ModAPI( "api_add .A", ExtA ), "too short" );
-         Assert.AreEqual( false, ModA.ModAPI( "api_add A.A", ExtA ), "duplucate reg" );
-         Assert.AreEqual( false, ModA.ModAPI( "api_add A.C", null ), "null action" );
-         Assert.AreEqual( false, ModA.ModAPI( "api_add A.D", ExtD ), "Invalid action" );
-         Assert.AreEqual( false, ModA.ModAPI( "api_add A.D DEF", ExtD ), "Extra spec" );
+         IsException( ModA.ModAPI( "api_add AAA", ExtA ), "no dot" );
+         IsException( ModA.ModAPI( "api_add .A", ExtA ), "too short" );
+         IsException( ModA.ModAPI( "api_add A.A", ExtA ), "duplucate reg" );
+         IsException( ModA.ModAPI( "api_add A.C", null ), "null action" );
+         IsException( ModA.ModAPI( "api_add A.D", ExtD ), "Invalid action" );
+         IsException( ModA.ModAPI( "api_add A.D DEF", ExtD ), "Extra spec" );
 
          Assert.AreEqual( "0A" , ModB.ModAPI( "a.A", "0" ), "call api a.A" );
          Assert.AreEqual( "c0B", ModB.ModAPI( "A.b c", "0" ), "call api A.b" );
@@ -132,14 +132,17 @@ namespace Sheepy.Modnix.Tests {
          Assert.AreEqual( false, ModB.ModAPI( "a.C", "" ), "call api a.C non-null" );
          Assert.AreEqual( null , ModA.ModAPI( "A.E", ExtD ), "call api A.E" );
          Assert.AreEqual( null , ModA.ModAPI( "A.F", null ), "call api A.F" );
-         Assert.AreEqual( false, ModB.ModAPI( "api_remove A.B" ), "api_remove non-owner" );
-         Assert.AreEqual( false, ModA.ModAPI( "api_remove A.B CDE" ), "api_remove extra spec" );
+         IsException( ModB.ModAPI( "api_remove A.B" ), "api_remove non-owner" );
+         IsException( ModA.ModAPI( "api_remove A.B CDE" ), "api_remove extra spec" );
          Assert.AreEqual( true , ModA.ModAPI( " api_remove   a.b " ), "api_remove owner" );
          Assert.AreEqual( null , ModA.ModAPI( "A.b c", "0" ), "call after api_remove" );
 
          Assert.AreEqual( true , ModB.ModAPI( " api_add   A.B ", (Func<object,object,string>) ExtB ), "A.B => ExtB (ModB)" );
          Assert.AreEqual( "c0B", ModA.ModAPI( "A.b c", "0" ), "call api A.b (Mod B)" );
       }
+
+      private void IsException ( object value, string message ) =>
+         Assert.IsInstanceOfType( value, typeof( Exception ), message );
 
       [TestMethod()] public void ModInfoTest () {
          Assert.AreEqual( ModA.Metadata.Id, ( ModA.ModAPI( "mod_info", null ) as ModMeta ).Id, "A null" );
