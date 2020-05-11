@@ -25,7 +25,7 @@ namespace Sheepy.Modnix {
 
       public static string ModDirectory { get; private set; }
       public static string LoaderPath => Assembly.GetExecutingAssembly().Location;
-      public static string DnFrameworkDir => Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.Windows ), "Microsoft.NET/Framework/v4.0.30319" );
+      public static string DnFrameworkDir => Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.Windows ), "Microsoft.NET/Framework/v4.0.30319".FixSlash() );
 
       private static bool RunMainPhaseOnInit;
       private static object harmony; // Type is not HarmonyInstance to avoid hard crash when harmony is missing
