@@ -7,6 +7,7 @@ Modnix Changelog
 * Fix: .NET fallback resolver now use correct path separator.  Should have only cosmetic difference.
 * Mod: Removed deprecated logger and config param from mod initialisers. Use API instead.
 * Log: Mod loading messages are now logged with the mod's logger.
+* Other: Mod phases other than SplashMod now depends on correct Harmony to function. SplashMods can still be loaded without Harmony.
 
 # Version 2.4, 2020-05-10
 

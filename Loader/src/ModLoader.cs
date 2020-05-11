@@ -27,19 +27,17 @@ namespace Sheepy.Modnix {
       public static string LoaderPath => Assembly.GetExecutingAssembly().Location;
       public static string DnFrameworkDir => Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.Windows ), "Microsoft.NET/Framework/v4.0.30319".FixSlash() );
 
-      private static bool RunMainPhaseOnInit;
-      private static object harmony; // Type is not HarmonyInstance to avoid hard crash when harmony is missing
+      private static object Patcher; // Type is not HarmonyInstance to avoid hard crash when harmony is missing
       private static Assembly GameAssembly;
 
       public static void Init () { try {
          if ( Log == null ) { // First run
-            RunMainPhaseOnInit = true;
             Setup();
             ModScanner.BuildModList();
             ModPhases.LoadMods( "SplashMod" );
             PatchMenuCrt();
-         } else if ( RunMainPhaseOnInit ) // Subsequence runs
-            MainPhase();
+            if ( Patcher == null ) Log.Log( SourceLevels.Critical, "Cannot patch game with Harmony. Non-SplashMods will not be loaded." );
+         }
       } catch ( Exception ex ) {
          if ( Log == null )
             Console.WriteLine( ex );
@@ -48,26 +46,18 @@ namespace Sheepy.Modnix {
       } }
 
       private static void PatchMenuCrt () { try {
-         var patcher = harmony as HarmonyInstance;
-         if ( patcher == null) harmony = patcher = HarmonyInstance.Create( typeof( ModLoader ).Namespace );
+         HarmonyInstance patcher = HarmonyInstance.Create( typeof( ModLoader ).Namespace );
          patcher.Patch(
             GetGameAssembly().GetType( "PhoenixPoint.Common.Game.PhoenixGame" ).GetMethod( "MenuCrt", NonPublic | Instance ),
             postfix: new HarmonyMethod( typeof( ModLoader ).GetMethod( nameof( MainPhase ), NonPublic | Static ) )
          );
-         RunMainPhaseOnInit = false; // Disable fallback
-      } catch ( Exception ex ) { Log.Error( ex ); } }
-
-      private static void UnpatchMenuCrt () { try {
-         (harmony as HarmonyInstance)?.UnpatchAll( typeof( ModLoader ).Namespace );
-         harmony = null;
+         Patcher = patcher;
       } catch ( Exception ex ) { Log.Error( ex ); } }
 
       private static void MainPhase () {
-         RunMainPhaseOnInit = false;
          ModPhases.LoadMods( "Init" ); // PPML v0.1
          ModPhases.LoadMods( "Initialize" ); // PPML v0.2
          ModPhases.LoadMods( "MainMod" ); // Modnix
-         if ( harmony != null ) UnpatchMenuCrt();
       }
 
       private static Assembly GetGameAssembly () {
