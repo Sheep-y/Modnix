@@ -46,8 +46,9 @@ namespace Sheepy.Modnix.Actions {
                if ( result is bool success && success ) continue;
                if ( result is Exception ex ) {
                   act.TryGetValue( "onerror", out object onerror );
-                  var handle = TrimAndLower( onerror ) ?? "error";
-                  if ( handle.IndexOf( "err" ) >= 0 ) log.Error( ex );
+                  var handle = TrimAndLower( onerror ) ?? "log";
+                  if ( handle.IndexOf( "log" ) >= 0 ) log.Error( ex );
+                  else if ( handle.IndexOf( "err" ) >= 0 ) log.Error( ex );
                   else if ( handle.IndexOf( "warn" ) >= 0 ) log.Warn( ex );
                   else if ( handle.IndexOf( "info" ) >= 0 ) log.Info( ex );
                   else if ( handle.IndexOf( "verbo" ) >= 0 ) log.Verbo( ex );
