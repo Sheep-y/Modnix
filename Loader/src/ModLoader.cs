@@ -14,10 +14,6 @@ namespace Sheepy.Modnix {
 
    public static class ModLoader {
       private readonly static string MOD_PATH  = "My Games/Phoenix Point/Mods".FixSlash();
-      internal static readonly HashSet<string> PHASES = new HashSet<string>(
-         new string[]{ "SplashMod", "Init", "Initialize", "MainMod", // Do not start phases with P.
-         "HomeMod", "HomeOnShow", "GameMod", "GameOnShow", "RunModActions", // P are fast skipped as Prefix/Postfix
-         "TacticalMod", "TacticalOnShow", "GeoscapeMod", "GeoscapeOnShow" } );
 
       internal static Logger Log;
       public const char LOG_DIVIDER = '┊';
@@ -33,7 +29,6 @@ namespace Sheepy.Modnix {
       public static string LoaderPath => Assembly.GetExecutingAssembly().Location;
       public static string DnFrameworkDir => Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.Windows ), "Microsoft.NET/Framework/v4.0.30319" );
 
-      #region Initialisation
       private static bool RunMainPhaseOnInit;
       private static object harmony; // Type is not HarmonyInstance to avoid hard crash when harmony is missing
       private static Assembly GameAssembly;
@@ -43,7 +38,7 @@ namespace Sheepy.Modnix {
             RunMainPhaseOnInit = true;
             Setup();
             ModScanner.BuildModList();
-            LoadMods( "SplashMod" );
+            ModPhases.LoadMods( "SplashMod" );
             PatchMenuCrt();
          } else if ( RunMainPhaseOnInit ) // Subsequence runs
             MainPhase();
@@ -71,9 +66,9 @@ namespace Sheepy.Modnix {
 
       private static void MainPhase () {
          RunMainPhaseOnInit = false;
-         LoadMods( "Init" ); // PPML v0.1
-         LoadMods( "Initialize" ); // PPML v0.2
-         LoadMods( "MainMod" ); // Modnix
+         ModPhases.LoadMods( "Init" ); // PPML v0.1
+         ModPhases.LoadMods( "Initialize" ); // PPML v0.2
+         ModPhases.LoadMods( "MainMod" ); // Modnix
          if ( harmony != null ) UnpatchMenuCrt();
       }
 
@@ -154,7 +149,7 @@ namespace Sheepy.Modnix {
          var confFile = Path.Combine( ModDirectory, CONF_FILE );
          if ( File.Exists( confFile ) ) try {
             Log.Info( $"Loading {confFile}" );
-            Settings = Json.Parse<LoaderSettings>( Tools.ReadFile( confFile ) );
+            Settings = Json.Parse<LoaderSettings>( Tools.ReadText( confFile ) );
          } catch ( Exception ex ) { Log.Error( ex ); }
          if ( Settings == null ) {
             Log.Info( $"Using default settings, because cannot find or parse {confFile}" );
@@ -199,100 +194,5 @@ namespace Sheepy.Modnix {
          Log.Info( "{0}/{1}", Path.GetFileNameWithoutExtension( game.CodeBase ), ver );
          GameVersion = Version.Parse( ver );
       } } catch ( Exception ex ) { Log?.Error( ex ); } } 
-      #endregion
-
-      #region Loading Mods
-      public static void LoadMods ( string phase ) { try {
-         Log.Info( "PHASE {0}", phase );
-         foreach ( var mod in ModScanner.EnabledMods ) {
-            if ( mod.Metadata.Dlls == null )
-               foreach ( var dll in mod.Metadata.Dlls )
-                  RunPhaseOnDll( mod, dll, phase );
-            ActionManager.RunAction( mod, phase );
-         }
-         Log.Verbo( "Phase {0} ended", phase );
-         Log.Flush();
-      } catch ( Exception ex ) { Log.Error( ex ); } }
-
-      public static void RunPhaseOnDll ( ModEntry mod, DllMeta dll, string phase ) { try {
-         if ( dll.Methods == null ) return;
-         if ( ! dll.Methods.TryGetValue( phase, out var entries ) ) return;
-         var lib = LoadDll( mod, dll.Path );
-         if ( lib == null ) return;
-         if ( mod.ModAssemblies == null )
-            mod.ModAssemblies = new List<Assembly>();
-         if ( ! mod.ModAssemblies.Contains( lib ) )
-            mod.ModAssemblies.Add( lib );
-         foreach ( var type in entries )
-            CallInit( mod, lib, type, phase );
-      } catch ( Exception ex ) { mod.Error( ex ); } }
-
-      public static Assembly LoadDll ( ModEntry mod, string path ) { try {
-         Log.Info( "Loading {0}", path );
-         return Assembly.LoadFrom( path );
-      } catch ( Exception ex ) { mod.Error( ex ); return null; } }
-
-      private readonly static Dictionary<Type,WeakReference<object>> ModInstances = new Dictionary<Type,WeakReference<object>>();
-
-      public static void CallInit ( ModEntry mod, Assembly dll, string typeName, string methodName ) { try {
-         var type = dll.GetType( typeName );
-         if ( type == null ) {
-            Log.Error( "Cannot find type {1} in {0}", dll.Location, typeName );
-            return;
-         }
-
-         var func = type.GetMethods( ModScanner.INIT_METHOD_FLAGS )?.FirstOrDefault( e => e.Name.Equals( methodName ) );
-         if ( func == null ) {
-            Log.Error( "Cannot find {1}.{2} in {0}", dll.Location, typeName, methodName );
-            return;
-         }
-
-         var augs = new List<object>();
-         foreach ( var aug in func.GetParameters() )
-            augs.Add( ParamValue( aug, mod ) );
-         Func<string> augTxt = () => string.Join( ", ", augs.Select( e => e?.GetType()?.Name ?? "null" ) );
-         Log.Info( "Calling {1}.{2}({3}) in {0}", mod.Path, typeName, methodName, augTxt );
-         object target = null;
-         if ( ! func.IsStatic ) lock ( ModInstances ) {
-            if ( ! ModInstances.TryGetValue( type, out WeakReference<object> wref ) || ! wref.TryGetTarget( out target ) )
-               ModInstances[ type ] = new WeakReference<object>( target = Activator.CreateInstance( type ) );
-         }
-         func.Invoke( target, augs.ToArray() );
-         Log.Verbo( "Done calling {0}", mod.Path );
-      } catch ( Exception ex ) { mod.Error( ex ); } }
-
-      private static object ParamValue ( ParameterInfo aug, ModEntry mod ) {
-         var pType = aug.ParameterType;
-         var pName = aug.Name;
-         var isLog =  pName.IndexOf( "log", StringComparison.OrdinalIgnoreCase ) >= 0;
-         // API
-         if ( pType == typeof( Func<string,object,object> ) )
-            return (Func<string,object,object>) mod.ModAPI;
-         return DefaultParamValue( aug );
-      }
-
-      private static bool IsSetting ( string name ) =>
-         name.IndexOf( "setting", StringComparison.OrdinalIgnoreCase ) >= 0 ||
-         name.IndexOf( "conf"   , StringComparison.OrdinalIgnoreCase ) >= 0;
-
-      private static object DefaultParamValue ( ParameterInfo aug ) {
-         if ( aug.HasDefaultValue )
-            return aug.RawDefaultValue;
-         var pType = aug.ParameterType;
-         if ( pType.IsValueType )
-            return Activator.CreateInstance( pType );
-         return null;
-      }
-      #endregion
-   }
-
-   internal static class Tools {
-      internal static string FixSlash ( this string path ) => path.Replace( '/', Path.DirectorySeparatorChar );
-   
-      private static StreamReader Read ( string file ) =>
-         new StreamReader( new FileStream( file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete ), Encoding.UTF8, true );
-
-      internal static string ReadFile ( string file ) { using ( var reader = Read( file ) ) return reader.ReadToEnd(); }
-      internal static string ReadLine ( string file ) { using ( var reader = Read( file ) ) return reader.ReadLine(); }
    }
 }

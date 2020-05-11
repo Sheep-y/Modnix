@@ -878,8 +878,8 @@ namespace Sheepy.Modnix.MainGUI {
          ButtonChangeLog.IsChecked = isChange;
          ButtonLicense.IsChecked = isLicense;
          if ( isGui ) TextLicense.Text = "";
-         else if ( isChange  ) TextLicense.Text = ApplyLogFilter( Json.ReadAsText( AssemblyLoader.GetResourceStream( "Changelog.md" ) ) );
-         else if ( isLicense ) TextLicense.Text = ApplyLogFilter( Json.ReadAsText( AssemblyLoader.GetResourceStream( "License.txt" ) ) );
+         else if ( isChange  ) TextLicense.Text = ApplyLogFilter( Tools.ReadText( AssemblyLoader.GetResourceStream( "Changelog.md" ) ) );
+         else if ( isLicense ) TextLicense.Text = ApplyLogFilter( Tools.ReadText( AssemblyLoader.GetResourceStream( "License.txt" ) ) );
          else if ( isLoader || isConsole ) {
             try {
                TextLicense.Text = ApplyLogFilter( Utils.ReadFile( isLoader ? App.LoaderLog : App.ConsoleLog ) );

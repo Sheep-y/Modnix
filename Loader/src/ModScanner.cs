@@ -107,7 +107,7 @@ namespace Sheepy.Modnix {
             var default_id = Path.GetFileNameWithoutExtension( file );
             if ( string.IsNullOrWhiteSpace( default_id ) || default_id.Equals( "mod_info", StringComparison.OrdinalIgnoreCase ) )
                default_id = container;
-            meta = ParseInfoJs( Tools.ReadFile( file ).Trim(), default_id );
+            meta = ParseInfoJs( Tools.ReadText( file ).Trim(), default_id );
             if ( meta == null ) return null;
             if ( ! meta.HasContent )
                meta.Dlls = Directory.EnumerateFiles( Path.GetDirectoryName( file ), "*.dll" )
@@ -166,7 +166,7 @@ namespace Sheepy.Modnix {
                if ( ! ( resource is EmbeddedResource res ) || res.ResourceType != ResourceType.Embedded ) continue;
                if ( dotName.Any( e => res.Name.EndsWith( e, StringComparison.OrdinalIgnoreCase ) ) ) {
                   if ( text != null )
-                     text.Append( Json.ReadAsText( res.GetResourceStream() ) );
+                     text.Append( Tools.ReadText( res.GetResourceStream() ) );
                   return true;
                }
                if ( ! res.Name.EndsWith( ".resources", StringComparison.OrdinalIgnoreCase ) ) continue;
@@ -176,7 +176,7 @@ namespace Sheepy.Modnix {
                      var item = data.Key.ToString();
                      if ( names.Any( e => item.EndsWith( e, StringComparison.OrdinalIgnoreCase ) ) ) {
                         if ( text != null )
-                           text.Append( data.Value is Stream stream ? Json.ReadAsText( stream ) : data.Value?.ToString() );
+                           text.Append( data.Value is Stream stream ? Tools.ReadText( stream ) : data.Value?.ToString() );
                         return true;
                      }
                   }
@@ -196,7 +196,7 @@ namespace Sheepy.Modnix {
                   if ( ! method.IsPublic || method.IsConstructor || method.IsAbstract || method.ContainsGenericParameter ) continue;
                   ++count;
                   var name = method.Name;
-                  if ( name.Length == 0 || name[0] == 'P' || ModLoader.PHASES.Contains( name ) ) continue; // Skip Prefix/Postfix, then check phase
+                  if ( name.Length == 0 || name[0] == 'P' || ! ModPhases.PHASES.Contains( name ) ) continue; // Skip Prefix/Postfix, then check phase
                   // if ( method.CustomAttributes.Any( e => e.AttributeType.FullName.Equals( "System.ObsoleteAttribute" ) ) ) continue;
                   if ( name == "Initialize" && ! type.Interfaces.Any( e => e.InterfaceType.FullName == "PhoenixPointModLoader.IPhoenixPointMod" ) ) {
                      Log.Info( "Ignoring {0}.Initialize because not IPhoenixPointMod", type.FullName );

@@ -48,12 +48,12 @@ namespace Sheepy.Modnix.MainGUI {
          string json = null;
          try {
             using ( WebResponse response = request.GetResponse() ) {
-               json = Json.ReadAsText( request.GetResponse().GetResponseStream() );
+               json = Tools.ReadText( request.GetResponse().GetResponseStream() );
                App.Log( json );
             }
          } catch ( WebException wex ) {
             App.Log( wex );
-            return App.Log<GithubRelease>( Json.ReadAsText( wex.Response.GetResponseStream() ), null );
+            return App.Log<GithubRelease>( Tools.ReadText( wex.Response.GetResponseStream() ), null );
          }
 
          if ( HasNewRelease( Json.Parse<GithubRelease[]>( json ), update_from, out GithubRelease release ) )
