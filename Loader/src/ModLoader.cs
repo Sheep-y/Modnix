@@ -1,6 +1,4 @@
 ﻿using Harmony;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Sheepy.Logging;
 using Sheepy.Modnix.Actions;
 using System;
