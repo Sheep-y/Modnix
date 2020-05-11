@@ -4,6 +4,7 @@ Modnix Changelog
 
 * Fix: .NET fallback resolver now use correct path separator.  Should have only cosmetic difference.
 * Mod: api_add now accepts parameter-less functions such as Func<string> or Action.
+* Mod: Avoids are now processed after Requires, in the resolve loop.
 
 # Version 2.4, 2020-05-10
 
