@@ -9,6 +9,7 @@ namespace Sheepy.Modnix.Actions {
    public static class ModActions {
 
       internal const string ACTION_METHOD = "ActionMod";
+      private const string DEFAULT_PHASE = "mainmod"; // TODO: Change to gamemod
 
       private static List<DllMeta> ActionHandlers;
       private static Dictionary<DllMeta,ModEntry> ActionMods;
@@ -32,6 +33,7 @@ namespace Sheepy.Modnix.Actions {
 
       internal static void RunActions ( ModEntry mod, string phase ) { try {
          ActionDef[] all = mod.Metadata.Actions;
+         if ( ! QuickScanActions( all, phase ) ) return; // Should move to ModScanner instead of rescanning every time.
 
          Logger log = mod.GetLogger();
          log.Verbo( "Scanning {0} actions", all.Length );
@@ -61,6 +63,19 @@ namespace Sheepy.Modnix.Actions {
          }
       } catch ( Exception ex ) { mod.GetLogger().Error( ex ); } }
 
+      private static bool QuickScanActions ( ActionDef[] actions, string phase ) {
+         foreach ( var act in actions ) {
+            if ( PhaseMatch( GetActionField( act, null, "phase" ), phase ) )
+               return true;
+         }
+         return false;
+      }
+
+      private static bool PhaseMatch ( string actPhase, string phase ) {
+         if ( actPhase == null ) return DEFAULT_PHASE.Equals( phase );
+         return actPhase.IndexOf( phase ) >= 0;
+      }
+
       public static List<ActionDef> FilterActions ( ActionDef[] list, string phase ) {
          phase = phase.ToLowerInvariant();
          ActionDef defValues = null;
@@ -70,7 +85,7 @@ namespace Sheepy.Modnix.Actions {
                MergeDefAction( ref defValues, a );
                continue;
             }
-            if ( ( GetActionField( a, defValues, "phase" ) ?? "mainmod" ).IndexOf( phase ) >= 0 ) // TODO: Change to gamemod
+            if ( PhaseMatch( GetActionField( a, defValues, "phase" ), phase ) )
                actions.Add( AddDefAction( a, defValues ) );
          }
          return actions.Count > 0 ? actions : null;
