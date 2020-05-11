@@ -3,7 +3,7 @@ Modnix Changelog
 # Version 3, in development
 
 * New: Show PPML version in app status.
-* Removed deprecated logger and config param from mod initialisers. Use API instead.
+* Mod: Removed deprecated logger and config param from mod initialisers. Use API instead.
 
 # Version 2.4, 2020-05-10
 

@@ -16,7 +16,10 @@ namespace Sheepy.Modnix {
 
    public static class ModLoader {
       private readonly static string MOD_PATH  = "My Games/Phoenix Point/Mods".FixSlash();
-      internal static readonly string[] PHASES = new string[]{ "SplashMod", "Init", "Initialize", "MainMod" };
+      internal static readonly HashSet<string> PHASES = new HashSet<string>(
+         new string[]{ "SplashMod", "Init", "Initialize", "MainMod", // Do not start phases with P.
+         "HomeMod", "HomeOnShow", "GameMod", "GameOnShow", "RunModActions", // P are fast skipped as Prefix/Postfix
+         "TacticalMod", "TacticalOnShow", "GeoscapeMod", "GeoscapeOnShow" } );
 
       internal static Logger Log;
       public const char LOG_DIVIDER = '┊';

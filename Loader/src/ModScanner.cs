@@ -196,7 +196,7 @@ namespace Sheepy.Modnix {
                   if ( ! method.IsPublic || method.IsConstructor || method.IsAbstract || method.ContainsGenericParameter ) continue;
                   ++count;
                   var name = method.Name;
-                  if ( name.Length == 0 || name[0] == 'P' || Array.IndexOf( ModLoader.PHASES, name ) < 0 ) continue; // Skip Prefix/Postfix, then check phase
+                  if ( name.Length == 0 || name[0] == 'P' || ModLoader.PHASES.Contains( name ) ) continue; // Skip Prefix/Postfix, then check phase
                   // if ( method.CustomAttributes.Any( e => e.AttributeType.FullName.Equals( "System.ObsoleteAttribute" ) ) ) continue;
                   if ( name == "Initialize" && ! type.Interfaces.Any( e => e.InterfaceType.FullName == "PhoenixPointModLoader.IPhoenixPointMod" ) ) {
                      Log.Info( "Ignoring {0}.Initialize because not IPhoenixPointMod", type.FullName );
@@ -215,10 +215,12 @@ namespace Sheepy.Modnix {
          }
          // Remove Init from Modnix DLLs, so that they will not be initiated twice
          if ( result != null ) {
-            if ( result.Count > 1 ) // Ignore PPML+ first to prevent giving the wrong signal, because we are only partially compatible
+            if ( result.Count > 1 ) // Ignore PPML+ first to prevent giving the wrong signal, since we don't support console commands.
                result.Remove( "Initialize" );
             if ( result.Count > 1 )
                result.Remove( "Init" );
+            if ( result.Count > 1 )
+               result.Remove( "MainMod" );
          } else if ( active )
             Log.Warn( "Mod initialisers not found in {0}", file );
          return result;
