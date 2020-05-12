@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace Sheepy.Modnix.Actions {
+namespace Sheepy.Modnix {
    using ActionDef = Dictionary<string,object>;
 
    public static class ModActions {
@@ -32,19 +32,20 @@ namespace Sheepy.Modnix.Actions {
       } }
 
       internal static void RunActions ( ModEntry mod, string phase ) { try {
+         phase = phase.ToLowerInvariant();
          ActionDef[] all = mod.Metadata.Actions;
-         if ( ! QuickScanActions( all, phase ) ) return; // Should move to ModScanner instead of rescanning every time.
+         if ( ! QuickScanActions( all, phase ) ) return; // TODO: move to ModScanner instead of rescanning every phase.
 
          Logger log = mod.Log();
          log.Verbo( "Scanning {0} actions", all.Length );
-         var actions = FilterActions( all, phase.ToLowerInvariant() );
+         var actions = FilterActions( all, phase, out int defaultCount );
          if ( actions == null ) return;
          if ( ! InitActionHandlers() ) return;
 
-         log.Info( "Running {0} actions", actions.Count );
+         log.Info( "Running {0} actions ({1} defaults merged)", actions.Count, defaultCount );
          foreach ( var act in actions ) {
             foreach ( var dll in ActionHandlers ) {
-               var result = RunActionHandler( mod, dll, phase, act );
+               var result = RunActionHandler( mod, dll, act );
                if ( result is bool success && success ) continue;
                if ( result is Exception ex ) {
                   act.TryGetValue( "onerror", out object onerror );
@@ -76,13 +77,14 @@ namespace Sheepy.Modnix.Actions {
          return actPhase.IndexOf( phase ) >= 0;
       }
 
-      public static List<ActionDef> FilterActions ( ActionDef[] list, string phase ) {
-         phase = phase.ToLowerInvariant();
+      public static List<ActionDef> FilterActions ( ActionDef[] list, string phase, out int defaultCount ) {
+         defaultCount = 0;
          ActionDef defValues = null;
          var actions = new List<ActionDef>();
          foreach ( var a in list ) {
             if ( "default".Equals( GetActionField( a, defValues, "action" ) ) ) {
                MergeDefAction( ref defValues, a );
+               defaultCount++;
                continue;
             }
             if ( PhaseMatch( GetActionField( a, defValues, "phase" ), phase ) )
@@ -91,7 +93,7 @@ namespace Sheepy.Modnix.Actions {
          return actions.Count > 0 ? actions : null;
       }
 
-      public static object RunActionHandler ( ModEntry mod, DllMeta dll, string phase, ActionDef act ) { try {
+      public static object RunActionHandler ( ModEntry mod, DllMeta dll, ActionDef act ) { try {
          var lib = ModPhases.LoadDll( mod, dll.Path );
          if ( lib == null ) return false;
          var handler = ActionMods[ dll ];

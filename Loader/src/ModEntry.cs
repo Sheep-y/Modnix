@@ -237,7 +237,7 @@ namespace Sheepy.Modnix {
          return true;
       }
 
-      private API_Func WrapExtension ( Delegate func ) {
+      private API_Func WrapExtension ( Delegate func ) { // TODO: Compile delegate
          var augs = func.GetMethodInfo().GetParameters();
          if ( augs.Length == 0 ) {
             return ( _, __ ) => func.DynamicInvoke( null );
