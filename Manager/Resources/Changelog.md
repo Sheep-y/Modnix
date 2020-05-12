@@ -8,6 +8,7 @@ Modnix Changelog
 * Mod: Logger and config param no longer supported for mod initialisers and will be passed null.  Use API instead.
 * Mod: DefaultConfig is no longer supported in mod_info.  Use ConfigType instead.
 * Log: Mod loading messages are now logged with the mod's logger.
+* Log: Timestamp shortened to 1ms from 0.1ms, to align with SI and DateTime precision.
 * Other: Mod phases other than SplashMod now depends on correct Harmony to function. SplashMods can still be loaded without Harmony.
  
 # Version 2.5, in development

@@ -80,7 +80,7 @@ namespace Sheepy.Modnix {
          if ( Log == null ) {
             if ( ! Directory.Exists( ModDirectory ) )
                Directory.CreateDirectory( ModDirectory );
-            SetLog( new FileLogger( Path.Combine( ModDirectory, Assembly.GetExecutingAssembly().GetName().Name + ".log" ) ) { TimeFormat = "HH:mm:ss.ffff " }, true );
+            SetLog( new FileLogger( Path.Combine( ModDirectory, Assembly.GetExecutingAssembly().GetName().Name + ".log" ) ) { TimeFormat = "HH:mm:ss.fff " }, true );
             LogGameVersion();
          }
          var corlib = new Uri( typeof( string ).Assembly.CodeBase ).LocalPath;
