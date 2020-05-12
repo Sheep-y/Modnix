@@ -46,7 +46,6 @@ namespace Sheepy.Modnix {
          foreach ( var act in actions ) {
             foreach ( var dll in ActionHandlers ) {
                var result = RunActionHandler( mod, dll, act );
-               if ( result is bool success && success ) continue;
                if ( result is Exception ex ) {
                   act.TryGetValue( "onerror", out object onerror );
                   var handle = TrimAndLower( onerror ) ?? "log";
@@ -56,7 +55,7 @@ namespace Sheepy.Modnix {
                   else if ( handle.IndexOf( "info" ) >= 0 ) log.Info( ex );
                   else if ( handle.IndexOf( "verbo" ) >= 0 ) log.Verbo( ex );
                   if ( handle.IndexOf( "stop" ) >= 0 ) {
-                     log.Info( "Aborting because OnError == Stop" );
+                     log.Info( "Aborting because OnError == Stop ({0})", handle );
                      return;
                   }
                }
@@ -99,8 +98,12 @@ namespace Sheepy.Modnix {
          var handler = ActionMods[ dll ];
          foreach ( var type in dll.Methods[ ACTION_METHOD ] ) {
             var result = ModPhases.CallInit( mod, lib, type, ACTION_METHOD, ( e ) => ParamValue( act, e, mod, handler ) );
-            if ( result is bool success && success ) return true;
-            if ( result is Exception ex ) return ex;
+            if ( result is bool success ) {
+               if ( success ) return true;
+            } else if ( result is Exception ex )
+               return ex;
+            else if ( result != null )
+               handler.Log().Info( "Unexpected ActionMod result: {0}", result.GetType() );
          }
          return null;
       } catch ( Exception ex ) { mod.Error( ex ); return null; } }
