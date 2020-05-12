@@ -12,6 +12,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Sheepy.Modnix {
+   using API_Func = Func< string, object, object >;
 
    public class LoaderSettings {
       public int SettingVersion = 20200428;
@@ -65,7 +66,7 @@ namespace Sheepy.Modnix {
 
       #region API
       private static readonly Dictionary<string,MethodInfo> NativeApi = new Dictionary<string, MethodInfo>();
-      private static readonly Dictionary<string,Func<string,object,object>> ApiExtension = new Dictionary<string, Func<string, object, object>>();
+      private static readonly Dictionary<string,API_Func> ApiExtension = new Dictionary<string, API_Func>();
       private static readonly Dictionary<string,KeyValuePair<ModEntry,MethodInfo>> ApiExtOwner = new Dictionary<string, KeyValuePair<ModEntry,MethodInfo>>();
 
       private static void AddNativeApi ( string command, string method ) {
@@ -95,27 +96,28 @@ namespace Sheepy.Modnix {
          action = action.Trim();
          IsMultiPart( action, out string cmd, out string spec );
          if ( ! LowerAndIsEmpty( cmd, out cmd ) ) {
-            switch ( cmd ) {
-               case "api_add"    : return AddApi( spec, param );
-               case "api_info"   : return InfoApi( param );
-               case "api_list"   : return ListApi( param );
-               case "api_remove" : return RemoveApi( spec );
-               case "assembly"   : return GetAssembly( param );
-               case "assemblies" : return GetAssemblies( param );
-               case "config"     : return LoadConfig( spec, param );
-               case "dir"        : return GetDir( param );
-               case "log"        : return DoLog( spec, param );
-               case "logger"     : return GetLogger( param );
-               case "mod_info"   : return GetModInfo( param );
-               case "mod_list"   : return ListMods( param );
-               case "path"       : return GetPath( param );
-               case "stacktrace" : return Stacktrace( spec );
-               case "version"    : return GetVersion( param );
-               default:
-                  Func<string,object,object> handler;
-                  lock ( ApiExtension ) ApiExtension.TryGetValue( cmd, out handler );
-                  if ( handler != null ) return handler( spec, param );
-                  break;
+            if ( cmd.IndexOf( '.' ) < 0 ) {
+               switch ( cmd ) {
+                  case "api_add"    : return AddApi( spec, param );
+                  case "api_info"   : return InfoApi( param );
+                  case "api_list"   : return ListApi( param );
+                  case "api_remove" : return RemoveApi( spec );
+                  case "assembly"   : return GetAssembly( param );
+                  case "assemblies" : return GetAssemblies( param );
+                  case "config"     : return LoadConfig( spec, param );
+                  case "dir"        : return GetDir( param );
+                  case "log"        : return DoLog( spec, param );
+                  case "logger"     : return GetLogger( param );
+                  case "mod_info"   : return GetModInfo( param );
+                  case "mod_list"   : return ListMods( param );
+                  case "path"       : return GetPath( param );
+                  case "stacktrace" : return Stacktrace( spec );
+                  case "version"    : return GetVersion( param );
+               }
+            } else {
+               API_Func handler;
+               lock ( ApiExtension ) ApiExtension.TryGetValue( cmd, out handler );
+               if ( handler != null ) return handler( spec, param );
             }
          }
          Warn( "Unknown api action '{0}'", cmd );
@@ -141,7 +143,7 @@ namespace Sheepy.Modnix {
 
       private static Assembly GameAssembly;
 
-      private Assembly GetAssembly ( object target ) => GetAssemblies( target ).FirstOrDefault();
+      private Assembly GetAssembly ( object target ) => GetAssemblies( target )?.FirstOrDefault();
 
       private IEnumerable < Assembly > GetAssemblies ( object target ) {
          if ( LowerAndIsEmpty( target, out string id ) ) return ModAssemblies ?? Enumerable.Empty<Assembly>();
@@ -218,7 +220,7 @@ namespace Sheepy.Modnix {
             throw new ArgumentException( $"Unknown specifier '{type}'." );
          if ( LowerAndIsEmpty( name, out string cmd ) || ! cmd.Contains( "." ) || cmd.Length < 3 )
             throw new ArgumentException( $"Invalid name for api_add, need a dot and at least 3 chars. Got '{cmd}'." );
-         var func = param is Delegate dele ? dele as Func<string,object,object> ?? WrapExtension( dele ) : null;
+         var func = param is Delegate dele ? dele as API_Func ?? WrapExtension( dele ) : null;
          if ( func == null )
             throw new ArgumentException( "api_add parameter must be compatible with Func<object, object> or Func<string,object, object>. Got " + param.ToString() );
          lock ( ApiExtension ) {
@@ -234,7 +236,7 @@ namespace Sheepy.Modnix {
          return false;
       } }
 
-      private Func<string, object, object> WrapExtension ( Delegate func ) {
+      private API_Func WrapExtension ( Delegate func ) {
          var augs = func.GetMethodInfo().GetParameters();
          if ( augs.Length == 0 ) {
             return ( _, __ ) => func.DynamicInvoke( null );
