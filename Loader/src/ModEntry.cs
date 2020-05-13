@@ -288,13 +288,15 @@ namespace Sheepy.Modnix {
       #region Logger
       private LoggerProxy Logger; // Created when and only when an initialiser accepts a logging function
 
+      internal LogFilter PrefixFilter => LogFilters.AddPrefix( Metadata.Id + ModLoader.LOG_DIVIDER );
+
       public Logger Log () {
          lock ( this ) {
             if ( Logger != null ) return Logger;
             Logger = new LoggerProxy( ModLoader.Log ){ Level = LogLevel ?? ModLoader.Settings.LogLevel };
          }
          Logger.Filters.Add( LogFilters.IgnoreDuplicateExceptions() );
-         Logger.Filters.Add( LogFilters.AddPrefix( Metadata.Id + ModLoader.LOG_DIVIDER ) );
+         Logger.Filters.Add( PrefixFilter );
          return Logger;
       }
 

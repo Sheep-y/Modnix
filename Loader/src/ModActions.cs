@@ -16,6 +16,7 @@ namespace Sheepy.Modnix {
 
       private static bool InitActionHandlers () { lock ( ACTION_METHOD ) {
          if ( ActionHandlers == null ) {
+            ModLoader.Log.Info( "Scanning action handlers." ); // TODO: In ModScanner, sort mod by phase to a dictionary
             ActionHandlers = new List<DllMeta>();
             ActionMods = new Dictionary<DllMeta, ModEntry>();
             foreach ( var mod in ModScanner.EnabledMods )
@@ -43,6 +44,12 @@ namespace Sheepy.Modnix {
          if ( ! InitActionHandlers() ) return;
 
          log.Info( "Running {0} actions ({1} defaults merged)", actions.Count, defaultCount );
+         var modPrefix = mod.PrefixFilter;
+         foreach ( var dll in ActionHandlers ) {
+            var handler = ActionMods[ dll ];
+            if ( handler != mod )
+               handler.Log().Filters.Add( modPrefix );
+         }
          foreach ( var act in actions ) {
             foreach ( var dll in ActionHandlers ) {
                var result = RunActionHandler( mod, dll, act );
@@ -61,6 +68,8 @@ namespace Sheepy.Modnix {
                }
             }
          }
+         foreach ( var dll in ActionHandlers )
+            ActionMods[ dll ].Log().Filters.Remove( modPrefix );
       } catch ( Exception ex ) { mod.Log().Error( ex ); } }
 
       private static bool QuickScanActions ( ActionDef[] actions, string phase ) {
