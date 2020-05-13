@@ -233,7 +233,7 @@ namespace Sheepy.Modnix {
             ApiExtension.Add( cmd, func );
             ApiExtOwner.Add( cmd, new KeyValuePair<ModEntry, MethodInfo>( this, ( param as Delegate ).Method ) );
          }
-         Info( "Registered api '{0}'", cmd );
+         Info( "Registered API '{0}'", cmd );
          return true;
       }
 
@@ -308,12 +308,12 @@ namespace Sheepy.Modnix {
          KeyValuePair<ModEntry, MethodInfo> info;
          lock ( ApiExtension ) ApiExtOwner.TryGetValue( cmd, out info );
          if ( info.Key != this )
-            throw new UnauthorizedAccessException( $"Non-owner cannot api_remove '{cmd}'. Owner is '{info.Key?.Metadata?.Id}'." );
+            throw new UnauthorizedAccessException( $"Non-owner cannot api_remove '{cmd}'. Owner is '{info.Key?.Metadata?.Id ?? "null"}'." );
          lock ( ApiExtension ) {
             ApiExtension.Remove( cmd );
             ApiExtOwner.Remove( cmd );
          }
-         Info( "Unregistered api action {0}", cmd );
+         Info( "Removed API '{0}'", cmd );
          return true;
       }
 
