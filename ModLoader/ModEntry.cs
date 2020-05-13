@@ -117,12 +117,16 @@ namespace Sheepy.Modnix {
             } else {
                API_Func handler;
                lock ( ApiExtension ) ApiExtension.TryGetValue( cmd, out handler );
-               if ( handler != null ) return handler( spec, param );
+               if ( handler != null ) {
+                  var result = handler( spec, param );
+                  if ( result is Exception err ) Warn( err );
+                  return result;
+               }
             }
          }
          Warn( "Unknown api action '{0}'", cmd );
          return null;
-      } catch ( Exception ex ) { Error( ex ); return null; } }
+      } catch ( Exception ex ) { Warn( ex ); return null; } }
 
       private static bool IsMultiPart ( string text, out string firstWord, out string rest ) {
          int pos = text.IndexOf( ' ' );
@@ -237,7 +241,15 @@ namespace Sheepy.Modnix {
       } }
 
       private API_Func WrapExtension ( Delegate func ) {
-         var augs = func.GetMethodInfo().GetParameters();
+         var info = func.GetMethodInfo();
+         var name = info.Name;
+         if ( ! info.IsStatic && ! name.StartsWith( "<" ) ) throw new ArgumentException( "Delegate " + name + " must be static." );
+         if ( info.IsAbstract ) throw new ArgumentException( "Delegate " + name + " must not be abstract." );
+         var augs = info.GetParameters();
+         foreach ( var aug in augs )
+            if ( aug.IsOut || aug.IsIn || aug.ParameterType.IsByRef )
+               throw new ArgumentException( "Delegate " + name + " contains in, out, or ref parameter." );
+
          if ( augs.Length == 0 ) {
             return ( _, __ ) => func.DynamicInvoke( null );
          } else if ( augs.Length == 1 ) {

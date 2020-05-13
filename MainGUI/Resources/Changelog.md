@@ -3,9 +3,12 @@ Modnix Changelog
 # Version 2.5, in development
 
 * Fix: .NET fallback resolver now use correct path separator.  Should have only cosmetic difference.
-* Mod: api_add now accepts parameter-less functions such as Func<string> or Action.
+* Fix: "api_add" api now rejects non-static and abstract methods, and methods with ref or out parameters.
+* Mod: "api_add" api now accepts parameter-less delegates such as Func<string> or Action.
 * Mod: Avoids are now processed after Requires, in the resolve loop.
 * Log: Each dll load will only be logged once.
+* Log: API exceptions are now logged as warning instead of error.  They may be out of control of the calling mod.
+* Log: Exceptions returned by API extensions will now be logged as warning.  This align their handling with Modnix 3.
 
 # Version 2.4, 2020-05-10
 
