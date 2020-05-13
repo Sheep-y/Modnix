@@ -20,6 +20,7 @@ namespace Sheepy.Modnix {
    public static class ModScanner {
       public readonly static List<ModEntry> AllMods = new List<ModEntry>();
       public readonly static List<ModEntry> EnabledMods = new List<ModEntry>();
+      public readonly static Dictionary<string,List<ModEntry>> ModsInPhase = new Dictionary<string, List<ModEntry>>();
 
       internal const BindingFlags INIT_METHOD_FLAGS = Public | Static | Instance;
       private static readonly List<string> IGNORE_FILE_NAMES = new List<string> {
@@ -42,11 +43,11 @@ namespace Sheepy.Modnix {
       public static void BuildModList ( ) { try { lock ( AllMods ) {
          AllMods.Clear();
          EnabledMods.Clear();
+         ModsInPhase.Clear();
          string dir = ModLoader.ModDirectory;
          if ( Directory.Exists( dir ) ) {
             ScanFolderForMods( dir, true );
             ResolveMods();
-            Log.Info( "{0} mods found, {1} enabled.", AllMods.Count, EnabledMods.Count );
          } else
             Log.Error( "Mods not scanned.  Not found: {0}", dir );
       } } catch ( Exception ex ) { Log.Error( ex ); } }
@@ -325,7 +326,7 @@ namespace Sheepy.Modnix {
       #endregion
 
       #region Resolving
-      private static bool ResolveModAgain = true;
+      private static bool ResolveModAgain;
 
       private static void ResolveMods () {
          EnabledMods.Clear();
@@ -341,7 +342,11 @@ namespace Sheepy.Modnix {
             RemoveUnfulfilledMods();
             RemoveRecessMods();
             RemoveConflictMods();
+            AssignModsToPhases();
          }
+         Func<string> countMod = () => { lock ( ModsInPhase )
+            return ModsInPhase.Values.SelectMany( e => e ).Distinct().Count().ToString(); };
+         Log.Info( "Assigned {0} mods to {1} phases", countMod, ModsInPhase.Count );
       }
 
       private static void ApplyUserOverride () {
@@ -351,7 +356,7 @@ namespace Sheepy.Modnix {
          foreach ( var mod in EnabledMods.ToArray() ) {
             if ( ! settings.TryGetValue( mod.Key, out ModSettings modSetting ) ) continue;
             if ( modSetting.Disabled )
-               DisableAndRemoveMod( mod, "manual", "Mod {0} is manually disabled.", mod.Key );
+               DisableAndRemoveMod( mod, "manual", "Disabled: Mod is manually disabled." );
             else {
                if ( modSetting.LoadIndex.HasValue ) {
                   Log.Verbo( "Mod {0} LoadIndex manually set to {1}", mod.Key, modSetting.LoadIndex);
@@ -454,20 +459,63 @@ namespace Sheepy.Modnix {
          }
       }
 
+      private static void AssignModsToPhases () { lock ( ModsInPhase ) {
+         ModsInPhase.Clear();
+         string[] allPhases = null;
+         foreach ( var mod in EnabledMods.ToArray() ) {
+            var assigned = false;
+            var dlls = mod.Metadata.Dlls;
+            if ( dlls != null )
+               foreach ( var dll in dlls ) {
+                  if ( dll.Methods == null ) continue;
+                  foreach ( var phase in dll.Methods.Keys )
+                     AddModToPhase( mod, phase.ToLowerInvariant(), ref assigned );
+               }
+            var actions = mod.Metadata.Actions;
+            if ( actions != null ) {
+               if ( allPhases == null )
+                  allPhases = ModPhases.PHASES.Select( e => e.ToLowerInvariant() ).ToArray();
+               foreach ( var act in actions ) try {
+                  if ( act.TryGetValue( "phase", out object phaseObj ) && phaseObj != null ) {
+                     var aPhase = phaseObj.ToString().ToLowerInvariant();
+                     foreach ( var p in allPhases )
+                        if ( ModActions.PhaseMatch( aPhase, p ) )
+                           AddModToPhase( mod, p, ref assigned );
+                  } else
+                     AddModToPhase( mod, ModActions.DEFAULT_PHASE, ref assigned );
+               } catch ( Exception ex ) { mod.Log().Warn( ex ); }
+            }
+            if ( ! assigned )
+               DisableAndRemoveMod( mod, "no_phase", "Disabled: no matching mod phases.", null );
+         }
+      } }
+
+      private static void AddModToPhase ( ModEntry mod, string phase, ref bool assigned ) {
+         if ( ! ModsInPhase.TryGetValue( phase, out List<ModEntry> list ) )
+            ModsInPhase.Add( phase, list = new List<ModEntry>() );
+         if ( ! list.Contains( mod ) ) {
+            Log.Verbo( "Mod {0} added to {1}", mod.Metadata.Id, phase );
+            list.Add( mod );
+            assigned = true;
+         }
+      }
+
       private static void DisableAndRemoveMod ( ModEntry mod, string reason, string log, params object[] augs ) { lock ( mod ) {
          if ( mod.Disabled ) return;
-         Log.Warn( log, augs );
+         mod.Log().Warn( log, augs );
          mod.Disabled = true;
          mod.AddNotice( TraceEventType.Error, reason, augs );
          EnabledMods.Remove( mod );
          ResolveModAgain = true;
       } }
 
+      /* Used by Modnix 2.x to warn on unsupported features
       private static void AddManagerNotice ( TraceEventType level, ModEntry mod, string reason, string log, params object[] augs ) { lock ( mod ) {
          if ( mod.Disabled ) return;
          Log.Info( log, augs );
          mod.AddNotice( level, reason, augs );
       } }
+      */
       #endregion
    }
 }

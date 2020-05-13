@@ -9,23 +9,23 @@ namespace Sheepy.Modnix {
    public static class ModActions {
 
       internal const string ACTION_METHOD = "ActionMod";
-      private const string DEFAULT_PHASE = "mainmod"; // TODO: Change to gamemod
+      internal const string DEFAULT_PHASE = "mainmod"; // TODO: Change to gamemod
 
       private static List<DllMeta> ActionHandlers;
       private static Dictionary<DllMeta,ModEntry> ActionMods;
 
       private static bool InitActionHandlers () { lock ( ACTION_METHOD ) {
          if ( ActionHandlers == null ) {
-            ModLoader.Log.Info( "Scanning action handlers." ); // TODO: In ModScanner, sort mod by phase to a dictionary
+            if ( ! ModScanner.ModsInPhase.TryGetValue( ACTION_METHOD.ToLowerInvariant(), out List<ModEntry> mods ) )
+               return false;
             ActionHandlers = new List<DllMeta>();
             ActionMods = new Dictionary<DllMeta, ModEntry>();
-            foreach ( var mod in ModScanner.EnabledMods )
-               if ( mod.Metadata.Dlls != null )
-                  foreach ( var dll in mod.Metadata.Dlls )
-                     if ( dll.Methods.ContainsKey( ACTION_METHOD ) ) {
-                        ActionHandlers.Add( dll );
-                        ActionMods.Add( dll, mod );
-                     }
+            foreach ( var mod in mods )
+               foreach ( var dll in mod.Metadata.Dlls )
+                  if ( dll.Methods.ContainsKey( ACTION_METHOD ) ) {
+                     ActionHandlers.Add( dll );
+                     ActionMods.Add( dll, mod );
+                  }
             if ( ActionHandlers.Count == 0 )
                ModLoader.Log.Error( "No action handlers found, please install mods to support actions.  Actions will not be processed." );
          }
@@ -80,7 +80,7 @@ namespace Sheepy.Modnix {
          return false;
       }
 
-      private static bool PhaseMatch ( string actPhase, string phase ) {
+      internal static bool PhaseMatch ( string actPhase, string phase ) {
          if ( actPhase == null ) return DEFAULT_PHASE.Equals( phase );
          return actPhase.IndexOf( phase ) >= 0;
       }

@@ -22,8 +22,12 @@ namespace Sheepy.Modnix {
             if ( LoadedPhases.Contains( phase ) ) return;
             LoadedPhases.Add( phase );
          }
+         if ( ! ModScanner.ModsInPhase.TryGetValue( phase.ToLowerInvariant(), out List<ModEntry> list ) ) {
+            Log.Verbo( "Phase {0} skipped, no mods.", phase );
+            return;
+         }
          Log.Info( "PHASE {0}", phase );
-         foreach ( var mod in ModScanner.EnabledMods ) {
+         foreach ( var mod in list ) {
             lock ( mod.Metadata ) ;
             if ( mod.Metadata.Dlls != null )
                foreach ( var dll in mod.Metadata.Dlls )
