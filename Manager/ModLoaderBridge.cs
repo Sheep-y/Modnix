@@ -58,6 +58,7 @@ namespace Sheepy.Modnix.MainGUI {
       private ModInfo[] SetModOrders ( IEnumerable< GridModItem > list ) {
          var order = 1;
          var result = list.ToArray();
+         // TODO: Rewrite with ModsInPhase
          var ordered = ModScanner.EnabledMods
             .Select( e => result.First( f => f.Mod == e ) )
             .Where( e => e != null && ! float.IsInfinity( e._Order ) && e._Order < 0 );
@@ -390,15 +391,17 @@ namespace Sheepy.Modnix.MainGUI {
          var txt = new Run();
          switch ( notice.Message ) {
             case "duplicate" :
-               txt.Text = string.Format( "\rDisabled: Using {0}.", notice.Args[0]?.ToString() ); break;
+               txt.Text = string.Format( "\rDisabled: Duplicate of {0}.", notice.Args[0]?.ToString() ); break;
             case "avoid" :
-               txt.Text = string.Format( "\rDisabled: Avoiding conflict with {0}.", notice.Args[0]?.ToString() ); break;
+               txt.Text = string.Format( "\rDisabled: Avoiding {0}.", notice.Args[0]?.ToString() ); break;
             case "require" :
                txt.Text = string.Format( "\rDisabled: Missing requirement {0}.", notice.Args[0]?.ToString() ); break;
             case "disable" :
                txt.Text = string.Format( "\rDisabled by {0}.", notice.Args[0]?.ToString() ); break;
             case "manual"  :
                txt.Text = "\rManually Disabled"; break;
+            case "no_phase"  :
+               txt.Text = "\rDisabled: No mod phase found."; break;
             case "runtime_error" :
                txt.Text = "\rRuntime error(s) detected on last run, may be not safe to use."; break;
             case "runtime_warning" :

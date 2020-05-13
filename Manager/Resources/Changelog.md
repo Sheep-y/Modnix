@@ -9,16 +9,17 @@ Modnix Changelog
 * Mod: DefaultConfig is no longer supported in mod_info.  Use ConfigType instead.
 * Mod: Faster API extension calls when return value is void, class, or bool. (Non-bool value return types are still dynamically invoked for auto boxing.)
 * Mod: "api_add" api now rejects compiler-geneated non-static methods, such as lambdas, due to the switch to direct delegate call.
+* Mod: Mods without a recognised phase will be disabled, as a new last step of the resolve loop.
 * Log: Mod loading messages are now logged with the mod's logger.
 * Log: Timestamp shortened to 1ms from 0.1ms, to align with SI and DateTime precision.
-* Other: Non-SplashMod phases now depends on correct Harmony to function.  Specifically, MainMod no longer runs without Harmony.
+* Misc: Non-SplashMod phases now depends on correct Harmony to function.  Specifically, MainMod no longer runs without Harmony.
 
 # Version 2.5, in development
 
-* Fix: .NET fallback resolver now use correct path separator.  Should have only cosmetic difference.
+* New: "api_add" api now accepts parameter-less delegates such as Func<string> or Action.
 * Fix: "api_add" api now rejects non-static and abstract methods, and methods with ref or out parameters.
 * Fix: Logger will now try to create directory when one does not exist, and write error will triggers OnError.
-* Mod: "api_add" api now accepts parameter-less delegates such as Func<string> or Action.
+* Fix: .NET fallback resolver now use correct path separator.  Should be a cosmetic difference.
 * Mod: Avoids are now processed after Requires, in the resolve loop.
 * Log: Each dll load will only be logged once.
 * Log: API exceptions are now logged as warning instead of error.  They may be out of control of the calling mod.
