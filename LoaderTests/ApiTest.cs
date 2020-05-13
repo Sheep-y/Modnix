@@ -101,6 +101,8 @@ namespace Sheepy.Modnix.Tests {
       private static void PlainAction () => lastRun = "PA";
       private static void ObjAction ( object _ ) => lastRun = "OA";
       private static void StrAction ( string _ ) => lastRun = "SA";
+      private static void OOAction ( object _, object __ ) => lastRun = "OOA";
+      private static void OSAction ( object _, string __ ) => lastRun = "SSA";
 
       private static object ObjFunc () => lastRun = "OF";
       private static object OOFunc ( object _ ) => lastRun = "OOF";
@@ -108,32 +110,54 @@ namespace Sheepy.Modnix.Tests {
       private static int    OIFunc ( object _ ) { lastRun = "OIF"; return 1; }
       private static string SSFunc ( string _ ) => lastRun = "SSF";
 
+      private static object SOOFunc ( string _, object __ ) => lastRun = "SOOF";
+      private static bool   OOBFunc ( object _, object __ ) { lastRun = "OOBF"; return true; }
+      private static int    OOIFunc ( object _, object __ ) { lastRun = "OOIF"; return 1; }
+      private static string SSSFunc ( string _, string __ ) => lastRun = "SSSF";
+
       [TestMethod()] public void ModExtTypeTest () {
          // No param
          Assert.AreEqual( true, ModA.ModAPI( "api_add A.PA", (Action) PlainAction ), "PlainAction" );
          Assert.AreEqual( true, ModA.ModAPI( "A.PA", null ), "A.PA" );
          Assert.AreEqual( "PA", lastRun, "After A.PA" );
-         Assert.AreEqual( true, ModA.ModAPI( "api_add A.OA", (Action<object>) ObjAction ), "ObjAction" );
-         Assert.AreEqual( true, ModA.ModAPI( "A.OA", null ), "A.OA" );
-         Assert.AreEqual( "OA", lastRun, "After A.OA" );
-
-         // One param
          Assert.AreEqual( true, ModA.ModAPI( "api_add A.OF", (Func<object>) ObjFunc ), "ObjFunc" );
          Assert.AreEqual( "OF", ModA.ModAPI( "A.OF", null ), "A.OF" );
          Assert.AreEqual( "OF", lastRun, "After A.OF" );
+
+         // One param
+         Assert.AreEqual( true, ModA.ModAPI( "api_add A.OA", (Action<object>) ObjAction ), "ObjAction" );
+         Assert.AreEqual( true, ModA.ModAPI( "A.OA", null ), "A.OA" );
+         Assert.AreEqual( "OA", lastRun, "After A.OA" );
          Assert.AreEqual( true, ModA.ModAPI( "api_add A.OOF", (Func<object,object>) OOFunc ), "OOFunc" );
          Assert.AreEqual( "OOF", ModA.ModAPI( "A.OOF", null ), "A.OOF" );
          Assert.AreEqual( "OOF", lastRun, "After A.OOF" );
          Assert.AreEqual( true, ModA.ModAPI( "api_add A.OBF", (Func<object,bool>) OBFunc ), "OBFunc" );
          Assert.AreEqual( true, ModA.ModAPI( "A.OBF", null ), "A.OBF" );
          Assert.AreEqual( "OBF", lastRun, "After A.OBF" );
-         Assert.AreEqual( true, ModA.ModAPI( "api_add A.OIF", (Func<object,int>) OIFunc ), "OBFunc" );
+         Assert.AreEqual( true, ModA.ModAPI( "api_add A.OIF", (Func<object,int>) OIFunc ), "OIFunc" );
          Assert.AreEqual( 1, ModA.ModAPI( "A.OIF", null ), "A.OIF" );
          Assert.AreEqual( "OIF", lastRun, "After A.OIF" );
 
+         // Two params
+         Assert.AreEqual( true, ModA.ModAPI( "api_add A.OOA", (Action<object,object>) OOAction ), "OOAction" );
+         Assert.AreEqual( true, ModA.ModAPI( "A.OOA", null ), "A.OOA" );
+         Assert.AreEqual( "OOA", lastRun, "After A.OOA" );
+         Assert.AreEqual( true, ModA.ModAPI( "api_add A.SOO", (Func<string,object,object>) SOOFunc ), "SOOFunc" );
+         Assert.AreEqual( "SOOF", ModA.ModAPI( "A.SOO", null ), "A.SOO" );
+         Assert.AreEqual( "SOOF", lastRun, "After A.SOO" );
+         Assert.AreEqual( true, ModA.ModAPI( "api_add A.OOB", (Func<object,object,bool>) OOBFunc ), "OOBFunc" );
+         Assert.AreEqual( true, ModA.ModAPI( "A.OOB", null ), "A.OOB" );
+         Assert.AreEqual( "OOBF", lastRun, "After A.OOB" );
+         Assert.AreEqual( true, ModA.ModAPI( "api_add A.OOI", (Func<object,object,int>) OOIFunc ), "OOIFunc" );
+         Assert.AreEqual( 1, ModA.ModAPI( "A.OOI", null ), "A.OOI" );
+         Assert.AreEqual( "OOIF", lastRun, "After A.OOI" );
+
+
          // Fails
          IsException( ModA.ModAPI( "api_add A.SA", (Action<string>) StrAction ), "StrAction" );
+         IsException( ModA.ModAPI( "api_add A.OSA", (Action<object,string>) OSAction ), "OSAction" );
          IsException( ModA.ModAPI( "api_add A.SSF", (Func<string,string>) SSFunc ), "SSFunc" );
+         IsException( ModA.ModAPI( "api_add A.SSSF", (Func<string,string,string>) SSSFunc ), "SSSFunc" );
 
          foreach ( var id in ModA.ModAPI( "api_list", "A." ) as IEnumerable<string> )
             ModA.ModAPI( "api_remove " + id );
