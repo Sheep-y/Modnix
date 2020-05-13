@@ -173,30 +173,34 @@ namespace Sheepy.Modnix.Tests {
             ModA.ModAPI( "api_remove " + id );
       }
 
+      private static string ExtA ( object e )=> e.ToString() + "A";
       private static string ExtB ( object t, object e ) => t.ToString() + e.ToString() + "B";
+      private static bool ExtC ( object e ) => e == null;
+      private static void ExtD ( Version _ ) { }
 
       [TestMethod()] public void ModExtTest () {
-         Func<object,string> ExtA = ( e )=> e.ToString() + "A";
-         Predicate<object> ExtC = ( e ) => e == null;
-         Action<Version> ExtD = ( _ ) => { };
+         Func<object,string> A = ExtA;
+         Func<object,object,string> B = ExtB;
+         Predicate<object> C = ExtC;
+         Action<Version> D = ExtD;
 
          IsException( ModA.ModAPI( "api_add" , null ), "no name null action" );
-         Assert.AreEqual( true , ModA.ModAPI( "api_add A.A", ExtA ), "A.A => ExtA" );
-         Assert.AreEqual( true , ModA.ModAPI( "api_add  A.B", (Func<object,object,string>) ExtB ), "A.B => ExtB" );
-         Assert.AreEqual( true , ModA.ModAPI( "api_add A.C", ExtC ), "A.C => ExtC" );
+         Assert.AreEqual( true , ModA.ModAPI( "api_add A.A", A ), "A.A => ExtA" );
+         Assert.AreEqual( true , ModA.ModAPI( "api_add  A.B", B ), "A.B => ExtB" );
+         Assert.AreEqual( true , ModA.ModAPI( "api_add A.C", C ), "A.C => ExtC" );
 
          var list = ModA.ModAPI( "api_list", "A." ) as IEnumerable<string>;
          Assert.AreEqual( 3, list.Count(), "api_list.Length" );
          Assert.AreEqual( "a.a", list.First(), "api_list[0]" );
-         Assert.AreEqual( ExtA.GetMethodInfo(), ModA.ModAPI( "api_info", "A.A" ), "api_info A.A" );
-         Assert.AreEqual( ExtC.GetMethodInfo(), ModA.ModAPI( "api_info", "A.C" ), "api_info A.C" );
+         Assert.AreEqual( A.GetMethodInfo(), ModA.ModAPI( "api_info", "A.A" ), "api_info A.A" );
+         Assert.AreEqual( C.GetMethodInfo(), ModA.ModAPI( "api_info", "A.C" ), "api_info A.C" );
 
-         IsException( ModA.ModAPI( "api_add AAA", ExtA ), "no dot" );
-         IsException( ModA.ModAPI( "api_add .A", ExtA ), "too short" );
-         IsException( ModA.ModAPI( "api_add A.A", ExtA ), "duplucate reg" );
+         IsException( ModA.ModAPI( "api_add AAA", A ), "no dot" );
+         IsException( ModA.ModAPI( "api_add .A", A ), "too short" );
+         IsException( ModA.ModAPI( "api_add A.A", A ), "duplucate reg" );
          IsException( ModA.ModAPI( "api_add A.C", null ), "null action" );
-         IsException( ModA.ModAPI( "api_add A.D", ExtD ), "Invalid action" );
-         IsException( ModA.ModAPI( "api_add A.D DEF", ExtD ), "Extra spec" );
+         IsException( ModA.ModAPI( "api_add A.D", D ), "Invalid action" );
+         IsException( ModA.ModAPI( "api_add A.D DEF", D ), "Extra spec" );
 
          Assert.AreEqual( "0A" , ModB.ModAPI( "a.A", "0" ), "call api a.A" );
          Assert.AreEqual( "c0B", ModB.ModAPI( "A.b c", "0" ), "call api A.b" );
@@ -207,7 +211,7 @@ namespace Sheepy.Modnix.Tests {
          Assert.AreEqual( true , ModA.ModAPI( " api_remove   a.b " ), "api_remove owner" );
          Assert.AreEqual( null , ModA.ModAPI( "A.b c", "0" ), "call after api_remove" );
 
-         Assert.AreEqual( true , ModB.ModAPI( " api_add   A.B ", (Func<object,object,string>) ExtB ), "A.B => ExtB (ModB)" );
+         Assert.AreEqual( true , ModB.ModAPI( " api_add   A.B ", B ), "A.B => ExtB (ModB)" );
          Assert.AreEqual( "c0B", ModA.ModAPI( "A.b c", "0" ), "call api A.b (Mod B)" );
          foreach ( var id in ModA.ModAPI( "api_list", "A." ) as IEnumerable<string> )
             ModA.ModAPI( "api_remove " + id );
