@@ -237,10 +237,19 @@ namespace Sheepy.Modnix {
          return true;
       }
 
-      private API_Func WrapExtension ( Delegate func ) { // TODO: Compile delegate
-         var augs = func.GetMethodInfo().GetParameters();
+      private API_Func WrapExtension ( Delegate func ) {
+         var info = func.GetMethodInfo();
+         var augs = info.GetParameters();
+         if ( ! info.IsStatic ) throw new ArgumentException( "API delegate " + info.Name + " must be static." );
+         if ( info.IsAbstract ) throw new ArgumentException( "API delegate " + info.Name + " must not be abstract." );
          if ( augs.Length == 0 ) {
-            return ( _, __ ) => func.DynamicInvoke( null );
+            if ( info.ReturnType == typeof( void ) ) {
+               var d = info.CreateDelegate( typeof( Action ) ) as Action;
+               return ( _, __ ) => { d(); return true; };
+            } else {
+               var d = Delegate.CreateDelegate( typeof( Func<object> ), info ) as Func<object>;
+               return ( _, __ ) => d();
+            }
          } else if ( augs.Length == 1 ) {
             if ( augs[0].ParameterType != typeof( object ) ) return null;
             return ( _, b ) => func.DynamicInvoke( new object[] { b } );
