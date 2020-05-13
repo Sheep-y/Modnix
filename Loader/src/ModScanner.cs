@@ -233,7 +233,6 @@ namespace Sheepy.Modnix {
             Log.Warn( "Id must not be empty" );
             return false;
          }
-         // TODO: use mod logger warning
          switch ( key ) {
             case "modnix" : case "loader" :
             case "phoenixpoint" : case "phoenix point" : case "game" :

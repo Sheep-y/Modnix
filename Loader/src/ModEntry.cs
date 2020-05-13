@@ -239,12 +239,13 @@ namespace Sheepy.Modnix {
 
       private static API_Func WrapExtension ( Delegate func ) {
          var info = func.GetMethodInfo();
-         if ( ! info.IsStatic ) throw new ArgumentException( "Delegate " + info.Name + " must be static." );
-         if ( info.IsAbstract ) throw new ArgumentException( "Delegate " + info.Name + " must not be abstract." );
+         var name = info.Name;
+         if ( ! info.IsStatic ) throw new ArgumentException( "Delegate " + name + " must be static." );
+         if ( info.IsAbstract ) throw new ArgumentException( "Delegate " + name + " must not be abstract." );
          var augs = info.GetParameters();
          foreach ( var aug in augs )
             if ( aug.IsOut || aug.IsIn || aug.ParameterType.IsByRef )
-               throw new ArgumentException( "Delegate " + info.Name + " contains in, out, or ref parameter." );
+               throw new ArgumentException( "Delegate " + name + " contains in, out, or ref parameter." );
 
          var hasReturn = info.ReturnType != typeof( void );
          var returnIsBool = info.ReturnType == typeof( bool );
@@ -269,7 +270,7 @@ namespace Sheepy.Modnix {
                } else if ( ! returnIsVal ) {
                   var d = CreateDelegate<Func<object,object>>( info ); return ( _, b ) => d( b );
                } else if ( augs[0].ParameterType != typeof( object ) ) {
-                  throw new ArgumentException( "Delegate " + info.Name + " is not taking an object param." );
+                  throw new ArgumentException( "Delegate " + name + " is not taking an object param." );
                } else
                   return ( _, b ) => func.DynamicInvoke( new object[] { b } );
             } else {
@@ -284,9 +285,9 @@ namespace Sheepy.Modnix {
                } else if ( ! returnIsVal ) {
                   return CreateDelegate<Func<string,object,object>>( info );
                } else if ( augs[0].ParameterType != typeof( object ) && augs[0].ParameterType != typeof( string ) ) {
-                  throw new ArgumentException( "Delegate " + info.Name + " is not taking a string or an object as first param." );
+                  throw new ArgumentException( "Delegate " + name + " is not taking a string or an object as first param." );
                } else if ( augs[1].ParameterType != typeof( object ) ) {
-                  throw new ArgumentException( "Delegate " + info.Name + " is not taking an object as second param." );
+                  throw new ArgumentException( "Delegate " + name + " is not taking an object as second param." );
                } else
                   return ( a, b ) => func.DynamicInvoke( new object[] { a, b } );
             } else {
@@ -294,7 +295,7 @@ namespace Sheepy.Modnix {
                return ( a, b ) => { d( a, b ); return true; };
             }
          }
-         throw new ArgumentException( "Delegate " + info.Name + " has too many parameters." );
+         throw new ArgumentException( "Delegate " + name + " has too many parameters." );
       }
 
       private static T CreateDelegate<T> ( MethodInfo info ) where T : class => Delegate.CreateDelegate( typeof( T ), info ) as T;
