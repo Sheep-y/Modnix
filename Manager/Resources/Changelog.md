@@ -4,19 +4,24 @@ Modnix Changelog
 
 * New: Show PPML version in app status.
 * New: Mod Actions - a new system that allows mods to declare Actions and/or to support them.
-* Mod: Native API now returns Exception on error.  API extensions that return Exception will be logged as warning.
+* Mod: Native API now returns Exception on error.
 * Mod: Logger and config param no longer supported for mod initialisers and will be passed null.  Use API instead.
 * Mod: DefaultConfig is no longer supported in mod_info.  Use ConfigType instead.
+* Mod: Faster API extension calls when return value is void, class, or bool. (Non-bool value return types are still dynamically invoked for auto boxing.)
+* Mod: "api_add" api now rejects compiler-geneated non-static methods, such as lambdas, due to the switch to direct delegate call.
 * Log: Mod loading messages are now logged with the mod's logger.
 * Log: Timestamp shortened to 1ms from 0.1ms, to align with SI and DateTime precision.
-* Other: Mod phases other than SplashMod now depends on correct Harmony to function. SplashMods can still be loaded without Harmony.
- 
+* Other: Non-SplashMod phases now depends on correct Harmony to function.  Specifically, MainMod no longer runs without Harmony.
+
 # Version 2.5, in development
 
 * Fix: .NET fallback resolver now use correct path separator.  Should have only cosmetic difference.
-* Mod: api_add now accepts parameter-less functions such as Func<string> or Action.
-* Fix: api_add now rejects non-static and abstract functions.
+* Fix: "api_add" api now rejects non-static and abstract methods, and methods with ref or out parameters.
+* Mod: "api_add" api now accepts parameter-less delegates such as Func<string> or Action.
 * Mod: Avoids are now processed after Requires, in the resolve loop.
+* Log: Each dll load will only be logged once.
+* Log: API exceptions are now logged as warning instead of error.  They may be out of control of the calling mod.
+* Log: Exceptions returned by API extensions will now be logged as warning.  This align their handling with Modnix 3.
 
 # Version 2.4, 2020-05-10
 
