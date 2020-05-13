@@ -1,5 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Collections.Generic;
 using static System.Reflection.BindingFlags;
 
 namespace Sheepy.Modnix.Tests {
@@ -11,12 +12,21 @@ namespace Sheepy.Modnix.Tests {
          ModLoader.Setup();
          ModScanner.AllMods.Clear();
          ModScanner.EnabledMods.Clear();
+         ModScanner.ModsInPhase.Clear();
       }
 
       [TestCleanup] public void TestCleanup () => TestInitialize();
 
       private static void ResolveMods () => 
          typeof( ModScanner ).GetMethod( "ResolveMods", NonPublic | Static ).Invoke( null, new object[0] );
+
+      private static void AddMod ( ModEntry mod ) {
+         // Mods will be disabled without dll or actions
+         var actions = mod.Metadata.Actions = new Dictionary<string, object>[1];
+         actions[ 0 ] = new Dictionary<string, object>();
+         actions[ 0 ].Add( "phase", "gamemod" );
+         ModScanner.AllMods.Add( mod );
+      }
 
       [TestMethod()] public void NameMatchTest () {
          Assert.IsTrue( ModScanner.NameMatch( "abc", "ABC" ), "ignore case" );
@@ -35,8 +45,8 @@ namespace Sheepy.Modnix.Tests {
       }
 
       [TestMethod()] public void DisabledModTest () {
-         ModScanner.AllMods.Add( new ModEntry( new ModMeta{ Id = "A" } ) );
-         ModScanner.AllMods.Add( new ModEntry( new ModMeta{ Id = "B" } ){ Disabled = true } );
+         AddMod( new ModEntry( new ModMeta{ Id = "A" } ) );
+         AddMod( new ModEntry( new ModMeta{ Id = "B" } ){ Disabled = true } );
          ResolveMods();
          Assert.AreEqual( 2, ModScanner.AllMods.Count );
          Assert.AreEqual( 1, ModScanner.EnabledMods.Count );
@@ -55,10 +65,10 @@ namespace Sheepy.Modnix.Tests {
          var SilverMod = new ModEntry( new ModMeta{ Id = "dup$", Version = Ver( 3 ) } );
 
          var AllMods = ModScanner.AllMods;
-         AllMods.Add( AlphaMod );
-         AllMods.Add( BetaMod );
-         AllMods.Add( GoldMod );
-         AllMods.Add( SilverMod );
+         AddMod( AlphaMod );
+         AddMod( BetaMod );
+         AddMod( GoldMod );
+         AddMod( SilverMod );
          ResolveMods();
 
          Assert.AreEqual( 4, AllMods.Count );
@@ -86,20 +96,20 @@ namespace Sheepy.Modnix.Tests {
          var No        = new ModEntry( new ModMeta{ Id = "NonModnix", Requires = new AppVer[]{ new AppVer( "ModnixOK" ), new AppVer( "ModnixMax" ) } }.Normalise() );
 
          var AllMods = ModScanner.AllMods;
-         AllMods.Add( Yes );
-         AllMods.Add( No );
-         AllMods.Add( ModnixMin );
-         AllMods.Add( ModnixOk );
-         AllMods.Add( ModnixMax );
-         AllMods.Add( PPMin );
-         AllMods.Add( PPOk );
-         AllMods.Add( PPMax );
-         AllMods.Add( PPMLMin );
-         AllMods.Add( PPMLOk );
-         AllMods.Add( PPMLMax );
-         AllMods.Add( MultiOK );
-         AllMods.Add( MultiFail );
-         AllMods.Add( NonModnix );
+         AddMod( Yes );
+         AddMod( No );
+         AddMod( ModnixMin );
+         AddMod( ModnixOk );
+         AddMod( ModnixMax );
+         AddMod( PPMin );
+         AddMod( PPOk );
+         AddMod( PPMax );
+         AddMod( PPMLMin );
+         AddMod( PPMLOk );
+         AddMod( PPMLMax );
+         AddMod( MultiOK );
+         AddMod( MultiFail );
+         AddMod( NonModnix );
 
          ModLoader.GameVersion = Ver( "1.0.12345" );
          ResolveMods();
@@ -130,10 +140,10 @@ namespace Sheepy.Modnix.Tests {
          var D = new ModEntry( new ModMeta{ Id = "D", Version = Ver( 3 ), Avoids = new AppVer[]{ new AppVer( "E" ), new AppVer( "B" ),  new AppVer( "D" ) } } );
 
          var AllMods = ModScanner.AllMods;
-         AllMods.Add( A );
-         AllMods.Add( B );
-         AllMods.Add( C );
-         AllMods.Add( D );
+         AddMod( A );
+         AddMod( B );
+         AddMod( C );
+         AddMod( D );
          ResolveMods();
 
          Assert.AreEqual( 4, AllMods.Count );
@@ -153,10 +163,10 @@ namespace Sheepy.Modnix.Tests {
          var D = new ModEntry( new ModMeta{ Id = "D", Version = Ver( 3 ), Disables = new AppVer[]{ new AppVer( "A" ), new AppVer( "B" ),  new AppVer( "D" ) } } );
 
          var AllMods = ModScanner.AllMods;
-         AllMods.Add( A );
-         AllMods.Add( B );
-         AllMods.Add( C );
-         AllMods.Add( D );
+         AddMod( A );
+         AddMod( B );
+         AddMod( C );
+         AddMod( D );
          ResolveMods();
 
          Assert.AreEqual( 4, AllMods.Count );

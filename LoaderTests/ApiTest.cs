@@ -19,12 +19,20 @@ namespace Sheepy.Modnix.Tests {
       private static readonly ModEntry ModC = new ModEntry( new ModMeta () { Id = "Test.C", Version = null } );
       private static readonly Version ZeroVersion = new Version( 0, 0, 0, 0 );
 
+      private static void AddMod ( ModEntry mod ) {
+         // Mods will be disabled without dll or actions
+         var actions = mod.Metadata.Actions = new Dictionary<string, object>[1];
+         actions[ 0 ] = new Dictionary<string, object>();
+         actions[ 0 ].Add( "phase", "gamemod" );
+         ModScanner.AllMods.Add( mod );
+      }
+
       [ClassInitializeAttribute] public static void TestInitialize ( TestContext _ ) {
          ModLoader.Setup();
          ModScanner.AllMods.Clear();
-         ModScanner.AllMods.Add( ModA );
-         ModScanner.AllMods.Add( ModB );
-         ModScanner.AllMods.Add( ModC );
+         AddMod( ModA );
+         AddMod( ModB );
+         AddMod( ModC );
          typeof( ModScanner ).GetMethod( "ResolveMods", NonPublic | Static ).Invoke( null, new object[0] );
       }
 
