@@ -239,10 +239,13 @@ namespace Sheepy.Modnix {
 
       private static API_Func WrapExtension ( Delegate func ) {
          var info = func.GetMethodInfo();
-         if ( ! info.IsStatic ) throw new ArgumentException( "API delegate " + info.Name + " must be static." );
-         if ( info.IsAbstract ) throw new ArgumentException( "API delegate " + info.Name + " must not be abstract." );
-
+         if ( ! info.IsStatic ) throw new ArgumentException( "Delegate " + info.Name + " must be static." );
+         if ( info.IsAbstract ) throw new ArgumentException( "Delegate " + info.Name + " must not be abstract." );
          var augs = info.GetParameters();
+         foreach ( var aug in augs )
+            if ( aug.IsOut || aug.IsIn || aug.ParameterType.IsByRef )
+               throw new ArgumentException( "Delegate " + info.Name + " contains in, out, or ref parameter." );
+
          var hasReturn = info.ReturnType != typeof( void );
          var returnIsBool = info.ReturnType == typeof( bool );
          var returnIsVal = hasReturn && info.ReturnType.IsValueType;

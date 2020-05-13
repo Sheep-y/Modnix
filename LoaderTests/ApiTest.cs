@@ -115,6 +115,14 @@ namespace Sheepy.Modnix.Tests {
       private static int    OOIFunc ( object _, object __ ) { lastRun = "OOIF"; return 1; }
       private static string SSSFunc ( string _, string __ ) => lastRun = "SSSF";
 
+      private delegate string RefFuncType ( ref string a, object __ );
+      private delegate string OutFuncType ( out string a, object __ );
+      private delegate string InFuncType ( in string a, object __ );
+
+      private static string RefFunc ( ref string a, object __ ) => a = lastRun = "RefF";
+      private static string OutFunc ( out string a, object __ ) => a = lastRun = "OutF";
+      private static string InFunc ( in string a, object __ ) => lastRun = a;
+
       [TestMethod()] public void ModExtTypeTest () {
          // No param
          Assert.AreEqual( true, ModA.ModAPI( "api_add A.PA", (Action) PlainAction ), "PlainAction" );
@@ -152,12 +160,14 @@ namespace Sheepy.Modnix.Tests {
          Assert.AreEqual( 1, ModA.ModAPI( "A.OOI", null ), "A.OOI" );
          Assert.AreEqual( "OOIF", lastRun, "After A.OOI" );
 
-
          // Fails
          IsException( ModA.ModAPI( "api_add A.SA", (Action<string>) StrAction ), "StrAction" );
          IsException( ModA.ModAPI( "api_add A.OSA", (Action<object,string>) OSAction ), "OSAction" );
          IsException( ModA.ModAPI( "api_add A.SSF", (Func<string,string>) SSFunc ), "SSFunc" );
          IsException( ModA.ModAPI( "api_add A.SSSF", (Func<string,string,string>) SSSFunc ), "SSSFunc" );
+         IsException( ModA.ModAPI( "api_add A.RefF", (RefFuncType) RefFunc ), "RefF" );
+         IsException( ModA.ModAPI( "api_add A.OutF", (OutFuncType) OutFunc ), "OutF" );
+         IsException( ModA.ModAPI( "api_add A.InF", (InFuncType) InFunc ), "InF" );
 
          foreach ( var id in ModA.ModAPI( "api_list", "A." ) as IEnumerable<string> )
             ModA.ModAPI( "api_remove " + id );
