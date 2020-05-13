@@ -17,6 +17,7 @@ Modnix Changelog
 
 * Fix: .NET fallback resolver now use correct path separator.  Should have only cosmetic difference.
 * Fix: "api_add" api now rejects non-static and abstract methods, and methods with ref or out parameters.
+* Fix: Logger will now try to create directory when one does not exist, and write error will triggers OnError.
 * Mod: "api_add" api now accepts parameter-less delegates such as Func<string> or Action.
 * Mod: Avoids are now processed after Requires, in the resolve loop.
 * Log: Each dll load will only be logged once.
