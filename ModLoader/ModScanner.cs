@@ -42,11 +42,13 @@ namespace Sheepy.Modnix {
       public static void BuildModList ( ) { try { lock ( AllMods ) {
          AllMods.Clear();
          EnabledMods.Clear();
-         if ( Directory.Exists( ModLoader.ModDirectory ) ) {
-            ScanFolderForMods( ModLoader.ModDirectory, true );
+         string dir = ModLoader.ModDirectory;
+         if ( Directory.Exists( dir ) ) {
+            ScanFolderForMods( dir, true );
             ResolveMods();
-         }
-         Log.Info( "{0} mods found, {1} enabled.", AllMods.Count, EnabledMods.Count );
+            Log.Info( "{0} mods found, {1} enabled.", AllMods.Count, EnabledMods.Count );
+         } else
+            Log.Error( "{0} not found, mods not scanned.", dir );
       } } catch ( Exception ex ) { Log.Error( ex ); } }
 
       public static void ScanFolderForMods ( string path, bool isRoot ) {
