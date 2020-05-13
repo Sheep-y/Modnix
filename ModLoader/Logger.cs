@@ -193,7 +193,7 @@ namespace Sheepy.Logging {
       private void TimerCallback ( object State ) => ProcessQueue();
 
       // Process entry queue. Entries and states are copied and processed out of common locks.
-      protected virtual void ProcessQueue () {
+      protected virtual void ProcessQueue () { try {
          string timeFormat;
          LogEntry[] entries;
          LogFilter[] filters;
@@ -220,7 +220,7 @@ namespace Sheepy.Logging {
                EndProcess();
             }
          }
-      }
+      } catch ( Exception ex ) { CallOnError( ex ); } }
 
       // Called before queue is processed.
       protected virtual void StartProcess () { }
@@ -278,12 +278,18 @@ namespace Sheepy.Logging {
       }
 
       protected override void EndProcess () {
-         if ( buf.Length <= 0 ) return;
-         File.AppendAllText( LogFile, buf.ToString() );
+         if ( buf.Length == 0 ) return;
+         var str = buf.ToString();
          buf.Clear();
+         try {
+            File.AppendAllText( LogFile, str );
+         } catch ( DirectoryNotFoundException ) {
+            Directory.CreateDirectory( Path.GetDirectoryName( LogFile ) );
+            File.AppendAllText( LogFile, str );
+         }
       }
 
-      public override string ToString () => $"{GetType().ToString()}({LogFile},{WriteDelay})";
+      public override string ToString () => $"{GetType().FullName}({LogFile},{WriteDelay})";
    }
 
    // A Logger that forwards messages to one or more loggers.  The proxy itself does not run in background.  TimeFormat is ignored.
