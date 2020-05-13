@@ -237,29 +237,64 @@ namespace Sheepy.Modnix {
          return true;
       }
 
-      private API_Func WrapExtension ( Delegate func ) {
+      private static API_Func WrapExtension ( Delegate func ) {
          var info = func.GetMethodInfo();
-         var augs = info.GetParameters();
          if ( ! info.IsStatic ) throw new ArgumentException( "API delegate " + info.Name + " must be static." );
          if ( info.IsAbstract ) throw new ArgumentException( "API delegate " + info.Name + " must not be abstract." );
+
+         var augs = info.GetParameters();
+         var hasReturn = info.ReturnType != typeof( void );
+         var returnIsBool = info.ReturnType == typeof( bool );
+         var returnIsVal = hasReturn && info.ReturnType.IsValueType;
+
          if ( augs.Length == 0 ) {
-            if ( info.ReturnType == typeof( void ) ) {
-               var d = info.CreateDelegate( typeof( Action ) ) as Action;
-               return ( _, __ ) => { d(); return true; };
+            if ( hasReturn ) {
+               if ( returnIsBool ) {
+                  var d = CreateDelegate<Func<bool>>( info ); return ( _, __ ) => d();
+               } else if ( ! returnIsVal ) {
+                  var d = CreateDelegate<Func<object>>( info ); return ( _, __ ) => d();
+               } else
+                  return ( _, __ ) => func.DynamicInvoke( null );
             } else {
-               var d = Delegate.CreateDelegate( typeof( Func<object> ), info ) as Func<object>;
-               return ( _, __ ) => d();
+               var d = CreateDelegate<Action>( info ); return ( _, __ ) => { d(); return true; };
             }
+
          } else if ( augs.Length == 1 ) {
-            if ( augs[0].ParameterType != typeof( object ) ) return null;
-            return ( _, b ) => func.DynamicInvoke( new object[] { b } );
+            if ( hasReturn ) {
+               if ( returnIsBool ) {
+                  var d = CreateDelegate<Func<object,bool>>( info ); return ( _, b ) => d( b );
+               } else if ( ! returnIsVal ) {
+                  var d = CreateDelegate<Func<object,object>>( info ); return ( _, b ) => d( b );
+               } else if ( augs[0].ParameterType != typeof( object ) ) {
+                  throw new ArgumentException( "Delegate " + info.Name + " is not taking an object param." );
+               } else
+                  return ( _, b ) => func.DynamicInvoke( new object[] { b } );
+            } else {
+               var d = CreateDelegate<Action<object>>( info );
+               return ( _, b ) => { d( b ); return true; };
+            }
+
          } else if ( augs.Length == 2 ) {
-            if ( augs[0].ParameterType != typeof( object ) && augs[0].ParameterType != typeof( string ) ) return null;
-            if ( augs[1].ParameterType != typeof( object ) ) return null;
-            return ( a, b ) => func.DynamicInvoke( new object[] { a, b } );
+            if ( hasReturn ) {
+               if ( returnIsBool ) {
+                  var d = CreateDelegate<Func<string,object,bool>>( info ); return ( a, b ) => d( a, b );
+               } else if ( ! returnIsVal ) {
+                  return CreateDelegate<Func<string,object,object>>( info );
+               } else if ( augs[0].ParameterType != typeof( object ) && augs[0].ParameterType != typeof( string ) ) {
+                  throw new ArgumentException( "Delegate " + info.Name + " is not taking a string or an object as first param." );
+               } else if ( augs[1].ParameterType != typeof( object ) ) {
+                  throw new ArgumentException( "Delegate " + info.Name + " is not taking an object as second param." );
+               } else
+                  return ( a, b ) => func.DynamicInvoke( new object[] { a, b } );
+            } else {
+               var d = CreateDelegate<Action<string,object>>( info );
+               return ( a, b ) => { d( a, b ); return true; };
+            }
          }
-         return null;
+         throw new ArgumentException( "Delegate " + info.Name + " has too many parameters." );
       }
+
+      private static T CreateDelegate<T> ( MethodInfo info ) where T : class => Delegate.CreateDelegate( typeof( T ), info ) as T;
 
       private bool RemoveApi ( object param ) {
          if ( LowerAndIsEmpty( param, out string cmd ) )
