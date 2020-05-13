@@ -46,6 +46,11 @@ namespace Sheepy.Modnix {
       } catch ( Exception ex ) { mod.Error( ex ); } }
 
       public static Assembly LoadDll ( ModEntry mod, string path ) { try {
+         if ( mod.ModAssemblies != null ) {
+            foreach ( var a in mod.ModAssemblies )
+               if ( ! a.IsDynamic && a.Location == path )
+                  return a;
+         }
          mod.Log().Info( "Loading {0}", path );
          var asm = Assembly.LoadFrom( path );
          if ( asm == null ) return null;
