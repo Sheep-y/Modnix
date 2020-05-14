@@ -233,7 +233,7 @@ namespace Sheepy.Modnix.MainGUI {
             p.Inlines.Add( new Bold( new Run( AppControl.LIVE_NAME ) ) );
             p.Inlines.Add( $"\tVer {SharedGui.AppVer}{build}" );
             if ( SharedGui.AppVer != null )
-               p.Inlines.Add( " w/ PPML 0.2" );
+               p.Inlines.Add( " w/ PPML 0.1 + 0.2" );
             p.Inlines.Add( "\r" );
          }
          p.Inlines.Add( "Status: " );
