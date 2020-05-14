@@ -25,9 +25,11 @@ namespace Sheepy.Modnix {
       internal const BindingFlags INIT_METHOD_FLAGS = Public | Static | Instance;
       private static readonly List<string> IGNORE_FILE_NAMES = new List<string> {
          "0harmony",
+         "jetbrains.annotations",
          "mod_info",
          "modnixloader",
          "mono.cecil",
+         "newtonsoft.json",
          "phoenixpointmodloader",
          "ppmodloader",
       };
@@ -44,7 +46,7 @@ namespace Sheepy.Modnix {
          AllMods.Clear();
          EnabledMods.Clear();
          ModsInPhase.Clear();
-         string dir = ModLoader.ModDirectory;
+         var dir = ModLoader.ModDirectory;
          if ( Directory.Exists( dir ) ) {
             ScanFolderForMods( dir, true );
             ResolveMods();
@@ -97,6 +99,8 @@ namespace Sheepy.Modnix {
 
       private static ModEntry ParseMod ( string file, string container ) { try {
          ModMeta meta;
+         var default_id = Path.GetFileNameWithoutExtension( file ).Trim();
+         if ( string.IsNullOrEmpty( default_id ) ) return null;
          if ( file.EndsWith( ".dll", StringComparison.OrdinalIgnoreCase ) ) {
             meta = ParseDllInfo( file );
             if ( meta == null ) return null;
@@ -107,8 +111,7 @@ namespace Sheepy.Modnix {
             }
          } else {
             Log.Verbo( $"Parsing as mod_info: {file}" );
-            var default_id = Path.GetFileNameWithoutExtension( file );
-            if ( string.IsNullOrWhiteSpace( default_id ) || default_id.Equals( "mod_info", StringComparison.OrdinalIgnoreCase ) )
+            if ( "mod_info".Equals( default_id, StringComparison.OrdinalIgnoreCase ) )
                default_id = container;
             meta = ParseInfoJs( Tools.ReadText( file ).Trim(), default_id );
             if ( meta == null ) return null;
@@ -125,7 +128,10 @@ namespace Sheepy.Modnix {
       private static void ScanDLLs ( ModMeta meta, string dir, string container ) {
          if ( ! meta.HasContent )
             meta.Dlls = Directory.EnumerateFiles( dir, "*.dll" )
-               .Where( e => NameMatch( container, Path.GetFileNameWithoutExtension( e ) ) )
+               .Where( e => {
+                  var name = Path.GetFileNameWithoutExtension( e ).ToLowerInvariant();
+                  return NameMatch( container, name ) && ! IGNORE_FILE_NAMES.Contains( name );
+               } )
                .Select( e => new DllMeta { Path = e } ).ToArray();
          if ( meta.Dlls != null ) {
             foreach ( var dll in meta.Dlls )

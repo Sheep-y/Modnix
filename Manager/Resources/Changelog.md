@@ -21,6 +21,8 @@ Roadmap: https://github.com/Sheep-y/Modnix/issues/24
 * New: "api_add" api now accepts parameter-less delegates such as Func<string> or Action.
 * Fix: "api_add" api now rejects non-static and abstract methods, and methods with ref or out parameters.
 * Fix: Logger will now try to create directory when one does not exist, and write error will triggers OnError.
+* Fix: Ignore .js and .dll with empty or space-only filename when scanning mods.
+* Fix: Auto-scanning of dlls on an empty mod now skips known libraries.
 * Fix: .NET fallback resolver now use correct path separator.  Should be a cosmetic difference.
 * Mod: Avoids are now processed after Requires, in the resolve loop.
 * Log: Each dll load will only be logged once.
@@ -40,6 +42,7 @@ https://github.com/Sheep-y/Modnix/releases/tag/v2.4
 * Mod: Requires and Disables are now resolved together in each resolve loop, instead of only Requires.
 * Mod: Multiple requires on the same mod are now processed as "or" instead of "and".
 * Mod: Flags and Actions in mod_info (intended for Modnix 3) now trigger a notice in Manager and log.
+* Mod: Actions field are now considered mod content and will prevent auto-dll scanning.
 * Log: A mod that try to disable itself by mod_info now triggers a warning.
 * Log: Loader log now tries to capture game crashs originating from the scope of CLR.
 * Log: Loader log now warns on unresolved assemblies.
