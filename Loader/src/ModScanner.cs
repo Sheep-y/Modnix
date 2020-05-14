@@ -489,6 +489,19 @@ namespace Sheepy.Modnix {
          }
       } }
 
+      private static void CheckActionHandlers () {
+         if ( ModsInPhase.ContainsKey( ModActions.ACTION_METHOD.ToLowerInvariant() ) ) return;
+         // If no action handler, disable mods that have action but not dlls
+         foreach ( var mod in EnabledMods.ToArray() ) {
+            var meta = mod.Metadata;
+            lock ( meta ) {
+               if ( meta.Mods != null ) continue;
+               if ( meta.Dlls == null && meta.Actions != null )
+                  DisableAndRemoveMod( mod, "no_actionmod", "no action handler to run actions." );
+            }
+         }
+      }
+
       private static void AddModToPhase ( ModEntry mod, string phase, ref bool assigned ) {
          if ( ! ModsInPhase.TryGetValue( phase, out List<ModEntry> list ) )
             ModsInPhase.Add( phase, list = new List<ModEntry>() );

@@ -20,10 +20,10 @@ namespace Sheepy.Modnix.Tests {
       private static readonly Version ZeroVersion = new Version( 0, 0, 0, 0 );
 
       private static void AddMod ( ModEntry mod ) {
-         // Mods will be disabled without dll or actions
-         var actions = mod.Metadata.Actions = new Dictionary<string, object>[1];
-         actions[ 0 ] = new Dictionary<string, object>();
-         actions[ 0 ].Add( "phase", "gamemod" );
+         // Mods will be disabled without dll.
+         var dll = mod.Metadata.Dlls = new DllMeta[1];
+         dll[ 0 ] = new DllMeta{ Methods = new Dictionary<string, HashSet<string>>() };
+         dll[ 0 ].Methods.Add( "MainMod", new HashSet<string>() );
          ModScanner.AllMods.Add( mod );
       }
 

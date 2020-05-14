@@ -398,6 +398,8 @@ namespace Sheepy.Modnix.MainGUI {
                txt.Text = string.Format( "\rDisabled: Duplicate of {0}.", notice.Args[0]?.ToString() ); break;
             case "manual"  :
                txt.Text = "\rManually Disabled"; break;
+            case "no_actionmod"  :
+               txt.Text = "\rDisabled: Requires mod action handler(s)."; break;
             case "no_phase"  :
                txt.Text = "\rDisabled: No mod phase found."; break;
             case "require" :
