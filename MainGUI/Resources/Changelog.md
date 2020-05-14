@@ -2,14 +2,16 @@ Modnix Changelog
 
 # Version 2.5, in development
 
-* Fix: .NET fallback resolver now use correct path separator.  Should have only cosmetic difference.
+* New: "api_add" api now accepts parameter-less delegates such as Func<string> or Action.
 * Fix: "api_add" api now rejects non-static and abstract methods, and methods with ref or out parameters.
 * Fix: Logger will now try to create directory when one does not exist, and write error will triggers OnError.
-* Mod: "api_add" api now accepts parameter-less delegates such as Func<string> or Action.
+* Fix: Ignore .js and .dll with empty or space-only filename when scanning mods.
+* Fix: Auto-scanning of dlls on an empty mod now skips known libraries.
+* Fix: .NET fallback resolver now use correct path separator.  Should be a cosmetic difference.
 * Mod: Avoids are now processed after Requires, in the resolve loop.
 * Log: Each dll load will only be logged once.
 * Log: API exceptions are now logged as warning instead of error.  They may be out of control of the calling mod.
-* Log: Exceptions returned by API extensions will now be logged as warning.  This align their handling with Modnix 3.
+* Log: Exceptions returned by API extensions will now be logged as warning.  This align their handling with Modnix 3.  Native APIs still return null on error.
 
 # Version 2.4, 2020-05-10
 
@@ -23,6 +25,7 @@ Modnix Changelog
 * Mod: Requires and Disables are now resolved together in each resolve loop, instead of only Requires.
 * Mod: Multiple requires on the same mod are now processed as "or" instead of "and".
 * Mod: Flags and Actions in mod_info (intended for Modnix 3) now trigger a notice in Manager and log.
+* Mod: Actions field are now considered mod content and will prevent auto-dll scanning.
 * Log: A mod that try to disable itself by mod_info now triggers a warning.
 * Log: Loader log now tries to capture game crashs originating from the scope of CLR.
 * Log: Loader log now warns on unresolved assemblies.
@@ -57,13 +60,13 @@ Modnix Changelog
 
 # Version 2.2, 2020-04-17
 
+* New: New API "api_list" and "api_info".
 * Fix: Config panel no longer throws RemotingException when a config is first accessed after five minutes from launch or last config. (#20)
 * Fix: When config panel can't show config, it will display an error instead of stuck on old tab.
 * Fix: Launch game will now wait for the config save prompt, if any. (#21)
 * Fix: Setup will now refresh game version. (#22)
 * Fix: Save, Enable, and Disable buttons are now disabled when app is busy or game is running.
-* Mod: New api "api_list" and "api_info".
-* Mod: "api_add" and "api_remove" now rejects if there are content after api key.
+* Mod: "api_add" and "api_remove" now rejects if there are content after API key.
 
 # Version 2.1, 2020-04-12
 
@@ -84,6 +87,7 @@ Modnix Changelog
 * New: Read game's console log and Modnix's changelog in log tab. Loader and console log may be filtered.
 * New: Mod that logs an error or warning will be detected, highlighted, and show a notice in mod info.
 * New: Add Mod now supports .gz and .bz2.  Refined mod name logic for adding and scanning mods.
+* New: New API "api_add", "api_remove", "assemblies", "dir", "stacktrace".
 * Fix: Hyperlinks are now clickable in mod info panel.
 * Fix: Setup now keep only one PPML backup. This removes a potential logged error during setup.
 * Fix: Embedded mod_info with BOM can now be correctly read.
@@ -103,14 +107,13 @@ Modnix Changelog
 * Gui: Keep current mod selection when refreshing mod.
 * Mod: Upgrade PPML+ to 0.3.  PPML+ is now properly initialised.
 * Mod: New mod_info field "LoadIndex" and "ConfigType". ConfigType replaces DefaultConfig; simpler, faster, and less prone to error.
-* Mod: New api action "api_add", "api_remove", "assemblies", "dir", "stacktrace".
 * Mod: Log action now supports log level and flush.
 * Mod: Config action now supports save / write, and will use ConfigType by default if found.
 * Mod: "path" api action now supports Modnix / Loader path.
-* Mod: Mod api actions are now case-insensitive, including registered extensions.
 * Mod: Multiple dll declarations no longer allowed in order to keep things simple.
 * Mod: Fix reported version for "ppml" when queries through api.
 * Mod: DefaultConfig in mod_info will be compared with a new instance of the config type, on the config action, and warn if different.
+* Mod: Mod API are now case-insensitive, including registered extensions.
 
 # Version 1.0, 2020-03-23
 
@@ -118,7 +121,7 @@ Modnix Changelog
 * Fix: Deleting configured mods with their config no longer hangs the manager. (#5)
 * Fix: Reset config now really reset to default config, instead of rewriting current config. (#12)
 * Fix: Files embedded with the "Resource" build action are now detected.
-* Fix: Obsolete methods are no longer skipped.
+* Fix: Obsolete class methods are no longer skipped when scanning mod initialiser.
 * Fix: Partial versions are now completely zero-filled, instead of partially.
 * Fix: Typo in revert injection message.
 * Fix: Static mod classes are now scanned. (#11)

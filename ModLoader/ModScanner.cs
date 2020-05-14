@@ -24,9 +24,11 @@ namespace Sheepy.Modnix {
       internal const BindingFlags INIT_METHOD_FLAGS = Public | Static | Instance;
       private static readonly List<string> IGNORE_FILE_NAMES = new List<string> {
          "0harmony",
+         "jetbrains.annotations",
          "mod_info",
          "modnixloader",
          "mono.cecil",
+         "newtonsoft.json",
          "phoenixpointmodloader",
          "ppmodloader",
       };
@@ -96,6 +98,8 @@ namespace Sheepy.Modnix {
 
       private static ModEntry ParseMod ( string file, string container ) { try {
          ModMeta meta;
+         var default_id = Path.GetFileNameWithoutExtension( file ).Trim();
+         if ( string.IsNullOrEmpty( default_id ) ) return null;
          if ( file.EndsWith( ".dll", StringComparison.OrdinalIgnoreCase ) ) {
             meta = ParseDllInfo( file );
             if ( meta == null ) return null;
@@ -106,21 +110,11 @@ namespace Sheepy.Modnix {
             }
          } else {
             Log.Verbo( $"Parsing as mod_info: {file}" );
-            var default_id = Path.GetFileNameWithoutExtension( file );
-            if ( string.IsNullOrWhiteSpace( default_id ) || default_id.Equals( "mod_info", StringComparison.OrdinalIgnoreCase ) )
+            if ( "mod_info".Equals( default_id, StringComparison.OrdinalIgnoreCase ) )
                default_id = container;
             meta = ParseInfoJs( Tools.ReadFile( file ).Trim(), default_id );
             if ( meta == null ) return null;
-            if ( ! meta.HasContent )
-               meta.Dlls = Directory.EnumerateFiles( Path.GetDirectoryName( file ), "*.dll" )
-                  .Where( e => NameMatch( container, Path.GetFileNameWithoutExtension( e ) ) )
-                  .Select( e => new DllMeta { Path = e } ).ToArray();
-            if ( meta.Dlls != null ) {
-               foreach ( var dll in meta.Dlls ) {
-                  if ( dll.Methods == null || dll.Methods.Count == 0 )
-                     dll.Methods = ParseEntryPoints( dll.Path, true );
-               }
-            }
+            ScanDLLs( meta, Path.GetDirectoryName( file ), container );
          }
          if ( ! ValidateMod( meta ) ) {
             Log.Info( "Not a mod: {0}", file );
@@ -132,6 +126,21 @@ namespace Sheepy.Modnix {
             AddManagerNotice( TraceEventType.Warning, mod, "Mod Flags are not supported in Modnix 2.x.", "unspoorted_flags", mod, meta.Flags );
          return mod;
       } catch ( Exception ex ) { Log.Warn( ex ); return null; } }
+
+      private static void ScanDLLs ( ModMeta meta, string dir, string container ) {
+         if ( ! meta.HasContent )
+            meta.Dlls = Directory.EnumerateFiles( dir, "*.dll" )
+               .Where( e => {
+                  var name = Path.GetFileNameWithoutExtension( e ).ToLowerInvariant();
+                  return NameMatch( container, name ) && ! IGNORE_FILE_NAMES.Contains( name );
+               } )
+               .Select( e => new DllMeta { Path = e } ).ToArray();
+         if ( meta.Dlls != null ) {
+            foreach ( var dll in meta.Dlls )
+               if ( dll.Methods == null || dll.Methods.Count == 0 )
+                  dll.Methods = ParseEntryPoints( dll.Path, true );
+         }
+      }
 
       private static ModMeta ParseInfoJs ( string js, string default_id = null ) { try {
          js = js?.Trim();
