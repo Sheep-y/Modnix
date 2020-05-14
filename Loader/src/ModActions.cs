@@ -34,10 +34,10 @@ namespace Sheepy.Modnix {
 
       internal static void RunActions ( ModEntry mod, string phase ) { try {
          phase = phase.ToLowerInvariant();
-         ActionDef[] all = mod.Metadata.Actions;
+         var all = mod.Metadata.Actions;
          if ( ! QuickScanActions( all, phase ) ) return; // TODO: move to ModScanner instead of rescanning every phase.
 
-         Logger log = mod.Log();
+         var log = mod.Log();
          log.Verbo( "Scanning {0} actions", all.Length );
          var actions = FilterActions( all, phase, out int defaultCount );
          if ( actions == null ) return;
@@ -53,24 +53,28 @@ namespace Sheepy.Modnix {
          foreach ( var act in actions ) {
             foreach ( var dll in ActionHandlers ) {
                var result = RunActionHandler( mod, dll, act );
-               if ( result is Exception ex ) {
-                  act.TryGetValue( "onerror", out object onerror );
-                  var handle = TrimAndLower( onerror ) ?? "log";
-                  if ( handle.IndexOf( "log" ) >= 0 ) log.Error( ex );
-                  else if ( handle.IndexOf( "err" ) >= 0 ) log.Error( ex );
-                  else if ( handle.IndexOf( "warn" ) >= 0 ) log.Warn( ex );
-                  else if ( handle.IndexOf( "info" ) >= 0 ) log.Info( ex );
-                  else if ( handle.IndexOf( "verbo" ) >= 0 ) log.Verbo( ex );
-                  if ( handle.IndexOf( "stop" ) >= 0 ) {
-                     log.Info( "Aborting because OnError == Stop ({0})", handle );
-                     return;
-                  }
-               }
+               if ( result is Exception ex && AbortOnError( log, act, ex ) )
+                  return;
             }
          }
          foreach ( var dll in ActionHandlers )
             ActionMods[ dll ].Log().Filters.Remove( modPrefix );
       } catch ( Exception ex ) { mod.Log().Error( ex ); } }
+
+      internal static bool AbortOnError ( Logger log, ActionDef act, Exception err ) {
+         act.TryGetValue( "onerror", out object onerror );
+         var handle = TrimAndLower( onerror ) ?? "log";
+         if ( handle.IndexOf( "log" ) >= 0 ) log.Error( err );
+         else if ( handle.IndexOf( "err" ) >= 0 ) log.Error( err );
+         else if ( handle.IndexOf( "warn" ) >= 0 ) log.Warn( err );
+         else if ( handle.IndexOf( "info" ) >= 0 ) log.Info( err );
+         else if ( handle.IndexOf( "verbo" ) >= 0 ) log.Verbo( err );
+         if ( handle.IndexOf( "stop" ) >= 0 ) {
+            log.Info( "Aborting because OnError == Stop ({0})", handle );
+            return true;
+         }
+         return false;
+      }
 
       private static bool QuickScanActions ( ActionDef[] actions, string phase ) {
          foreach ( var act in actions ) {

@@ -11,6 +11,7 @@ Roadmap: https://github.com/Sheep-y/Modnix/issues/24
 * Mod: Faster API extension calls when return value is void, class, or bool. (Non-bool value return types are still dynamically invoked for auto boxing.)
 * Mod: "api_add" api now rejects compiler-geneated non-static methods, such as lambdas, due to the switch to direct delegate call.
 * Mod: Mods without a recognised phase will be disabled, as a new last step of the resolve loop.
+* Mod: Action-only mods also be disabled when there are no action handlers.
 * Log: Mod loading messages are now logged with the mod's logger.
 * Log: Timestamp shortened to 1ms from 0.1ms, to align with SI and DateTime precision.
 * Misc: Non-SplashMod phases now depends on correct Harmony to function.  Specifically, MainMod no longer runs without Harmony.

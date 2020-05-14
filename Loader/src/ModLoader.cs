@@ -46,7 +46,7 @@ namespace Sheepy.Modnix {
       } }
 
       private static void PatchMenuCrt () { try {
-         HarmonyInstance patcher = HarmonyInstance.Create( typeof( ModLoader ).Namespace );
+         var patcher = HarmonyInstance.Create( typeof( ModLoader ).Namespace );
          patcher.Patch(
             GetGameAssembly().GetType( "PhoenixPoint.Common.Game.PhoenixGame" ).GetMethod( "MenuCrt", NonPublic | Instance ),
             postfix: new HarmonyMethod( typeof( ModLoader ).GetMethod( nameof( MainPhase ), NonPublic | Static ) )

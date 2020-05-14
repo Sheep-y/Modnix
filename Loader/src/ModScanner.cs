@@ -112,24 +112,27 @@ namespace Sheepy.Modnix {
                default_id = container;
             meta = ParseInfoJs( Tools.ReadText( file ).Trim(), default_id );
             if ( meta == null ) return null;
-            if ( ! meta.HasContent )
-               meta.Dlls = Directory.EnumerateFiles( Path.GetDirectoryName( file ), "*.dll" )
-                  .Where( e => NameMatch( container, Path.GetFileNameWithoutExtension( e ) ) )
-                  .Select( e => new DllMeta { Path = e } ).ToArray();
-            if ( meta.Dlls != null ) {
-               foreach ( var dll in meta.Dlls ) {
-                  if ( dll.Methods == null || dll.Methods.Count == 0 )
-                     dll.Methods = ParseEntryPoints( dll.Path, true );
-               }
-            }
+            ScanDLLs( meta, Path.GetDirectoryName( file ), container );
          }
          if ( ! ValidateMod( meta ) ) {
             Log.Info( "Not a mod: {0}", file );
             return null;
          }
-         Log.Info( "Found mod {0} at {1} ({2} dlls)", meta.Id, file, meta.Dlls?.Length ?? 0 );
+         Log.Info( "Found mod {0} at {1} ({2} actions, {3} dlls)", meta.Id, file, meta.Actions?.Length ?? 0, meta.Dlls?.Length ?? 0 );
          return new ModEntry( file, meta );
       } catch ( Exception ex ) { Log.Warn( ex ); return null; } }
+
+      private static void ScanDLLs ( ModMeta meta, string dir, string container ) {
+         if ( ! meta.HasContent )
+            meta.Dlls = Directory.EnumerateFiles( dir, "*.dll" )
+               .Where( e => NameMatch( container, Path.GetFileNameWithoutExtension( e ) ) )
+               .Select( e => new DllMeta { Path = e } ).ToArray();
+         if ( meta.Dlls != null ) {
+            foreach ( var dll in meta.Dlls )
+               if ( dll.Methods == null || dll.Methods.Count == 0 )
+                  dll.Methods = ParseEntryPoints( dll.Path, true );
+         }
+      }
 
       private static ModMeta ParseInfoJs ( string js, string default_id = null ) { try {
          js = js?.Trim();
