@@ -1,6 +1,7 @@
 Modnix Changelog
 
 # Version 3, in development
+Roadmap: https://github.com/Sheep-y/Modnix/issues/24
 
 * New: Show PPML version in app status.
 * New: Mod Actions - a new system that allows mods to declare Actions and/or to support them.
@@ -23,9 +24,10 @@ Modnix Changelog
 * Mod: Avoids are now processed after Requires, in the resolve loop.
 * Log: Each dll load will only be logged once.
 * Log: API exceptions are now logged as warning instead of error.  They may be out of control of the calling mod.
-* Log: Exceptions returned by API extensions will now be logged as warning.  This align their handling with Modnix 3.
+* Log: Exceptions returned by API extensions will now be logged as warning.  This align their handling with Modnix 3.  Native APIs still return null on error.
 
 # Version 2.4, 2020-05-10
+https://github.com/Sheep-y/Modnix/releases/tag/v2.4
 
 * New: Avoids field of mod_info - self-kill if target exists.
 * Fix: mod_info with Version field are now parsed correctly.
@@ -43,11 +45,14 @@ Modnix Changelog
 * Log: Loader now logs mscorlib version and end of phases at verbose level.
 
 # Version 2.3.1, 2020-05-03
+https://github.com/Sheep-y/Modnix/releases/tag/v2.3.1
 
 * Fix: Game version now parsed correctly from loader log. (Regression from v2.3 due to text reader rewrite.)
 * Fix: Mods' runtime error/warning notices are now refreshed when mod log is updated.
 
 # Version 2.3, 2020-04-28
+https://github.com/Sheep-y/Modnix/releases/tag/v2.3
+Roadmap: https://github.com/Sheep-y/Modnix/issues/23
 
 * New: A mod's LoadIndex and LogLevel now take effect after manually changed in Modnix.conf. Requested by Silent on Discord.
 * New: Monitor loader log and console log even when Modnix is in background. Requested by Silent on Discord.
@@ -70,16 +75,18 @@ Modnix Changelog
 * All text files reading (logs, configs, documents etc.) now ignore write locks. Thanks Silent on Discord.
 
 # Version 2.2, 2020-04-17
+https://github.com/Sheep-y/Modnix/releases/tag/v2.2
 
+* New: New API "api_list" and "api_info".
 * Fix: Config panel no longer throws RemotingException when a config is first accessed after five minutes from launch or last config. (#20)
 * Fix: When config panel can't show config, it will display an error instead of stuck on old tab.
 * Fix: Launch game will now wait for the config save prompt, if any. (#21)
 * Fix: Setup will now refresh game version. (#22)
 * Fix: Save, Enable, and Disable buttons are now disabled when app is busy or game is running.
-* Mod: New api "api_list" and "api_info".
-* Mod: "api_add" and "api_remove" now rejects if there are content after api key.
+* Mod: "api_add" and "api_remove" now rejects if there are content after API key.
 
 # Version 2.1, 2020-04-12
+https://github.com/Sheep-y/Modnix/releases/tag/v2.1
 
 * Fix: Downgraded to PPML 0.2 because of mod incompatibility of PPML 0.3. (#16) Thanks Sangvis Ferri on Discord.
 * Fix: Some mods were not properly detected after Add Mod. (#18) Thanks Sangvis Ferri on Discord.
@@ -90,6 +97,8 @@ Modnix Changelog
 * Mod: Logged exceptions are now ignored by mod. Duplicate exception from different mods will be shorted instead of ignored. (#17)
 
 # Version 2.0, 2020-04-11
+https://github.com/Sheep-y/Modnix/releases/tag/v2.0
+Roadmap: https://github.com/Sheep-y/Modnix/issues/13
 
 * New: Mods may now be manually disabled.
 * New: Status panels and their buttons may now be minified to give more space to mod info.
@@ -98,6 +107,7 @@ Modnix Changelog
 * New: Read game's console log and Modnix's changelog in log tab. Loader and console log may be filtered.
 * New: Mod that logs an error or warning will be detected, highlighted, and show a notice in mod info.
 * New: Add Mod now supports .gz and .bz2.  Refined mod name logic for adding and scanning mods.
+* New: New API "api_add", "api_remove", "assemblies", "dir", "stacktrace".
 * Fix: Hyperlinks are now clickable in mod info panel.
 * Fix: Setup now keep only one PPML backup. This removes a potential logged error during setup.
 * Fix: Embedded mod_info with BOM can now be correctly read.
@@ -117,22 +127,23 @@ Modnix Changelog
 * Gui: Keep current mod selection when refreshing mod.
 * Mod: Upgrade PPML+ to 0.3.  PPML+ is now properly initialised.
 * Mod: New mod_info field "LoadIndex" and "ConfigType". ConfigType replaces DefaultConfig; simpler, faster, and less prone to error.
-* Mod: New api action "api_add", "api_remove", "assemblies", "dir", "stacktrace".
 * Mod: Log action now supports log level and flush.
 * Mod: Config action now supports save / write, and will use ConfigType by default if found.
 * Mod: "path" api action now supports Modnix / Loader path.
-* Mod: Mod api actions are now case-insensitive, including registered extensions.
 * Mod: Multiple dll declarations no longer allowed in order to keep things simple.
 * Mod: Fix reported version for "ppml" when queries through api.
 * Mod: DefaultConfig in mod_info will be compared with a new instance of the config type, on the config action, and warn if different.
+* Mod: Mod API are now case-insensitive, including registered extensions.
 
 # Version 1.0, 2020-03-23
+https://github.com/Sheep-y/Modnix/releases/tag/v1.0
+Roadmap: https://github.com/Sheep-y/Modnix/issues/1
 
 * New: Enable verbose logging in config file and GUI. Also extends to mods that log through Modnix.
 * Fix: Deleting configured mods with their config no longer hangs the manager. (#5)
 * Fix: Reset config now really reset to default config, instead of rewriting current config. (#12)
 * Fix: Files embedded with the "Resource" build action are now detected.
-* Fix: Obsolete methods are no longer skipped.
+* Fix: Obsolete class methods are no longer skipped when scanning mod initialiser.
 * Fix: Partial versions are now completely zero-filled, instead of partially.
 * Fix: Typo in revert injection message.
 * Fix: Static mod classes are now scanned. (#11)
@@ -148,6 +159,7 @@ Modnix Changelog
 * Mod: Log a warning when mod_info specifies a dll that has no initialiser.
 
 # Version 0.90 RC, 2020-03-16
+https://github.com/Sheep-y/Modnix/releases/tag/v0.90
 
 * New: Game in non-standard paths may now be browsed and selected for setup and launch.
 * New: Add mod button, placing mods in subfolder. Supports .dll, .zip, .7z, .js while skipping skip .cs, .csproj and putting PPDef mods at root.
@@ -178,6 +190,7 @@ Modnix Changelog
 * Injector's game version check now returns only type of error, instead of full stacktrace, to keep returned text on one line.
 
 # Version 0.81 Beta Patch, 2020-03-01
+https://github.com/Sheep-y/Modnix/releases/tag/v0.81
 
 * New: Faster startup - Scan mod list in parallel with startup checks.
 * New: Faster startup - Check game version in parallel with injection status.
@@ -193,6 +206,7 @@ Modnix Changelog
 * Gui: All log messages are duplicated to standard out, instead of silence after GUI shows up.
 
 # Version 0.80 Beta, 2020-02-29
+https://github.com/Sheep-y/Modnix/releases/tag/v0.80
 
 * First public beta.
 * One-click install.
