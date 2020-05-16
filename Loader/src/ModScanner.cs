@@ -346,12 +346,12 @@ namespace Sheepy.Modnix {
          RemoveDuplicateMods();
          var loopIndex = 0;
          ResolveModAgain = true;
-         while ( ResolveModAgain && loopIndex++ < 20 ) {
+         while ( ResolveModAgain && loopIndex++ < 30 ) {
             ResolveModAgain = false;
             RemoveUnfulfilledMods();
-            RemoveRecessMods();
-            RemoveConflictMods();
-            AssignModsToPhases();
+            if ( ! ResolveModAgain ) RemoveRecessMods();
+            if ( ! ResolveModAgain ) RemoveConflictMods();
+            if ( ! ResolveModAgain ) AssignModsToPhases();
          }
          Func<string> countMod = () => { lock ( ModsInPhase )
             return ModsInPhase.Values.SelectMany( e => e ).Distinct().Count().ToString(); };

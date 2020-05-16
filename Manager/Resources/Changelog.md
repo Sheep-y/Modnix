@@ -22,9 +22,12 @@ Roadmap: https://github.com/Sheep-y/Modnix/issues/24
 * Fix: "api_add" api now rejects non-static and abstract methods, and methods with in, out, or ref parameters.
 * Fix: Logger will now try to create directory when one does not exist, and write error will triggers OnError.
 * Fix: Ignore .js and .dll with empty or space-only filename when scanning mods.
-* Fix: Auto-scanning of dlls on an empty mod now skips known libraries.
+* Fix: Auto-scanning of dlls on an empty mod now skips a few known libraries.
 * Fix: .NET fallback resolver now use correct path separator.  Should be a cosmetic difference.
-* Mod: Avoids are now processed after Requires, in the resolve loop.
+* Mod: Avoids are now processed after Requires, and in the resolve loop.
+* Mod: Resolve loop will restart between steps after a mod is disabled, instead of finishing the loop.
+* Mod: Because of easier restart, resolve loop cap is raised from 20 to 30.
+* Log: Revised mod disabled messages.
 * Log: Disabled mods are now logged at info level, so that manually disabled mods will not have error when re-enabled.
 * Log: Each dll load will only be logged once.
 * Log: API exceptions are now logged as warning instead of error.  They may be out of control of the calling mod.
