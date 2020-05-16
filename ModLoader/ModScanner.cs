@@ -331,7 +331,7 @@ namespace Sheepy.Modnix {
       #endregion
 
       #region Resolving
-      private static bool ResolveModAgain = true;
+      private static bool ResolveModAgain;
 
       private static void ResolveMods () {
          EnabledMods.Clear();
@@ -360,7 +360,7 @@ namespace Sheepy.Modnix {
          foreach ( var mod in EnabledMods.ToArray() ) {
             if ( ! settings.TryGetValue( mod.Key, out ModSettings modSetting ) ) continue;
             if ( modSetting.Disabled )
-               DisableAndRemoveMod( mod, "manual", "Mod {0} is manually disabled.", mod.Key );
+               DisableAndRemoveMod( mod, "manual", "mod is manually disabled." );
             else {
                if ( modSetting.LoadIndex.HasValue ) {
                   Log.Verbo( "Mod {0} LoadIndex manually set to {1}", mod.Key, modSetting.LoadIndex);
@@ -390,7 +390,7 @@ namespace Sheepy.Modnix {
          var keep = FindLatestMod( clones );
          foreach ( var mod in clones ) {
             if ( mod == keep ) continue;
-            DisableAndRemoveMod( mod, "duplicate", "Mod {1} is a duplicate of {2}.", keep, mod.Path, keep.Path );
+            DisableAndRemoveMod( mod, "duplicate", "duplicate of {2}.", keep, mod.Path, keep.Path );
          }
       }
 
@@ -408,7 +408,7 @@ namespace Sheepy.Modnix {
                }
                if ( req.Min != null && req.Min > ver ) continue;
                if ( req.Max != null && req.Max < ver ) continue;
-               DisableAndRemoveMod( mod, "avoid", "Mod {1} self-disabled to avoid {0}", req.Id, mod.Metadata.Id );
+               DisableAndRemoveMod( mod, "avoid", "avoiding {0} {1}", (object) target ?? req.Id, ver );
                break;
             }
          }
@@ -428,15 +428,15 @@ namespace Sheepy.Modnix {
                requirements[ id ].Add( req );
             }
             foreach ( var reqSet in requirements ) {
-               var found = GetVersionById( reqSet.Key, out ModEntry target, out Version ver );
+               bool found = GetVersionById( reqSet.Key, out ModEntry target, out Version ver ), fulfill = found;
                if ( target == mod ) {
                   mod.CreateLogger().Warn( "Mod {0} not allowed to depends on itself with mod_info.Requires", reqSet.Key );
                   continue;
                }
                if ( found )
-                  found = reqSet.Value.Any( r => ( r.Min == null || r.Min <= ver ) && ( r.Max == null || r.Max >= ver ) );
-               if ( ! found ) {
-                  DisableAndRemoveMod( mod, "require", "Mod {2} requirement {0} failed, found {1}", reqSet.Key, ver, mod.Metadata.Id );
+                  fulfill = reqSet.Value.Any( r => ( r.Min == null || r.Min <= ver ) && ( r.Max == null || r.Max >= ver ) );
+               if ( ! fulfill ) {
+                  DisableAndRemoveMod( mod, "require", "requirement {0} failed, found {1}", reqSet.Key, found ? (object) ver : "none" );
                   break;
                }
             }
@@ -457,15 +457,14 @@ namespace Sheepy.Modnix {
                }
                if ( req.Min != null && req.Min > ver ) continue;
                if ( req.Max != null && req.Max < ver ) continue;
-               DisableAndRemoveMod( target, "disable", "Mod {1} (v{3}) is disabled by {2} [{4},{5}]",
-                  mod, target.Metadata.Id, mod.Metadata.Id, ver, req.Min, req.Max );
+               DisableAndRemoveMod( target, "disable", "disabled by {1} [{2},{3}]", mod, mod.Metadata.Id, req.Min, req.Max );
             }
          }
       }
 
       private static void DisableAndRemoveMod ( ModEntry mod, string reason, string log, params object[] augs ) { lock ( mod ) {
          if ( mod.Disabled ) return;
-         mod.CreateLogger().Info( log, augs );
+         mod.CreateLogger().Info( "Mod Disabled: " + log, augs );
          mod.Disabled = true;
          mod.AddNotice( TraceEventType.Error, reason, augs );
          EnabledMods.Remove( mod );
