@@ -342,11 +342,11 @@ namespace Sheepy.Modnix {
          RemoveDuplicateMods();
          var loopIndex = 0;
          ResolveModAgain = true;
-         while ( ResolveModAgain && loopIndex++ < 20 ) {
+         while ( ResolveModAgain && loopIndex++ < 30 ) {
             ResolveModAgain = false;
             RemoveUnfulfilledMods();
-            RemoveRecessMods();
-            RemoveConflictMods();
+            if ( ! ResolveModAgain ) RemoveRecessMods();
+            if ( ! ResolveModAgain ) RemoveConflictMods();
          }
          foreach ( var e in EnabledMods )
             if ( e.Metadata.Actions != null )
