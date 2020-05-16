@@ -523,7 +523,7 @@ namespace Sheepy.Modnix {
 
       private static void DisableAndRemoveMod ( ModEntry mod, string reason, string log, params object[] augs ) { lock ( mod ) {
          if ( mod.Disabled ) return;
-         mod.Log().Warn( "Mod Disabled: " + log, augs );
+         mod.Log().Info( "Mod Disabled: " + log, augs );
          mod.Disabled = true;
          mod.AddNotice( TraceEventType.Error, reason, augs );
          EnabledMods.Remove( mod );
