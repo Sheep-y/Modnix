@@ -225,14 +225,22 @@ namespace Sheepy.Modnix {
                Log.Verbo( "Scanned {1} public methods on {0}", type.FullName, count );
             }
          }
-         // Remove Init from Modnix DLLs, so that they will not be initiated twice
+         // Remove legacy Init from Modnix DLLs, so that the mod will not be initiated twice
          if ( result != null ) {
-            if ( result.Count > 1 ) // Ignore PPML+ first to prevent giving the wrong signal, since we don't support console commands.
+            // Count non-initialisers
+            var InitCount = result.Keys.Count( e => e != "UnloadMod" && e != ModActions.ACTION_METHOD );
+            if ( InitCount > 1 ) { // Ignore PPML+ first to prevent giving the wrong signal, since we don't support console commands.
                result.Remove( "Initialize" );
-            if ( result.Count > 1 )
+               InitCount--;
+            }
+            if ( InitCount > 1 ) {
                result.Remove( "Init" );
-            if ( result.Count > 1 )
+               InitCount--;
+            }
+            if ( InitCount > 1 ) {
                result.Remove( "MainMod" );
+               InitCount--;
+            }
          } else if ( active )
             Log.Warn( "Mod initialisers not found in {0}", file );
          return result;

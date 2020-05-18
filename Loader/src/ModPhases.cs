@@ -9,7 +9,7 @@ namespace Sheepy.Modnix {
 
    public static class ModPhases {
       internal static readonly HashSet<string> PHASES = new HashSet<string>(
-         new string[]{ "SplashMod", "Init", "Initialize", "MainMod", // Do not start phases with P.
+         new string[]{ "SplashMod", "Init", "Initialize", "MainMod", "UnloadMod", // Do not start phases with P.
          "HomeMod", "HomeOnShow", "GameMod", "GameOnShow", ModActions.ACTION_METHOD, // P are fast skipped as Prefix/Postfix
          "TacticalMod", "TacticalOnShow", "GeoscapeMod", "GeoscapeOnShow" } );
 
