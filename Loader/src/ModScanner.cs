@@ -228,22 +228,23 @@ namespace Sheepy.Modnix {
          // Remove legacy Init from Modnix DLLs, so that the mod will not be initiated twice
          if ( result != null ) {
             // Count non-initialisers
-            var InitCount = result.Keys.Count( e => e != "UnloadMod" && e != ModActions.ACTION_METHOD );
-            if ( InitCount > 1 ) { // Ignore PPML+ first to prevent giving the wrong signal, since we don't support console commands.
-               result.Remove( "Initialize" );
-               InitCount--;
-            }
-            if ( InitCount > 1 ) {
-               result.Remove( "Init" );
-               InitCount--;
-            }
-            if ( InitCount > 1 ) {
-               result.Remove( "MainMod" );
-               InitCount--;
-            }
+            var initCount = result.Keys.Count( e => e != "UnloadMod" && e != ModActions.ACTION_METHOD );
+            if ( initCount > 1 ) // Ignore PPML+ first to prevent giving the wrong signal, since we don't support console commands.
+               initCount = TryRemoveInit( result, "Initialize", initCount );
+            if ( initCount > 1 )
+               initCount = TryRemoveInit( result, "Init", initCount );
+            if ( initCount > 1 )
+               initCount = TryRemoveInit( result, "MainMod", initCount );
          } else if ( active )
             Log.Warn( "Mod initialisers not found in {0}", file );
          return result;
+      }
+
+      private static int TryRemoveInit ( DllEntryMeta entries, string phase, int count ) {
+         if ( ! entries.ContainsKey( phase ) ) return count;
+         entries.Remove( phase );
+         Log.Verbo( "Ignoring legacy initialiser: {0}", phase );
+         return count - 1;
       }
 
       private static bool ValidateMod ( ModMeta meta ) {
