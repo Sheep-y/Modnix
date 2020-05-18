@@ -12,14 +12,14 @@ namespace Sheepy.Modnix {
       private static Logger Log => ModLoader.Log;
 
       private static object Patcher; // Type is not HarmonyInstance to avoid hard crash when harmony is missing
-      private static Assembly GameAssembly;
 
       internal static bool PatchPhases () { try {
+         Log.Info( "Patching Phase entry points" );
          var patcher = HarmonyInstance.Create( typeof( ModLoader ).Namespace );
-         patcher.Patch(
-            GetGameAssembly().GetType( "PhoenixPoint.Common.Game.PhoenixGame" ).GetMethod( "MenuCrt", NonPublic | Instance ),
-            postfix: new HarmonyMethod( typeof( ModLoader ).GetMethod( nameof( MainPhase ), NonPublic | Static ) )
-         );
+         patcher.Patch( GameMethod( "PhoenixPoint.Common.Game.PhoenixGame", "MenuCrt" ), postfix: ToHarmony( nameof( MainPhase ) ) );
+         Log.Verbo( "Patched PhoenixGame.MenuCrt" );
+         patcher.Patch( GameMethod( "Base.View.GameView", "OnLevelStateChanged" ), ToHarmony( nameof( BeforeState ) ), ToHarmony( nameof( AfterState ) ) );
+         Log.Verbo( "Patched GameView.OnLevelStateChanged" );
          Patcher = patcher;
          return true;
       } catch ( Exception ex ) {
@@ -33,12 +33,28 @@ namespace Sheepy.Modnix {
          ModPhases.LoadMods( "MainMod" ); // Modnix
       }
 
-      internal static Assembly GetGameAssembly () {
-         if ( GameAssembly != null ) return GameAssembly;
+      private static void BeforeState ( object __instance, object level, int prevState, int newState ) {
+         Log.Info( "{0}.{1} Before {2} => {3}", level?.GetType(), __instance?.GetType(), prevState, newState );
+      }
+
+      private static void AfterState ( object __instance, object level, int prevState, int newState ) {
+         Log.Info( "{0}.{1} After {2} => {3}", level?.GetType(), __instance?.GetType(), prevState, newState );
+      }
+
+      private static Assembly _GameAssembly;
+
+      internal static Assembly GameAssembly { get {
+         if ( _GameAssembly != null ) return _GameAssembly;
          foreach ( var e in AppDomain.CurrentDomain.GetAssemblies() )
             if ( e.FullName.StartsWith( "Assembly-CSharp, ", StringComparison.OrdinalIgnoreCase ) )
-               return GameAssembly = e;
+               return _GameAssembly = e;
          return null;
-      }
+      } }
+
+      private static MethodInfo MyMethod ( string method ) => typeof( GamePatcher ).GetMethod( method, NonPublic | Static );
+
+      private static MethodInfo GameMethod ( string type, string method ) => GameAssembly.GetType( type ).GetMethod( method, Public | NonPublic | Static | Instance );
+
+      private static HarmonyMethod ToHarmony( string method ) => new HarmonyMethod( MyMethod( method ) );
    }
 }

@@ -230,20 +230,20 @@ namespace Sheepy.Modnix {
             // Count non-initialisers
             var initCount = result.Keys.Count( e => e != "UnloadMod" && e != ModActions.ACTION_METHOD );
             if ( initCount > 1 ) // Ignore PPML+ first to prevent giving the wrong signal, since we don't support console commands.
-               initCount = TryRemoveInit( result, "Initialize", initCount );
+               initCount = TryRemoveInit( file, result, "Initialize", initCount );
             if ( initCount > 1 )
-               initCount = TryRemoveInit( result, "Init", initCount );
+               initCount = TryRemoveInit( file, result, "Init", initCount );
             if ( initCount > 1 )
-               initCount = TryRemoveInit( result, "MainMod", initCount );
+               initCount = TryRemoveInit( file, result, "MainMod", initCount );
          } else if ( active )
             Log.Warn( "Mod initialisers not found in {0}", file );
          return result;
       }
 
-      private static int TryRemoveInit ( DllEntryMeta entries, string phase, int count ) {
+      private static int TryRemoveInit ( string file, DllEntryMeta entries, string phase, int count ) {
          if ( ! entries.ContainsKey( phase ) ) return count;
          entries.Remove( phase );
-         Log.Verbo( "Ignoring legacy initialiser: {0}", phase );
+         Log.Verbo( "Ignoring legacy initialiser {0} on {1}", phase, file );
          return count - 1;
       }
 

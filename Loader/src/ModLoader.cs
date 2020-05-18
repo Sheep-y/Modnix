@@ -148,7 +148,7 @@ namespace Sheepy.Modnix {
       } }
 
       public static void LogGameVersion () { try { lock ( MOD_PATH ) {
-         var game = GamePatcher.GetGameAssembly();
+         var game = GamePatcher.GameAssembly;
          if ( game == null ) return;
          var ver = game.GetType( "Base.Build.RuntimeBuildInfo" ).GetProperty( "Version" ).GetValue( null )?.ToString();
          Log.Info( "{0}/{1}", Path.GetFileNameWithoutExtension( game.CodeBase ), ver );
