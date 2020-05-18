@@ -1,12 +1,10 @@
-﻿using Harmony;
-using Sheepy.Logging;
+﻿using Sheepy.Logging;
 using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using static System.Reflection.BindingFlags;
 
 namespace Sheepy.Modnix {
 
@@ -27,16 +25,13 @@ namespace Sheepy.Modnix {
       public static string LoaderPath => Assembly.GetExecutingAssembly().Location;
       public static string DnFrameworkDir => Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.Windows ), "Microsoft.NET/Framework/v4.0.30319".FixSlash() );
 
-      private static object Patcher; // Type is not HarmonyInstance to avoid hard crash when harmony is missing
-      private static Assembly GameAssembly;
-
       public static void Init () { try {
          if ( Log == null ) { // First run
             Setup();
             ModScanner.BuildModList();
             ModPhases.LoadMods( "SplashMod" );
-            PatchMenuCrt();
-            if ( Patcher == null ) Log.Log( SourceLevels.Critical, "Cannot patch game with Harmony. Non-SplashMods will not be loaded." );
+            if ( ! GamePatcher.PatchPhases() )
+               Log.Log( SourceLevels.Critical, "Cannot patch game with Harmony. Non-SplashMods will not be loaded." );
          }
       } catch ( Exception ex ) {
          if ( Log == null )
@@ -44,29 +39,6 @@ namespace Sheepy.Modnix {
          else
             Log.Error( ex );
       } }
-
-      private static void PatchMenuCrt () { try {
-         var patcher = HarmonyInstance.Create( typeof( ModLoader ).Namespace );
-         patcher.Patch(
-            GetGameAssembly().GetType( "PhoenixPoint.Common.Game.PhoenixGame" ).GetMethod( "MenuCrt", NonPublic | Instance ),
-            postfix: new HarmonyMethod( typeof( ModLoader ).GetMethod( nameof( MainPhase ), NonPublic | Static ) )
-         );
-         Patcher = patcher;
-      } catch ( Exception ex ) { Log.Error( ex ); } }
-
-      private static void MainPhase () {
-         ModPhases.LoadMods( "Init" ); // PPML v0.1
-         ModPhases.LoadMods( "Initialize" ); // PPML v0.2
-         ModPhases.LoadMods( "MainMod" ); // Modnix
-      }
-
-      private static Assembly GetGameAssembly () {
-         if ( GameAssembly != null ) return GameAssembly;
-         foreach ( var e in AppDomain.CurrentDomain.GetAssemblies() )
-            if ( e.FullName.StartsWith( "Assembly-CSharp, ", StringComparison.OrdinalIgnoreCase ) )
-               return GameAssembly = e;
-         return null;
-      }
 
       public static bool NeedSetup { get { lock( MOD_PATH ) {
          return ModDirectory == null;
@@ -176,7 +148,7 @@ namespace Sheepy.Modnix {
       } }
 
       public static void LogGameVersion () { try { lock ( MOD_PATH ) {
-         var game = GetGameAssembly();
+         var game = GamePatcher.GetGameAssembly();
          if ( game == null ) return;
          var ver = game.GetType( "Base.Build.RuntimeBuildInfo" ).GetProperty( "Version" ).GetValue( null )?.ToString();
          Log.Info( "{0}/{1}", Path.GetFileNameWithoutExtension( game.CodeBase ), ver );

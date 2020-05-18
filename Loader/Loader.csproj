@@ -71,6 +71,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="src\ModActions.cs" />
+    <Compile Include="src\GamePatcher.cs" />
     <Compile Include="src\ModPhases.cs" />
     <Compile Include="src\utils\Json.cs" />
     <Compile Include="src\utils\Logger.cs" />
