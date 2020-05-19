@@ -9,9 +9,12 @@ namespace Sheepy.Modnix {
 
    public static class ModPhases {
       internal static readonly HashSet<string> PHASES = new HashSet<string>(
-         new string[]{ "SplashMod", "Init", "Initialize", "MainMod", "UnloadMod", // Do not start phases with P.
-         "HomeMod", "HomeOnShow", "GameMod", "GameOnShow", ModActions.ACTION_METHOD, // P are fast skipped as Prefix/Postfix
-         "TacticalMod", "TacticalOnShow", "GeoscapeMod", "GeoscapeOnShow" } );
+         new string[]{ "SplashMod", "ActionMod", "UnloadMod", // Do not start phases with P.
+            "Init", "Initialize", "MainMod",                  // P are fast skipped as Prefix/Postfix
+            "HomeMod", "HomeOnShow", "HomeOnHide",
+            "GameMod", "GameOnShow", 
+            "GeoscapeMod", "GeoscapeOnShow", "GeoscapeOnHide",
+            "TacticalMod", "TacticalOnShow", "TacticalOnHide" } );
 
       public const char LOG_DIVIDER = '┊';
 
@@ -23,7 +26,7 @@ namespace Sheepy.Modnix {
             if ( LoadedPhases.Contains( phase ) ) return;
             LoadedPhases.Add( phase );
             // UnloadMod and ActionMod should not go through here!
-            if ( phase == "UnloadMod" || phase == ModActions.ACTION_METHOD ) {
+            if ( phase == "UnloadMod" || phase == "ActionMod" ) {
                Log.Error( new ArgumentException( phase ) );
                return;
             }
@@ -90,7 +93,7 @@ namespace Sheepy.Modnix {
 
          var args = func.GetParameters().Select( paramGetter );
          Func<string> argTxt = () => string.Join( ", ", args.Select( e => e?.GetType()?.Name ?? "null" ) );
-         log.Log( ModActions.ACTION_METHOD.Equals( methodName ) ? SourceLevels.Verbose : SourceLevels.Information,
+         log.Log( methodName == "ActionMod" ? SourceLevels.Verbose : SourceLevels.Information,
             "Calling {1}.{2}({3}) in {0}", dll.Location, typeName, methodName, argTxt );
          object target = null;
          if ( ! func.IsStatic ) lock ( ModInstances ) {

@@ -227,8 +227,8 @@ namespace Sheepy.Modnix {
          }
          // Remove legacy Init from Modnix DLLs, so that the mod will not be initiated twice
          if ( result != null ) {
-            // Count non-initialisers
-            var initCount = result.Keys.Count( e => e != "UnloadMod" && e != ModActions.ACTION_METHOD );
+            // Count non-legacy initialisers
+            var initCount = result.Keys.Count( e => e != "UnloadMod" && e != "ActionMod" );
             if ( initCount > 1 ) // Ignore PPML+ first to prevent giving the wrong signal, since we don't support console commands.
                initCount = TryRemoveInit( file, result, "Initialize", initCount );
             if ( initCount > 1 )
@@ -508,7 +508,7 @@ namespace Sheepy.Modnix {
       } }
 
       private static void CheckActionHandlers () {
-         if ( ModsInPhase.ContainsKey( ModActions.ACTION_METHOD.ToLowerInvariant() ) ) return;
+         if ( ModsInPhase.ContainsKey( "modaction" ) ) return;
          // If no action handler, disable mods that have action but not dlls
          foreach ( var mod in EnabledMods.ToArray() ) {
             var meta = mod.Metadata;

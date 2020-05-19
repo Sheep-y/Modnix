@@ -8,21 +8,20 @@ namespace Sheepy.Modnix {
 
    public static class ModActions {
 
-      internal const string ACTION_METHOD = "ActionMod";
       internal const string DEFAULT_PHASE = "mainmod"; // TODO: Change to gamemod
 
       private static List<DllMeta> ActionHandlers;
       private static Dictionary<DllMeta,ModEntry> ActionMods;
 
-      private static bool InitActionHandlers () { lock ( ACTION_METHOD ) {
+      private static bool InitActionHandlers () { lock ( DEFAULT_PHASE ) {
          if ( ActionHandlers == null ) {
-            if ( ! ModScanner.ModsInPhase.TryGetValue( ACTION_METHOD.ToLowerInvariant(), out List<ModEntry> mods ) )
+            if ( ! ModScanner.ModsInPhase.TryGetValue( "actionmod", out List<ModEntry> mods ) )
                return false;
             ActionHandlers = new List<DllMeta>();
             ActionMods = new Dictionary<DllMeta, ModEntry>();
             foreach ( var mod in mods )
                foreach ( var dll in mod.Metadata.Dlls )
-                  if ( dll.Methods.ContainsKey( ACTION_METHOD ) ) {
+                  if ( dll.Methods.ContainsKey( "ActionMod" ) ) {
                      ActionHandlers.Add( dll );
                      ActionMods.Add( dll, mod );
                   }
@@ -109,8 +108,8 @@ namespace Sheepy.Modnix {
          var lib = ModPhases.LoadDll( mod, dll.Path );
          if ( lib == null ) return false;
          var handler = ActionMods[ dll ];
-         foreach ( var type in dll.Methods[ ACTION_METHOD ] ) {
-            var result = ModPhases.CallInit( mod, lib, type, ACTION_METHOD, ( e ) => ParamValue( act, e, mod, handler ) );
+         foreach ( var type in dll.Methods[ "ActionMod" ] ) {
+            var result = ModPhases.CallInit( mod, lib, type, "ActionMod", ( e ) => ParamValue( act, e, mod, handler ) );
             if ( result is bool success ) {
                if ( success ) return true;
             } else if ( result is Exception ex )
