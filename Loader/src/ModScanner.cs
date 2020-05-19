@@ -228,11 +228,13 @@ namespace Sheepy.Modnix {
          // Remove legacy Init from Modnix DLLs, so that the mod will not be initiated twice
          if ( result != null ) {
             // Count non-legacy initialisers
+            var hasSplash = result.ContainsKey( "SplashMod" );
             var initCount = result.Keys.Count( e => e != "UnloadMod" && e != "ActionMod" );
             if ( initCount > 1 ) // Ignore PPML+ first to prevent giving the wrong signal, since we don't support console commands.
                initCount = TryRemoveInit( file, result, "Initialize", initCount );
             if ( initCount > 1 )
                initCount = TryRemoveInit( file, result, "Init", initCount );
+            if ( hasSplash ) initCount--; // Keep MainMod if SplashMod is the only other method left
             if ( initCount > 1 )
                initCount = TryRemoveInit( file, result, "MainMod", initCount );
          } else if ( active )
