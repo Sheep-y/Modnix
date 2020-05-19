@@ -5,6 +5,7 @@ Roadmap: https://github.com/Sheep-y/Modnix/issues/24
 
 * New: Show PPML version in app status.
 * New: Mod Actions - a new system that allows mods to declare Actions and/or to support them.
+* New: Mod Phases HomeMod, GameMod, TacticalMod, GeoscapeMod (one-off), and relevant OnShow/OnHide (repeated).
 * Mod: Native API now returns Exception on error.
 * Mod: Logger and config param no longer supported for mod initialisers and will be passed null.  Use API instead.
 * Mod: DefaultConfig is no longer supported in mod_info.  Use ConfigType instead.
