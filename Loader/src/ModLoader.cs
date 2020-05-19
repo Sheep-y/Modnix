@@ -29,7 +29,7 @@ namespace Sheepy.Modnix {
          if ( Log == null ) { // First run
             Setup();
             ModScanner.BuildModList();
-            ModPhases.LoadMods( "SplashMod" );
+            ModPhases.RunPhase( "SplashMod" );
             if ( ! GamePatcher.PatchPhases() )
                Log.Log( SourceLevels.Critical, "Cannot patch game with Harmony. Non-SplashMods will not be loaded." );
          }

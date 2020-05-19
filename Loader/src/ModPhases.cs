@@ -17,10 +17,16 @@ namespace Sheepy.Modnix {
 
       private static readonly HashSet<string> LoadedPhases = new HashSet<string>();
 
-      public static void LoadMods ( string phase ) { try {
-         if ( ! phase.EndsWith( "OnShow" ) ) lock ( LoadedPhases ) {
+      public static void RunPhase ( string phase ) { try {
+         // Make sure Init, Initialize, and *Mod phases are not repeated
+         if ( phase.StartsWith( "Init" ) || phase.EndsWith( "Mod" ) ) lock ( LoadedPhases ) {
             if ( LoadedPhases.Contains( phase ) ) return;
             LoadedPhases.Add( phase );
+            // UnloadMod and ActionMod should not go through here!
+            if ( phase == "UnloadMod" || phase == ModActions.ACTION_METHOD ) {
+               Log.Error( new ArgumentException( phase ) );
+               return;
+            }
          }
          if ( ! ModScanner.ModsInPhase.TryGetValue( phase.ToLowerInvariant(), out List<ModEntry> list ) ) {
             Log.Verbo( "Phase {0} skipped, no mods.", phase );
