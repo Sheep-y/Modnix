@@ -208,11 +208,6 @@ namespace Sheepy.Modnix {
                if ( dll.Methods == null ) continue;
                if ( ! dll.Methods.TryGetValue( phase, out var entries ) ) continue;
                var lib = LoadDll( mod, dll.Path );
-               if ( lib == null ) continue;
-               if ( mod.ModAssemblies == null )
-                  mod.ModAssemblies = new List<Assembly>();
-               if ( ! mod.ModAssemblies.Contains( lib ) )
-                  mod.ModAssemblies.Add( lib );
                foreach ( var type in entries )
                   CallInit( mod, lib, type, phase );
             }
@@ -222,8 +217,19 @@ namespace Sheepy.Modnix {
       } catch ( Exception ex ) { Log.Error( ex ); } }
 
       public static Assembly LoadDll ( ModEntry mod, string path ) { try {
+         if ( mod.ModAssemblies != null ) {
+            foreach ( var a in mod.ModAssemblies )
+               if ( ! a.IsDynamic && a.Location == path )
+                  return a;
+         }
          Log.Info( "Loading {0}", path );
-         return Assembly.LoadFrom( path );
+         var asm = Assembly.LoadFrom( path );
+         if ( asm == null ) return null;
+         if ( mod.ModAssemblies == null )
+            mod.ModAssemblies = new List<Assembly>();
+         if ( ! mod.ModAssemblies.Contains( asm ) )
+            mod.ModAssemblies.Add( asm );
+         return asm;
       } catch ( Exception ex ) { mod.Error( ex ); return null; } }
 
       private readonly static Dictionary<Type,WeakReference<object>> ModInstances = new Dictionary<Type,WeakReference<object>>();

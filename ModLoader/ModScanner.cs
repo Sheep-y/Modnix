@@ -24,9 +24,11 @@ namespace Sheepy.Modnix {
       internal const BindingFlags INIT_METHOD_FLAGS = Public | Static | Instance;
       private static readonly List<string> IGNORE_FILE_NAMES = new List<string> {
          "0harmony",
+         "jetbrains.annotations",
          "mod_info",
          "modnixloader",
          "mono.cecil",
+         "newtonsoft.json",
          "phoenixpointmodloader",
          "ppmodloader",
       };
@@ -42,11 +44,13 @@ namespace Sheepy.Modnix {
       public static void BuildModList ( ) { try { lock ( AllMods ) {
          AllMods.Clear();
          EnabledMods.Clear();
-         if ( Directory.Exists( ModLoader.ModDirectory ) ) {
-            ScanFolderForMods( ModLoader.ModDirectory, true );
+         string dir = ModLoader.ModDirectory;
+         if ( Directory.Exists( dir ) ) {
+            ScanFolderForMods( dir, true );
             ResolveMods();
-         }
-         Log.Info( "{0} mods found, {1} enabled.", AllMods.Count, EnabledMods.Count );
+            Log.Info( "{0} mods found, {1} enabled.", AllMods.Count, EnabledMods.Count );
+         } else
+            Log.Error( "{0} not found, mods not scanned.", dir );
       } } catch ( Exception ex ) { Log.Error( ex ); } }
 
       public static void ScanFolderForMods ( string path, bool isRoot ) {
@@ -94,6 +98,8 @@ namespace Sheepy.Modnix {
 
       private static ModEntry ParseMod ( string file, string container ) { try {
          ModMeta meta;
+         var default_id = Path.GetFileNameWithoutExtension( file ).Trim();
+         if ( string.IsNullOrEmpty( default_id ) ) return null;
          if ( file.EndsWith( ".dll", StringComparison.OrdinalIgnoreCase ) ) {
             meta = ParseDllInfo( file );
             if ( meta == null ) return null;
@@ -104,21 +110,11 @@ namespace Sheepy.Modnix {
             }
          } else {
             Log.Verbo( $"Parsing as mod_info: {file}" );
-            var default_id = Path.GetFileNameWithoutExtension( file );
-            if ( string.IsNullOrWhiteSpace( default_id ) || default_id.Equals( "mod_info", StringComparison.OrdinalIgnoreCase ) )
+            if ( "mod_info".Equals( default_id, StringComparison.OrdinalIgnoreCase ) )
                default_id = container;
             meta = ParseInfoJs( Tools.ReadFile( file ).Trim(), default_id );
             if ( meta == null ) return null;
-            if ( ! meta.HasContent )
-               meta.Dlls = Directory.EnumerateFiles( Path.GetDirectoryName( file ), "*.dll" )
-                  .Where( e => NameMatch( container, Path.GetFileNameWithoutExtension( e ) ) )
-                  .Select( e => new DllMeta { Path = e } ).ToArray();
-            if ( meta.Dlls != null ) {
-               foreach ( var dll in meta.Dlls ) {
-                  if ( dll.Methods == null || dll.Methods.Count == 0 )
-                     dll.Methods = ParseEntryPoints( dll.Path, true );
-               }
-            }
+            ScanDLLs( meta, Path.GetDirectoryName( file ), container );
          }
          if ( ! ValidateMod( meta ) ) {
             Log.Info( "Not a mod: {0}", file );
@@ -130,6 +126,21 @@ namespace Sheepy.Modnix {
             AddManagerNotice( TraceEventType.Warning, mod, "Mod Flags are not supported in Modnix 2.x.", "unspoorted_flags", mod, meta.Flags );
          return mod;
       } catch ( Exception ex ) { Log.Warn( ex ); return null; } }
+
+      private static void ScanDLLs ( ModMeta meta, string dir, string container ) {
+         if ( ! meta.HasContent )
+            meta.Dlls = Directory.EnumerateFiles( dir, "*.dll" )
+               .Where( e => {
+                  var name = Path.GetFileNameWithoutExtension( e ).ToLowerInvariant();
+                  return NameMatch( container, name ) && ! IGNORE_FILE_NAMES.Contains( name );
+               } )
+               .Select( e => new DllMeta { Path = e } ).ToArray();
+         if ( meta.Dlls != null ) {
+            foreach ( var dll in meta.Dlls )
+               if ( dll.Methods == null || dll.Methods.Count == 0 )
+                  dll.Methods = ParseEntryPoints( dll.Path, true );
+         }
+      }
 
       private static ModMeta ParseInfoJs ( string js, string default_id = null ) { try {
          js = js?.Trim();
@@ -320,7 +331,7 @@ namespace Sheepy.Modnix {
       #endregion
 
       #region Resolving
-      private static bool ResolveModAgain = true;
+      private static bool ResolveModAgain;
 
       private static void ResolveMods () {
          EnabledMods.Clear();
@@ -329,13 +340,13 @@ namespace Sheepy.Modnix {
          ApplyUserOverride();
          EnabledMods.Sort( CompareModIndex );
          RemoveDuplicateMods();
-         RemoveRecessMods();
          var loopIndex = 0;
          ResolveModAgain = true;
-         while ( ResolveModAgain && loopIndex++ < 20 ) {
+         while ( ResolveModAgain && loopIndex++ < 30 ) {
             ResolveModAgain = false;
             RemoveUnfulfilledMods();
-            RemoveConflictMods();
+            if ( ! ResolveModAgain ) RemoveRecessMods();
+            if ( ! ResolveModAgain ) RemoveConflictMods();
          }
          foreach ( var e in EnabledMods )
             if ( e.Metadata.Actions != null )
@@ -349,7 +360,7 @@ namespace Sheepy.Modnix {
          foreach ( var mod in EnabledMods.ToArray() ) {
             if ( ! settings.TryGetValue( mod.Key, out ModSettings modSetting ) ) continue;
             if ( modSetting.Disabled )
-               DisableAndRemoveMod( mod, "manual", "Mod {0} is manually disabled.", mod.Key );
+               DisableAndRemoveMod( mod, "manual", "mod is manually disabled." );
             else {
                if ( modSetting.LoadIndex.HasValue ) {
                   Log.Verbo( "Mod {0} LoadIndex manually set to {1}", mod.Key, modSetting.LoadIndex);
@@ -379,7 +390,7 @@ namespace Sheepy.Modnix {
          var keep = FindLatestMod( clones );
          foreach ( var mod in clones ) {
             if ( mod == keep ) continue;
-            DisableAndRemoveMod( mod, "duplicate", "Mod {1} is a duplicate of {2}.", keep, mod.Path, keep.Path );
+            DisableAndRemoveMod( mod, "duplicate", "duplicate of {2}.", keep, mod.Path, keep.Path );
          }
       }
 
@@ -397,7 +408,7 @@ namespace Sheepy.Modnix {
                }
                if ( req.Min != null && req.Min > ver ) continue;
                if ( req.Max != null && req.Max < ver ) continue;
-               DisableAndRemoveMod( mod, "avoid", "Mod {1} self-disabled to avoid {0}", req.Id, mod.Metadata.Id );
+               DisableAndRemoveMod( mod, "avoid", "avoiding {0} {1}", (object) target ?? req.Id, ver );
                break;
             }
          }
@@ -417,15 +428,15 @@ namespace Sheepy.Modnix {
                requirements[ id ].Add( req );
             }
             foreach ( var reqSet in requirements ) {
-               var found = GetVersionById( reqSet.Key, out ModEntry target, out Version ver );
+               bool found = GetVersionById( reqSet.Key, out ModEntry target, out Version ver ), fulfill = found;
                if ( target == mod ) {
                   mod.CreateLogger().Warn( "Mod {0} not allowed to depends on itself with mod_info.Requires", reqSet.Key );
                   continue;
                }
                if ( found )
-                  found = reqSet.Value.Any( r => ( r.Min == null || r.Min <= ver ) && ( r.Max == null || r.Max >= ver ) );
-               if ( ! found ) {
-                  DisableAndRemoveMod( mod, "require", "Mod {2} requirement {0} failed, found {1}", reqSet.Key, ver, mod.Metadata.Id );
+                  fulfill = reqSet.Value.Any( r => ( r.Min == null || r.Min <= ver ) && ( r.Max == null || r.Max >= ver ) );
+               if ( ! fulfill ) {
+                  DisableAndRemoveMod( mod, "require", "requirement {0} failed, found {1}", reqSet.Key, found ? (object) ver : "none" );
                   break;
                }
             }
@@ -446,15 +457,14 @@ namespace Sheepy.Modnix {
                }
                if ( req.Min != null && req.Min > ver ) continue;
                if ( req.Max != null && req.Max < ver ) continue;
-               DisableAndRemoveMod( target, "disable", "Mod {1} (v{3}) is disabled by {2} [{4},{5}]",
-                  mod, target.Metadata.Id, mod.Metadata.Id, ver, req.Min, req.Max );
+               DisableAndRemoveMod( target, "disable", "disabled by {1} [{2},{3}]", mod, mod.Metadata.Id, req.Min, req.Max );
             }
          }
       }
 
       private static void DisableAndRemoveMod ( ModEntry mod, string reason, string log, params object[] augs ) { lock ( mod ) {
          if ( mod.Disabled ) return;
-         Log.Warn( log, augs );
+         mod.CreateLogger().Info( "Mod Disabled: " + log, augs );
          mod.Disabled = true;
          mod.AddNotice( TraceEventType.Error, reason, augs );
          EnabledMods.Remove( mod );

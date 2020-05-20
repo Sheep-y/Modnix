@@ -1,11 +1,11 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
-using System.Linq;
 using System.Collections.Generic;
-using static System.Reflection.BindingFlags;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using static System.Reflection.BindingFlags;
 
 namespace Sheepy.Modnix.Tests {
 
@@ -96,39 +96,115 @@ namespace Sheepy.Modnix.Tests {
          Assert.AreEqual( 3, ModScanner.EnabledMods.Count, "mod count" );
       }
 
+      private static string lastRun;
+
+      private static void PlainAction () => lastRun = "PA";
+      private static void ObjAction ( object _ ) => lastRun = "OA";
+      private static void StrAction ( string _ ) => lastRun = "SA";
+      private static void OOAction ( object _, object __ ) => lastRun = "OOA";
+      private static void OSAction ( object _, string __ ) => lastRun = "SSA";
+
+      private static object ObjFunc () => lastRun = "OF";
+      private static object OOFunc ( object _ ) => lastRun = "OOF";
+      private static bool   OBFunc ( object _ ) { lastRun = "OBF"; return true; }
+      private static int    OIFunc ( object _ ) { lastRun = "OIF"; return 1; }
+      private static string SSFunc ( string _ ) => lastRun = "SSF";
+
+      private static object SOOFunc ( string _, object __ ) => lastRun = "SOOF";
+      private static bool   OOBFunc ( object _, object __ ) { lastRun = "OOBF"; return true; }
+      private static int    OOIFunc ( object _, object __ ) { lastRun = "OOIF"; return 1; }
+      private static string SSSFunc ( string _, string __ ) => lastRun = "SSSF";
+
+      private delegate string RefFuncType ( ref string a, object __ );
+      private delegate string OutFuncType ( out string a, object __ );
+      private delegate string InFuncType ( in string a, object __ );
+
+      private static string RefFunc ( ref string a, object __ ) => a = lastRun = "RefF";
+      private static string OutFunc ( out string a, object __ ) => a = lastRun = "OutF";
+      private static string InFunc ( in string a, object __ ) => lastRun = a;
+
+      [TestMethod()] public void ModExtTypeTest () {
+         // No param
+         Assert.AreEqual( true, ModA.ModAPI( "api_add A.PA", (Action) PlainAction ), "PlainAction" );
+         Assert.AreEqual( null, ModA.ModAPI( "A.PA", null ), "A.PA" );
+         Assert.AreEqual( "PA", lastRun, "After A.PA" );
+         Assert.AreEqual( true, ModA.ModAPI( "api_add A.OF", (Func<object>) ObjFunc ), "ObjFunc" );
+         Assert.AreEqual( "OF", ModA.ModAPI( "A.OF", null ), "A.OF" );
+         Assert.AreEqual( "OF", lastRun, "After A.OF" );
+
+         // One param
+         Assert.AreEqual( true, ModA.ModAPI( "api_add A.OA", (Action<object>) ObjAction ), "ObjAction" );
+         Assert.AreEqual( null, ModA.ModAPI( "A.OA", null ), "A.OA" );
+         Assert.AreEqual( "OA", lastRun, "After A.OA" );
+         Assert.AreEqual( true, ModA.ModAPI( "api_add A.OOF", (Func<object,object>) OOFunc ), "OOFunc" );
+         Assert.AreEqual( "OOF", ModA.ModAPI( "A.OOF", null ), "A.OOF" );
+         Assert.AreEqual( "OOF", lastRun, "After A.OOF" );
+         Assert.AreEqual( true, ModA.ModAPI( "api_add A.OBF", (Func<object,bool>) OBFunc ), "OBFunc" );
+         Assert.AreEqual( true, ModA.ModAPI( "A.OBF", null ), "A.OBF" );
+         Assert.AreEqual( "OBF", lastRun, "After A.OBF" );
+         Assert.AreEqual( true, ModA.ModAPI( "api_add A.OIF", (Func<object,int>) OIFunc ), "OIFunc" );
+         Assert.AreEqual( 1, ModA.ModAPI( "A.OIF", null ), "A.OIF" );
+         Assert.AreEqual( "OIF", lastRun, "After A.OIF" );
+
+         // Two params
+         Assert.AreEqual( true, ModA.ModAPI( "api_add A.OOA", (Action<object,object>) OOAction ), "OOAction" );
+         Assert.AreEqual( null, ModA.ModAPI( "A.OOA", null ), "A.OOA" );
+         Assert.AreEqual( "OOA", lastRun, "After A.OOA" );
+         Assert.AreEqual( true, ModA.ModAPI( "api_add A.SOO", (Func<string,object,object>) SOOFunc ), "SOOFunc" );
+         Assert.AreEqual( "SOOF", ModA.ModAPI( "A.SOO", null ), "A.SOO" );
+         Assert.AreEqual( "SOOF", lastRun, "After A.SOO" );
+         Assert.AreEqual( true, ModA.ModAPI( "api_add A.OOB", (Func<object,object,bool>) OOBFunc ), "OOBFunc" );
+         Assert.AreEqual( true, ModA.ModAPI( "A.OOB", null ), "A.OOB" );
+         Assert.AreEqual( "OOBF", lastRun, "After A.OOB" );
+         Assert.AreEqual( true, ModA.ModAPI( "api_add A.OOI", (Func<object,object,int>) OOIFunc ), "OOIFunc" );
+         Assert.AreEqual( 1, ModA.ModAPI( "A.OOI", null ), "A.OOI" );
+         Assert.AreEqual( "OOIF", lastRun, "After A.OOI" );
+
+         // Fails
+         Assert.AreEqual( false, ModA.ModAPI( "api_add A.SA", (Action<string>) StrAction ), "StrAction" );
+         Assert.AreEqual( false, ModA.ModAPI( "api_add A.OSA", (Action<object,string>) OSAction ), "OSAction" );
+         Assert.AreEqual( false, ModA.ModAPI( "api_add A.SSF", (Func<string,string>) SSFunc ), "SSFunc" );
+         Assert.AreEqual( false, ModA.ModAPI( "api_add A.SSSF", (Func<string,string,string>) SSSFunc ), "SSSFunc" );
+         Assert.AreEqual( false, ModA.ModAPI( "api_add A.RefF", (RefFuncType) RefFunc ), "RefF" );
+         Assert.AreEqual( false, ModA.ModAPI( "api_add A.OutF", (OutFuncType) OutFunc ), "OutF" );
+         Assert.AreEqual( false, ModA.ModAPI( "api_add A.InF", (InFuncType) InFunc ), "InF" );
+
+         foreach ( var id in ModA.ModAPI( "api_list", "A." ) as IEnumerable<string> )
+            ModA.ModAPI( "api_remove " + id );
+      }
+
       private static string ExtB ( object t, object e ) => t.ToString() + e.ToString() + "B";
 
       [TestMethod()] public void ModExtTest () {
          Func<object,string> ExtA = ( e )=> e.ToString() + "A";
          Predicate<object> ExtC = ( e ) => e == null;
-         Func<string> ExtD = () => "";
-         Action<object> ExtE = ( _ ) => { };
+         Action<Version> ExtD = ( _ ) => { };
 
          Assert.AreEqual( false, ModA.ModAPI( "api_add" , null ), "no name null action" );
          Assert.AreEqual( true , ModA.ModAPI( "api_add A.A", ExtA ), "A.A => ExtA" );
          Assert.AreEqual( true , ModA.ModAPI( "api_add  A.B", (Func<object,object,string>) ExtB ), "A.B => ExtB" );
          Assert.AreEqual( true , ModA.ModAPI( "api_add A.C", ExtC ), "A.C => ExtC" );
-         Assert.AreEqual( true , ModA.ModAPI( "api_add A.E", ExtE ), "A.C => ExtE" );
 
          var list = ModA.ModAPI( "api_list", "A." ) as IEnumerable<string>;
-         Assert.AreEqual( 4, list.Count(), "api_list.Length" );
+         Assert.AreEqual( 3, list.Count(), "api_list.Length" );
          Assert.AreEqual( "a.a", list.First(), "api_list[0]" );
          Assert.AreEqual( ExtA.GetMethodInfo(), ModA.ModAPI( "api_info", "A.A" ), "api_info A.A" );
          Assert.AreEqual( ExtC.GetMethodInfo(), ModA.ModAPI( "api_info", "A.C" ), "api_info A.C" );
-         Assert.AreEqual( ExtE.GetMethodInfo(), ModA.ModAPI( "api_info", "A.E" ), "api_info A.E" );
 
          Assert.AreEqual( false, ModA.ModAPI( "api_add AAA", ExtA ), "no dot" );
          Assert.AreEqual( false, ModA.ModAPI( "api_add .A", ExtA ), "too short" );
+         Assert.AreEqual( false, ModA.ModAPI( "api_add @A.A", ExtA ), "invalid char" );
          Assert.AreEqual( false, ModA.ModAPI( "api_add A.A", ExtA ), "duplucate reg" );
          Assert.AreEqual( false, ModA.ModAPI( "api_add A.C", null ), "null action" );
          Assert.AreEqual( false, ModA.ModAPI( "api_add A.D", ExtD ), "Invalid action" );
          Assert.AreEqual( false, ModA.ModAPI( "api_add A.D DEF", ExtD ), "Extra spec" );
 
          Assert.AreEqual( "0A" , ModB.ModAPI( "a.A", "0" ), "call api a.A" );
-         Assert.AreEqual( "c0B", ModB.ModAPI( "A.b c", "0" ), "call api A.b" );
+         Assert.AreEqual( "c0B", ModB.ModAPI( "\v A.b c", "0" ), "call api A.b" ); // \v means ignore warning
          Assert.AreEqual( true , ModB.ModAPI( "a.C", null ), "call api a.C null" );
          Assert.AreEqual( false, ModB.ModAPI( "a.C", "" ), "call api a.C non-null" );
-         Assert.AreEqual( null , ModA.ModAPI( "A.E", ExtD ), "call api a.e" );
+         Assert.AreEqual( null , ModA.ModAPI( "A.E", ExtD ), "call api A.E" );
+         Assert.AreEqual( null , ModA.ModAPI( "A.F", null ), "call api A.F" );
          Assert.AreEqual( false, ModB.ModAPI( "api_remove A.B" ), "api_remove non-owner" );
          Assert.AreEqual( false, ModA.ModAPI( "api_remove A.B CDE" ), "api_remove extra spec" );
          Assert.AreEqual( true , ModA.ModAPI( " api_remove   a.b " ), "api_remove owner" );

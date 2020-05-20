@@ -12,6 +12,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Sheepy.Modnix {
+   using API_Func = Func< string, object, object >;
 
    public class LoaderSettings {
       public int SettingVersion = 20200428;
@@ -59,13 +60,13 @@ namespace Sheepy.Modnix {
 
       public string Key { get { lock ( Metadata ) { return ModScanner.NormaliseModId( Metadata.Id ); } } }
       internal DateTime? LastModified => Path == null ? (DateTime?) null : new FileInfo( Path ).LastWriteTime;
-      internal List< Assembly > ModAssemblies = null;
+      internal List< Assembly > ModAssemblies = null; // Use List insead of HashSet to preserve order.
 
       public long Index { get { lock ( Metadata ) { return LoadIndex ?? Metadata.LoadIndex; } } }
 
       #region API
       private static readonly Dictionary<string,MethodInfo> NativeApi = new Dictionary<string, MethodInfo>();
-      private static readonly Dictionary<string,Func<string,object,object>> ApiExtension = new Dictionary<string, Func<string, object, object>>();
+      private static readonly Dictionary<string,API_Func> ApiExtension = new Dictionary<string, API_Func>();
       private static readonly Dictionary<string,KeyValuePair<ModEntry,MethodInfo>> ApiExtOwner = new Dictionary<string, KeyValuePair<ModEntry,MethodInfo>>();
 
       private static void AddNativeApi ( string command, string method ) {
@@ -91,40 +92,61 @@ namespace Sheepy.Modnix {
          AddNativeApi( "version"   , nameof( GetVersion ) );
       } }
 
-      public object ModAPI ( string action, object param = null ) { try {
-         action = action.Trim();
-         IsMultiPart( action, out string cmd, out string spec );
-         if ( ! LowerAndIsEmpty( cmd, out cmd ) ) {
-            switch ( cmd ) {
-               case "api_add"    : return AddApi( spec, param );
-               case "api_info"   : return InfoApi( param );
-               case "api_list"   : return ListApi( param );
-               case "api_remove" : return RemoveApi( spec );
-               case "assembly"   : return GetAssembly( param );
-               case "assemblies" : return GetAssemblies( param );
-               case "config"     : return LoadConfig( spec, param );
-               case "dir"        : return GetDir( param );
-               case "log"        : return DoLog( spec, param );
-               case "logger"     : return GetLogger( param );
-               case "mod_info"   : return GetModInfo( param );
-               case "mod_list"   : return ListMods( param );
-               case "path"       : return GetPath( param );
-               case "stacktrace" : return Stacktrace( spec );
-               case "version"    : return GetVersion( param );
-               default:
-                  Func<string,object,object> handler;
+      public object ModAPI ( string action, object param = null ) {
+         bool logError = true;
+         try {
+            IsMultiPart( action, out string cmd, out string spec, out logError );
+            if ( ! LowerAndIsEmpty( cmd, out cmd ) ) {
+               if ( cmd.IndexOf( '.' ) < 0 ) {
+                  switch ( cmd ) {
+                     case "api_add"    : return AddApi( spec, param );
+                     case "api_info"   : return InfoApi( param );
+                     case "api_list"   : return ListApi( param );
+                     case "api_remove" : return RemoveApi( spec );
+                     case "assembly"   : return GetAssembly( param );
+                     case "assemblies" : return GetAssemblies( param );
+                     case "config"     : return LoadConfig( spec, param );
+                     case "dir"        : return GetDir( param );
+                     case "log"        : return DoLog( spec, param );
+                     case "logger"     : return GetLogger( param );
+                     case "mod_info"   : return GetModInfo( param );
+                     case "mod_list"   : return ListMods( param );
+                     case "path"       : return GetPath( param );
+                     case "stacktrace" : return Stacktrace( spec );
+                     case "version"    : return GetVersion( param );
+                  }
+               } else {
+                  API_Func handler;
                   lock ( ApiExtension ) ApiExtension.TryGetValue( cmd, out handler );
-                  if ( handler != null ) return handler( spec, param );
-                  break;
+                  if ( handler != null ) {
+                     var result = handler( spec, param );
+                     if ( logError && result is Exception err ) Warn( err );
+                     return result;
+                  }
+               }
             }
+            if ( logError ) Warn( "Unknown api action '{0}'", cmd );
+            return null;
+         } catch ( Exception ex ) {
+            if ( logError ) Warn( ex );
+            return null;
          }
-         Warn( "Unknown api action '{0}'", cmd );
-         return null;
-      } catch ( Exception ex ) { Error( ex ); return null; } }
+      }
+
+      private static bool IsMultiPart ( string text, out string firstWord, out string rest, out bool logError ) {
+         logError = true;
+         if ( text.Length > 1 && ( text[0] == '@' || text[0] == '\v' ) ) { // Throw NRE on null, intended
+            logError = false;
+            text = text.Substring( 1 );
+         }
+         return IsMultiPart( text.Trim(), out firstWord, out rest );
+      }
 
       private static bool IsMultiPart ( string text, out string firstWord, out string rest ) {
-         int pos = text.IndexOf( ' ' );
-         if ( pos <= 0 ) {
+         int pos = -1;
+         if ( text != null )
+            pos = text.IndexOf( ' ' );
+         if ( pos < 0 ) {
             firstWord = text;
             rest = "";
             return false;
@@ -141,7 +163,7 @@ namespace Sheepy.Modnix {
 
       private static Assembly GameAssembly;
 
-      private Assembly GetAssembly ( object target ) => GetAssemblies( target ).FirstOrDefault();
+      private Assembly GetAssembly ( object target ) => GetAssemblies( target )?.FirstOrDefault();
 
       private IEnumerable < Assembly > GetAssemblies ( object target ) {
          if ( LowerAndIsEmpty( target, out string id ) ) return ModAssemblies ?? Enumerable.Empty<Assembly>();
@@ -216,9 +238,9 @@ namespace Sheepy.Modnix {
       private bool AddApi ( string name, object param ) { try {
          if ( IsMultiPart( name, out name, out string type ) )
             throw new ArgumentException( $"Unknown specifier '{type}'." );
-         if ( LowerAndIsEmpty( name, out string cmd ) || ! cmd.Contains( "." ) || cmd.Length < 3 )
-            throw new ArgumentException( $"Invalid name for api_add, need a dot and at least 3 chars. Got '{cmd}'." );
-         var func = param is Delegate dele ? dele as Func<string,object,object> ?? WrapExtension( dele ) : null;
+         if ( LowerAndIsEmpty( name, out string cmd ) || ! cmd.Contains( "." ) || cmd.Length < 3 || cmd[0] == '@' )
+            throw new ArgumentException( $"Invalid name for api_add, need a dot and at least 3 chars, must not starts with @. Got '{cmd}'." );
+         var func = param is Delegate dele ? dele as API_Func ?? WrapExtension( dele ) : null;
          if ( func == null )
             throw new ArgumentException( "api_add parameter must be compatible with Func<object, object> or Func<string,object, object>. Got " + param.ToString() );
          lock ( ApiExtension ) {
@@ -234,9 +256,19 @@ namespace Sheepy.Modnix {
          return false;
       } }
 
-      private Func<string, object, object> WrapExtension ( Delegate func ) {
-         var augs = func.GetMethodInfo().GetParameters();
-         if ( augs.Length == 1 ) {
+      private API_Func WrapExtension ( Delegate func ) {
+         var info = func.GetMethodInfo();
+         var name = info.Name;
+         if ( ! info.IsStatic && ! name.StartsWith( "<" ) ) throw new ArgumentException( "Delegate " + name + " must be static." );
+         if ( info.IsAbstract ) throw new ArgumentException( "Delegate " + name + " must not be abstract." );
+         var augs = info.GetParameters();
+         foreach ( var aug in augs )
+            if ( aug.IsOut || aug.IsIn || aug.ParameterType.IsByRef )
+               throw new ArgumentException( "Delegate " + name + " contains in, out, or ref parameter." );
+
+         if ( augs.Length == 0 ) {
+            return ( _, __ ) => func.DynamicInvoke( null );
+         } else if ( augs.Length == 1 ) {
             if ( augs[0].ParameterType != typeof( object ) ) return null;
             return ( _, b ) => func.DynamicInvoke( new object[] { b } );
          } else if ( augs.Length == 2 ) {
