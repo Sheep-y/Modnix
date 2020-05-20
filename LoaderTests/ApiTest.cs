@@ -206,12 +206,13 @@ namespace Sheepy.Modnix.Tests {
          IsException( ModA.ModAPI( "api_add AAA", A ), "no dot" );
          IsException( ModA.ModAPI( "api_add .A", A ), "too short" );
          IsException( ModA.ModAPI( "api_add A.A", A ), "duplucate reg" );
+         IsException( ModA.ModAPI( "api_add @A.C", A ), "invalid char" );
          IsException( ModA.ModAPI( "api_add A.C", null ), "null action" );
          IsException( ModA.ModAPI( "api_add A.D", D ), "Invalid action" );
          IsException( ModA.ModAPI( "api_add A.D DEF", D ), "Extra spec" );
 
          Assert.AreEqual( "0A" , ModB.ModAPI( "a.A", "0" ), "call api a.A" );
-         Assert.AreEqual( "c0B", ModB.ModAPI( "A.b c", "0" ), "call api A.b" );
+         Assert.AreEqual( "c0B", ModB.ModAPI( "\v A.b c", "0" ), "call api A.b" );
          Assert.AreEqual( true , ModB.ModAPI( "a.C", null ), "call api a.C null" );
          Assert.AreEqual( false, ModB.ModAPI( "a.C", "" ), "call api a.C non-null" );
          IsException( ModB.ModAPI( "api_remove A.B" ), "api_remove non-owner" );
