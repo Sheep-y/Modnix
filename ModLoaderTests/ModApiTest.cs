@@ -193,13 +193,14 @@ namespace Sheepy.Modnix.Tests {
 
          Assert.AreEqual( false, ModA.ModAPI( "api_add AAA", ExtA ), "no dot" );
          Assert.AreEqual( false, ModA.ModAPI( "api_add .A", ExtA ), "too short" );
+         Assert.AreEqual( false, ModA.ModAPI( "api_add @A.A", ExtA ), "invalid char" );
          Assert.AreEqual( false, ModA.ModAPI( "api_add A.A", ExtA ), "duplucate reg" );
          Assert.AreEqual( false, ModA.ModAPI( "api_add A.C", null ), "null action" );
          Assert.AreEqual( false, ModA.ModAPI( "api_add A.D", ExtD ), "Invalid action" );
          Assert.AreEqual( false, ModA.ModAPI( "api_add A.D DEF", ExtD ), "Extra spec" );
 
          Assert.AreEqual( "0A" , ModB.ModAPI( "a.A", "0" ), "call api a.A" );
-         Assert.AreEqual( "c0B", ModB.ModAPI( "A.b c", "0" ), "call api A.b" );
+         Assert.AreEqual( "c0B", ModB.ModAPI( "\v A.b c", "0" ), "call api A.b" ); // \v means ignore warning
          Assert.AreEqual( true , ModB.ModAPI( "a.C", null ), "call api a.C null" );
          Assert.AreEqual( false, ModB.ModAPI( "a.C", "" ), "call api a.C non-null" );
          Assert.AreEqual( null , ModA.ModAPI( "A.E", ExtD ), "call api A.E" );

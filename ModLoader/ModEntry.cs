@@ -92,45 +92,61 @@ namespace Sheepy.Modnix {
          AddNativeApi( "version"   , nameof( GetVersion ) );
       } }
 
-      public object ModAPI ( string action, object param = null ) { try {
-         action = action.Trim();
-         IsMultiPart( action, out string cmd, out string spec );
-         if ( ! LowerAndIsEmpty( cmd, out cmd ) ) {
-            if ( cmd.IndexOf( '.' ) < 0 ) {
-               switch ( cmd ) {
-                  case "api_add"    : return AddApi( spec, param );
-                  case "api_info"   : return InfoApi( param );
-                  case "api_list"   : return ListApi( param );
-                  case "api_remove" : return RemoveApi( spec );
-                  case "assembly"   : return GetAssembly( param );
-                  case "assemblies" : return GetAssemblies( param );
-                  case "config"     : return LoadConfig( spec, param );
-                  case "dir"        : return GetDir( param );
-                  case "log"        : return DoLog( spec, param );
-                  case "logger"     : return GetLogger( param );
-                  case "mod_info"   : return GetModInfo( param );
-                  case "mod_list"   : return ListMods( param );
-                  case "path"       : return GetPath( param );
-                  case "stacktrace" : return Stacktrace( spec );
-                  case "version"    : return GetVersion( param );
-               }
-            } else {
-               API_Func handler;
-               lock ( ApiExtension ) ApiExtension.TryGetValue( cmd, out handler );
-               if ( handler != null ) {
-                  var result = handler( spec, param );
-                  if ( result is Exception err ) Warn( err );
-                  return result;
+      public object ModAPI ( string action, object param = null ) {
+         bool logError = true;
+         try {
+            IsMultiPart( action, out string cmd, out string spec, out logError );
+            if ( ! LowerAndIsEmpty( cmd, out cmd ) ) {
+               if ( cmd.IndexOf( '.' ) < 0 ) {
+                  switch ( cmd ) {
+                     case "api_add"    : return AddApi( spec, param );
+                     case "api_info"   : return InfoApi( param );
+                     case "api_list"   : return ListApi( param );
+                     case "api_remove" : return RemoveApi( spec );
+                     case "assembly"   : return GetAssembly( param );
+                     case "assemblies" : return GetAssemblies( param );
+                     case "config"     : return LoadConfig( spec, param );
+                     case "dir"        : return GetDir( param );
+                     case "log"        : return DoLog( spec, param );
+                     case "logger"     : return GetLogger( param );
+                     case "mod_info"   : return GetModInfo( param );
+                     case "mod_list"   : return ListMods( param );
+                     case "path"       : return GetPath( param );
+                     case "stacktrace" : return Stacktrace( spec );
+                     case "version"    : return GetVersion( param );
+                  }
+               } else {
+                  API_Func handler;
+                  lock ( ApiExtension ) ApiExtension.TryGetValue( cmd, out handler );
+                  if ( handler != null ) {
+                     var result = handler( spec, param );
+                     if ( logError && result is Exception err ) Warn( err );
+                     return result;
+                  }
                }
             }
+            if ( logError ) Warn( "Unknown api action '{0}'", cmd );
+            return null;
+         } catch ( Exception ex ) {
+            if ( logError ) Warn( ex );
+            return null;
          }
-         Warn( "Unknown api action '{0}'", cmd );
-         return null;
-      } catch ( Exception ex ) { Warn( ex ); return null; } }
+      }
+
+      private static bool IsMultiPart ( string text, out string firstWord, out string rest, out bool logError ) {
+         logError = true;
+         if ( text.Length > 1 && ( text[0] == '@' || text[0] == '\v' ) ) { // Throw NRE on null, intended
+            logError = false;
+            text = text.Substring( 1 );
+         }
+         return IsMultiPart( text.Trim(), out firstWord, out rest );
+      }
 
       private static bool IsMultiPart ( string text, out string firstWord, out string rest ) {
-         int pos = text.IndexOf( ' ' );
-         if ( pos <= 0 ) {
+         int pos = -1;
+         if ( text != null )
+            pos = text.IndexOf( ' ' );
+         if ( pos < 0 ) {
             firstWord = text;
             rest = "";
             return false;
@@ -222,8 +238,8 @@ namespace Sheepy.Modnix {
       private bool AddApi ( string name, object param ) { try {
          if ( IsMultiPart( name, out name, out string type ) )
             throw new ArgumentException( $"Unknown specifier '{type}'." );
-         if ( LowerAndIsEmpty( name, out string cmd ) || ! cmd.Contains( "." ) || cmd.Length < 3 )
-            throw new ArgumentException( $"Invalid name for api_add, need a dot and at least 3 chars. Got '{cmd}'." );
+         if ( LowerAndIsEmpty( name, out string cmd ) || ! cmd.Contains( "." ) || cmd.Length < 3 || cmd[0] == '@' )
+            throw new ArgumentException( $"Invalid name for api_add, need a dot and at least 3 chars, must not starts with @. Got '{cmd}'." );
          var func = param is Delegate dele ? dele as API_Func ?? WrapExtension( dele ) : null;
          if ( func == null )
             throw new ArgumentException( "api_add parameter must be compatible with Func<object, object> or Func<string,object, object>. Got " + param.ToString() );
