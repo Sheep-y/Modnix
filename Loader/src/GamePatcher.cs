@@ -1,10 +1,7 @@
 ﻿using Harmony;
-using Microsoft.SqlServer.Server;
 using Sheepy.Logging;
 using System;
-using System.Linq;
 using System.Reflection;
-using System.Text;
 using static System.Reflection.BindingFlags;
 
 namespace Sheepy.Modnix {
@@ -46,15 +43,21 @@ namespace Sheepy.Modnix {
       private static void TriggerPhase ( object instance, string trigger ) {
          var typeName = instance.GetType().Name;
          Log.Trace( "OnLevelStateChanged {0} {1}", typeName, trigger );
+         var isOnHide = trigger == "OnHide";
          switch ( typeName ) {
             case "HomeScreenView" :
-               ModPhases.RunPhase( "Home" + trigger ); break;
+               ModPhases.RunPhase( "Home" + trigger );
+               break;
             case "GeoscapeView" :
-               if ( trigger != "OnHide" ) ModPhases.RunPhase( "Game" + trigger );
-               ModPhases.RunPhase( "Geoscape" + trigger ); break;
+               if ( isOnHide ) ModPhases.RunPhase( "Game" + trigger );
+               ModPhases.RunPhase( "Geoscape" + trigger );
+               if ( isOnHide ) ModPhases.RunPhase( "GameOnHide" );
+               break;
             case "TacticalView" :
-               if ( trigger != "OnHide" ) ModPhases.RunPhase( "Game" + trigger );
-               ModPhases.RunPhase( "Tactical" + trigger ); break;
+               if ( isOnHide ) ModPhases.RunPhase( "Game" + trigger );
+               ModPhases.RunPhase( "Tactical" + trigger );
+               if ( isOnHide ) ModPhases.RunPhase( "GameOnHide" );
+               break;
          }
       }
 
