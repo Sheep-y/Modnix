@@ -49,12 +49,12 @@ namespace Sheepy.Modnix {
                ModPhases.RunPhase( "Home" + trigger );
                break;
             case "GeoscapeView" :
-               if ( isOnHide ) ModPhases.RunPhase( "Game" + trigger );
+               if ( ! isOnHide ) ModPhases.RunPhase( "Game" + trigger );
                ModPhases.RunPhase( "Geoscape" + trigger );
                if ( isOnHide ) ModPhases.RunPhase( "GameOnHide" );
                break;
             case "TacticalView" :
-               if ( isOnHide ) ModPhases.RunPhase( "Game" + trigger );
+               if ( ! isOnHide ) ModPhases.RunPhase( "Game" + trigger );
                ModPhases.RunPhase( "Tactical" + trigger );
                if ( isOnHide ) ModPhases.RunPhase( "GameOnHide" );
                break;
