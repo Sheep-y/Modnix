@@ -9,16 +9,16 @@ namespace Sheepy.Modnix {
    public static class GamePatcher {
       private static Logger Log => ModLoader.Log;
 
-      private static object Patcher; // Type is not HarmonyInstance to avoid hard crash when harmony is missing
-
       internal static bool PatchPhases () { try {
          Log.Info( "Patching Phase entry points" );
          var patcher = HarmonyInstance.Create( typeof( ModLoader ).Namespace );
          patcher.Patch( GameMethod( "PhoenixPoint.Common.Game.PhoenixGame", "MenuCrt" ), postfix: ToHarmony( nameof( MainPhase ) ) );
          Log.Verbo( "Patched PhoenixGame.MenuCrt" );
-         patcher.Patch( GameMethod( "Base.View.GameView", "OnLevelStateChanged" ), postfix: ToHarmony( nameof( AfterState ) ) );
-         Log.Verbo( "Patched GameView.OnLevelStateChanged" );
-         Patcher = patcher;
+         patcher.Patch( GameMethod( "PhoenixPoint.Common.Levels.MenuLevelController", "OnLevelStateChanged" ), postfix: ToHarmony( nameof( AfterHomeState ) ) );
+         patcher.Patch( GameMethod( "PhoenixPoint.Geoscape.Levels.GeoLevelController", "OnLevelStateChanged" ), postfix: ToHarmony( nameof( AfterGeoState ) ) );
+         patcher.Patch( GameMethod( "PhoenixPoint.Tactical.Levels.TacticalLevelController", "OnLevelStateChanged" ), postfix: ToHarmony( nameof( AfterTacState ) ) );
+         patcher.Patch( GameMethod( "PhoenixPoint.Common.UI.LoadingTipsController", "HideTip" ), postfix: ToHarmony( nameof( AfterHideTip ) ) );
+         Log.Verbo( "Patched OnLevelStateChanged and HideTip" );
          return true;
       } catch ( Exception ex ) {
          Log.Error( ex );
@@ -31,33 +31,40 @@ namespace Sheepy.Modnix {
          ModPhases.RunPhase( "MainMod" ); // Modnix 1 & 2
       }
 
-      private static void AfterState ( object __instance, int prevState, int newState ) {
-         switch ( newState ) {
-            case 0 : TriggerPhase( __instance, "Mod" ); break; // Anything => NotLoaded, will be called once during load and once during unload!
-            case 5 : TriggerPhase( __instance, "OnShow" ); break; // Anything => Playing
-            default :
-               if ( prevState == 5 ) TriggerPhase( __instance, "OnHide" ); break; // Playing => Anything
-         }
+      private static void AfterHomeState ( int prevState, int newState ) => StateChanged( "Home", prevState, newState );
+
+      private static void AfterGeoState  ( int prevState, int state ) => StateChanged( "Geoscape", prevState, state );
+
+      private static void AfterTacState  ( int prevState, int state ) => StateChanged( "Tactical", prevState, state );
+
+      private static void AfterHideTip () {
+         if ( ! FireGeoscapeOnShow ) return;
+         ModPhases.RunPhase( "GameOnShow" );
+         ModPhases.RunPhase( "GeoscapeOnShow" );
+         FireGeoscapeOnShow = false;
       }
 
-      private static void TriggerPhase ( object instance, string trigger ) {
-         var typeName = instance.GetType().Name;
-         Log.Trace( "OnLevelStateChanged {0} {1}", typeName, trigger );
-         var isOnHide = trigger == "OnHide";
-         switch ( typeName ) {
-            case "HomeScreenView" :
-               ModPhases.RunPhase( "Home" + trigger );
-               break;
-            case "GeoscapeView" :
-               if ( ! isOnHide ) ModPhases.RunPhase( "Game" + trigger );
-               ModPhases.RunPhase( "Geoscape" + trigger );
-               if ( isOnHide ) ModPhases.RunPhase( "GameOnHide" );
-               break;
-            case "TacticalView" :
-               if ( ! isOnHide ) ModPhases.RunPhase( "Game" + trigger );
-               ModPhases.RunPhase( "Tactical" + trigger );
-               if ( isOnHide ) ModPhases.RunPhase( "GameOnHide" );
-               break;
+      private static bool FireGeoscapeOnShow;
+         
+      private static void StateChanged ( string level, int prevState, int newState ) {
+         //Log.Trace( "{0} StateChanged {1} => {2}", level, prevState, newState );
+         switch ( prevState ) {
+            case -1 : // Uninitialized => NotLoaded
+               ModPhases.RunPhase( level + "Mod" );
+               return;
+            case 5 : // Playing => Loaded
+               ModPhases.RunPhase( level + "OnHide" );
+               if ( level != "Home" ) ModPhases.RunPhase( "GameOnHide" );
+               return;
+            case 2 : // Loaded => Playing, OR Loaded => Unloading
+               if ( newState != 5 ) return;
+               if ( level == "Geoscape" )
+                  FireGeoscapeOnShow = true;
+               else {
+                  if ( level != "Home" ) ModPhases.RunPhase( "GameOnShow" );
+                  ModPhases.RunPhase( level + "OnShow" );
+               }
+               return;
          }
       }
 
@@ -71,10 +78,8 @@ namespace Sheepy.Modnix {
          return null;
       } }
 
-      private static MethodInfo MyMethod ( string method ) => typeof( GamePatcher ).GetMethod( method, NonPublic | Static );
-
       private static MethodInfo GameMethod ( string type, string method ) => GameAssembly.GetType( type ).GetMethod( method, Public | NonPublic | Static | Instance );
 
-      private static HarmonyMethod ToHarmony( string method ) => new HarmonyMethod( MyMethod( method ) );
+      private static HarmonyMethod ToHarmony( string method ) => new HarmonyMethod( typeof( GamePatcher ).GetMethod( method, NonPublic | Static ) );
    }
 }
