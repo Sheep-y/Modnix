@@ -88,12 +88,12 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>cd $(SolutionDir)Manager\
+    <PostBuildEvent>cd "$(SolutionDir)Manager\"
 mkdir Resources
 cd Resources
-"c:\Program Files\7-Zip\7z.exe" a -bd -bb0 -tgzip -mx=0 -mfb=258 $(TargetFileName).gz $(ProjectDir)$(OutDir)$(TargetFileName)
-"c:\Program Files\7-Zip\7z.exe" a -bd -bb0 -tgzip -mx=0 -mfb=258 0Harmony.dll.gz $(ProjectDir)$(OutDir)0Harmony.dll
-"c:\Program Files\7-Zip\7z.exe" a -bd -bb0 -tgzip -mx=0 -mfb=258 Mono.Cecil.dll.gz $(ProjectDir)$(OutDir)Mono.Cecil.dll
-"c:\Program Files\7-Zip\7z.exe" a -bd -bb0 -tgzip -mx=0 -mfb=258 Newtonsoft.Json.dll.gz $(ProjectDir)$(OutDir)Newtonsoft.Json.dll</PostBuildEvent>
+"c:\Program Files\7-Zip\7z.exe" a -bd -bb0 -tgzip -mx=0 -mfb=258 "$(TargetFileName).gz" "$(ProjectDir)$(OutDir)$(TargetFileName)"
+"c:\Program Files\7-Zip\7z.exe" a -bd -bb0 -tgzip -mx=0 -mfb=258 0Harmony.dll.gz "$(ProjectDir)$(OutDir)0Harmony.dll"
+"c:\Program Files\7-Zip\7z.exe" a -bd -bb0 -tgzip -mx=0 -mfb=258 Mono.Cecil.dll.gz "$(ProjectDir)$(OutDir)Mono.Cecil.dll"
+"c:\Program Files\7-Zip\7z.exe" a -bd -bb0 -tgzip -mx=0 -mfb=258 Newtonsoft.Json.dll.gz "$(ProjectDir)$(OutDir)Newtonsoft.Json.dll"</PostBuildEvent>
   </PropertyGroup>
 </Project>
