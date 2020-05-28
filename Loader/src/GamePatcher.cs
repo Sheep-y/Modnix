@@ -50,6 +50,7 @@ namespace Sheepy.Modnix {
          //Log.Trace( "{0} StateChanged {1} => {2}", level, prevState, newState );
          switch ( prevState ) {
             case -1 : // Uninitialized => NotLoaded
+               if ( level != "Home" ) ModPhases.RunPhase( "GameMod" );
                ModPhases.RunPhase( level + "Mod" );
                return;
             case 5 : // Playing => Loaded
