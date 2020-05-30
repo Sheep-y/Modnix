@@ -220,6 +220,7 @@ namespace Sheepy.Modnix.Tests {
          Assert.AreEqual( ModA.Metadata.Id, ( ModA.ModAPI( "mod_info", " " ) as ModMeta ).Id, "A blank" );
          Assert.AreEqual( ModB.Metadata.Id, ( ModA.ModAPI( "mod_info", "Test.B" ) as ModMeta ).Id, "Test.B" );
          Assert.AreEqual( ModC.Metadata.Id, ( ModA.ModAPI( "mod_info", "test.c" ) as ModMeta ).Id, "test.c" );
+         Assert.AreEqual( null, ModA.ModAPI( "mod_info", "test.d" ), "test.d" );
       }
 
       [TestMethod()] public void ModListTest () {

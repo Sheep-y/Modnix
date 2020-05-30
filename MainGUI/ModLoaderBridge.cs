@@ -275,6 +275,8 @@ namespace Sheepy.Modnix.MainGUI {
                proxy.LoadDlls( dll.Select( e => e.Path ).ToArray() );
             }
             var typeName = Mod.Metadata.ConfigType;
+            if ( string.IsNullOrWhiteSpace( typeName ) )
+               return new ArgumentNullException( "ConfigType" ).ToString();
             Log( $"Sandbox resolving {typeName}" );
             return Mod.CacheDefaultConfigText( proxy.Stringify( typeName ) ) ?? proxy.GetError() ?? new TypeLoadException( $"Not found: '{typeName}'" ).ToString();
          } catch ( Exception ex ) {

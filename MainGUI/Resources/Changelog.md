@@ -1,5 +1,9 @@
 Modnix Changelog
 
+# Version 2.5.1, in development
+https://github.com/Sheep-y/Modnix/releases/tag/v2.5.1
+* Fix: "mod_info" api now return null when mod is not found.
+
 # Version 2.5, 2020-05-20
 
 * New: "api_add" api now accepts parameter-less delegates such as Func<string> or Action.
