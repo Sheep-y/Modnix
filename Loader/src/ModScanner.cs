@@ -177,8 +177,7 @@ namespace Sheepy.Modnix {
             foreach ( var resource in lib.MainModule.Resources ) {
                if ( ! ( resource is EmbeddedResource res ) || res.ResourceType != ResourceType.Embedded ) continue;
                if ( dotName.Any( e => res.Name.EndsWith( e, StringComparison.OrdinalIgnoreCase ) ) ) {
-                  if ( text != null )
-                     text.Append( Tools.ReadText( res.GetResourceStream() ) );
+                  text?.Append( Tools.ReadText( res.GetResourceStream() ) );
                   return true;
                }
                if ( ! res.Name.EndsWith( ".resources", StringComparison.OrdinalIgnoreCase ) ) continue;
@@ -187,8 +186,7 @@ namespace Sheepy.Modnix {
                   while ( data.MoveNext() ) {
                      var item = data.Key.ToString();
                      if ( names.Any( e => item.EndsWith( e, StringComparison.OrdinalIgnoreCase ) ) ) {
-                        if ( text != null )
-                           text.Append( data.Value is Stream stream ? Tools.ReadText( stream ) : data.Value?.ToString() );
+                        text?.Append( data.Value is Stream stream ? Tools.ReadText( stream ) : data.Value?.ToString() );
                         return true;
                      }
                   }
@@ -480,47 +478,46 @@ namespace Sheepy.Modnix {
 
       private static void AssignModsToPhases () { lock ( ModsInPhase ) {
          ModsInPhase.Clear();
-         string[] allPhases = null;
+         List<ModEntry> unassigned = new List<ModEntry>( EnabledMods );
          foreach ( var mod in EnabledMods.ToArray() ) {
             var assigned = false;
             var dlls = mod.Metadata.Dlls;
-            if ( dlls != null )
-               foreach ( var dll in dlls ) {
-                  if ( dll.Methods == null ) continue;
-                  foreach ( var phase in dll.Methods.Keys )
-                     AddModToPhase( mod, phase.ToLowerInvariant(), ref assigned );
-               }
-            var actions = mod.Metadata.Actions;
-            if ( actions != null ) {
-               if ( allPhases == null )
-                  allPhases = ModPhases.PHASES.Select( e => e.ToLowerInvariant() ).ToArray();
-               foreach ( var act in actions ) try {
-                  if ( act.TryGetValue( "phase", out object phaseObj ) && phaseObj != null ) {
-                     var aPhase = phaseObj.ToString().ToLowerInvariant();
-                     foreach ( var p in allPhases )
-                        if ( ModActions.PhaseMatch( aPhase, p ) )
-                           AddModToPhase( mod, p, ref assigned );
-                  } else
-                     AddModToPhase( mod, ModActions.DEFAULT_PHASE, ref assigned );
-               } catch ( Exception ex ) { mod.Log().Warn( ex ); }
+            if ( dlls == null ) continue;
+            foreach ( var dll in dlls ) {
+               if ( dll.Methods == null ) continue;
+               foreach ( var phase in dll.Methods.Keys )
+                  AddModToPhase( mod, phase.ToLowerInvariant(), ref assigned );
             }
-            if ( ! assigned )
-               DisableAndRemoveMod( mod, "no_phase", "no matching mod phases." );
+            if ( assigned ) unassigned.Remove( mod );
          }
-      } }
 
-      private static void CheckActionHandlers () {
-         if ( ModsInPhase.ContainsKey( "modaction" ) ) return;
-         // If no action handler, disable mods that have action but not dlls
+         string[] allPhases = null;
+         bool hasActionHandler = ModsInPhase.ContainsKey( "actionmod" );
          foreach ( var mod in EnabledMods.ToArray() ) {
-            var meta = mod.Metadata;
-            lock ( meta ) {
-               if ( meta.Mods != null ) continue;
-               if ( meta.Dlls == null && meta.Actions != null )
-                  DisableAndRemoveMod( mod, "no_actionmod", "no action handler to run actions." );
+            var assigned = false;
+            var actions = mod.Metadata.Actions;
+            if ( actions == null ) continue;
+            if ( ! hasActionHandler && mod.Metadata.Dlls == null ) {
+               DisableAndRemoveMod( mod, "no_actionmod", "no action handler mods." );
+               return;
             }
+            if ( allPhases == null )
+               allPhases = ModPhases.PHASES.Select( e => e.ToLowerInvariant() ).ToArray();
+            foreach ( var act in actions ) try {
+               if ( act.TryGetValue( "phase", out object phaseObj ) && phaseObj != null ) {
+                  var aPhase = phaseObj.ToString().ToLowerInvariant();
+                  foreach ( var p in allPhases )
+                     if ( ModActions.PhaseMatch( aPhase, p ) )
+                        AddModToPhase( mod, p, ref assigned );
+               } else
+                  AddModToPhase( mod, ModActions.DEFAULT_PHASE, ref assigned );
+            } catch ( Exception ex ) { mod.Log().Warn( ex ); }
+            if ( assigned ) unassigned.Remove( mod );
          }
-      }
+
+         foreach ( var mod in unassigned )
+            DisableAndRemoveMod( mod, "no_phase", "no matching mod phases." );
+      } }
 
       private static void AddModToPhase ( ModEntry mod, string phase, ref bool assigned ) {
          if ( ! ModsInPhase.TryGetValue( phase, out List<ModEntry> list ) )
