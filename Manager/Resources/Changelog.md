@@ -21,6 +21,7 @@ Roadmap: https://github.com/Sheep-y/Modnix/issues/24
 # Version 2.5.1, in development
 https://github.com/Sheep-y/Modnix/releases/tag/v2.5.1
 * Fix: "mod_info" api now return null when mod is not found.
+* Fix: Mod content detection corrected.  Mods with content no longer auto-scan dlls and mods without content now auto-scan.
 
 # Version 2.5, 2020-05-20
 https://github.com/Sheep-y/Modnix/releases/tag/v2.5
