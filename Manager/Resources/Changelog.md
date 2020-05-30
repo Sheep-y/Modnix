@@ -18,6 +18,10 @@ Roadmap: https://github.com/Sheep-y/Modnix/issues/24
 * Log: Timestamp shortened to 1ms from 0.1ms, to align with SI and DateTime precision.
 * Misc: Non-SplashMod phases now depends on correct Harmony to function.  Specifically, MainMod no longer runs without Harmony.
 
+# Version 2.5.1, in development
+https://github.com/Sheep-y/Modnix/releases/tag/v2.5.1
+* Fix: "mod_info" api now return null when mod is not found.
+
 # Version 2.5, 2020-05-20
 https://github.com/Sheep-y/Modnix/releases/tag/v2.5
 

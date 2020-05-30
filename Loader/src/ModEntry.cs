@@ -379,7 +379,7 @@ namespace Sheepy.Modnix {
 
       private ModMeta GetModInfo ( object param ) {
          ModEntry mod = GetMod( param );
-         if ( mod == null ) return Metadata;
+         if ( mod == null ) return null;
          return new ModMeta().ImportFrom( mod.Metadata );
       }
 
