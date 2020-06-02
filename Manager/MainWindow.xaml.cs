@@ -213,7 +213,9 @@ namespace Sheepy.Modnix.MainGUI {
       private void RefreshAppInfo () { try {
          Log( "Refreshing app info" );
          var build = new LoaderSettings().UpdateChannel.Equals( "dev" ) ? " (dev)" : "";
-         Title = ( AppControl.LIVE_NAME + " " + Version.Parse( SharedGui.AppVer ).ToString( 2 ) + build ).Trim();
+         Title = AppControl.LIVE_NAME;
+         if ( SharedGui.AppVer != null )
+            Title += " " + Version.Parse( SharedGui.AppVer ).ToString( 2 ) + build;
          string txt;
          if ( SharedGui.IsAppWorking || SharedGui.AppState == null )
             txt = "Busy";
