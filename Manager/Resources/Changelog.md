@@ -1,6 +1,6 @@
 Modnix Changelog
 
-# Version 3, in development
+# Version 3 Beta 1, 2020-06-02
 Roadmap: https://github.com/Sheep-y/Modnix/issues/24
 
 * New: Show PPML version in app status.
@@ -18,7 +18,7 @@ Roadmap: https://github.com/Sheep-y/Modnix/issues/24
 * Log: Timestamp shortened to 1ms from 0.1ms, to align with SI and DateTime precision.
 * Misc: Non-SplashMod phases now depends on correct Harmony to function.  Specifically, MainMod no longer runs without Harmony.
 
-# Version 2.5.1, in development
+# Version 2.5.1, 2020-06-02
 https://github.com/Sheep-y/Modnix/releases/tag/v2.5.1
 * Fix: "mod_info" api now return null when mod is not found.
 * Fix: Mod content detection corrected.  Mods with content no longer auto-scan dlls and mods without content now auto-scan.
