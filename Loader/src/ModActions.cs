@@ -8,7 +8,7 @@ namespace Sheepy.Modnix {
 
    public static class ModActions {
 
-      internal const string DEFAULT_PHASE = "mainmod"; // TODO: Change to gamemod
+      internal const string DEFAULT_PHASE = "gamemod";
 
       private static List<DllMeta> ActionHandlers;
       private static Dictionary<DllMeta,ModEntry> ActionMods;
