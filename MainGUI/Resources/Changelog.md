@@ -4,6 +4,7 @@ Modnix Changelog
 https://github.com/Sheep-y/Modnix/releases/tag/v2.5.1
 * Fix: "mod_info" api now return null when mod is not found.
 * Fix: Mod content detection corrected.  Mods with content no longer auto-scan dlls and mods without content now auto-scan.
+* Fix: Fixed a minor ArgumentNullException on GUI startup, before app version is loaded.
 * Gui: Mod list can now identify Modnix 3 action mods.
 
 # Version 2.5, 2020-05-20
