@@ -20,6 +20,8 @@ namespace Sheepy.Modnix {
 
       private static readonly HashSet<string> LoadedPhases = new HashSet<string>();
 
+      internal static volatile string LastPhase;
+
       public static void RunPhase ( string phase ) { try {
          // Make sure Init, Initialize, and *Mod phases are not repeated
          if ( phase.StartsWith( "Init" ) || phase.EndsWith( "Mod" ) ) lock ( LoadedPhases ) {
@@ -31,6 +33,7 @@ namespace Sheepy.Modnix {
                return;
             }
          }
+         LastPhase = phase;
          if ( ! ModScanner.ModsInPhase.TryGetValue( phase.ToLowerInvariant(), out List<ModEntry> list ) ) {
             Log.Verbo( "Phase {0} skipped, no mods.", phase );
             return;

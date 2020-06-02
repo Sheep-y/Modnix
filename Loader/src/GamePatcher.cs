@@ -1,6 +1,7 @@
 ﻿using Harmony;
 using Sheepy.Logging;
 using System;
+using System.Diagnostics;
 using System.Reflection;
 using static System.Reflection.BindingFlags;
 
@@ -18,7 +19,13 @@ namespace Sheepy.Modnix {
          patcher.Patch( GameMethod( "PhoenixPoint.Geoscape.Levels.GeoLevelController", "OnLevelStateChanged" ), postfix: ToHarmony( nameof( AfterGeoState ) ) );
          patcher.Patch( GameMethod( "PhoenixPoint.Tactical.Levels.TacticalLevelController", "OnLevelStateChanged" ), postfix: ToHarmony( nameof( AfterTacState ) ) );
          patcher.Patch( GameMethod( "PhoenixPoint.Common.UI.LoadingTipsController", "HideTip" ), postfix: ToHarmony( nameof( AfterHideTip ) ) );
+         //patcher.Patch( GameMethod( "Base.Core.Game", "QuitGame" ), postfix: ToHarmony( nameof( BeforeQuit ) ) );
+         //patcher.Patch( GameMethod( "Base.Platforms.Platform", "Abort" ), postfix: ToHarmony( nameof( BeforeQuit ) ) );
          Log.Verbo( "Patched OnLevelStateChanged and HideTip" );
+         foreach ( var e in AppDomain.CurrentDomain.GetAssemblies() )
+            if ( e.FullName.StartsWith( "UnityEngine.CoreModule,", StringComparison.OrdinalIgnoreCase ) ) try {
+               patcher.Patch( e.GetType( "UnityEngine.Application" ).GetMethod( "Quit", new Type[] { } ), ToHarmony( nameof( BeforeQuit ) ) );
+            } catch ( Exception ex ) { Log.Warn( ex ); }
          return true;
       } catch ( Exception ex ) {
          Log.Error( ex );
@@ -44,6 +51,16 @@ namespace Sheepy.Modnix {
          FireGeoscapeOnShow = false;
       }
 
+      // Mainly call GeoscapeOnHide and GameOnHide when quiting from Geoscape, which seems to not trigger OnLevelStateChanged.
+      // May also be called if an exception bubbles to the main game loop.
+      private static void BeforeQuit  () {
+         Log.Info( "Game Quit" );
+         if ( ModPhases.LastPhase?.EndsWith( "OnShow", StringComparison.Ordinal ) != true ) return;
+         ModPhases.RunPhase( ModPhases.LastPhase.Replace( "OnShow", "OnHide" ) );
+         if ( ModPhases.LastPhase != "HomeOnHide" ) ModPhases.RunPhase( "GameOnHide" );
+         Log.Flush();
+      }
+
       private static bool FireGeoscapeOnShow;
          
       private static void StateChanged ( string level, int prevState, int newState ) {
@@ -54,6 +71,7 @@ namespace Sheepy.Modnix {
                ModPhases.RunPhase( level + "Mod" );
                return;
             case 5 : // Playing => Loaded
+               if ( ModPhases.LastPhase?.EndsWith( "OnHide", StringComparison.Ordinal ) == true ) return;
                ModPhases.RunPhase( level + "OnHide" );
                if ( level != "Home" ) ModPhases.RunPhase( "GameOnHide" );
                return;
