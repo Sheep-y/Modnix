@@ -342,7 +342,7 @@ namespace Sheepy.Modnix {
 
       private ModMeta GetModInfo ( object param ) {
          ModEntry mod = GetMod( param );
-         if ( mod == null ) return Metadata;
+         if ( mod == null ) return null;
          return new ModMeta().ImportFrom( mod.Metadata );
       }
 
@@ -573,7 +573,7 @@ namespace Sheepy.Modnix {
       internal string  DefaultConfigText;
       internal string  ConfigText;
 
-      internal bool HasContent => Mods == null && Dlls == null && Actions == null;
+      internal bool HasContent => Mods != null || Dlls != null || Actions != null;
 
       internal ModMeta ImportFrom ( ModMeta overrider ) {
          lock ( this ) if ( overrider == null ) return this;

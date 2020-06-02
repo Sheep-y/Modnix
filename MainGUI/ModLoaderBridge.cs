@@ -275,6 +275,8 @@ namespace Sheepy.Modnix.MainGUI {
                proxy.LoadDlls( dll.Select( e => e.Path ).ToArray() );
             }
             var typeName = Mod.Metadata.ConfigType;
+            if ( string.IsNullOrWhiteSpace( typeName ) )
+               return new ArgumentNullException( "ConfigType" ).ToString();
             Log( $"Sandbox resolving {typeName}" );
             return Mod.CacheDefaultConfigText( proxy.Stringify( typeName ) ) ?? proxy.GetError() ?? new TypeLoadException( $"Not found: '{typeName}'" ).ToString();
          } catch ( Exception ex ) {
@@ -504,11 +506,13 @@ namespace Sheepy.Modnix.MainGUI {
       public override string Path => Mod.Path;
 
       public override string Type { get { lock ( Mod ) {
+         var hasAction = Mod.Metadata.Actions != null;
          var dlls = Mod.Metadata.Dlls;
-         if ( dlls == null ) return "???";
-         if ( dlls.Any( e => e?.Methods?.ContainsKey( "Init" ) ?? false ) ) return "PPML";
-         if ( dlls.Any( e => e?.Methods?.ContainsKey( "Initialize" ) ?? false ) ) return "PPML+";
-         return "DLL";
+         if ( dlls == null ) return hasAction ? "Actions" : "???";
+         var prefix = hasAction ? "Act+" : "";
+         if ( dlls.Any( e => e?.Methods?.ContainsKey( "Init" ) ?? false ) ) return prefix + "PPML";
+         if ( dlls.Any( e => e?.Methods?.ContainsKey( "Initialize" ) ?? false ) ) return prefix + "PPML+";
+         return prefix + "DLL";
       } } }
 
       public static void Log ( object msg ) => AppControl.Instance.Log( msg );

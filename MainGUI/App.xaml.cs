@@ -870,6 +870,7 @@ namespace Sheepy.Modnix.MainGUI {
       internal static Action<object> Log;
 
       internal static Assembly AssemblyResolve ( object domain, ResolveEventArgs dll ) {
+         if ( dll.Name.StartsWith( "Microsoft.VisualStudio.", StringComparison.OrdinalIgnoreCase ) ) return null;
          Log?.Invoke( $"Modnix resolving {dll.Name}" );
          var app = domain as AppDomain ?? AppDomain.CurrentDomain;
          if ( dll.Name.StartsWith( "ModnixLoader,", StringComparison.OrdinalIgnoreCase ) )

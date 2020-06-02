@@ -108,6 +108,7 @@ namespace Sheepy.Modnix {
       // Dynamically load embedded dll
       private static Assembly ModLoaderResolve  ( object domain, ResolveEventArgs dll ) { try {
          var name = dll.Name;
+         if ( name.StartsWith( "Microsoft.VisualStudio.", StringComparison.OrdinalIgnoreCase ) ) return null;
          var app = domain as AppDomain ?? AppDomain.CurrentDomain;
          if ( name.StartsWith( "PhoenixPointModLoader,", StringComparison.OrdinalIgnoreCase ) ) {
             Log.Info( "Loading embedded PPML" );
