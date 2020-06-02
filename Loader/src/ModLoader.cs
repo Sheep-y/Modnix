@@ -31,7 +31,7 @@ namespace Sheepy.Modnix {
             ModScanner.BuildModList();
             ModPhases.RunPhase( "SplashMod" );
             if ( ! GamePatcher.PatchPhases() )
-               Log.Log( SourceLevels.Critical, "Cannot patch game with Harmony. Non-SplashMods will not be loaded." );
+               Log.Log( SourceLevels.Critical, "Cannot patch game with Harmony. Non-SplashMods may not be loaded." );
          }
       } catch ( Exception ex ) {
          if ( Log == null )
@@ -65,6 +65,7 @@ namespace Sheepy.Modnix {
       // Dynamically load embedded dll
       private static Assembly ModLoaderResolve  ( object domain, ResolveEventArgs dll ) { try {
          var name = dll.Name;
+         if ( name.StartsWith( "Microsoft.VisualStudio.", StringComparison.OrdinalIgnoreCase ) ) return null;
          var app = domain as AppDomain ?? AppDomain.CurrentDomain;
          if ( name.StartsWith( "PhoenixPointModLoader,", StringComparison.OrdinalIgnoreCase ) ) {
             Log.Info( "Loading embedded PPML" );

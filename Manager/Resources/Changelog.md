@@ -24,6 +24,7 @@ https://github.com/Sheep-y/Modnix/releases/tag/v2.5.1
 * Fix: Mod content detection corrected.  Mods with content no longer auto-scan dlls and mods without content now auto-scan.
 * Fix: Fixed a minor ArgumentNullException on GUI startup, before app version is loaded.
 * Gui: Mod list can now identify Modnix 3 action mods.
+* Gui: Skip resolution of Visual Studio dev library. This removes a few perplexing errors from the log.
 
 # Version 2.5, 2020-05-20
 https://github.com/Sheep-y/Modnix/releases/tag/v2.5
