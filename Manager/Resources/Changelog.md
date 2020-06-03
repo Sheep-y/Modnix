@@ -1,7 +1,12 @@
 Modnix Changelog
 
-# Version 3 Beta 1, 2020-06-02
+# Version 3 Beta 2, in development
 Roadmap: https://github.com/Sheep-y/Modnix/issues/24
+
+* 
+
+# Version 3 Beta 1, 2020-06-02
+https://github.com/Sheep-y/Modnix/releases/tag/v3.0.2020.0602
 
 * New: Show PPML version in app status.
 * New: Mod Actions - a new system that allows mods to declare Actions and/or to support them.
