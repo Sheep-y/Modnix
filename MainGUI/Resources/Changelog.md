@@ -1,6 +1,7 @@
 Modnix Changelog
 
 # Version 2.5.1, 2020-06-02
+
 * Fix: "mod_info" api now return null when mod is not found.
 * Fix: Mod content detection corrected.  Mods with content no longer auto-scan dlls and mods without content now auto-scan.
 * Fix: Fixed a minor ArgumentNullException on GUI startup, before app version is loaded.
@@ -126,6 +127,7 @@ Modnix Changelog
 * Mod: Fix reported version for "ppml" when queries through api.
 * Mod: DefaultConfig in mod_info will be compared with a new instance of the config type, on the config action, and warn if different.
 * Mod: Mod API are now case-insensitive, including registered extensions.
+* Log: Log is flushed to disk after every game phase.
 
 # Version 1.0, 2020-03-23
 
