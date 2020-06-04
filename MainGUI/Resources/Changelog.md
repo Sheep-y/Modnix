@@ -1,5 +1,9 @@
 Modnix Changelog
 
+# Version 2.5.2, in development
+
+* Gui: Mods with flags no longer trigger warning; flags would be safe even when not supported.
+
 # Version 2.5.1, 2020-06-02
 
 * Fix: "mod_info" api now return null when mod is not found.

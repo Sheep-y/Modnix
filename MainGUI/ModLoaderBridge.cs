@@ -407,12 +407,10 @@ namespace Sheepy.Modnix.MainGUI {
                txt.Text = "\rRuntime warning(s) detected on last run."; break;
             case "config_mismatch" :
                txt.Text = "\rDefaultConfig different from new instance defaults."; break;
-            case "unspported_flags" :
-               txt.Text = "Mod Flags requires Modnix 3 or above."; break;
-            case "unspported_actions" :
+            case "unsupported_actions" :
                txt.Text = "Mod Actions requires Modnix 3 or above.\rMod may not work or only partially work."; break;
             default :
-               txt.Text = "\r" + notice.Message.ToString(); break;
+               txt.Text = "\r" + notice.Message; break;
          }
          switch ( notice.Level ) {
             case TraceEventType.Critical :
