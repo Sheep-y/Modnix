@@ -378,7 +378,7 @@ namespace Sheepy.Modnix {
       }
 
       private ModMeta GetModInfo ( object param ) {
-         ModEntry mod = GetMod( param );
+         var mod = GetMod( param );
          if ( mod == null ) return null;
          return new ModMeta().ImportFrom( mod.Metadata );
       }
@@ -443,7 +443,7 @@ namespace Sheepy.Modnix {
          if ( type?.FullName.Equals( Metadata.ConfigType ) == true && confFile == null )
             return Activator.CreateInstance( type ); // Skip text conversion when not reading from config file
 
-         string txt = isDefault ? GetDefaultConfigText() : GetConfigText( confFile );
+         var txt = isDefault ? GetDefaultConfigText() : GetConfigText( confFile );
          if ( param == null || type != null ) { // No param or param is a Type, need to create new instance.
             if ( type == typeof( string ) ) return txt;
             if ( txt == null ) return Activator.CreateInstance( GetConfigType( type ) );

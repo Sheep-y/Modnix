@@ -411,7 +411,7 @@ namespace Sheepy.Modnix.MainGUI {
             case "runtime_warning" :
                txt.Text = "\rRuntime warning(s) detected on last run."; break;
             default :
-               txt.Text = "\r" + notice.Message.ToString(); break;
+               txt.Text = "\r" + notice.Message; break;
          }
          switch ( notice.Level ) {
             case TraceEventType.Critical :

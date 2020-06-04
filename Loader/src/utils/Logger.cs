@@ -160,7 +160,7 @@ namespace Sheepy.Logging {
       protected readonly List< LogEntry > _Queue;
       protected Timer _Timer;
 
-      // Delay in ms to start loggging. Set to 0 to disable threading - all loggin happens immediately
+      // Delay in ms to start loggging. Set to 0 to disable threading - all queued logs are written immediately.
       public int WriteDelay {
          get { using( _Reader.Lock ) { return _WriteDelay;  } }
          set { using( _Writer.Lock ) { _WriteDelay = value; } } }

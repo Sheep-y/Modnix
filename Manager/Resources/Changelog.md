@@ -5,6 +5,10 @@ Roadmap: https://github.com/Sheep-y/Modnix/issues/24
 
 * 
 
+# Version 2.5.2, in development
+
+* Gui: Mods with flags no longer trigger warning; flags would be safe even when not supported.
+
 # Version 3 Beta 1, 2020-06-02
 https://github.com/Sheep-y/Modnix/releases/tag/v3.0.2020.0602
 
@@ -25,6 +29,7 @@ https://github.com/Sheep-y/Modnix/releases/tag/v3.0.2020.0602
 
 # Version 2.5.1, 2020-06-02
 https://github.com/Sheep-y/Modnix/releases/tag/v2.5.1
+
 * Fix: "mod_info" api now return null when mod is not found.
 * Fix: Mod content detection corrected.  Mods with content no longer auto-scan dlls and mods without content now auto-scan.
 * Fix: Fixed a minor ArgumentNullException on GUI startup, before app version is loaded.
