@@ -534,8 +534,8 @@ namespace Sheepy.Modnix.MainGUI {
          }
       }
 
-      private static Regex MalformPaths = new Regex( "(?:^[/\\\\]|\\.\\.[/\\\\])", RegexOptions.Compiled );
-      private static Regex IgnoreFiles = new Regex( "(?:\\.(?:cs|csproj|sln)|[/\\\\])$", RegexOptions.Compiled | RegexOptions.IgnoreCase );
+      private static readonly Regex MalformPaths = new Regex( "(?:^[/\\\\]|\\.\\.[/\\\\])", RegexOptions.Compiled );
+      private static readonly Regex IgnoreFiles = new Regex( "(?:\\.(?:cs|csproj|sln)|[/\\\\])$", RegexOptions.Compiled | RegexOptions.IgnoreCase );
 
       public override string[] Install ( string modFolder ) {
          var destination = modFolder + Path.DirectorySeparatorChar;
@@ -572,13 +572,13 @@ namespace Sheepy.Modnix.MainGUI {
          return exe;
       }
 
-      private static Regex RemoveSize = new Regex( "^\\d+\\s+\\d+\\s+", RegexOptions.Compiled );
+      private static readonly Regex RemoveSize = new Regex( "^\\d+\\s+\\d+\\s+", RegexOptions.Compiled );
 
       public override string[] ListFiles () {
          var exe = Create7z();
          var stdout = AppControl.Instance.RunAndWait( Path.GetDirectoryName( ArchivePath ), exe, $"l \"{ArchivePath}\" -ba -bd -sccUTF-8 -xr!*.cs -xr!*.csprog -xr!*.sln", suppressLog: true );
          return stdout.Split( '\n' )
-            .Where( e => ! e.Contains( " D..." ) ) // Ignore folders, e.g. empty folders result from ignoring *.cs
+            .Where( e => e.Length > 25 && ! e.Contains( " D..." ) ) // Ignore folders, e.g. empty folders result from ignoring *.cs
             .Select( e => RemoveSize.Replace( e.Substring( 25 ).Trim(), "" ) ).ToArray();
       }
 
