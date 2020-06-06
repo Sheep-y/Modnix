@@ -71,7 +71,8 @@ namespace Sheepy.Modnix {
          }
          var corlib = new Uri( typeof( string ).Assembly.CodeBase ).LocalPath;
          LoadSettings();
-         Log.Verbo( ".Net/{0}; mscorlib/{1} {2}", Environment.Version, FileVersionInfo.GetVersionInfo( corlib ).FileVersion, corlib );
+         var os = new OperatingSystem( Environment.OSVersion.Platform, Environment.OSVersion.Version );
+         Log.Verbo( "{0}/{1}; .Net/{2}; mscorlib/{3} {4}", os.Platform, os.Version, Environment.Version, FileVersionInfo.GetVersionInfo( corlib ).FileVersion, corlib );
       } } catch ( Exception ex ) { Log?.Error( ex ); } }
 
       internal static volatile Assembly PpmlAssembly;

@@ -137,6 +137,7 @@ namespace Sheepy.Modnix.MainGUI {
          ModGuiExe = Path.Combine( ModFolder, LIVE_NAME + APP_EXT );
          Myself = Assembly.GetExecutingAssembly().GetName();
          MyPath = Uri.UnescapeDataString( new UriBuilder( Myself.CodeBase ).Path ).FixSlash();
+         //MyPath = new Uri( Assembly.GetExecutingAssembly().Location ).LocalPath;
          Log( "Assembly: " + MyPath );
          Log( "Working Dir: " + Directory.GetCurrentDirectory() );
          Log( "Mod Dir: " + ModFolder );

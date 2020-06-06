@@ -3,7 +3,8 @@ Modnix Changelog
 # Version 3 Beta 2, in development
 Roadmap: https://github.com/Sheep-y/Modnix/issues/24
 
-* 
+* Fix: Try to make sandbox assembly path local.
+* Log: OS type and version are now logged.
 
 # Version 2.5.2, in development
 
