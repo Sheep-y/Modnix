@@ -434,6 +434,7 @@ namespace Sheepy.Modnix.MainGUI {
          CurrentGame.RunInjector( "/y" );
          CheckInjectionStatus( true );
          if ( CurrentGame.Status == "modnix" ) {
+            CreateRuntimeConfig( ModGuiExe );
             SaveSettings();
             // Migrate mods
             if ( MigrateLegacy() )
@@ -462,6 +463,12 @@ namespace Sheepy.Modnix.MainGUI {
          File.Copy( me, there );
          return File.Exists( there );
       } catch ( Exception ex ) { return Log( ex, false ); } }
+
+      private void CreateRuntimeConfig ( string exePath ) { try {
+         var confPath = exePath + ".config";
+         Log( "Creating .Net config at " + confPath );
+         File.WriteAllText( confPath, "<?xml version=\"1.0\" encoding=\"utf-8\"?><configuration><runtime><loadFromRemoteSources enabled=\"true\"/></runtime></configuration>" );
+      } catch ( Exception ex ) { Log( ex ); } }
 
       private bool MigrateLegacy () { try {
          var OldPath = Path.Combine( CurrentGame.GameDir, PAST_MOD );
