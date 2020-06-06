@@ -31,7 +31,7 @@ namespace Sheepy.Modnix.MainGUI {
       public abstract string[] ListFiles ();
       public abstract string[] Install ( string modFolder );
       protected void Log ( object msg ) => AppControl.Instance.Log( msg );
-      public bool AssumeRoot => ListFiles().Any( e => e.StartsWith( "PPDefModifier", StringComparison.Ordinal ) && e != "PPDefModifier.dll" );
+      public bool ShouldUseRoot ( string [] files ) => files.Any( e => e.StartsWith( "PPDefModifier", StringComparison.Ordinal ) && e != "PPDefModifier.dll" );
    }
 
    internal static class AppRes {
@@ -686,7 +686,9 @@ namespace Sheepy.Modnix.MainGUI {
          } else {
             Log( $"Adding {file} as a packed mod" );
             var reader = ext.Equals( ".zip" ) ? (ArchiveReader) new ZipArchiveReader( file ) : new SevenZipArchiveReader( file );
-            return reader.Install( reader.AssumeRoot ? ModFolder : folder );
+            string[] files = reader.ListFiles();
+            if ( files.Length == 0 ) return new string[0];
+            return reader.Install( reader.ShouldUseRoot( files ) ? ModFolder : folder );
          }
       }
 
