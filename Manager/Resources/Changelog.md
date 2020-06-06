@@ -10,6 +10,7 @@ Roadmap: https://github.com/Sheep-y/Modnix/issues/24
 * Fix: Empty zip/7z no longer creates empty mod folder.
 * Fix: Adding an empty 7z no longer throws AggregateException.
 * Gui: Mods with flags no longer trigger warning; flags would be safe even when not supported.
+* Gui: Info popup when Add Mod failed to add any files.
 
 # Version 3 Beta 1, 2020-06-02
 https://github.com/Sheep-y/Modnix/releases/tag/v3.0.2020.0602
