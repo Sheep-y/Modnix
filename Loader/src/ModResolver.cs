@@ -102,6 +102,7 @@ namespace Sheepy.Modnix {
 
       private static void RemoveUnfulfilledMods () {
          Log.Verbo( "Check mod requirements" );
+         var dependees = new HashSet< string >();
          foreach ( var mod in EnabledMods.ToArray() ) {
             if ( mod.Disabled ) continue;
             var reqs = mod.Metadata.Requires;
@@ -124,8 +125,15 @@ namespace Sheepy.Modnix {
                if ( ! fulfill ) {
                   DisableAndRemoveMod( mod, "require", "requirement {0} failed, found {1}", reqSet.Key, found ? (object) ver : "none" );
                   break;
-               }
+               } else
+                  dependees.Add( reqSet.Key );
             }
+         }
+
+         foreach ( var mod in EnabledMods.ToArray() ) {
+            var flags = mod.Metadata.Flags;
+            if ( flags != null && flags.Any( e => e.Trim().ToLowerInvariant() == "library" ) && ! dependees.Contains( mod.Key ) )
+               DisableAndRemoveMod( mod, "no_dependent", "library disabled because no mods require it" );
          }
       }
 

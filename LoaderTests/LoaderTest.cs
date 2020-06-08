@@ -155,6 +155,25 @@ namespace Sheepy.Modnix.Tests {
          Assert.AreEqual( 2, ModLoader.EnabledMods.Count );
       }
 
+      [TestMethod()] public void LibraryTest () {
+         // A requries B, C is disabled
+         var A = new ModEntry( new ModMeta{ Id = "A", Requires = new AppVer[]{ new AppVer( "B" ) } } );
+         var B = new ModEntry( new ModMeta{ Id = "B", Flags = new string[]{ "Library" } } );
+         var C = new ModEntry( new ModMeta{ Id = "C", Flags = new string[]{ "Library" } } );
+
+         var AllMods = ModLoader.AllMods;
+         AddMod( A );
+         AddMod( B );
+         AddMod( C );
+         ResolveMods();
+
+         Assert.AreEqual( 3, AllMods.Count );
+         Assert.IsFalse( A.Disabled, "A" );
+         Assert.IsFalse( B.Disabled, "B" );
+         Assert.IsTrue ( C.Disabled, "C" );
+         Assert.AreEqual( 2, ModLoader.EnabledMods.Count );
+      }
+
       [TestMethod()] public void DisablesTest () {
          // A conflicts with B, B conflicts with C, D conflicts with A B D.
          // A disables B, B is skipped, D disables A and B and skip itself, leaving C and D

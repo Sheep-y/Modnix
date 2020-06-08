@@ -402,6 +402,8 @@ namespace Sheepy.Modnix.MainGUI {
                txt.Text = "\rManually Disabled"; break;
             case "no_actionmod"  :
                txt.Text = "\rDisabled: Requires mod action handler(s)."; break;
+            case "no_dependent"  :
+               txt.Text = "\rDisabled: No other mods require this library."; break;
             case "no_phase"  :
                txt.Text = "\rDisabled: No mod phase found."; break;
             case "require" :

@@ -60,7 +60,7 @@ namespace Sheepy.Modnix {
 
       public string Key { get { lock ( Metadata ) { return ModScanner.NormaliseModId( Metadata.Id ); } } }
       internal DateTime? LastModified => Path == null ? (DateTime?) null : new FileInfo( Path ).LastWriteTime;
-      internal List< Assembly > ModAssemblies = null; // Use List insead of HashSet to preserve order.
+      internal List< Assembly > ModAssemblies; // Use List insead of HashSet to preserve order.
 
       public long Index { get { lock ( Metadata ) { return LoadIndex ?? Metadata.LoadIndex; } } }
 
@@ -93,7 +93,7 @@ namespace Sheepy.Modnix {
       } }
 
       public object ModAPI ( string action, object param = null ) {
-         bool logError = true;
+         var logError = true;
          try {
             IsMultiPart( action, out string cmd, out string spec, out logError ); 
             if ( ! LowerAndIsEmpty( cmd, out cmd ) ) {
@@ -143,7 +143,7 @@ namespace Sheepy.Modnix {
       }
 
       private static bool IsMultiPart ( string text, out string firstWord, out string rest ) {
-         int pos = -1;
+         var pos = -1;
          if ( text != null )
             pos = text.IndexOf( ' ' );
          if ( pos < 0 ) {
@@ -333,7 +333,7 @@ namespace Sheepy.Modnix {
          return true;
       }
 
-      private MethodInfo InfoApi ( object param ) {
+      private static MethodInfo InfoApi ( object param ) {
          if ( param == null ) return null;
          var name = param?.ToString().Trim().ToLowerInvariant();
          if ( NativeApi.TryGetValue( name, out MethodInfo info ) ) return info;
@@ -341,7 +341,7 @@ namespace Sheepy.Modnix {
          return null;
       }
 
-      private IEnumerable<string> ListApi ( object param ) {
+      private static IEnumerable<string> ListApi ( object param ) {
          InitiateNativeApi();
          string[] list;
          lock ( ApiExtension ) list = ApiExtension.Keys.ToArray();
@@ -407,7 +407,7 @@ namespace Sheepy.Modnix {
 
       private StackTrace Stacktrace ( string name ) {
          var trace = new StackTrace( 2 );
-         Func<string> DumpTrace = () =>  "Stacktrace" + trace.ToString() ;
+         Func<string> DumpTrace = () => "Stacktrace" + trace;
          DoLog( name, DumpTrace );
          return trace;
       }
@@ -682,7 +682,7 @@ namespace Sheepy.Modnix {
          if ( val.Length == 0 ) val = null;
       }
 
-      private void NormDllMeta ( ref DllMeta[] val ) {
+      private static void NormDllMeta ( ref DllMeta[] val ) {
          if ( val == null ) return;
          for ( int i = val.Length - 1 ; i >= 0 ; i-- ) {
             val[i].Path = NormString( val[i].Path );
@@ -693,13 +693,13 @@ namespace Sheepy.Modnix {
          if ( val.Length == 0 ) val = null;
       }
 
-      private void NormDictArray ( ref Dictionary<string,object>[] val ) {
+      private static void NormDictArray ( ref Dictionary<string,object>[] val ) {
          if ( val == null ) return;
          for ( int i = val.Length - 1 ; i >= 0 ; i-- ) {
             var dict = val[i];
             if ( dict == null ) continue;
             foreach ( var pair in dict.ToArray() ) {
-               string key = NormString( pair.Key )?.ToLowerInvariant();
+               var key = NormString( pair.Key )?.ToLowerInvariant();
                if ( pair.Key == key ) continue;
                dict.Remove( pair.Key );
                if ( key != null ) dict[ key ] = pair.Value;
