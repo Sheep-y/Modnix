@@ -11,22 +11,22 @@ namespace Sheepy.Modnix.Tests {
 
       [ClassInitializeAttribute] public static void TestInitialize ( TestContext _ = null ) {
          ModLoader.Setup();
-         ModScanner.AllMods.Clear();
-         ModScanner.EnabledMods.Clear();
-         ModScanner.ModsInPhase.Clear();
+         ModLoader.AllMods.Clear();
+         ModLoader.EnabledMods.Clear();
+         ModLoader.ModsInPhase.Clear();
       }
 
       [TestCleanup] public void TestCleanup () => TestInitialize();
 
       private static void ResolveMods () => 
-         typeof( ModScanner ).GetMethod( "ResolveMods", NonPublic | Static ).Invoke( null, new object[0] );
+         typeof( ModResolver ).GetMethod( "Resolve", NonPublic | Static ).Invoke( null, new object[0] );
 
       private static void AddMod ( ModEntry mod ) {
          // Mods will be disabled without dll.
          var dll = mod.Metadata.Dlls = new DllMeta[1];
          dll[ 0 ] = new DllMeta{ Methods = new Dictionary<string, HashSet<string>>() };
          dll[ 0 ].Methods.Add( "MainMod", new HashSet<string>() );
-         ModScanner.AllMods.Add( mod );
+         ModLoader.AllMods.Add( mod );
       }
 
       [TestMethod()] public void NameMatchTest () {
@@ -49,8 +49,8 @@ namespace Sheepy.Modnix.Tests {
          AddMod( new ModEntry( new ModMeta{ Id = "A" } ) );
          AddMod( new ModEntry( new ModMeta{ Id = "B" } ){ Disabled = true } );
          ResolveMods();
-         Assert.AreEqual( 2, ModScanner.AllMods.Count );
-         Assert.AreEqual( 1, ModScanner.EnabledMods.Count );
+         Assert.AreEqual( 2, ModLoader.AllMods.Count );
+         Assert.AreEqual( 1, ModLoader.EnabledMods.Count );
       }
 
       private static Version Ver ( int val ) => new Version( val, 0, 0, 0 );
@@ -65,7 +65,7 @@ namespace Sheepy.Modnix.Tests {
          var GoldMod   = new ModEntry( new ModMeta{ Id = "dup#", Version = Ver( 4 ) } );
          var SilverMod = new ModEntry( new ModMeta{ Id = "dup$", Version = Ver( 3 ) } );
 
-         var AllMods = ModScanner.AllMods;
+         var AllMods = ModLoader.AllMods;
          AddMod( AlphaMod );
          AddMod( BetaMod );
          AddMod( GoldMod );
@@ -77,7 +77,7 @@ namespace Sheepy.Modnix.Tests {
          Assert.IsTrue ( BetaMod.Disabled, "Beta" );
          Assert.IsTrue ( SilverMod.Disabled, "Silver" );
          Assert.IsFalse( GoldMod.Disabled, "Gold" );
-         Assert.AreEqual( 1, ModScanner.EnabledMods.Count );
+         Assert.AreEqual( 1, ModLoader.EnabledMods.Count );
       }
 
       [TestMethod()] public void RequiresTest () {
@@ -96,7 +96,7 @@ namespace Sheepy.Modnix.Tests {
          var Yes       = new ModEntry( new ModMeta{ Id = "NonModnix", Requires = new AppVer[]{ new AppVer( "ModnixOK" ) } }.Normalise() );
          var No        = new ModEntry( new ModMeta{ Id = "NonModnix", Requires = new AppVer[]{ new AppVer( "ModnixOK" ), new AppVer( "ModnixMax" ) } }.Normalise() );
 
-         var AllMods = ModScanner.AllMods;
+         var AllMods = ModLoader.AllMods;
          AddMod( Yes );
          AddMod( No );
          AddMod( ModnixMin );
@@ -129,7 +129,7 @@ namespace Sheepy.Modnix.Tests {
          Assert.IsTrue ( NonModnix.Disabled, "NonModnix" );
          Assert.IsFalse( Yes.Disabled, "Yes" );
          Assert.IsTrue ( No.Disabled, "No" );
-         Assert.AreEqual( 5, ModScanner.EnabledMods.Count );
+         Assert.AreEqual( 5, ModLoader.EnabledMods.Count );
       }
 
       [TestMethod()] public void AvoidsTest () {
@@ -140,7 +140,7 @@ namespace Sheepy.Modnix.Tests {
          var C = new ModEntry( new ModMeta{ Id = "C", Version = Ver( 4 ), Avoids = new AppVer[]{ new AppVer( "D", max : Ver( 2 ) ) } } );
          var D = new ModEntry( new ModMeta{ Id = "D", Version = Ver( 3 ), Avoids = new AppVer[]{ new AppVer( "E" ), new AppVer( "B" ),  new AppVer( "D" ) } } );
 
-         var AllMods = ModScanner.AllMods;
+         var AllMods = ModLoader.AllMods;
          AddMod( A );
          AddMod( B );
          AddMod( C );
@@ -152,7 +152,7 @@ namespace Sheepy.Modnix.Tests {
          Assert.IsTrue ( B.Disabled, "B" );
          Assert.IsFalse( C.Disabled, "C" );
          Assert.IsFalse( D.Disabled, "D" );
-         Assert.AreEqual( 2, ModScanner.EnabledMods.Count );
+         Assert.AreEqual( 2, ModLoader.EnabledMods.Count );
       }
 
       [TestMethod()] public void DisablesTest () {
@@ -163,7 +163,7 @@ namespace Sheepy.Modnix.Tests {
          var C = new ModEntry( new ModMeta{ Id = "C", Version = Ver( 4 ), Disables = new AppVer[]{ new AppVer( "D", max : Ver( 2 ) ) } } );
          var D = new ModEntry( new ModMeta{ Id = "D", Version = Ver( 3 ), Disables = new AppVer[]{ new AppVer( "A" ), new AppVer( "B" ),  new AppVer( "D" ) } } );
 
-         var AllMods = ModScanner.AllMods;
+         var AllMods = ModLoader.AllMods;
          AddMod( A );
          AddMod( B );
          AddMod( C );
@@ -175,7 +175,7 @@ namespace Sheepy.Modnix.Tests {
          Assert.IsTrue ( B.Disabled, "B" );
          Assert.IsFalse( C.Disabled, "C" );
          Assert.IsFalse( D.Disabled, "D" );
-         Assert.AreEqual( 2, ModScanner.EnabledMods.Count );
+         Assert.AreEqual( 2, ModLoader.EnabledMods.Count );
       }
    }
 }

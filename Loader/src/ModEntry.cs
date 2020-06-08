@@ -187,7 +187,7 @@ namespace Sheepy.Modnix {
                return new Assembly[]{ GameAssembly };
 
             default:
-               var mod = ModScanner.GetModById( id );
+               var mod = ModLoader.GetModById( id );
                if ( mod == null ) return null;
                return mod.ModAssemblies ?? Enumerable.Empty<Assembly>();
          }
@@ -195,13 +195,13 @@ namespace Sheepy.Modnix {
 
       private Version GetVersion ( object target ) {
          if ( LowerAndIsEmpty( target, out string id ) ) lock ( Metadata ) return Metadata.Version;
-         ModScanner.GetVersionById( id, out _, out Version ver );
+         ModLoader.GetVersionById( id, out _, out Version ver );
          return ver;
       }
 
       private ModEntry GetMod ( object target ) {
          if ( LowerAndIsEmpty( target, out string id ) ) return this;
-         return ModScanner.GetModById( id );
+         return ModLoader.GetModById( id );
       }
 
       private string GetPath ( object target ) {
@@ -213,7 +213,7 @@ namespace Sheepy.Modnix {
             case "phoenixpoint" : case "phoenix point" : case "game" :
                return Process.GetCurrentProcess().MainModule?.FileName;
             default :
-               return ModScanner.GetModById( id )?.Path;
+               return ModLoader.GetModById( id )?.Path;
          }
       }
 
@@ -224,7 +224,7 @@ namespace Sheepy.Modnix {
       }
 
       private static IEnumerable<string> ListMods ( object target ) =>
-         FilterStringList( ModScanner.EnabledMods.Select( e => e.Metadata.Id ), target );
+         FilterStringList( ModLoader.EnabledMods.Select( e => e.Metadata.Id ), target );
 
       private static IEnumerable<string> FilterStringList ( IEnumerable<string> list, object param ) {
          if ( param == null ) return list;

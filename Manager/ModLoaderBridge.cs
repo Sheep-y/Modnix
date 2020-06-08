@@ -51,7 +51,7 @@ namespace Sheepy.Modnix.MainGUI {
          CheckSetup();
          App.Log( "Building mod list" );
          ModScanner.BuildModList();
-         var result = Task.WhenAll( ModScanner.AllMods.Select( ConvertModTask ).ToArray() ).Result;
+         var result = Task.WhenAll( ModLoader.AllMods.Select( ConvertModTask ).ToArray() ).Result;
          return SetModOrders( result );
       }
 
@@ -59,7 +59,7 @@ namespace Sheepy.Modnix.MainGUI {
          var order = 1;
          var result = list.ToArray();
          // TODO: Rewrite with ModsInPhase
-         var ordered = ModScanner.EnabledMods
+         var ordered = ModLoader.EnabledMods
             .Select( e => result.First( f => f.Mod == e ) )
             .Where( e => e != null && ! float.IsInfinity( e._Order ) && e._Order < 0 );
          App.Log( "Determining Splash phase order" );
@@ -81,7 +81,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       private static GridModItem ToGridItem ( ModEntry mod ) { try {
          var modPath = mod.Path;
-         var order = ModScanner.EnabledMods.Contains( mod ) ? -1f : float.PositiveInfinity;
+         var order = ModLoader.EnabledMods.Contains( mod ) ? -1f : float.PositiveInfinity;
          if ( string.IsNullOrWhiteSpace( modPath ) ) return new GridModItem( mod ){ _Order = order };
          var doc = new Dictionary< ModDoc, string >();
          var dir = Path.GetDirectoryName( modPath );

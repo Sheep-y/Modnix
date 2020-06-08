@@ -1,5 +1,6 @@
 ﻿using Sheepy.Logging;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -9,6 +10,10 @@ using System.Text;
 namespace Sheepy.Modnix {
 
    public static class ModLoader {
+      public readonly static List<ModEntry> AllMods = new List<ModEntry>();
+      public readonly static List<ModEntry> EnabledMods = new List<ModEntry>();
+      public readonly static Dictionary<string,List<ModEntry>> ModsInPhase = new Dictionary<string, List<ModEntry>>();
+
       private readonly static string MOD_PATH  = "My Games/Phoenix Point/Mods".FixSlash();
 
       internal static Logger Log;
@@ -25,14 +30,23 @@ namespace Sheepy.Modnix {
       public static string LoaderPath => Assembly.GetExecutingAssembly().Location;
       public static string DnFrameworkDir => Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.Windows ), "Microsoft.NET/Framework/v4.0.30319".FixSlash() );
 
+      public static void Main () {
+         AppDomain.CurrentDomain.AssemblyLoad += new AssemblyLoadEventHandler( ModLoaderAsmLoaded );
+      }
+
+      private static void ModLoaderAsmLoaded ( object sender, AssemblyLoadEventArgs args ) {
+         var asmName = args.LoadedAssembly.FullName ;
+         if ( ! asmName.StartsWith( "Assembly-CSharp,", StringComparison.OrdinalIgnoreCase ) ) return;
+         Init();
+      }
+
       public static void Init () { try {
-         if ( Log == null ) { // First run
-            Setup();
-            ModScanner.BuildModList();
-            ModPhases.RunPhase( "SplashMod" );
-            if ( ! GamePatcher.PatchPhases() )
-               Log.Log( SourceLevels.Critical, "Cannot patch game with Harmony. Non-SplashMods may not be loaded." );
-         }
+         if ( Log != null ) return;
+         Setup();
+         ModScanner.BuildModList();
+         ModPhases.RunPhase( "SplashMod" );
+         if ( ! GamePatcher.PatchPhases() )
+            Log.Log( SourceLevels.Critical, "Cannot patch game with Harmony. Non-SplashMods may not be loaded." );
       } catch ( Exception ex ) {
          if ( Log == null )
             Console.WriteLine( ex );
@@ -155,5 +169,40 @@ namespace Sheepy.Modnix {
          Log.Info( "{0}/{1}", Path.GetFileNameWithoutExtension( game.CodeBase ), ver );
          GameVersion = Version.Parse( ver );
       } } catch ( Exception ex ) { Log?.Error( ex ); } } 
+
+      #region Mod Query
+      private static ModEntry _GetModById ( string key ) => ModLoader.EnabledMods.Find( e => e.Key == key && ! e.Disabled );
+
+      internal static ModEntry GetModById ( string id ) => _GetModById( ModScanner.NormaliseModId( id ) );
+
+      internal static bool GetVersionById ( string id, out ModEntry mod, out Version version ) {
+         mod = null;
+         version = null;
+         if ( string.IsNullOrEmpty( id ) ) return false;
+         id = ModScanner.NormaliseModId( id );
+         switch ( id ) {
+            case "modnix" : case "loader" : case "":
+               version = ModLoader.LoaderVersion;
+               return true;
+            case "phoenixpoint" : case "phoenix point" : case "game" :
+               version = ModLoader.GameVersion;
+               return true;
+            case "ppml" : case "ppml+" : case "phoenixpointmodloader" : case "phoenix point mod loader" :
+               version = ModLoader.PPML_COMPAT;
+               return true;
+            case "non-modnix" : case "nonmodnix" :
+               return false;
+            default:
+               mod = _GetModById( id );
+               version = GetVersionFromMod( mod );
+               return mod != null;
+         }
+      }
+
+      private static Version GetVersionFromMod ( ModEntry mod ) {
+         if ( mod == null ) return null;
+         return mod.Metadata.Version ?? new Version( 0, 0, 0, 0 );
+      }
+      #endregion
    }
 }

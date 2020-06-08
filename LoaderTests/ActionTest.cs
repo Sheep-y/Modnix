@@ -1,5 +1,4 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
 using System.Collections.Generic;
 
 namespace Sheepy.Modnix.Tests {
@@ -9,7 +8,7 @@ namespace Sheepy.Modnix.Tests {
    public class ActionTest {
 
       [TestMethod()] public void FilterActionTest () {
-         ActionDef[] defs = new ActionDef[]{
+         var defs = new ActionDef[]{
             CreateDef( "action", "Default", "all", "Def1" ),
             CreateDef( "eval", "Code1" ),
             CreateDef( "action", "Default", "more", "Def2" ),
@@ -27,7 +26,7 @@ namespace Sheepy.Modnix.Tests {
          Assert.AreEqual( "Def2", val, "splash def 2" );
          Assert.AreEqual( 2, defCount, "splash defCount" );
 
-         var main = ModActions.FilterActions( defs, "mainmod", out defCount );
+         var main = ModActions.FilterActions( defs, "gamemod", out defCount );
          Assert.AreEqual( 2, main?.Count, "2 main actions" );
          Assert.AreEqual( 2, defCount, "main defCount" );
       }

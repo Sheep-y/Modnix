@@ -7,7 +7,7 @@ using System.Reflection;
 
 namespace Sheepy.Modnix {
 
-   public static class ModPhases {
+   internal static class ModPhases {
       internal static readonly HashSet<string> PHASES = new HashSet<string>(
          new string[]{ "SplashMod", "ActionMod", "UnloadMod", // Do not start phases with P.
             "Init", "Initialize", "MainMod",                  // P are fast skipped as Prefix/Postfix
@@ -34,7 +34,7 @@ namespace Sheepy.Modnix {
             }
          }
          LastPhase = phase;
-         if ( ! ModScanner.ModsInPhase.TryGetValue( phase.ToLowerInvariant(), out List<ModEntry> list ) ) {
+         if ( ! ModLoader.ModsInPhase.TryGetValue( phase.ToLowerInvariant(), out List<ModEntry> list ) ) {
             Log.Verbo( "Phase {0} skipped, no mods.", phase );
             return;
          }

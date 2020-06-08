@@ -24,16 +24,16 @@ namespace Sheepy.Modnix.Tests {
          var dll = mod.Metadata.Dlls = new DllMeta[1];
          dll[ 0 ] = new DllMeta{ Methods = new Dictionary<string, HashSet<string>>() };
          dll[ 0 ].Methods.Add( "MainMod", new HashSet<string>() );
-         ModScanner.AllMods.Add( mod );
+         ModLoader.AllMods.Add( mod );
       }
 
       [ClassInitializeAttribute] public static void TestInitialize ( TestContext _ ) {
          ModLoader.Setup();
-         ModScanner.AllMods.Clear();
+         ModLoader.AllMods.Clear();
          AddMod( ModA );
          AddMod( ModB );
          AddMod( ModC );
-         typeof( ModScanner ).GetMethod( "ResolveMods", NonPublic | Static ).Invoke( null, new object[0] );
+         typeof( ModResolver ).GetMethod( "Resolve", NonPublic | Static ).Invoke( null, new object[0] );
       }
 
       private const string TEST_CONFIG_MOD = @"({ Id : ""test.config""})";
@@ -101,7 +101,7 @@ namespace Sheepy.Modnix.Tests {
       }
 
       [TestMethod()] public void ContextTest () {
-         Assert.AreEqual( 3, ModScanner.EnabledMods.Count, "mod count" );
+         Assert.AreEqual( 3, ModLoader.EnabledMods.Count, "mod count" );
       }
 
       private static string lastRun;
