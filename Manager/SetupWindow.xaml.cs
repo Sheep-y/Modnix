@@ -91,7 +91,7 @@ namespace Sheepy.Modnix.MainGUI {
             else
                DoSetup();
          } else { // Launch
-            App.LaunchInstalledModnix();
+            App.LaunchInstalledManager();
             Close();
          }
       } catch ( Exception ex ) { Log( ex ); } }

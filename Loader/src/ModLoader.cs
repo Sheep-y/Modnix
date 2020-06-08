@@ -35,7 +35,7 @@ namespace Sheepy.Modnix {
       }
 
       private static void ModLoaderAsmLoaded ( object sender, AssemblyLoadEventArgs args ) {
-         var asmName = args.LoadedAssembly.FullName ;
+         var asmName = args.LoadedAssembly.FullName;
          if ( ! asmName.StartsWith( "Assembly-CSharp,", StringComparison.OrdinalIgnoreCase ) ) return;
          Init();
       }

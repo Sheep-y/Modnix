@@ -81,9 +81,9 @@ namespace Sheepy.Modnix.Tests {
       }
 
       [TestMethod()] public void RequiresTest () {
-         var ModnixMin = new ModEntry( new ModMeta{ Id = "ModnixMin", Requires = new AppVer[]{ new AppVer( "Modnix", Ver( 99 ) ) } }.Normalise() );
-         var ModnixOk  = new ModEntry( new ModMeta{ Id = "ModnixOk" , Requires = new AppVer[]{ new AppVer( "Modnix", Ver( 1 ) ) } }.Normalise() );
-         var ModnixMax = new ModEntry( new ModMeta{ Id = "ModnixMax", Requires = new AppVer[]{ new AppVer( "Modnix", max : Ver( 0 ) ) } }.Normalise() );
+         var LoaderMin = new ModEntry( new ModMeta{ Id = "LoaderMin", Requires = new AppVer[]{ new AppVer( "Loader", Ver( 99 ) ) } }.Normalise() );
+         var LoaderOk  = new ModEntry( new ModMeta{ Id = "LoaderOk" , Requires = new AppVer[]{ new AppVer( "Loader", Ver( 1 ) ) } }.Normalise() );
+         var LoaderMax = new ModEntry( new ModMeta{ Id = "LoaderMax", Requires = new AppVer[]{ new AppVer( "Loader", max : Ver( 0 ) ) } }.Normalise() );
          var PPMin     = new ModEntry( new ModMeta{ Id = "PPMin", Requires = new AppVer[]{ new AppVer( "PhoenixPoint", Ver( "1.0.23456" ) ) } }.Normalise() );
          var PPOk      = new ModEntry( new ModMeta{ Id = "PPOk" , Requires = new AppVer[]{ new AppVer( "PhoenixPoint", Ver( "1.0.12345" ) ) } }.Normalise() );
          var PPMax     = new ModEntry( new ModMeta{ Id = "PPMax", Requires = new AppVer[]{ new AppVer( "Phoenix Point", max : Ver( "1.0.4321" ) ) } }.Normalise() );
@@ -92,16 +92,16 @@ namespace Sheepy.Modnix.Tests {
          var PPMLMax   = new ModEntry( new ModMeta{ Id = "PPMLMax", Requires = new AppVer[]{ new AppVer( "Phoenix Point Mod Loader", max : Ver( 0 ) ) } }.Normalise() );
          var MultiOK   = new ModEntry( new ModMeta{ Id = "MultiOK", Requires = new AppVer[]{ new AppVer( "ppml", Ver( 1 ) ), new AppVer( "ppml", max : Ver( "0.2" ) ) } }.Normalise() );
          var MultiFail = new ModEntry( new ModMeta{ Id = "MultiOK", Requires = new AppVer[]{ new AppVer( "ppml", Ver( 1 ) ), new AppVer( "ppml", max : Ver( 0 ) ) } }.Normalise() );
-         var NonModnix = new ModEntry( new ModMeta{ Id = "NonModnix", Requires = new AppVer[]{ new AppVer( "NonModnix" ) } }.Normalise() );
-         var Yes       = new ModEntry( new ModMeta{ Id = "NonModnix", Requires = new AppVer[]{ new AppVer( "ModnixOK" ) } }.Normalise() );
-         var No        = new ModEntry( new ModMeta{ Id = "NonModnix", Requires = new AppVer[]{ new AppVer( "ModnixOK" ), new AppVer( "ModnixMax" ) } }.Normalise() );
+         var Exclude   = new ModEntry( new ModMeta{ Id = "NonLoader", Requires = new AppVer[]{ new AppVer( "NonModnix" ) } }.Normalise() );
+         var Yes       = new ModEntry( new ModMeta{ Id = "NonLoader", Requires = new AppVer[]{ new AppVer( "LoaderOK" ) } }.Normalise() );
+         var No        = new ModEntry( new ModMeta{ Id = "NonLoader", Requires = new AppVer[]{ new AppVer( "LoaderOK" ), new AppVer( "LoaderMax" ) } }.Normalise() );
 
          var AllMods = ModLoader.AllMods;
          AddMod( Yes );
          AddMod( No );
-         AddMod( ModnixMin );
-         AddMod( ModnixOk );
-         AddMod( ModnixMax );
+         AddMod( LoaderMin );
+         AddMod( LoaderOk );
+         AddMod( LoaderMax );
          AddMod( PPMin );
          AddMod( PPOk );
          AddMod( PPMax );
@@ -110,15 +110,15 @@ namespace Sheepy.Modnix.Tests {
          AddMod( PPMLMax );
          AddMod( MultiOK );
          AddMod( MultiFail );
-         AddMod( NonModnix );
+         AddMod( Exclude );
 
          ModLoader.GameVersion = Ver( "1.0.12345" );
          ResolveMods();
 
          Assert.AreEqual( 14, AllMods.Count );
-         Assert.IsTrue ( ModnixMin.Disabled, "ModnixMin" );
-         Assert.IsFalse( ModnixOk.Disabled, "ModnixOk" );
-         Assert.IsTrue ( ModnixMax.Disabled, "ModnixMax" );
+         Assert.IsTrue ( LoaderMin.Disabled, "ModnixMin" );
+         Assert.IsFalse( LoaderOk.Disabled, "ModnixOk" );
+         Assert.IsTrue ( LoaderMax.Disabled, "ModnixMax" );
          Assert.IsTrue ( PPMin.Disabled, "PPMin" );
          Assert.IsFalse( PPOk.Disabled, "PPOk" );
          Assert.IsTrue ( PPMax.Disabled, "PPMax" );
@@ -126,7 +126,7 @@ namespace Sheepy.Modnix.Tests {
          Assert.IsFalse( PPMLOk.Disabled, "PPMLOk" );
          Assert.IsTrue ( PPMLMax.Disabled, "PPMLMax" );
          Assert.IsFalse( MultiOK.Disabled, "MultiOK" );
-         Assert.IsTrue ( NonModnix.Disabled, "NonModnix" );
+         Assert.IsTrue ( Exclude.Disabled, "NonModnix" );
          Assert.IsFalse( Yes.Disabled, "Yes" );
          Assert.IsTrue ( No.Disabled, "No" );
          Assert.AreEqual( 5, ModLoader.EnabledMods.Count );

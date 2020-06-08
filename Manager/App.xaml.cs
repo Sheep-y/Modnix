@@ -30,8 +30,8 @@ namespace Sheepy.Modnix.MainGUI {
       protected ArchiveReader ( string path ) { ArchivePath = path; }
       public abstract string[] ListFiles ();
       public abstract string[] Install ( string modFolder );
-      protected void Log ( object msg ) => AppControl.Instance.Log( msg );
-      public bool ShouldUseRoot ( string [] files ) => files.Any( e => e.StartsWith( "PPDefModifier", StringComparison.Ordinal ) && e != "PPDefModifier.dll" );
+      protected static void Log ( object msg ) => AppControl.Instance.Log( msg );
+      public static bool ShouldUseRoot ( string [] files ) => files.Any( e => e.StartsWith( "PPDefModifier", StringComparison.Ordinal ) && e != "PPDefModifier.dll" );
    }
 
    internal static class AppRes {
@@ -94,12 +94,12 @@ namespace Sheepy.Modnix.MainGUI {
          Init( e?.Args );
          if ( ! ParamSkipStartupCheck ) {
             Log( $"Running startup checks" );
-            if ( FoundRunningModnix() ) {
+            if ( FoundRunningManager() ) {
                Shutdown();
                return;
             }
             if ( IsInstaller ) {
-               if ( FoundInstalledModnix() )
+               if ( FoundInstalledManager() )
                   GUI = new SetupWindow( "launch" );
                else
                   GUI = new SetupWindow( "setup" );
@@ -184,7 +184,7 @@ namespace Sheepy.Modnix.MainGUI {
             } catch ( IOException ex ) { Log( ex ); }
          }
 
-         int pid = ParamIndex( param, "i", "ignore-pid" );
+         var pid = ParamIndex( param, "i", "ignore-pid" );
          if ( pid >= 0 && param.Count > pid+1 && int.TryParse( param[ pid + 1 ], out int id ) )
             ParamIgnorePid = id;
 
@@ -196,33 +196,33 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       private static int ParamIndex ( List<String> args, string quick, string full ) {
-         int win1 = args.IndexOf(  "/" + quick );
-         int win2 = args.IndexOf(  "/" + full  );
-         int lin1 = args.IndexOf(  "-" + quick );
-         int lin2 = args.IndexOf( "--" + full  );
+         var win1 = args.IndexOf(  "/" + quick );
+         var win2 = args.IndexOf(  "/" + full  );
+         var lin1 = args.IndexOf(  "-" + quick );
+         var lin2 = args.IndexOf( "--" + full  );
          return Math.Max( Math.Max( win1, win2 ), Math.Max( lin1, lin2 ) );
       }
 
-      private bool FoundRunningModnix () { try {
+      private bool FoundRunningManager () { try {
          // Find running instances
-         int myId = Process.GetCurrentProcess().Id;
-         Process running = Array.Find( Process.GetProcesses(), e => ( e.ProcessName == LIVE_NAME ||
+         var myId = Process.GetCurrentProcess().Id;
+         var running = Array.Find( Process.GetProcesses(), e => ( e.ProcessName == LIVE_NAME ||
                        e.ProcessName.StartsWith( LIVE_NAME+"Setup", StringComparison.OrdinalIgnoreCase ) ||
                        e.ProcessName.StartsWith( LIVE_NAME+"Install", StringComparison.OrdinalIgnoreCase ) ) &&
                        e.Id != myId && ( ParamIgnorePid == 0 || e.Id != ParamIgnorePid ) );
          if ( running == null ) return false;
          // Bring to foreground
-         IntPtr handle = running.MainWindowHandle;
+         var handle = running.MainWindowHandle;
          if ( handle == IntPtr.Zero ) return false;
          Log( $"Another instance (pid {running.Id}) found. Self-closing." );
          return NativeMethods.SetForegroundWindow( handle );
       } catch ( Exception ex ) { return Log( ex, false ); } }
 
-      internal void LaunchInstalledModnix () { try {
+      internal void LaunchInstalledManager () { try {
          Process.Start( ModGuiExe, "/i " + Process.GetCurrentProcess().Id );
       } catch ( Exception ex ) { Log( ex ); } }
 
-      private bool FoundInstalledModnix () { try {
+      private bool FoundInstalledManager () { try {
          if ( ! File.Exists( ModGuiExe ) ) return false;
          Set( ref _ModGuiExe, new FileInfo( ModGuiExe ).FullName ); // Normalise path - e.g. My Documents to Documents
          if ( MyPath == ModGuiExe ) return false;
@@ -444,7 +444,7 @@ namespace Sheepy.Modnix.MainGUI {
             //CurrentGame.DeleteCodeFile( JBA_DLL );
             GUI.Prompt( AppAction.SETUP, flags );
          } else
-            throw new ApplicationException( "Modnix injection failed" );
+            throw new ApplicationException( "Loader injection failed" );
       } catch ( Exception ex ) {
          GUI.Prompt( AppAction.SETUP, PromptFlag.ERROR, ex );
       } }
@@ -544,7 +544,7 @@ namespace Sheepy.Modnix.MainGUI {
             CurrentGame.DeleteCodeFile( AppRes.LOADER );
             GUI.Prompt( AppAction.REVERT );
          } else
-            throw new ApplicationException( "Modnix revert failed" );
+            throw new ApplicationException( "Loader revert failed" );
       } catch ( Exception ex ) {
          GUI.Prompt( AppAction.REVERT, PromptFlag.ERROR, ex );
       } }
@@ -610,7 +610,7 @@ namespace Sheepy.Modnix.MainGUI {
             ClearLogs();
             return;
          }
-         DateTime mTime = new FileInfo( file ).LastWriteTime;
+         var mTime = new FileInfo( file ).LastWriteTime;
          lock ( ModWithError ) {
             if ( mTime == LoaderLogLastModified ) return;
             Log( $"Parsing {file} for errors, last updated {mTime}." );
@@ -681,9 +681,9 @@ namespace Sheepy.Modnix.MainGUI {
          } else {
             Log( $"Adding {file} as a packed mod" );
             var reader = ext.Equals( ".zip" ) ? (ArchiveReader) new ZipArchiveReader( file ) : new SevenZipArchiveReader( file );
-            string[] files = reader.ListFiles();
+            var files = reader.ListFiles();
             if ( files.Length == 0 ) return new string[0];
-            return reader.Install( reader.ShouldUseRoot( files ) ? ModFolder : folder );
+            return reader.Install( ArchiveReader.ShouldUseRoot( files ) ? ModFolder : folder );
          }
       }
 
@@ -750,7 +750,7 @@ namespace Sheepy.Modnix.MainGUI {
                if ( asAdmin ) p.StartInfo.Verb = "runas";
                if ( ! p.Start() ) Log( "Process reused." );
 
-               string output = "";
+               var output = "";
                if ( ! asAdmin ) {
                   output = p.StandardOutput.ReadToEnd()?.Trim();
                   if ( ! suppressLog )
@@ -868,7 +868,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       internal static Assembly AssemblyResolve ( object domain, ResolveEventArgs dll ) {
          if ( dll.Name.StartsWith( "Microsoft.VisualStudio.", StringComparison.OrdinalIgnoreCase ) ) return null;
-         Log?.Invoke( $"Modnix resolving {dll.Name}" );
+         Log?.Invoke( $"Manager resolving {dll.Name}" );
          var app = domain as AppDomain ?? AppDomain.CurrentDomain;
          if ( dll.Name.StartsWith( "ModnixLoader,", StringComparison.OrdinalIgnoreCase ) )
             return app.Load( GetResourceBytes( AppRes.LOADER ) );
