@@ -40,6 +40,7 @@ namespace Sheepy.Modnix.MainGUI {
       internal const string HARM_DLL = "0Harmony.dll";
       internal const string CECI_DLL = "Mono.Cecil.dll";
       internal const string JSON_DLL = "Newtonsoft.Json.dll";
+      internal const string DOOR_DLL = "version.dll";
    }
 
    public partial class AppControl : Application {
@@ -424,10 +425,11 @@ namespace Sheepy.Modnix.MainGUI {
          if ( CopySelf( MyPath, ModGuiExe ) )
             flags |= PromptFlag.SETUP_SELF_COPY;
          // Copy hook files
-         CurrentGame.WriteCodeFile( AppRes.HARM_DLL, AssemblyLoader.GetResourceStream( AppRes.HARM_DLL ) );
-         CurrentGame.WriteCodeFile( AppRes.CECI_DLL, AssemblyLoader.GetResourceStream( AppRes.CECI_DLL ) );
-         CurrentGame.WriteCodeFile( AppRes.LOADER  , AssemblyLoader.GetResourceStream( AppRes.LOADER   ) );
-         CurrentGame.WriteCodeFile( AppRes.INJECTOR, AssemblyLoader.GetResourceStream( AppRes.INJECTOR ) );
+         CurrentGame.WriteFile( AppRes.HARM_DLL, AssemblyLoader.GetResourceStream( AppRes.HARM_DLL ) );
+         CurrentGame.WriteFile( AppRes.CECI_DLL, AssemblyLoader.GetResourceStream( AppRes.CECI_DLL ) );
+         CurrentGame.WriteFile( AppRes.LOADER  , AssemblyLoader.GetResourceStream( AppRes.LOADER   ) );
+         CurrentGame.WriteFile( AppRes.INJECTOR, AssemblyLoader.GetResourceStream( AppRes.INJECTOR ) );
+         CurrentGame.WriteFile( CurrentGame.GameDir, AppRes.DOOR_DLL, AssemblyLoader.GetResourceStream( AppRes.DOOR_DLL ) );
          CurrentGame.RunInjector( "/y" );
          CheckInjectionStatus( true );
          if ( CurrentGame.Status == "modnix" ) {
@@ -821,16 +823,20 @@ namespace Sheepy.Modnix.MainGUI {
          return App.RunAndWait( CodeDir, Injector, param );
       }
 
-      internal void WriteCodeFile ( string file, byte[] content ) {
+      internal void WriteFile ( string file, byte[] content ) => WriteFile( CodeDir, file, content );
+
+      internal void WriteFile ( string path, string file, byte[] content ) {
          if ( content == null ) throw new ArgumentNullException( nameof( content ) );
-         var target = Path.Combine( CodeDir, file );
+         var target = Path.Combine( path, file );
          App.Log( $"Writing {content.Length} bytes to {target}" );
          File.WriteAllBytes( target, content );
       }
 
-      internal void WriteCodeFile ( string file, Stream source ) {
+      internal void WriteFile ( string file, Stream source ) => WriteFile( CodeDir, file, source );
+
+      internal void WriteFile ( string path, string file, Stream source ) {
          if ( source == null ) throw new ArgumentNullException( nameof( source ) );
-         var target = Path.Combine( CodeDir, file );
+         var target = Path.Combine( path, file );
          App.Log( $"Writing to {target}" );
          using ( var writer = new FileStream( target, FileMode.Create ) ) {
             source.CopyTo( writer );

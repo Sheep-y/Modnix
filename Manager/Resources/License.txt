@@ -7,7 +7,7 @@ Site icons belong to relevant sites.
 
 == Public Domain ==
 
-Applies to: ModnixInjector.exe and ModnixLoader.dll
+Applies to: ModnixInjector.exe (Modnix), ModnixLoader.dll (Modnix), version.dll.gz (Unity Doorstop)
 
 This is free and unencumbered software released into the public domain.
 

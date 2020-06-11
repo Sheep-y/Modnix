@@ -92,6 +92,7 @@
     <EmbeddedResource Include="Resources\ModnixLoader.dll.gz" />
     <EmbeddedResource Include="Resources\Mono.Cecil.dll.gz" />
     <EmbeddedResource Include="Resources\Newtonsoft.Json.dll.gz" />
+    <None Include="Resources\version.dll.gz" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
