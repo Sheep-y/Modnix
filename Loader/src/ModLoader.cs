@@ -31,12 +31,13 @@ namespace Sheepy.Modnix {
       public static string DnFrameworkDir => Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.Windows ), "Microsoft.NET/Framework/v4.0.30319".FixSlash() );
 
       public static void Main () {
-         AppDomain.CurrentDomain.AssemblyLoad += new AssemblyLoadEventHandler( ModLoaderAsmLoaded );
+         AppDomain.CurrentDomain.AssemblyLoad += ModLoaderAsmLoaded;
       }
 
       private static void ModLoaderAsmLoaded ( object sender, AssemblyLoadEventArgs args ) {
          var asmName = args.LoadedAssembly.FullName;
          if ( ! asmName.StartsWith( "Assembly-CSharp,", StringComparison.OrdinalIgnoreCase ) ) return;
+         AppDomain.CurrentDomain.AssemblyLoad -= ModLoaderAsmLoaded;
          Init();
       }
 
