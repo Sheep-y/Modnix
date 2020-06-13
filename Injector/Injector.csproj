@@ -59,7 +59,7 @@
     <PostBuildEvent>cd $(SolutionDir)MainGUI\
 mkdir Resources
 cd Resources
-"c:\Program Files\7-Zip\7z.exe" a -bd -bb0 -tgzip -mx=0 -mfb=258 $(TargetFileName).gz $(ProjectDir)$(OutDir)$(TargetFileName)
-"c:\Program Files\7-Zip\7z.exe" a -bd -bb0 -tgzip -mx=0 -mfb=258 Mono.Cecil.dll.gz $(ProjectDir)$(OutDir)Mono.Cecil.dll</PostBuildEvent>
+"c:\Program Files\7-Zip\7z.exe" a -bd -bb0 -tgzip -mx=0 -mfb=258 "$(TargetFileName).gz" "$(ProjectDir)$(OutDir)$(TargetFileName)"
+"c:\Program Files\7-Zip\7z.exe" a -bd -bb0 -tgzip -mx=0 -mfb=258 Mono.Cecil.dll.gz "$(ProjectDir)$(OutDir)Mono.Cecil.dll"</PostBuildEvent>
   </PropertyGroup>
 </Project>
