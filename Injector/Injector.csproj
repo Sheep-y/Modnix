@@ -12,6 +12,7 @@
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
     <TargetFrameworkProfile />
+    <LangVersion>7.3</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>x64</PlatformTarget>
@@ -55,7 +56,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>cd "$(SolutionDir)Manager\"
+    <PostBuildEvent>cd $(SolutionDir)MainGUI\
 mkdir Resources
 cd Resources
 "c:\Program Files\7-Zip\7z.exe" a -bd -bb0 -tgzip -mx=0 -mfb=258 "$(TargetFileName).gz" "$(ProjectDir)$(OutDir)$(TargetFileName)"
