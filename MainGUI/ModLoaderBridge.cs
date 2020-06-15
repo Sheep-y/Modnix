@@ -402,7 +402,7 @@ namespace Sheepy.Modnix.MainGUI {
             case "manual"  :
                txt.Text = "\rManually Disabled"; break;
             case "runtime_error" :
-               txt.Text = "\rRuntime error(s) detected on last run, may be not safe to use."; break;
+               txt.Text = "\rRuntime error(s) detected on last run, mod may not work as expected."; break;
             case "runtime_warning" :
                txt.Text = "\rRuntime warning(s) detected on last run."; break;
             case "config_mismatch" :

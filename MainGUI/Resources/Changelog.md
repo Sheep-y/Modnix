@@ -6,6 +6,7 @@ Modnix Changelog
 * Fix: Adding an empty 7z no longer throws AggregateException.
 * Gui: Mods with flags no longer trigger warning; flags would be safe even when not supported.
 * Gui: Info popup when Add Mod failed to add any files.
+* Gui: Softer mod error wordings.  Statistically I made most mods, and they are resilience.
 
 # Version 2.5.1, 2020-06-02
 
