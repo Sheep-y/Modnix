@@ -271,6 +271,8 @@ namespace Sheepy.Modnix.MainGUI {
          try {
             var dll = Mod.Metadata.Dlls;
             proxy = Sandbox.GetSandbox();
+            if ( proxy.GetError() != null )
+               return proxy.GetError();
             if ( dll != null ) {
                Log( $"Sandbox loading {dll.Length} dlls." );
                proxy.LoadDlls( dll.Select( e => e.Path ).ToArray() );
@@ -285,7 +287,7 @@ namespace Sheepy.Modnix.MainGUI {
             if ( ex is RemotingException ) AppControl.Instance.GetModList(); // Trigger mod refresh on remote error
             return ex.ToString();
          } finally {
-            try {
+            if ( proxy?.Domain != null ) try {
                ( RemotingServices.GetLifetimeService( proxy ) as ILease ).Register( proxy );
                AppDomain.Unload( proxy.Domain );
             } catch ( Exception ex ) { Log( ex ); }
@@ -655,8 +657,9 @@ namespace Sheepy.Modnix.MainGUI {
 
       private static Sandbox CreateSandbox () {
          AppControl.Instance.Log( $"Creating sandbox" );
-         var domain = AppDomain.CreateDomain( "Mod config sandbox", null, new AppDomainSetup { DisallowCodeDownload = true } );
          try {
+            // throw new NotSupportedException("Test");
+            var domain = AppDomain.CreateDomain( "Mod config sandbox", null, new AppDomainSetup { DisallowCodeDownload = true } );
             var proxy = domain.CreateInstanceFromAndUnwrap( AppControl.Instance.MyPath, typeof( Sandbox ).FullName ) as Sandbox;
             ( RemotingServices.GetLifetimeService( proxy ) as ILease ).Register( proxy );
             proxy.Domain = domain;
@@ -664,7 +667,10 @@ namespace Sheepy.Modnix.MainGUI {
             return proxy;
          } catch ( Exception ex ) {
             AppControl.Instance.Log( ex );
-            return null;
+            if ( ex is NotSupportedException ) {
+               ex = AppControl.Instance.CreateRuntimeConfig() ?? new NotSupportedException( "\nPlease restart Modnix to fix mod sandbox.\n\n", ex );
+            }
+            return new Sandbox{ Error = ex };
          }
       }
 

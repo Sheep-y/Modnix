@@ -10,7 +10,8 @@ Roadmap: https://github.com/Sheep-y/Modnix/issues/24
 # Version 2.5.2, in development
 
 * Fix: Empty zip/7z no longer creates empty mod folder.
-* Fix: Adding an empty 7z no longer throws AggregateException.
+* Fix: Adding an empty 7z no longer throws AggregateException. (#30)
+* Fix: Sandbox failure now triggers app config creation.  Thanks JulianSkies on NexusMods. (#29)
 * Gui: Mods with flags no longer trigger warning; flags would be safe even when not supported.
 * Gui: Info popup when Add Mod failed to add any files.
 * Gui: Softer mod error wordings.  Statistically I made most mods, and they are resilience.
@@ -68,7 +69,7 @@ https://github.com/Sheep-y/Modnix/releases/tag/v2.4
 * Fix: mod_info with Version field are now parsed correctly.
 * Fix: A mod's requirement(s) on itself are now ignored.
 * Fix: LoadIndex and LogLevel may be overrode together in modnix config, instead of index over level.
-* Fix: Config write error now popup a prompt, instead of crashing mod manager.
+* Fix: Config write error now popup a prompt, instead of crashing mod manager. (#25)
 * Mod: "assemblies" api now returns null when mod is not found.
 * Mod: api( "assemblies", "modnix" ) no longer returns ppml assembly.
 * Mod: Requires and Disables are now resolved together in each resolve loop, instead of only Requires.
