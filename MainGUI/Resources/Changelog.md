@@ -3,7 +3,8 @@ Modnix Changelog
 # Version 2.5.2, in development
 
 * Fix: Empty zip/7z no longer creates empty mod folder.
-* Fix: Adding an empty 7z no longer throws AggregateException.
+* Fix: Adding an empty 7z no longer throws AggregateException. (#30)
+* Fix: Sandbox failure now triggers app config creation.  Thanks JulianSkies on NexusMods. (#29)
 * Gui: Mods with flags no longer trigger warning; flags would be safe even when not supported.
 * Gui: Info popup when Add Mod failed to add any files.
 * Gui: Softer mod error wordings.  Statistically I made most mods, and they are resilience.
@@ -19,6 +20,7 @@ Modnix Changelog
 # Version 2.5, 2020-05-20
 
 * New: "api_add" api now accepts parameter-less delegates such as Func<string> or Action.
+* New: Mods may start an api call with vertical tab '\v' to suppress warnings.
 * Fix: "api_add" api now rejects non-static and abstract methods, and methods with in, out, or ref parameters.
 * Fix: Logger will now try to create directory when one does not exist, and write error will trigger OnError.
 * Fix: Ignore .js and .dll with empty or space-only filename when scanning mods.
@@ -27,7 +29,6 @@ Modnix Changelog
 * Mod: Avoids are now processed after Requires, and in the resolve loop.
 * Mod: Resolve loop will restart between steps after a mod is disabled, instead of finishing the loop.
 * Mod: Because of easier restart, resolve loop cap is raised from 20 to 30.
-* Mod: Starts an api call with vertical tab '\v' to suppress Modnix warnings.
 * Log: Revised mod disabled messages.
 * Log: Disabled mods are now logged at info level, so that manually disabled mods will not have error when re-enabled.
 * Log: Each dll load will only be logged once.
@@ -40,7 +41,7 @@ Modnix Changelog
 * Fix: mod_info with Version field are now parsed correctly.
 * Fix: A mod's requirement(s) on itself are now ignored.
 * Fix: LoadIndex and LogLevel may be overrode together in modnix config, instead of index over level.
-* Fix: Config write error now popup a prompt, instead of crashing mod manager.
+* Fix: Config write error now popup a prompt, instead of crashing mod manager. (#25)
 * Mod: "assemblies" api now returns null when mod is not found.
 * Mod: api( "assemblies", "modnix" ) no longer returns ppml assembly.
 * Mod: Requires and Disables are now resolved together in each resolve loop, instead of only Requires.
@@ -204,6 +205,7 @@ Modnix Changelog
 * Gui: All log messages are duplicated to standard out, instead of silence after GUI shows up.
 
 # Version 0.80 Beta, 2020-02-29
+https://github.com/Sheep-y/Modnix/releases/tag/v0.80
 
 * First public beta.
 * One-click install.
