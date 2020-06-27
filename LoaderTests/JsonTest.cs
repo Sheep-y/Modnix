@@ -7,7 +7,7 @@ namespace Sheepy.Modnix.Tests {
    [TestClass()]
    public class ModJsonTest {
 
-      [TestMethod()] public void ParseVersionTest () {
+      [TestMethod] public void ParseVersionTest () {
          AssertVer( false, null );
          AssertVer( false, "" );
          AssertVer( false, " " );
@@ -27,7 +27,7 @@ namespace Sheepy.Modnix.Tests {
          Assert.AreEqual( parsed, expected, input );
       }
 
-      [TestMethod()] public void AppVerTest () {
+      [TestMethod] public void AppVerTest () {
          var appver = Json.Parse<AppVer>( @"null" );
          Assert.IsNull( appver, "null" );
 
@@ -44,7 +44,7 @@ namespace Sheepy.Modnix.Tests {
          AssertAppVer( "full", appver, new Version( 1, 0, 0, 0 ), new Version( 2, 1, 0, 0 ) );
       }
 
-      [TestMethod()] public void AppVerArrayTest () {
+      [TestMethod] public void AppVerArrayTest () {
          var appver = Json.Parse<AppVer[]>( @"null" );
          Assert.IsNull( appver, "null" );
 
@@ -79,7 +79,7 @@ namespace Sheepy.Modnix.Tests {
          Assert.AreEqual( max, appver.Max, $"{id}.max"  );
       }
 
-      [TestMethod()] public void StringArrayTest () {
+      [TestMethod] public void StringArrayTest () {
          var val = Json.Parse<string[]>( "null" );
          Assert.IsNull( val, "null" );
 
@@ -100,7 +100,7 @@ namespace Sheepy.Modnix.Tests {
          Assert.AreEqual( "zh", val[1], "zh" );
       }
 
-      [TestMethod()] public void TextSetTest () {
+      [TestMethod] public void TextSetTest () {
          var val = Json.Parse<TextSet>( "null" );
          Assert.IsNull( val, "null" );
 
@@ -115,7 +115,7 @@ namespace Sheepy.Modnix.Tests {
          Assert.AreEqual( "f", val.ToString( "e" ), "Abe.ToString" );
       }
 
-      [TestMethod()] public void VersionTest () {
+      [TestMethod] public void VersionTest () {
          var appver = Json.Parse<Version>( "null" );
          Assert.IsNull( appver, "null" );
 
@@ -129,7 +129,7 @@ namespace Sheepy.Modnix.Tests {
          Assert.AreEqual( new Version( 1234, 5678, 0, 0 ), appver, "1" );
       }
 
-      [TestMethod()] public void ModMetaNormTest () {
+      [TestMethod] public void ModMetaNormTest () {
          var dict = new Dictionary<string, string>();
          dict.Add( "*", "def" );
          var meta = new ModMeta(){
@@ -183,7 +183,7 @@ namespace Sheepy.Modnix.Tests {
          Assert.AreEqual( " b ", meta.Actions[0]["a"], "Action keys are trimmed and lowercased" );
       }
 
-      [TestMethod()] public void ModMetaTest () {
+      [TestMethod] public void ModMetaTest () {
          var meta = Json.ParseMod( @"{ Id:""simple"", Name:""Simple"", Author: { en: ""EN"", zh: ""ZH"" }, ""Version"": ""1.0"", Requires:""lib"", Dlls:""dll"" }" );
          Assert.IsNotNull( meta, "simple" );
          Assert.AreEqual( "simple", meta.Id, "simple.id" );

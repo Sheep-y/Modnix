@@ -7,7 +7,7 @@ namespace Sheepy.Modnix.Tests {
    [TestClass()]
    public class ActionTest {
 
-      [TestMethod()] public void FilterActionTest () {
+      [TestMethod] public void FilterActionTest () {
          var defs = new ActionDef[]{
             CreateDef( "action", "Default", "all", "Def1" ),
             CreateDef( "eval", "Code1" ),

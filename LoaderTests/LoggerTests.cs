@@ -23,13 +23,13 @@ namespace Sheepy.Logging.Tests {
          Log.Filters.Clear();
       }
 
-      [TestMethod()][ExpectedException(typeof(ArgumentNullException))]
+      [TestMethod][ExpectedException(typeof(ArgumentNullException))]
       public void NullFileLoggerThrow () => new FileLogger( null );
 
-      [TestMethod()][ExpectedException(typeof(ArgumentNullException))]
+      [TestMethod][ExpectedException(typeof(ArgumentNullException))]
       public void EmptyFileLoggerThrow () => new FileLogger( "" );
 
-      [TestMethod()] public void FileLogger () {
+      [TestMethod] public void FileLogger () {
          Log.WriteDelay = 100;
 
          // Check that log is not written immediately
@@ -60,7 +60,7 @@ namespace Sheepy.Logging.Tests {
          Assert.AreEqual( null, Error, "OnError" );
       }
 
-      [TestMethod()] public void LoggerProxy () {
+      [TestMethod] public void LoggerProxy () {
          Log.WriteDelay = 1000;
          var Log2 = new FileLogger( "logtest2.tmp", 1000 );
          LoggerProxy proxy = new LoggerProxy( true, Log );
@@ -99,7 +99,7 @@ namespace Sheepy.Logging.Tests {
          Assert.AreEqual( null, Error, "OnError" );
       }
 
-      [TestMethod()] public void MultiParamFilter () {
+      [TestMethod] public void MultiParamFilter () {
          Log.WriteDelay = 0;
          Log.Filters.Add( LogFilters.AutoMultiParam );
 
@@ -115,7 +115,7 @@ namespace Sheepy.Logging.Tests {
          Assert.AreEqual( null, Error, "OnError" );
       }
 
-      [TestMethod()] public void FormatParamFilter () {
+      [TestMethod] public void FormatParamFilter () {
          Log.WriteDelay = 0;
          Log.Filters.Add( LogFilters.FormatParams );
 
@@ -135,7 +135,7 @@ namespace Sheepy.Logging.Tests {
          Assert.AreEqual( null, Error, "OnError" );
       }
 
-      [TestMethod()] public void ResolveLazyFilter () {
+      [TestMethod] public void ResolveLazyFilter () {
          Log.WriteDelay = 0;
          Log.Filters.Add( LogFilters.ResolveLazy );
 
@@ -153,7 +153,7 @@ namespace Sheepy.Logging.Tests {
          Assert.IsNotNull( Error, "OnError triggered" );
       }
 
-      [TestMethod()] public void IngoreDupErrorFilter () {
+      [TestMethod] public void IngoreDupErrorFilter () {
          Log.WriteDelay = 0;
          Log.Filters.Add( LogFilters.IgnoreDuplicateExceptions() );
 
@@ -184,7 +184,7 @@ namespace Sheepy.Logging.Tests {
          Assert.AreEqual( null, Error, "OnError" );
       }
 
-      [TestMethod()] public void PrefixPostfixFilter () {
+      [TestMethod] public void PrefixPostfixFilter () {
          Log.WriteDelay = 0;
          Log.Filters.Add( LogFilters.AddPrefix( "A" ) );
          Log.Filters.Add( LogFilters.AddPostfix( "Z" ) );
@@ -199,7 +199,7 @@ namespace Sheepy.Logging.Tests {
          Assert.AreEqual( null, Error, "OnError" );
       }
 
-      [TestMethod()] public void MultipleFilters () {
+      [TestMethod] public void MultipleFilters () {
          var Logger = new LoggerProxy( Log );
          var filters = Logger.Filters;
          filters.Add( LogFilters.AddPrefix( "Pre>" ) );

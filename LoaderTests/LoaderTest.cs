@@ -29,7 +29,7 @@ namespace Sheepy.Modnix.Tests {
          ModLoader.AllMods.Add( mod );
       }
 
-      [TestMethod()] public void NameMatchTest () {
+      [TestMethod] public void NameMatchTest () {
          Assert.IsTrue( ModScanner.NameMatch( "abc", "ABC" ), "ignore case" );
          Assert.IsTrue( ModScanner.NameMatch( "ExampleMod", "Example Mod" ), "ignore space" );
          Assert.IsTrue( ModScanner.NameMatch( "Mod", "Mod - Copy" ), "One copy" );
@@ -45,7 +45,7 @@ namespace Sheepy.Modnix.Tests {
          Assert.IsFalse( ModScanner.NameMatch( "DebugConsole", "EnableConsole" ), "console mods" );
       }
 
-      [TestMethod()] public void DisabledModTest () {
+      [TestMethod] public void DisabledModTest () {
          AddMod( new ModEntry( new ModMeta{ Id = "A" } ) );
          AddMod( new ModEntry( new ModMeta{ Id = "B" } ){ Disabled = true } );
          ResolveMods();
@@ -59,7 +59,7 @@ namespace Sheepy.Modnix.Tests {
          return v;
       }
 
-      [TestMethod()] public void DuplicateTest () {
+      [TestMethod] public void DuplicateTest () {
          var AlphaMod  = new ModEntry( new ModMeta{ Id = "dup~", Version = Ver( 1 ) } );
          var BetaMod   = new ModEntry( new ModMeta{ Id = "dup!", Version = Ver( 2 ) } );
          var GoldMod   = new ModEntry( new ModMeta{ Id = "dup#", Version = Ver( 4 ) } );
@@ -80,7 +80,7 @@ namespace Sheepy.Modnix.Tests {
          Assert.AreEqual( 1, ModLoader.EnabledMods.Count );
       }
 
-      [TestMethod()] public void RequiresTest () {
+      [TestMethod] public void RequiresTest () {
          var LoaderMin = new ModEntry( new ModMeta{ Id = "LoaderMin", Requires = new AppVer[]{ new AppVer( "Loader", Ver( 99 ) ) } }.Normalise() );
          var LoaderOk  = new ModEntry( new ModMeta{ Id = "LoaderOk" , Requires = new AppVer[]{ new AppVer( "Loader", Ver( 1 ) ) } }.Normalise() );
          var LoaderMax = new ModEntry( new ModMeta{ Id = "LoaderMax", Requires = new AppVer[]{ new AppVer( "Loader", max : Ver( 0 ) ) } }.Normalise() );
@@ -132,7 +132,7 @@ namespace Sheepy.Modnix.Tests {
          Assert.AreEqual( 5, ModLoader.EnabledMods.Count );
       }
 
-      [TestMethod()] public void AvoidsTest () {
+      [TestMethod] public void AvoidsTest () {
          // A conflicts with B, B conflicts with C, D conflicts with B D E.
          // A avoids B, B is skipped, D avoids E (non-exist) and skip itself, leaving C and D
          var A = new ModEntry( new ModMeta{ Id = "A", Version = Ver( 1 ), Avoids = new AppVer[]{ new AppVer( "B", max : Ver( 1 ) ), new AppVer( "B", Ver( 2 ) ), new AppVer( "D", Ver( 4 ) ) } } );
@@ -155,7 +155,7 @@ namespace Sheepy.Modnix.Tests {
          Assert.AreEqual( 2, ModLoader.EnabledMods.Count );
       }
 
-      [TestMethod()] public void LibraryTest () {
+      [TestMethod] public void LibraryTest () {
          // A requries B, C is disabled
          var A = new ModEntry( new ModMeta{ Id = "A", Requires = new AppVer[]{ new AppVer( "B" ) } } );
          var B = new ModEntry( new ModMeta{ Id = "B", Flags = new string[]{ "Library" } } );
@@ -174,7 +174,7 @@ namespace Sheepy.Modnix.Tests {
          Assert.AreEqual( 2, ModLoader.EnabledMods.Count );
       }
 
-      [TestMethod()] public void DisablesTest () {
+      [TestMethod] public void DisablesTest () {
          // A conflicts with B, B conflicts with C, D conflicts with A B D.
          // A disables B, B is skipped, D disables A and B and skip itself, leaving C and D
          var A = new ModEntry( new ModMeta{ Id = "A", Version = Ver( 1 ), Disables = new AppVer[]{ new AppVer( "B" ), new AppVer( "D", Ver( 4 ) ) } } );
