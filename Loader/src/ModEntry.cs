@@ -96,7 +96,7 @@ namespace Sheepy.Modnix {
       } }
 
       public object ModAPI ( string action, object param = null ) {
-         bool logError = true, stackPushed = false;
+         var logError = true;
          try {
             IsMultiPart( action, out string cmd, out string spec, out logError );
             if ( ! LowerAndIsEmpty( cmd, out cmd ) ) {
@@ -106,9 +106,7 @@ namespace Sheepy.Modnix {
                      case "api_info"   : return InfoApi( param );
                      case "api_list"   : return ListApi( param );
                      case "api_remove" : return RemoveApi( spec );
-                     case "api_stack" :
-                        stackPushed = ApiStackPush( action, cmd, spec, param );
-                        return ApiStack( spec, param );
+                     case "api_stack"  : return ApiStack( spec, param );
                      case "assembly"   : return GetAssembly( param );
                      case "assemblies" : return GetAssemblies( param );
                      case "config"     : return LoadConfig( spec, param );
@@ -123,12 +121,15 @@ namespace Sheepy.Modnix {
                   }
                } else {
                   API_Func handler;
+                  var stackPushed = false;
                   lock ( ApiExtension ) ApiExtension.TryGetValue( cmd, out handler );
-                  if ( handler != null ) {
+                  if ( handler != null ) try {
                      stackPushed = ApiStackPush( action, cmd, spec, param );
                      var result = handler( spec, param );
                      if ( logError && result is Exception err ) Warn( err );
                      return result;
+                  } finally {
+                     if ( stackPushed ) ApiStackPop();
                   }
                }
             }
@@ -137,8 +138,6 @@ namespace Sheepy.Modnix {
          } catch ( Exception ex ) {
             if ( logError ) Warn( ex );
             return ex;
-         } finally {
-            if ( stackPushed ) ApiStackPop();
          }
       }
 

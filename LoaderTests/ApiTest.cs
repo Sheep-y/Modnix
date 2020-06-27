@@ -280,16 +280,15 @@ namespace Sheepy.Modnix.Tests {
 
       [TestMethod] public void StackTest () {
          string aId = ModA.Metadata.Id, bId = ModB.Metadata.Id;
-         AssertStrAry( ModA.ModAPI( "api_Stack acTion" ), "A1a", "api_Stack acTion" );
-         AssertStrAry( ModA.ModAPI( "api_stack mod" ), "A1a", aId );
-
+         //AssertStrAry( ModA.ModAPI( "api_Stack acTion" ), "A1a", "api_Stack acTion" );
+         //AssertStrAry( ModA.ModAPI( "api_stack mod" ), "A1a", aId );
          Assert.AreEqual( true, ModA.ModAPI( "api_add A.Stack", (Func<string,object,object>) AStack ), "Register A.Stack" );
          Assert.AreEqual( true, ModB.ModAPI( "api_add B.Stack", (Func<string,object,object>) BStack ), "Register B.Stack" );
 
-         AssertStrAry( ModA.ModAPI( "A.Stack mod", 2 ), "A2m", aId, aId, bId, aId );
-         AssertStrAry( ModA.ModAPI( "A.Stack acTion", 2 ), "A2a", "api_stack acTion", "A.Stack acTion", "B.Stack acTion", "A.Stack acTion" );
-         AssertStrAry( ModA.ModAPI( "A.Stack command", 2 ), "A2c", "api_stack", "a.stack", "b.stack", "a.stack" );
-         AssertStrAry( ModA.ModAPI( "A.Stack Spec", 2 ), "A2s", "Spec", "Spec", "Spec", "Spec" );
+         AssertStrAry( ModA.ModAPI( "A.Stack mod", 2 ), "A2m", aId, bId, aId );
+         AssertStrAry( ModA.ModAPI( "A.Stack acTion", 2 ), "A2a", "A.Stack acTion", "B.Stack acTion", "A.Stack acTion" );
+         AssertStrAry( ModA.ModAPI( "A.Stack command", 2 ), "A2c", "a.stack", "b.stack", "a.stack" );
+         AssertStrAry( ModA.ModAPI( "A.Stack Spec", 2 ), "A2s", "Spec", "Spec", "Spec" );
 
          Assert.AreEqual( true, ModA.ModAPI( "api_remove A.Stack" ) );
          Assert.AreEqual( true, ModB.ModAPI( "api_remove B.Stack" ) );
