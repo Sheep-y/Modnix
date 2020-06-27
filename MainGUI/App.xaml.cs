@@ -431,7 +431,7 @@ namespace Sheepy.Modnix.MainGUI {
          CurrentGame.RunInjector( "/y" );
          CheckInjectionStatus( true );
          if ( CurrentGame.Status == "modnix" ) {
-            CreateRuntimeConfig();
+            //CreateRuntimeConfig();
             SaveSettings();
             // Migrate mods
             if ( MigrateLegacy() )
