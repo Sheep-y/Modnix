@@ -5,6 +5,7 @@ Modnix Changelog
 * Fix: Empty zip/7z no longer creates empty mod folder.
 * Fix: Adding an empty 7z no longer throws AggregateException. (#30)
 * Fix: Sandbox failure now triggers app config creation.  Thanks JulianSkies on NexusMods. (#29)
+* Fix: Sandbox assembly path will be local if possible.
 * Gui: Mods with flags no longer trigger warning; flags would be safe even when not supported.
 * Gui: Info popup when Add Mod failed to add any files.
 * Gui: Softer mod error wordings.  Statistically I made most mods, and they are resilience.
@@ -205,7 +206,6 @@ Modnix Changelog
 * Gui: All log messages are duplicated to standard out, instead of silence after GUI shows up.
 
 # Version 0.80 Beta, 2020-02-29
-https://github.com/Sheep-y/Modnix/releases/tag/v0.80
 
 * First public beta.
 * One-click install.
