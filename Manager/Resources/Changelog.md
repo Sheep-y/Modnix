@@ -4,8 +4,6 @@ Modnix Changelog
 Roadmap: https://github.com/Sheep-y/Modnix/issues/24
 
 * New: "mod_stack" api to get api callstack.
-* Fix: Create app config when sandbox is denied.  Requires restart.
-* Fix: Sandbox assembly path will be local if possible.
 * Log: OS type and version are now logged.
 
 # Version 2.5.2, in development
@@ -13,6 +11,7 @@ Roadmap: https://github.com/Sheep-y/Modnix/issues/24
 * Fix: Empty zip/7z no longer creates empty mod folder.
 * Fix: Adding an empty 7z no longer throws AggregateException. (#30)
 * Fix: Sandbox failure now triggers app config creation.  Thanks JulianSkies on NexusMods. (#29)
+* Fix: Sandbox assembly path will be local if possible.
 * Gui: Mods with flags no longer trigger warning; flags would be safe even when not supported.
 * Gui: Info popup when Add Mod failed to add any files.
 * Gui: Softer mod error wordings.  Statistically I made most mods, and they are resilience.
@@ -172,6 +171,7 @@ Roadmap: https://github.com/Sheep-y/Modnix/issues/13
 * Mod: Fix reported version for "ppml" when queries through api.
 * Mod: DefaultConfig in mod_info will be compared with a new instance of the config type, on the config action, and warn if different.
 * Mod: Mod API are now case-insensitive, including registered extensions.
+* Log: Log is flushed to disk after every game phase.
 
 # Version 1.0, 2020-03-23
 https://github.com/Sheep-y/Modnix/releases/tag/v1.0
