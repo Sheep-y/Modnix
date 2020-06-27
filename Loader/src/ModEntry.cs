@@ -3,12 +3,14 @@ using Newtonsoft.Json.Linq;
 using Sheepy.Logging;
 using System;
 using System.Collections.Generic;
+using System.Data.Odbc;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sheepy.Modnix {
@@ -79,6 +81,7 @@ namespace Sheepy.Modnix {
          AddNativeApi( "api_info"  , nameof( InfoApi ) );
          AddNativeApi( "api_list"  , nameof( ListApi ) );
          AddNativeApi( "api_remove", nameof( RemoveApi ) );
+         AddNativeApi( "api_stack", nameof( ApiStack ) );
          AddNativeApi( "assembly"  , nameof( GetAssembly ) );
          AddNativeApi( "assemblies", nameof( GetAssemblies ) );
          AddNativeApi( "config"    , nameof( LoadConfig ) );
@@ -93,9 +96,9 @@ namespace Sheepy.Modnix {
       } }
 
       public object ModAPI ( string action, object param = null ) {
-         var logError = true;
+         bool logError = true, stackPushed = false;
          try {
-            IsMultiPart( action, out string cmd, out string spec, out logError ); 
+            IsMultiPart( action, out string cmd, out string spec, out logError );
             if ( ! LowerAndIsEmpty( cmd, out cmd ) ) {
                if ( cmd.IndexOf( '.' ) < 0 ) {
                   switch ( cmd ) {
@@ -103,6 +106,9 @@ namespace Sheepy.Modnix {
                      case "api_info"   : return InfoApi( param );
                      case "api_list"   : return ListApi( param );
                      case "api_remove" : return RemoveApi( spec );
+                     case "api_stack" :
+                        stackPushed = ApiStackPush( action, cmd, spec, param );
+                        return ApiStack( spec, param );
                      case "assembly"   : return GetAssembly( param );
                      case "assemblies" : return GetAssemblies( param );
                      case "config"     : return LoadConfig( spec, param );
@@ -119,6 +125,7 @@ namespace Sheepy.Modnix {
                   API_Func handler;
                   lock ( ApiExtension ) ApiExtension.TryGetValue( cmd, out handler );
                   if ( handler != null ) {
+                     stackPushed = ApiStackPush( action, cmd, spec, param );
                      var result = handler( spec, param );
                      if ( logError && result is Exception err ) Warn( err );
                      return result;
@@ -130,6 +137,8 @@ namespace Sheepy.Modnix {
          } catch ( Exception ex ) {
             if ( logError ) Warn( ex );
             return ex;
+         } finally {
+            if ( stackPushed ) ApiStackPop();
          }
       }
 
@@ -230,6 +239,46 @@ namespace Sheepy.Modnix {
          if ( param == null ) return list;
          if ( param is string txt ) return list.Where( e => e.IndexOf( txt, StringComparison.OrdinalIgnoreCase ) >= 0 );
          if ( param is Regex reg ) return list.Where( e => reg.IsMatch( e ) );
+         return null;
+      }
+      #endregion
+
+      #region API Stack
+      private static Dictionary<Thread,Stack<object[]>> ApiCalls = new Dictionary<Thread, Stack<object[]>>();
+
+      private bool ApiStackPush ( string action, string command, string spec, object param ) {
+         var thread = Thread.CurrentThread;
+         Stack<object[]> stack;
+         lock ( ApiCalls ) {
+            if ( ! ApiCalls.TryGetValue( thread, out stack ) )
+               ApiCalls.Add( thread, stack = new Stack<object[]>() );
+         }
+         stack.Push( new object[]{ Metadata.Id, action, command, spec, param } );
+         return true;
+      }
+
+      private void ApiStackPop () {
+         var thread = Thread.CurrentThread;
+         Stack<object[]> stack;
+         lock ( ApiCalls ) stack = ApiCalls[ thread ];
+         stack.Pop();
+         if ( stack.Count == 0 )
+            lock ( ApiCalls )
+               ApiCalls.Remove( thread );
+      }
+
+      private System.Collections.IEnumerable ApiStack ( string type, object param ) {
+         LowerAndIsEmpty( type, out type );
+         Stack<object[]> stack;
+         lock ( ApiCalls ) stack = ApiCalls[ param as Thread ?? Thread.CurrentThread ];
+         switch ( type ) {
+            case null : return stack.ToArray();
+            case "mod" : return stack.Select( e => e[0].ToString() ).ToArray();
+            case "action" : return stack.Select( e => e[1].ToString() ).ToArray();
+            case "command" : return stack.Select( e => e[2].ToString() ).ToArray();
+            case "spec" : return stack.Select( e => e[3].ToString() ).ToArray();
+            case "param" : return stack.Select( e => e[4] ).ToArray();
+         }
          return null;
       }
       #endregion

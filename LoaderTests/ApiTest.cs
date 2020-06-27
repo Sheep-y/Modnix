@@ -1,5 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.CodeDom;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -38,7 +39,7 @@ namespace Sheepy.Modnix.Tests {
 
       private const string TEST_CONFIG_MOD = @"({ Id : ""test.config""})";
 
-      [TestMethod()] public void AssemblyTest () {
+      [TestMethod] public void AssemblyTest () {
          var loader = ModA.ModAPI( "assembly", "loader" ) as Assembly;
          Assert.IsNotNull( loader, "loader assembly" );
          Assert.AreEqual ( loader, ModA.ModAPI( "assembly", "loader" ), "loader assembly" );
@@ -56,7 +57,7 @@ namespace Sheepy.Modnix.Tests {
          Assert.AreEqual( loader, list.First(), "loader assemblies[0]" );
       }
 
-      [TestMethod()] public void ConfigTest () {
+      [TestMethod] public void ConfigTest () {
          var modFile = Path.Combine( Path.GetTempPath(), "mod_info.js" );
          File.WriteAllText( modFile, TEST_CONFIG_MOD );
          try {
@@ -100,7 +101,7 @@ namespace Sheepy.Modnix.Tests {
          }
       }
 
-      [TestMethod()] public void ContextTest () {
+      [TestMethod] public void ContextTest () {
          Assert.AreEqual( 3, ModLoader.EnabledMods.Count, "mod count" );
       }
 
@@ -131,7 +132,7 @@ namespace Sheepy.Modnix.Tests {
       private static string OutFunc ( out string a, object __ ) => a = lastRun = "OutF";
       private static string InFunc ( in string a, object __ ) => lastRun = a;
 
-      [TestMethod()] public void ModExtTypeTest () {
+      [TestMethod] public void ModExtTypeTest () {
          // No param
          Assert.AreEqual( true, ModA.ModAPI( "api_add A.PA", (Action) PlainAction ), "PlainAction" );
          Assert.AreEqual( true, ModA.ModAPI( "A.PA", null ), "A.PA" );
@@ -186,7 +187,7 @@ namespace Sheepy.Modnix.Tests {
       private static bool ExtC ( object e ) => e == null;
       private static void ExtD ( Version _ ) { }
 
-      [TestMethod()] public void ModExtTest () {
+      [TestMethod] public void ModExtTest () {
          Func<object,string> A = ExtA;
          Func<object,object,string> B = ExtB;
          Predicate<object> C = ExtC;
@@ -229,7 +230,7 @@ namespace Sheepy.Modnix.Tests {
       private void IsException ( object value, string message ) =>
          Assert.IsInstanceOfType( value, typeof( Exception ), message );
 
-      [TestMethod()] public void ModInfoTest () {
+      [TestMethod] public void ModInfoTest () {
          Assert.AreEqual( ModA.Metadata.Id, ( ModA.ModAPI( "mod_info", null ) as ModMeta ).Id, "A null" );
          Assert.AreEqual( ModA.Metadata.Id, ( ModA.ModAPI( "mod_info", "" ) as ModMeta ).Id, "A empty" );
          Assert.AreEqual( ModA.Metadata.Id, ( ModA.ModAPI( "mod_info", " " ) as ModMeta ).Id, "A blank" );
@@ -238,7 +239,7 @@ namespace Sheepy.Modnix.Tests {
          Assert.AreEqual( null, ModA.ModAPI( "mod_info", "test.d" ), "test.d" );
       }
 
-      [TestMethod()] public void ModListTest () {
+      [TestMethod] public void ModListTest () {
          var list = (IEnumerable<string>) ModA.ModAPI( "mod_list", null );
          Assert.AreEqual( 3, list.Count(), "list count" );
          Assert.IsTrue( list.Contains( ModA.Metadata.Id ), "A" );
@@ -260,11 +261,11 @@ namespace Sheepy.Modnix.Tests {
          Assert.IsNull( task.Exception, $"config {type} saved without error" );
       }
 
-      [TestMethod()] public void PathTest () {
+      [TestMethod] public void PathTest () {
          var mod_dir = ModA.ModAPI( "dir", "mods_root" )?.ToString();
          var loader_dir = ModA.ModAPI( "dir", "loader" )?.ToString();
          var loader_path = ModA.ModAPI( "path", "loader" )?.ToString();
-         
+
          Assert.IsTrue( loader_path.EndsWith( "Loader.dll" ) , "Modnix path" );
          Assert.IsTrue( mod_dir.EndsWith( "My Games\\Phoenix Point\\Mods" ), "Mod root" );
          Assert.AreEqual( loader_dir, Path.GetDirectoryName( loader_path ), "Modnix = mods root" );
@@ -277,7 +278,44 @@ namespace Sheepy.Modnix.Tests {
          Assert.AreEqual( null, ModA.ModAPI( "path", "test.c" ), "test.c" );
       }
 
-      [TestMethod()] public void VersionTest () {
+      [TestMethod] public void StackTest () {
+         string aId = ModA.Metadata.Id, bId = ModB.Metadata.Id;
+         AssertStrAry( ModA.ModAPI( "api_Stack acTion" ), "A1a", "api_Stack acTion" );
+         AssertStrAry( ModA.ModAPI( "api_stack mod" ), "A1a", aId );
+
+         Assert.AreEqual( true, ModA.ModAPI( "api_add A.Stack", (Func<string,object,object>) AStack ), "Register A.Stack" );
+         Assert.AreEqual( true, ModB.ModAPI( "api_add B.Stack", (Func<string,object,object>) BStack ), "Register B.Stack" );
+
+         AssertStrAry( ModA.ModAPI( "A.Stack mod", 2 ), "A2m", aId, aId, bId, aId );
+         AssertStrAry( ModA.ModAPI( "A.Stack acTion", 2 ), "A2a", "api_stack acTion", "A.Stack acTion", "B.Stack acTion", "A.Stack acTion" );
+         AssertStrAry( ModA.ModAPI( "A.Stack command", 2 ), "A2c", "api_stack", "a.stack", "b.stack", "a.stack" );
+         AssertStrAry( ModA.ModAPI( "A.Stack Spec", 2 ), "A2s", "Spec", "Spec", "Spec", "Spec" );
+
+         Assert.AreEqual( true, ModA.ModAPI( "api_remove A.Stack" ) );
+         Assert.AreEqual( true, ModB.ModAPI( "api_remove B.Stack" ) );
+      }
+
+      private static void AssertStrAry ( object ary, string name, params string[] check ) {
+         var stack = ary as string[];
+         Assert.IsNotNull( stack, name + " not null" );
+         Assert.AreEqual( check.Length, stack.Length, name + ".Length" );
+         for ( var i = 0 ; i < check.Length ; i++ )
+            Assert.AreEqual( check[i], stack[i], name + "["+ i + "]" );
+      }
+
+      private static object AStack ( string spec, object param ) {
+         var count = param as int? ?? 0;
+         if ( count <= 0 ) return ModA.ModAPI( "api_stack " + spec );
+         return ModB.ModAPI( "B.Stack " + spec, count - 1 );
+      }
+
+      private static object BStack ( string spec, object param ) {
+         var count = param as int? ?? 0;
+         if ( count <= 0 ) return ModB.ModAPI( "api_stack " + spec );
+         return ModA.ModAPI( "A.Stack " + spec, count - 1 );
+      }
+
+      [TestMethod] public void VersionTest () {
          Assert.AreEqual( ModA.Metadata.Version, ModA.ModAPI( "version", null ), "A null" );
          Assert.AreEqual( ModA.Metadata.Version, ModA.ModAPI( "version", "" ), "A empty" );
          Assert.AreEqual( ModA.Metadata.Version, ModA.ModAPI( "version", " " ), "A blank" );

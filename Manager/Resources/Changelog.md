@@ -3,8 +3,9 @@ Modnix Changelog
 # Version 3 Beta 2, in development
 Roadmap: https://github.com/Sheep-y/Modnix/issues/24
 
-* Fix: Create app config on setup to allow "remote" dll load.
-* Fix: Try to make sandbox assembly path local.
+* New: "mod_stack" api to get api callstack.
+* Fix: Create app config when sandbox is denied.  Requires restart.
+* Fix: Sandbox assembly path will be local if possible.
 * Log: OS type and version are now logged.
 
 # Version 2.5.2, in development
