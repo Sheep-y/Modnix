@@ -656,7 +656,7 @@ namespace Sheepy.Modnix.MainGUI {
          try {
             // throw new NotSupportedException("Test");
             var domain = AppDomain.CreateDomain( "Modnix config sandbox", null, new AppDomainSetup { DisallowCodeDownload = true } );
-            var proxy = domain.CreateInstanceFromAndUnwrap( Assembly.GetExecutingAssembly().Location, typeof( Sandbox ).FullName ) as Sandbox;
+            var proxy = domain.CreateInstanceFromAndUnwrap( AppControl.Instance.MyPath, typeof( Sandbox ).FullName ) as Sandbox;
             ( RemotingServices.GetLifetimeService( proxy ) as ILease ).Register( proxy );
             proxy.Domain = domain;
             proxy.Initiate();
