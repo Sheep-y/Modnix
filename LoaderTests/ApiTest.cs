@@ -2,9 +2,11 @@
 using System;
 using System.CodeDom;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using static System.Reflection.BindingFlags;
 
@@ -285,10 +287,21 @@ namespace Sheepy.Modnix.Tests {
          Assert.AreEqual( true, ModA.ModAPI( "api_add A.Stack", (Func<string,object,object>) AStack ), "Register A.Stack" );
          Assert.AreEqual( true, ModB.ModAPI( "api_add B.Stack", (Func<string,object,object>) BStack ), "Register B.Stack" );
 
-         AssertStrAry( ModA.ModAPI( "A.Stack mod", 2 ), "A2m", aId, bId, aId );
-         AssertStrAry( ModA.ModAPI( "A.Stack acTion", 2 ), "A2a", "A.Stack acTion", "B.Stack acTion", "A.Stack acTion" );
-         AssertStrAry( ModA.ModAPI( "A.Stack command", 2 ), "A2c", "a.stack", "b.stack", "a.stack" );
-         AssertStrAry( ModA.ModAPI( "A.Stack Spec", 2 ), "A2s", "Spec", "Spec", "Spec" );
+         Task SA = Task.Run( () => {
+            AssertStrAry( ModA.ModAPI( "A.Stack mod", 2 ), "A2m", aId, bId, aId );
+            AssertStrAry( ModA.ModAPI( "A.Stack acTion", 2 ), "A2a", "A.Stack acTion", "B.Stack acTion", "A.Stack acTion" );
+            AssertStrAry( ModA.ModAPI( "A.Stack command", 2 ), "A2c", "a.stack", "b.stack", "a.stack" );
+            AssertStrAry( ModA.ModAPI( "A.Stack Spec", 2 ), "A2s", "Spec", "Spec", "Spec" );
+         });
+
+         Task SB = Task.Run( () => {
+            AssertStrAry( ModB.ModAPI( "B.Stack mod", 2 ), "B2m", bId, aId, bId );
+            AssertStrAry( ModB.ModAPI( "B.Stack acTion", 2 ), "B2a", "B.Stack acTion", "A.Stack acTion", "B.Stack acTion" );
+            AssertStrAry( ModB.ModAPI( "B.Stack command", 2 ), "B2c", "b.stack", "a.stack", "b.stack" );
+            AssertStrAry( ModB.ModAPI( "B.Stack Spec", 2 ), "B2s", "Spec", "Spec", "Spec" );
+         });
+
+         Task.WaitAll( SA, SB );
 
          Assert.AreEqual( true, ModA.ModAPI( "api_remove A.Stack" ) );
          Assert.AreEqual( true, ModB.ModAPI( "api_remove B.Stack" ) );
@@ -302,15 +315,25 @@ namespace Sheepy.Modnix.Tests {
             Assert.AreEqual( check[i], stack[i], name + "["+ i + "]" );
       }
 
+      private static Barrier StackLatch = new Barrier( 2 );
+
       private static object AStack ( string spec, object param ) {
          var count = param as int? ?? 0;
-         if ( count <= 0 ) return ModA.ModAPI( "api_stack " + spec );
+         if ( count <= 0 ) {
+            var result = ModA.ModAPI( "api_stack " + spec );
+            StackLatch.SignalAndWait( 1000 );
+            return result;
+         }
          return ModB.ModAPI( "B.Stack " + spec, count - 1 );
       }
 
-      private static object BStack ( string spec, object param ) {
+      private static object BStack (string spec, object param ) {
          var count = param as int? ?? 0;
-         if ( count <= 0 ) return ModB.ModAPI( "api_stack " + spec );
+         if ( count <= 0 ) {
+            var result = ModB.ModAPI( "api_stack " + spec );
+            StackLatch.SignalAndWait( 1000 );
+            return result;
+         }
          return ModA.ModAPI( "A.Stack " + spec, count - 1 );
       }
 
