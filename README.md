@@ -31,11 +31,11 @@ and [Troubleshooting](https://github.com/Sheep-y/Modnix/wiki/Troubleshooting-Mod
 4. Declarative mod dependencies and conflicts.  Opt-in pre-splash loading.
 5. Extensible API for mod config, unified background logger, query game versions, get mod list etc.
 
-See the [Wiki](https://github.com/Sheep-y/Modnix/wiki#wiki-wrapper) for mod specs.
+See the [Wiki](https://github.com/Sheep-y/Modnix/wiki#wiki-wrapper) for quick starts and documentations.
 
 See [Version Text](https://github.com/Sheep-y/PhoenixPt-Mods/tree/master/Unpublished/VersionText) for
 a tutorial mod with configuration and dual PPML/Modnix support.
-A video to explain it step by step has been recorded and is being edited.
+A [quick start video](https://youtu.be/7gsFlGkgoi0) explains it step by step.
 
 You can try to get support on the #mods channel on [official Discord](https://discordapp.com/invite/phoenixpoint).
 
