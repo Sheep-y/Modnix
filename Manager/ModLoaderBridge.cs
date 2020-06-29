@@ -61,6 +61,8 @@ namespace Sheepy.Modnix.MainGUI {
          var added = new HashSet<string>();
          var ordered = new List< ModEntry >();
          OrderMods( "SplashMod", added, ordered );
+         OrderMods( "Init", added, ordered );
+         OrderMods( "Initialize", added, ordered );
          OrderMods( "MainMod", added, ordered );
          OrderMods( "HomeMod", added, ordered );
          OrderMods( "HomeOnShow", added, ordered );
