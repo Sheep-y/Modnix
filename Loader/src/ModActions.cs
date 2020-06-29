@@ -34,7 +34,6 @@ namespace Sheepy.Modnix {
       internal static void RunActions ( ModEntry mod, string phase ) { try {
          phase = phase.ToLowerInvariant();
          var all = mod.Metadata.Actions;
-         if ( ! QuickScanActions( all, phase ) ) return; // TODO: move to ModScanner instead of rescanning every phase.
 
          var log = mod.Log();
          log.Verbo( "Scanning {0} actions", all.Length );
@@ -71,14 +70,6 @@ namespace Sheepy.Modnix {
          if ( handle.IndexOf( "stop" ) >= 0 ) {
             log.Info( "Aborting because OnError == Stop ({0})", handle );
             return true;
-         }
-         return false;
-      }
-
-      private static bool QuickScanActions ( ActionDef[] actions, string phase ) {
-         foreach ( var act in actions ) {
-            if ( PhaseMatch( GetActionField( act, null, "phase" ), phase ) )
-               return true;
          }
          return false;
       }
