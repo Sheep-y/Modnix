@@ -4,6 +4,7 @@ Modnix Changelog
 Roadmap: https://github.com/Sheep-y/Modnix/issues/24
 
 * New: "mod_stack" api to get api callstack.
+* Gui: Mod load order updated to match Modnix 3 phases.
 * Log: OS type and version are now logged.
 
 # Version 2.5.2, in development

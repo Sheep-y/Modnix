@@ -56,21 +56,41 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       private ModInfo[] SetModOrders ( IEnumerable< GridModItem > list ) {
-         var order = 1;
-         var result = list.ToArray();
-         // TODO: Rewrite with ModsInPhase
-         var ordered = ModLoader.EnabledMods
-            .Select( e => result.First( f => f.Mod == e ) )
-            .Where( e => e != null && ! float.IsInfinity( e._Order ) && e._Order < 0 );
-         App.Log( "Determining Splash phase order" );
-         foreach ( var mod in ordered ) {
-            if ( mod.Mod.Metadata.Dlls?.Any( e => e.Methods?.ContainsKey( "SplashMod" ) == true ) == true )
-               mod._Order = order++;
+         App.Log( "Determining mod load order" );
+
+         var added = new HashSet<string>();
+         var ordered = new List< ModEntry >();
+         OrderMods( "SplashMod", added, ordered );
+         OrderMods( "MainMod", added, ordered );
+         OrderMods( "HomeMod", added, ordered );
+         OrderMods( "HomeOnShow", added, ordered );
+         OrderMods( "HomeOnHide", added, ordered );
+         OrderMods( "GameMod", added, ordered );
+         OrderMods( "GeoscapeMod", added, ordered );
+         OrderMods( "TacticalMod", added, ordered );
+         OrderMods( "GameOnShow", added, ordered );
+         OrderMods( "GeoscapeOnShow", added, ordered );
+         OrderMods( "TacticalOnShow", added, ordered );
+         OrderMods( "GeoscapeOnHide", added, ordered );
+         OrderMods( "TacticalOnHide", added, ordered );
+         OrderMods( "GameOnHide", added, ordered );
+      
+         var map = list.ToDictionary( e => e.Id );
+         for ( var i = 0 ; i < ordered.Count ; i++ )
+            map[ ordered[ i ].Metadata.Id ]._Order = i + 1;
+         return list.ToArray();
+      }
+
+      private static void OrderMods ( string phase, HashSet<string> added, List<ModEntry> ordered ) {
+         var all = ModLoader.ModsInPhase;
+         var key = phase.ToLowerInvariant();
+         if ( ! all.ContainsKey( key ) ) return;
+         foreach ( var mod in all[ key ] ) {
+            var id = mod.Metadata.Id;
+            if ( added.Contains( id ) ) continue;
+            added.Add( id );
+            ordered.Add( mod );
          }
-         App.Log( "Determining Main phase order" );
-         foreach ( var mod in ordered )
-            mod._Order = order++;
-         return result;
       }
 
       private static Task< GridModItem > ConvertModTask ( ModEntry mod ) => Task.Run( () => ToGridItem( mod ) );
