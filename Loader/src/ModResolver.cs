@@ -123,7 +123,8 @@ namespace Sheepy.Modnix {
                if ( found )
                   fulfill = reqSet.Value.Any( r => ( r.Min == null || r.Min <= ver ) && ( r.Max == null || r.Max >= ver ) );
                if ( ! fulfill ) {
-                  DisableAndRemoveMod( mod, "require", "requirement {0} failed, found {1}", reqSet.Key, found ? (object) ver : "none" );
+                  var r = reqs.FirstOrDefault( e => ModScanner.NormaliseModId( e.Id ) == reqSet.Key );
+                  DisableAndRemoveMod( mod, "require", "requirement {0} failed, found {1}", reqSet.Key, found ? (object) ver : "none", r?.Name, r?.Url );
                   break;
                } else
                   dependees.Add( reqSet.Key );

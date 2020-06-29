@@ -777,8 +777,10 @@ namespace Sheepy.Modnix {
 
    public class AppVer {
       public string Id;
+      public string Name;
       public Version Min;
       public Version Max;
+      public string Url;
 
       public AppVer () {}
 

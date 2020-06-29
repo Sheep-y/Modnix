@@ -411,15 +411,15 @@ namespace Sheepy.Modnix.MainGUI {
             list.Add( FormatNotice( notice ) );
       }
 
-      private static Run FormatNotice ( LogEntry notice ) {
+      private static Inline FormatNotice ( LogEntry notice ) {
          var txt = new Run();
          switch ( notice.Message ) {
             case "avoid" :
-               txt.Text = string.Format( "\rDisabled: Avoiding {0}.", notice.Args[0]?.ToString() ); break;
+               txt.Text = string.Format( "\rDisabled: Avoiding {0}.", notice.Args[0] ); break;
             case "disable" :
-               txt.Text = string.Format( "\rDisabled by {0}.", notice.Args[0]?.ToString() ); break;
+               txt.Text = string.Format( "\rDisabled by {0}.", notice.Args[0] ); break;
             case "duplicate" :
-               txt.Text = string.Format( "\rDisabled: Duplicate of {0}.", notice.Args[0]?.ToString() ); break;
+               txt.Text = string.Format( "\rDisabled: Duplicate of {0}.", notice.Args[0] ); break;
             case "manual"  :
                txt.Text = "\rManually Disabled"; break;
             case "no_actionmod"  :
@@ -429,7 +429,10 @@ namespace Sheepy.Modnix.MainGUI {
             case "no_phase"  :
                txt.Text = "\rDisabled: No mod phase found."; break;
             case "require" :
-               txt.Text = string.Format( "\rDisabled: Missing requirement {0}.", notice.Args[0]?.ToString() ); break;
+               if ( ! string.IsNullOrWhiteSpace( notice.Args[3]?.ToString() ) )
+                  return new Hyperlink( new Run( string.Format( "\rDisabled: Missing requirement {0}", notice.Args[2] ) ){ Foreground = Brushes.Red } ){ NavigateUri = new Uri( notice.Args[3]?.ToString() ) };
+               else
+                  txt.Text = string.Format( "\rDisabled: Missing requirement {0}", notice.Args[0] ); break;
             case "runtime_error" :
                txt.Text = "\rRuntime error(s) detected on last run, mod may not work as designed."; break;
             case "runtime_warning" :
@@ -447,7 +450,7 @@ namespace Sheepy.Modnix.MainGUI {
                txt.Foreground = Brushes.DarkBlue; break;
          }
          if ( notice.Args?.Length > 0 && notice.Args[0] is ModEntry cause )
-         WpfHelper.Linkify( txt, () => AppControl.Instance.GUI.SetInfo( GuiInfo.MOD, cause.Path ) );
+            WpfHelper.Linkify( txt, () => AppControl.Instance.GUI.SetInfo( GuiInfo.MOD, cause.Path ) );
          return txt;
       }
 

@@ -53,6 +53,8 @@ namespace Sheepy.Modnix {
             case "max":
                Json.ParseVersion( txt, out e.Max );
                break;
+            case "name": e.Name = txt; break;
+            case "url": e.Url = txt; break;
          }
          return e;
       }
@@ -61,7 +63,7 @@ namespace Sheepy.Modnix {
       private static DllMeta[] ParseDllMetaArray ( JsonReader reader ) => ParseArray<DllMeta>( reader, ParseDllMeta );
       private static DllMeta AssignDllMetaProp ( DllMeta e, string prop, object val ) {
          prop = prop.Trim();
-         string txt = val.ToString().Trim();
+         var txt = val.ToString().Trim();
          if ( prop.Length <= 0 || txt.Length <= 0 ) return e;
          if ( prop.Equals( "path", StringComparison.OrdinalIgnoreCase ) ) {
             e.Path = txt;
