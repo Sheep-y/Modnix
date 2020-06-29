@@ -465,8 +465,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void GridModList_LoadingRow ( object sender, DataGridRowEventArgs e ) {
          var row = e.Row;
-         var mod = row.Item as ModInfo;
-         if ( mod == null || ! mod.Is( ModQuery.ENABLED ) )
+         if ( ! ( row.Item is ModInfo mod ) || ! mod.Is( ModQuery.ENABLED ) )
             row.Foreground = Brushes.Gray;
          else if ( mod.Is( ModQuery.ERROR ) )
             row.Foreground = Brushes.OrangeRed;
@@ -561,7 +560,7 @@ namespace Sheepy.Modnix.MainGUI {
          if ( CurrentMod == null ) return;
          ButtonConfReset.IsEnabled = CurrentMod.Is( ModQuery.EDITING );
          ButtonConfSave.IsEnabled = ButtonConfReset.IsEnabled && SharedGui.CanModify;
-         string icon = "floppy";
+         var icon = "floppy";
          if ( IsConfEmpty ) {
             icon = "cross";
             AccessTextConfSave.Text = "Delete";
