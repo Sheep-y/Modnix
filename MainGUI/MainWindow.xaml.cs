@@ -441,6 +441,7 @@ namespace Sheepy.Modnix.MainGUI {
                SelectTab = null;
             }
             SharedGui.IsAppWorking = false;
+            if ( SelectMods.Count == 0 ) MessageBox.Show( "Mod is empty.", "Add Mod", MessageBoxButton.OK, MessageBoxImage.Information );
             this.Dispatch( () => ButtonRefreshMod_Click() );
          } );
       }

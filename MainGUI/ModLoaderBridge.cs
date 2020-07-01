@@ -270,6 +270,8 @@ namespace Sheepy.Modnix.MainGUI {
          try {
             var dll = Mod.Metadata.Dlls;
             proxy = Sandbox.GetSandbox();
+            if ( proxy.GetError() != null )
+               return proxy.GetError();
             if ( dll != null ) {
                Log( $"Sandbox loading {dll.Length} dlls." );
                proxy.LoadDlls( dll.Select( e => e.Path ).ToArray() );
@@ -284,7 +286,7 @@ namespace Sheepy.Modnix.MainGUI {
             if ( ex is RemotingException ) AppControl.Instance.GetModList(); // Trigger mod refresh on remote error
             return ex.ToString();
          } finally {
-            try {
+            if ( proxy?.Domain != null ) try {
                ( RemotingServices.GetLifetimeService( proxy ) as ILease ).Register( proxy );
                AppDomain.Unload( proxy.Domain );
             } catch ( Exception ex ) { Log( ex ); }
@@ -402,17 +404,15 @@ namespace Sheepy.Modnix.MainGUI {
             case "manual"  :
                txt.Text = "\rManually Disabled"; break;
             case "runtime_error" :
-               txt.Text = "\rRuntime error(s) detected on last run, may be not safe to use."; break;
+               txt.Text = "\rRuntime error(s) detected on last run, mod may not work as expected."; break;
             case "runtime_warning" :
                txt.Text = "\rRuntime warning(s) detected on last run."; break;
             case "config_mismatch" :
                txt.Text = "\rDefaultConfig different from new instance defaults."; break;
-            case "unspported_flags" :
-               txt.Text = "Mod Flags requires Modnix 3 or above."; break;
-            case "unspported_actions" :
+            case "unsupported_actions" :
                txt.Text = "Mod Actions requires Modnix 3 or above.\rMod may not work or only partially work."; break;
             default :
-               txt.Text = "\r" + notice.Message.ToString(); break;
+               txt.Text = "\r" + notice.Message; break;
          }
          switch ( notice.Level ) {
             case TraceEventType.Critical :
@@ -534,8 +534,8 @@ namespace Sheepy.Modnix.MainGUI {
          }
       }
 
-      private static Regex MalformPaths = new Regex( "(?:^[/\\\\]|\\.\\.[/\\\\])", RegexOptions.Compiled );
-      private static Regex IgnoreFiles = new Regex( "(?:\\.(?:cs|csproj|sln)|[/\\\\])$", RegexOptions.Compiled | RegexOptions.IgnoreCase );
+      private static readonly Regex MalformPaths = new Regex( "(?:^[/\\\\]|\\.\\.[/\\\\])", RegexOptions.Compiled );
+      private static readonly Regex IgnoreFiles = new Regex( "(?:\\.(?:cs|csproj|sln)|[/\\\\])$", RegexOptions.Compiled | RegexOptions.IgnoreCase );
 
       public override string[] Install ( string modFolder ) {
          var destination = modFolder + Path.DirectorySeparatorChar;
@@ -572,13 +572,13 @@ namespace Sheepy.Modnix.MainGUI {
          return exe;
       }
 
-      private static Regex RemoveSize = new Regex( "^\\d+\\s+\\d+\\s+", RegexOptions.Compiled );
+      private static readonly Regex RemoveSize = new Regex( "^\\d+\\s+\\d+\\s+", RegexOptions.Compiled );
 
       public override string[] ListFiles () {
          var exe = Create7z();
          var stdout = AppControl.Instance.RunAndWait( Path.GetDirectoryName( ArchivePath ), exe, $"l \"{ArchivePath}\" -ba -bd -sccUTF-8 -xr!*.cs -xr!*.csprog -xr!*.sln", suppressLog: true );
          return stdout.Split( '\n' )
-            .Where( e => ! e.Contains( " D..." ) ) // Ignore folders, e.g. empty folders result from ignoring *.cs
+            .Where( e => e.Length > 25 && ! e.Contains( " D..." ) ) // Ignore folders, e.g. empty folders result from ignoring *.cs
             .Select( e => RemoveSize.Replace( e.Substring( 25 ).Trim(), "" ) ).ToArray();
       }
 
@@ -653,16 +653,19 @@ namespace Sheepy.Modnix.MainGUI {
 
       private static Sandbox CreateSandbox () {
          AppControl.Instance.Log( $"Creating sandbox" );
-         var domain = AppDomain.CreateDomain( "Modnix config sandbox", null, new AppDomainSetup { DisallowCodeDownload = true } );
          try {
-            var proxy = domain.CreateInstanceFromAndUnwrap( Assembly.GetExecutingAssembly().Location, typeof( Sandbox ).FullName ) as Sandbox;
+            // throw new NotSupportedException("Test");
+            var domain = AppDomain.CreateDomain( "Modnix config sandbox", null, new AppDomainSetup { DisallowCodeDownload = true } );
+            var proxy = domain.CreateInstanceFromAndUnwrap( AppControl.Instance.MyPath, typeof( Sandbox ).FullName ) as Sandbox;
             ( RemotingServices.GetLifetimeService( proxy ) as ILease ).Register( proxy );
             proxy.Domain = domain;
             proxy.Initiate();
             return proxy;
          } catch ( Exception ex ) {
-            AppControl.Instance.Log( ex );
-            return null;
+            if ( ex is NotSupportedException ) {
+               ex = AppControl.Instance.CreateRuntimeConfig() ?? new NotSupportedException( "\nPlease restart Modnix to fix mod sandbox.\n\n", ex );
+            }
+            return new Sandbox{ Error = ex };
          }
       }
 

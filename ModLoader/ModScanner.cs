@@ -122,8 +122,6 @@ namespace Sheepy.Modnix {
          }
          Log.Info( "Found mod {0} at {1} ({2} dlls)", meta.Id, file, meta.Dlls?.Length ?? 0 );
          var mod = new ModEntry( file, meta );
-         if ( meta.Flags != null )
-            AddManagerNotice( TraceEventType.Warning, mod, "Mod Flags are not supported in Modnix 2.x.", "unspoorted_flags", mod, meta.Flags );
          return mod;
       } catch ( Exception ex ) { Log.Warn( ex ); return null; } }
 
