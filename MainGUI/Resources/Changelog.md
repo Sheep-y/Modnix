@@ -1,6 +1,6 @@
 Modnix Changelog
 
-# Version 2.5.2, in development
+# Version 2.5.2, 2020-07-01
 
 * Fix: Empty zip/7z no longer creates empty mod folder.
 * Fix: Adding an empty 7z no longer throws AggregateException. (#30)
