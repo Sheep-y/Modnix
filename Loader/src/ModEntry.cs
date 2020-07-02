@@ -255,7 +255,7 @@ namespace Sheepy.Modnix {
          return true;
       }
 
-      private void ApiStackPop () {
+      private static void ApiStackPop () {
          var thread = Thread.CurrentThread;
          Stack<object[]> stack;
          lock ( ApiCalls ) stack = ApiCalls[ thread ];
@@ -268,15 +268,17 @@ namespace Sheepy.Modnix {
       private System.Collections.IEnumerable ApiStack ( string type, object param ) {
          LowerAndIsEmpty( type, out type );
          Stack<object[]> stack;
-         lock ( ApiCalls ) stack = ApiCalls[ param as Thread ?? Thread.CurrentThread ];
-         switch ( type ) {
-            case null : return stack.ToArray();
-            case "mod" : return stack.Select( e => e[0].ToString() ).ToArray();
-            case "action" : return stack.Select( e => e[1].ToString() ).ToArray();
-            case "command" : return stack.Select( e => e[2].ToString() ).ToArray();
-            case "spec" : return stack.Select( e => e[3].ToString() ).ToArray();
-            case "param" : return stack.Select( e => e[4] ).ToArray();
-         }
+         lock ( ApiCalls ) ApiCalls.TryGetValue( param as Thread ?? Thread.CurrentThread, out stack );
+         if ( stack != null )
+            switch ( type ) {
+               case ""    :
+               case null  : return stack.ToArray();
+               case "mod" : return stack.Select( e => e[0].ToString() ).ToArray();
+               case "action"  : return stack.Select( e => e[1].ToString() ).ToArray();
+               case "command" : return stack.Select( e => e[2].ToString() ).ToArray();
+               case "spec"  : return stack.Select( e => e[3].ToString() ).ToArray();
+               case "param" : return stack.Select( e => e[4] ).ToArray();
+            }
          return null;
       }
       #endregion

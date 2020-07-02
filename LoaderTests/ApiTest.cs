@@ -303,8 +303,10 @@ namespace Sheepy.Modnix.Tests {
 
          Task.WaitAll( SA, SB );
 
-         Assert.AreEqual( true, ModA.ModAPI( "api_remove A.Stack" ) );
-         Assert.AreEqual( true, ModB.ModAPI( "api_remove B.Stack" ) );
+         Assert.AreEqual( true, ModA.ModAPI( "api_remove A.Stack" ), "remove A" );
+         Assert.AreEqual( true, ModB.ModAPI( "api_remove B.Stack" ), "remove B" );
+
+         Assert.AreEqual( null, ModA.ModAPI( "api_stack", new Thread( ()=>{ } ) ), "Invalid stack" );
       }
 
       private static void AssertStrAry ( object ary, string name, params string[] check ) {
