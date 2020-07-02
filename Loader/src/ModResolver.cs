@@ -6,7 +6,6 @@ using System.IO;
 using System.Linq;
 
 namespace Sheepy.Modnix {
-   using DllEntryMeta = Dictionary< string, HashSet< string > >;
 
    public static class ModResolver {
       private static Logger Log => ModLoader.Log;

@@ -3,7 +3,6 @@ using Newtonsoft.Json.Linq;
 using Sheepy.Logging;
 using System;
 using System.Collections.Generic;
-using System.Data.Odbc;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -81,7 +80,7 @@ namespace Sheepy.Modnix {
          AddNativeApi( "api_info"  , nameof( InfoApi ) );
          AddNativeApi( "api_list"  , nameof( ListApi ) );
          AddNativeApi( "api_remove", nameof( RemoveApi ) );
-         AddNativeApi( "api_stack", nameof( ApiStack ) );
+         AddNativeApi( "api_stack" , nameof( ApiStack ) );
          AddNativeApi( "assembly"  , nameof( GetAssembly ) );
          AddNativeApi( "assemblies", nameof( GetAssemblies ) );
          AddNativeApi( "config"    , nameof( LoadConfig ) );
