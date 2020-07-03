@@ -171,19 +171,23 @@ namespace Sheepy.Modnix {
             if ( assigned ) unassigned.Remove( mod );
          }
 
-         string[] allPhases = null;
+         var allPhases = ModPhases.PHASES.Select( e => e.ToLowerInvariant() ).ToArray();
          var hasActionHandler = ModsInPhase.ContainsKey( "actionmod" );
          foreach ( var mod in EnabledMods.ToArray() ) {
             var assigned = false;
             var actions = mod.Metadata.Actions;
             if ( actions == null ) continue;
+            actions = ModActions.MergeDefaultActions( actions, out int merged );
+            if ( merged > 0 ) {
+               mod.Metadata.Actions = actions;
+               mod.Log().Verbo( "Merged {0} default actions.", merged );
+               if ( actions == null ) continue;
+            }
             if ( ! hasActionHandler && mod.Metadata.Dlls == null ) {
                DisableAndRemoveMod( mod, "no_actionmod", "no action handler mods." );
-               return;
+               continue;
             }
-            if ( allPhases == null )
-               allPhases = ModPhases.PHASES.Select( e => e.ToLowerInvariant() ).ToArray();
-            foreach ( var act in actions ) try {
+            foreach ( var act in actions ) try { // TODO: refactor
                if ( act.TryGetValue( "phase", out object phaseObj ) && phaseObj != null ) {
                   var aPhase = phaseObj.ToString().ToLowerInvariant();
                   foreach ( var p in allPhases )
@@ -258,6 +262,5 @@ namespace Sheepy.Modnix {
          return our.CompareTo( their );
       }
       #endregion
-
    }
 }

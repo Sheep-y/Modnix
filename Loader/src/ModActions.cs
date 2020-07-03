@@ -33,15 +33,13 @@ namespace Sheepy.Modnix {
 
       internal static void RunActions ( ModEntry mod, string phase ) { try {
          phase = phase.ToLowerInvariant();
-         var all = mod.Metadata.Actions;
+         var actions = mod.Metadata.Actions;
+         if ( actions == null ) return;
 
          var log = mod.Log();
-         log.Verbo( "Scanning {0} actions", all.Length );
-         var actions = FilterActions( all, phase, out int defaultCount );
-         if ( actions == null ) return;
+         log.Verbo( "Scanning {0} actions", actions.Length );
          if ( ! InitActionHandlers() ) return;
 
-         log.Info( "Running {0} actions ({1} defaults merged)", actions.Count, defaultCount );
          var modPrefix = mod.PrefixFilter;
          foreach ( var dll in ActionHandlers ) {
             var handler = ActionMods[ dll ];
@@ -79,7 +77,7 @@ namespace Sheepy.Modnix {
          return actPhase.IndexOf( phase ) >= 0;
       }
 
-      public static List<ActionDef> FilterActions ( ActionDef[] list, string phase, out int defaultCount ) {
+      internal static ActionDef[] MergeDefaultActions ( ActionDef[] list, out int defaultCount ) {
          defaultCount = 0;
          ActionDef defValues = null;
          var actions = new List<ActionDef>();
@@ -88,11 +86,10 @@ namespace Sheepy.Modnix {
                MergeDefAction( ref defValues, a );
                defaultCount++;
                continue;
-            }
-            if ( PhaseMatch( GetActionField( a, defValues, "phase" ), phase ) )
+            } else
                actions.Add( AddDefAction( a, defValues ) );
          }
-         return actions.Count > 0 ? actions : null;
+         return actions.Count > 0 ? actions.ToArray() : null;
       }
 
       public static object RunActionHandler ( ModEntry mod, DllMeta dll, ActionDef act ) { try {
@@ -128,7 +125,7 @@ namespace Sheepy.Modnix {
       private static void MergeDefAction ( ref ActionDef defValues, ActionDef a ) {
          if ( defValues == null ) defValues = new ActionDef();
          foreach ( var e in a ) {
-            if ( "action".Equals( e.Key ) && "default".Equals( TrimAndLower( e.Value as string ) ) ) continue;
+            if ( "action".Equals( e.Key ) ) continue;
             defValues.Add( e.Key, e.Value );
          }
       }

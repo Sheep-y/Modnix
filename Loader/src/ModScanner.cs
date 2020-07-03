@@ -34,7 +34,6 @@ namespace Sheepy.Modnix {
          return IgnoreInModId.Replace( Id.Trim().ToLowerInvariant(), "" );
       }
 
-      #region Scanning
       public static void BuildModList ( ) { try { lock ( ModLoader.AllMods ) {
          ModLoader.AllMods.Clear();
          var dir = ModLoader.ModDirectory;
@@ -259,6 +258,5 @@ namespace Sheepy.Modnix {
          }
          return true;
       }
-      #endregion
    }
 }
