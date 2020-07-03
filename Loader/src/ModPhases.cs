@@ -16,6 +16,8 @@ namespace Sheepy.Modnix {
             "GeoscapeMod", "GeoscapeOnShow", "GeoscapeOnHide",
             "TacticalMod", "TacticalOnShow", "TacticalOnHide" } );
 
+      internal static readonly string[] PHASES_LOWER = PHASES.Select( e => e.ToLowerInvariant() ).ToArray();
+
       public const char LOG_DIVIDER = '┊';
 
       private static readonly HashSet<string> LoadedPhases = new HashSet<string>();

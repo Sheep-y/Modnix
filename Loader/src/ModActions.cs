@@ -1,7 +1,9 @@
 ﻿using Sheepy.Logging;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 
 namespace Sheepy.Modnix {
    using ActionDef = Dictionary<string,object>;
@@ -70,6 +72,24 @@ namespace Sheepy.Modnix {
             return true;
          }
          return false;
+      }
+
+      internal static HashSet< string > FindPhases ( ModEntry mod, ActionDef[] actions ) {
+         var found = new HashSet< string >();
+         var hasDefault = false;
+         foreach ( var act in actions ) try {
+            act.TryGetValue( "phase", out object phaseObj );
+            var txt = phaseObj?.ToString()?.ToLowerInvariant();
+            if ( ! string.IsNullOrWhiteSpace( txt ) ) {
+               foreach ( var p in txt.Split( ',' ) )
+                  if ( ! string.IsNullOrWhiteSpace( p ) )
+                     found.Add( p.Trim() );
+            } else
+               hasDefault = true;
+         } catch ( Exception ex ) { mod.Log().Warn( ex ); }
+         found.IntersectWith( ModPhases.PHASES_LOWER );
+         if ( hasDefault ) found.Add( DEFAULT_PHASE );
+         return found.Count > 0 ? found : null;
       }
 
       internal static bool PhaseMatch ( string actPhase, string phase ) {

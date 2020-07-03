@@ -171,7 +171,6 @@ namespace Sheepy.Modnix {
             if ( assigned ) unassigned.Remove( mod );
          }
 
-         var allPhases = ModPhases.PHASES.Select( e => e.ToLowerInvariant() ).ToArray();
          var hasActionHandler = ModsInPhase.ContainsKey( "actionmod" );
          foreach ( var mod in EnabledMods.ToArray() ) {
             var assigned = false;
@@ -187,15 +186,8 @@ namespace Sheepy.Modnix {
                DisableAndRemoveMod( mod, "no_actionmod", "no action handler mods." );
                continue;
             }
-            foreach ( var act in actions ) try { // TODO: refactor
-               if ( act.TryGetValue( "phase", out object phaseObj ) && phaseObj != null ) {
-                  var aPhase = phaseObj.ToString().ToLowerInvariant();
-                  foreach ( var p in allPhases )
-                     if ( ModActions.PhaseMatch( aPhase, p ) )
-                        AddModToPhase( mod, p, ref assigned );
-               } else
-                  AddModToPhase( mod, ModActions.DEFAULT_PHASE, ref assigned );
-            } catch ( Exception ex ) { mod.Log().Warn( ex ); }
+            foreach ( var phase in ModActions.FindPhases( mod, actions ) )
+               AddModToPhase( mod, phase, ref assigned );
             if ( assigned ) unassigned.Remove( mod );
          }
 
