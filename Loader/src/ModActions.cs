@@ -11,6 +11,7 @@ namespace Sheepy.Modnix {
    public static class ModActions {
 
       internal const string DEFAULT_PHASE = "gamemod";
+      private const string DEFAULT_PHASE_LOWER = "gamemod";
 
       private static List<DllMeta> ActionHandlers;
       private static Dictionary<DllMeta,ModEntry> ActionMods;
@@ -34,12 +35,10 @@ namespace Sheepy.Modnix {
       } }
 
       internal static void RunActions ( ModEntry mod, string phase ) { try {
-         phase = phase.ToLowerInvariant();
-         var actions = mod.Metadata.Actions;
-         if ( actions == null ) return;
+         var actions = FilterActions( mod.Metadata.Actions, phase.ToLowerInvariant() );
 
          var log = mod.Log();
-         log.Verbo( "Scanning {0} actions", actions.Length );
+         log.Verbo( "Running {0} actions", actions.Length );
          if ( ! InitActionHandlers() ) return;
 
          var modPrefix = mod.PrefixFilter;
@@ -59,6 +58,12 @@ namespace Sheepy.Modnix {
             ActionMods[ dll ].Log().Filters.Remove( modPrefix );
       } catch ( Exception ex ) { mod.Log().Error( ex ); } }
 
+      internal static ActionDef[] FilterActions ( ActionDef[] actions, string phase ) {
+         phase = phase.ToLowerInvariant();
+         var result = actions.Where( e => PhaseMatch( e["phase"]?.ToString(), phase ) ).ToArray();
+         return result.Length > 0 ? result : null;
+      }
+
       internal static bool AbortOnError ( Logger log, ActionDef act, Exception err ) {
          act.TryGetValue( "onerror", out object onerror );
          var handle = TrimAndLower( onerror ) ?? "log";
@@ -74,10 +79,10 @@ namespace Sheepy.Modnix {
          return false;
       }
 
-      internal static HashSet< string > FindPhases ( ModEntry mod, ActionDef[] actions ) {
+      internal static HashSet< string > FindPhases ( ActionDef[] actions ) {
          var found = new HashSet< string >();
          var hasDefault = false;
-         foreach ( var act in actions ) try {
+         foreach ( var act in actions ) {
             act.TryGetValue( "phase", out object phaseObj );
             var txt = phaseObj?.ToString()?.ToLowerInvariant();
             if ( ! string.IsNullOrWhiteSpace( txt ) ) {
@@ -86,9 +91,9 @@ namespace Sheepy.Modnix {
                      found.Add( p.Trim() );
             } else
                hasDefault = true;
-         } catch ( Exception ex ) { mod.Log().Warn( ex ); }
+         }
          found.IntersectWith( ModPhases.PHASES_LOWER );
-         if ( hasDefault ) found.Add( DEFAULT_PHASE );
+         if ( hasDefault ) found.Add( DEFAULT_PHASE_LOWER );
          return found.Count > 0 ? found : null;
       }
 
@@ -97,14 +102,12 @@ namespace Sheepy.Modnix {
          return actPhase.IndexOf( phase ) >= 0;
       }
 
-      internal static ActionDef[] MergeDefaultActions ( ActionDef[] list, out int defaultCount ) {
-         defaultCount = 0;
+      internal static ActionDef[] MergeDefaultActions ( ActionDef[] list ) {
          ActionDef defValues = null;
          var actions = new List<ActionDef>();
          foreach ( var a in list ) {
             if ( "default".Equals( GetActionField( a, defValues, "action" ) ) ) {
                MergeDefAction( ref defValues, a );
-               defaultCount++;
                continue;
             } else
                actions.Add( AddDefAction( a, defValues ) );
@@ -156,6 +159,8 @@ namespace Sheepy.Modnix {
          foreach ( var e in defValues )
             if ( ! a.ContainsKey( e.Key ) )
                a.Add( e.Key, e.Value );
+         if ( ! a.ContainsKey( "phase" ) ) a.Add( "phase", DEFAULT_PHASE_LOWER );
+         else a[ "phase" ] = a[ "phase" ].ToString().Trim().ToLowerInvariant();
          return a;
       }
    }

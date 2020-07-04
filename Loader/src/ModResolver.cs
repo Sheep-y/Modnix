@@ -172,24 +172,26 @@ namespace Sheepy.Modnix {
          }
 
          var hasActionHandler = ModsInPhase.ContainsKey( "actionmod" );
-         foreach ( var mod in EnabledMods.ToArray() ) {
+         foreach ( var mod in EnabledMods.ToArray() ) try {
             var assigned = false;
-            var actions = mod.Metadata.Actions;
+            ref var actions = ref mod.Metadata.Actions;
             if ( actions == null ) continue;
-            actions = ModActions.MergeDefaultActions( actions, out int merged );
-            if ( merged > 0 ) {
+            var origLen = actions.Length;
+            actions = ModActions.MergeDefaultActions( actions );
+            if ( actions == null ) continue;
+            if ( actions.Length < origLen ) {
                mod.Metadata.Actions = actions;
-               mod.Log().Verbo( "Merged {0} default actions.", merged );
+               mod.Log().Verbo( "Merged {0} default actions.", origLen - actions.Length );
                if ( actions == null ) continue;
             }
             if ( ! hasActionHandler && mod.Metadata.Dlls == null ) {
                DisableAndRemoveMod( mod, "no_actionmod", "no action handler mods." );
                continue;
             }
-            foreach ( var phase in ModActions.FindPhases( mod, actions ) )
+            foreach ( var phase in ModActions.FindPhases( actions ) )
                AddModToPhase( mod, phase, ref assigned );
             if ( assigned ) unassigned.Remove( mod );
-         }
+         } catch ( Exception ex ) { mod.Log().Warn( ex ); }
 
          foreach ( var mod in unassigned )
             DisableAndRemoveMod( mod, "no_phase", "no matching mod phases." );
