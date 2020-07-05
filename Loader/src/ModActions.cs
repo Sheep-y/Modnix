@@ -60,7 +60,7 @@ namespace Sheepy.Modnix {
 
       internal static ActionDef[] FilterActions ( ActionDef[] actions, string phase ) {
          phase = phase.ToLowerInvariant();
-         var result = actions.Where( e => PhaseMatch( e["phase"]?.ToString(), phase ) ).ToArray();
+         var result = actions.Where( e => InList( e["phase"]?.ToString(), phase ) ).ToArray();
          return result.Length > 0 ? result : null;
       }
 
@@ -97,9 +97,19 @@ namespace Sheepy.Modnix {
          return found.Count > 0 ? found : null;
       }
 
-      internal static bool PhaseMatch ( string actPhase, string phase ) {
-         if ( actPhase == null ) return DEFAULT_PHASE.Equals( phase );
-         return actPhase.IndexOf( phase ) >= 0;
+      private static Dictionary< string, HashSet< string > > StrLists = new Dictionary<string, HashSet<string>>();
+
+      internal static bool InList ( string list, string val ) {
+         if ( string.IsNullOrWhiteSpace( list ) ) return false;
+         HashSet<string> parsed;
+         lock ( StrLists ) {
+            if ( ! StrLists.TryGetValue( list, out parsed ) ) {
+               parsed = new HashSet<string>( list.Split( new char[]{ ',' }, StringSplitOptions.RemoveEmptyEntries ).Select( e => e.Trim() ) );
+               if ( parsed.Count == 0 ) parsed = null;
+               StrLists.Add( list, parsed );
+            }
+         }
+         return parsed?.Contains( val ) == true;
       }
 
       internal static ActionDef[] MergeDefaultActions ( ActionDef[] list ) {
@@ -115,17 +125,20 @@ namespace Sheepy.Modnix {
          return actions.Count > 0 ? actions.ToArray() : null;
       }
 
-      public static object RunActionHandler ( ModEntry mod, DllMeta dll, ActionDef act ) { try {
+      internal static object RunActionHandler ( ModEntry mod, DllMeta dll, ActionDef act ) { try {
          var lib = ModPhases.LoadDll( mod, dll.Path );
          if ( lib == null ) return false;
          var handler = ActionMods[ dll ];
+         object GetParamValue ( ParameterInfo pi ) => ParamValue( act, pi, mod, handler );
+
+         object result;
          foreach ( var type in dll.Methods[ "ActionMod" ] ) {
-            var result = ModPhases.CallInit( mod, lib, type, "ActionMod", ( e ) => ParamValue( act, e, mod, handler ) );
+            result = ModPhases.CallInit( mod, lib, type, "ActionMod", GetParamValue );
             if ( result is bool success ) {
                if ( success ) return true;
-            } else if ( result is Exception ex )
+            } else if ( result is Exception ex ) {
                return ex;
-            else if ( result != null )
+            } else if ( result != null )
                handler.Log().Info( "Unexpected ActionMod result: {0}", result.GetType() );
          }
          return null;
