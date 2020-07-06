@@ -10,29 +10,33 @@ namespace Sheepy.Modnix.Tests {
    [TestClass()]
    public class ActionTest {
 
-      [TestMethod] public void FilterActionTest () {
-         var Merge = typeof( ModActions ).GetMethod( "MergeDefaultActions", BindingFlags.NonPublic | BindingFlags.Static );
-         var defs = Merge.Invoke( null, new object[]{ new ActionDef[]{
-            CreateDef( "action", "Default", "all", "Def1" ),
-            CreateDef( "eval", "Code1" ),
-            CreateDef( "action", "Default", "more", "Def2" ),
-            CreateDef( "skip", "splash", "phase", "SplashMod" ),
-            CreateDef( "eval", "Code2" ),
-         } } ) as ActionDef[];
+      [ClassInitializeAttribute] public static void TestInitialize ( TestContext _ = null ) => ResetLoader();
 
-         var Filter = typeof( ModActions ).GetMethod( "FilterActions", BindingFlags.NonPublic | BindingFlags.Static );
+      [TestCleanup] public void TestCleanup () => ResetLoader();
 
-         var splash = Filter.Invoke( null, new object[]{ defs, "splashmod" } ) as ActionDef[];
-         Assert.AreEqual( 1, splash?.Length, "1 splash actions" );
-         splash[0].TryGetValue( "skip", out object val );
-         Assert.AreEqual( "splash", val, "splash field" );
-         splash[0].TryGetValue( "all", out val );
-         Assert.AreEqual( "Def1", val, "splash def 1" );
-         splash[0].TryGetValue( "more", out val );
-         Assert.AreEqual( "Def2", val, "splash def 2" );
+      private static readonly ModEntry ModA = new ModEntry( "//Act/A", new ModMeta () { Id = "Act.A" } );
 
-         var main = Filter.Invoke( null, new object[]{ defs, "gamemod" } ) as ActionDef[];
-         Assert.AreEqual( 2, main?.Length, "2 main actions" );
+      [TestMethod] public void DefaultActionTest () {
+         ModA.Metadata.Actions = new ActionDef[]{
+            CreateDef( "Action", "Default", "All", "Def1" ),
+            CreateDef( "Eval", "Code1" ),
+            CreateDef( "Action", "Default", "More", "Def2" ),
+            CreateDef( "Skip", "Splash", "Phase", "SplashMod" ),
+            CreateDef( "All", "Native" ),
+         };
+         ModA.Metadata.Normalise();
+         AddMod( ModA );
+         ResolveMods();
+
+         var acts = ModA.Metadata.Actions;
+         Assert.AreEqual( 3, acts.Length, "3 merged actions" );
+         Assert.AreEqual( "Code1", acts[0]["eval"], "[0].Eval" );
+         Assert.AreEqual( "Def1", acts[0]["all"], "[0].All" );
+         Assert.AreEqual( "Splash", acts[1]["skip"], "[1].Skip" );
+         Assert.AreEqual( "Def1", acts[1]["all"], "[1].All" );
+         Assert.AreEqual( "Def2", acts[1]["more"], "[1].More" );
+         Assert.AreEqual( "Native", acts[2]["all"], "[2].All" );
+         Assert.AreEqual( "Def2", acts[2]["more"], "[2].More" );
       }
    }
 }
