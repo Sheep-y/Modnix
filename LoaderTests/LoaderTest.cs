@@ -1,33 +1,15 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
-using System.Collections.Generic;
-using System.Security.Policy;
-using static System.Reflection.BindingFlags;
+using static Sheepy.Modnix.Tests.LoaderTestHelper;
 
 namespace Sheepy.Modnix.Tests {
 
    [TestClass()]
    public class ModLoaderTest {
 
-      [ClassInitializeAttribute] public static void TestInitialize ( TestContext _ = null ) {
-         ModLoader.Setup();
-         ModLoader.AllMods.Clear();
-         ModLoader.EnabledMods.Clear();
-         ModLoader.ModsInPhase.Clear();
-      }
+      [ClassInitializeAttribute] public static void TestInitialize ( TestContext _ = null ) => ResetLoader();
 
-      [TestCleanup] public void TestCleanup () => TestInitialize();
-
-      private static void ResolveMods () => 
-         typeof( ModResolver ).GetMethod( "Resolve", NonPublic | Static ).Invoke( null, new object[0] );
-
-      private static void AddMod ( ModEntry mod ) {
-         // Mods will be disabled without dll.
-         var dll = mod.Metadata.Dlls = new DllMeta[1];
-         dll[ 0 ] = new DllMeta{ Methods = new Dictionary<string, HashSet<string>>() };
-         dll[ 0 ].Methods.Add( "MainMod", new HashSet<string>() );
-         ModLoader.AllMods.Add( mod );
-      }
+      [TestCleanup] public void TestCleanup () => ResetLoader();
 
       [TestMethod] public void NameMatchTest () {
          Assert.IsTrue( ModScanner.NameMatch( "abc", "ABC" ), "ignore case" );
@@ -51,12 +33,6 @@ namespace Sheepy.Modnix.Tests {
          ResolveMods();
          Assert.AreEqual( 2, ModLoader.AllMods.Count );
          Assert.AreEqual( 1, ModLoader.EnabledMods.Count );
-      }
-
-      private static Version Ver ( int val ) => new Version( val, 0, 0, 0 );
-      private static Version Ver ( string val ) {
-         Json.ParseVersion( val, out Version v );
-         return v;
       }
 
       [TestMethod] public void DuplicateTest () {

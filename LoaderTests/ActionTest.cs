@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using static Sheepy.Modnix.Tests.LoaderTestHelper;
 
 namespace Sheepy.Modnix.Tests {
    using ActionDef = Dictionary<string,object>;
@@ -33,14 +34,5 @@ namespace Sheepy.Modnix.Tests {
          var main = Filter.Invoke( null, new object[]{ defs, "gamemod" } ) as ActionDef[];
          Assert.AreEqual( 2, main?.Length, "2 main actions" );
       }
-
-      private static ActionDef CreateDef ( params string[] keyValues ) {
-         var result = new ActionDef();
-         for ( int i = 0 ; i < keyValues.Length ; i += 2 )
-            result.Add( keyValues[i]?.ToString(), keyValues[ i+1 ] );
-         return result;
-      }
-
    }
-
 }
