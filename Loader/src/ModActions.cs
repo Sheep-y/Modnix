@@ -103,7 +103,7 @@ namespace Sheepy.Modnix {
          HashSet<string> parsed;
          lock ( StrLists ) {
             if ( ! StrLists.TryGetValue( list, out parsed ) ) {
-               parsed = new HashSet<string>( list.Split( new char[]{ ',' }, StringSplitOptions.RemoveEmptyEntries ).Select( e => e.Trim() ) );
+               parsed = new HashSet<string>( list.ToLowerInvariant().Split( new char[]{ ',' }, StringSplitOptions.RemoveEmptyEntries ).Select( e => e.Trim() ) );
                if ( parsed.Count == 0 ) parsed = null;
                StrLists.Add( list, parsed );
             }

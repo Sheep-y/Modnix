@@ -1,7 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
-using System.Reflection;
+using static System.Reflection.BindingFlags;
 using static Sheepy.Modnix.Tests.LoaderTestHelper;
 
 namespace Sheepy.Modnix.Tests {
@@ -37,6 +37,14 @@ namespace Sheepy.Modnix.Tests {
          Assert.AreEqual( "Def2", acts[1]["more"], "[1].More" );
          Assert.AreEqual( "Native", acts[2]["all"], "[2].All" );
          Assert.AreEqual( "Def2", acts[2]["more"], "[2].More" );
+      }
+
+      [TestMethod] public void InlistTest () {
+         bool InList ( string list, string val ) => (bool) typeof( ModActions ).GetMethod( "InList", NonPublic | Static ).Invoke( null, new object[]{ list, val } );
+         Assert.AreEqual( true, InList( "MainMod", "mainmod" ), "simple" );
+         Assert.AreEqual( false, InList( " A", "a2" ), "longer" );
+         Assert.AreEqual( false, InList( "ABC ", "ab" ), "shorter" );
+         Assert.AreEqual( true, InList( " ABC , DEF , GHI ", "def" ), "multi" );
       }
    }
 }
