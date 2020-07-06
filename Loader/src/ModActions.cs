@@ -115,10 +115,9 @@ namespace Sheepy.Modnix {
          ActionDef defValues = null;
          var actions = new List<ActionDef>();
          foreach ( var a in list ) {
-            if ( "default".Equals( GetActionField( a, defValues, "action" ) ) ) {
+            if ( a.ContainsKey( "action" ) && string.Equals( a[ "action" ]?.ToString(), "default", StringComparison.InvariantCultureIgnoreCase ) )
                MergeDefAction( ref defValues, a );
-               continue;
-            } else
+            else
                actions.Add( AddDefAction( a, defValues ) );
          }
          return actions.Count > 0 ? actions.ToArray() : null;
@@ -152,10 +151,6 @@ namespace Sheepy.Modnix {
       }
 
       private static string TrimAndLower ( object key ) => key?.ToString().Trim().ToLowerInvariant();
-
-      private static string GetActionField ( ActionDef action, ActionDef def, string key ) =>
-         action.TryGetValue( key, out object val ) || def?.TryGetValue( key, out val ) == true
-         ? TrimAndLower( val as string ) : null;
 
       private static void MergeDefAction ( ref ActionDef defValues, ActionDef a ) {
          if ( defValues == null ) defValues = new ActionDef();
