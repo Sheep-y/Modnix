@@ -46,10 +46,13 @@ namespace Sheepy.Modnix.Tests {
 
       [TestMethod] public void InlistTest () {
          bool InList ( string list, string val ) => (bool) typeof( ModActions ).GetMethod( "InList", NonPublic | Static ).Invoke( null, new object[]{ list, val } );
-         Assert.AreEqual( true, InList( "MainMod", "mainmod" ), "simple" );
-         Assert.AreEqual( false, InList( " A", "a2" ), "longer" );
-         Assert.AreEqual( false, InList( "ABC ", "ab" ), "shorter" );
-         Assert.AreEqual( true, InList( " ABC , DEF , GHI ", "def" ), "multi" );
+         Assert.IsTrue( InList( "MainMod", "mainmod" ), "simple" );
+         Assert.IsFalse( InList( " A", "a2" ), "longer" );
+         Assert.IsFalse( InList( "ABC ", "ab" ), "shorter" );
+         Assert.IsFalse( InList( " ABC , DEF , GHI ", "xyz" ), "multi0" );
+         Assert.IsTrue( InList( " ABC , DEF , GHI ", "abc" ), "multi1" );
+         Assert.IsTrue( InList( " ABC , DEF , GHI ", "def" ), "multi2" );
+         Assert.IsTrue( InList( " ABC , DEF , GHI ", "ghi" ), "multi3" );
       }
    }
 }

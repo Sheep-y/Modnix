@@ -177,7 +177,7 @@ namespace Sheepy.Modnix {
             ref var actions = ref mod.Metadata.Actions;
             if ( actions == null ) continue;
             var origLen = actions.Length;
-            actions = ModActions.MergeDefaultActions( actions );
+            actions = ModActions.Resolve( actions );
             if ( actions == null ) continue;
             if ( actions.Length < origLen ) {
                mod.Metadata.Actions = actions;

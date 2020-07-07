@@ -111,7 +111,7 @@ namespace Sheepy.Modnix {
          return parsed?.Contains( val ) == true;
       }
 
-      internal static ActionDef[] MergeDefaultActions ( ActionDef[] list ) {
+      internal static ActionDef[] Resolve ( ActionDef[] list ) {
          ActionDef defValues = null;
          var actions = new List<ActionDef>();
          foreach ( var a in list ) {
