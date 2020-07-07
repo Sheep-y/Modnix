@@ -156,7 +156,7 @@ namespace Sheepy.Modnix {
          if ( defValues == null ) defValues = new ActionDef();
          foreach ( var e in a ) {
             if ( "action".Equals( e.Key ) ) continue;
-            defValues.Add( e.Key, e.Value );
+            defValues[ e.Key ] = e.Value;
          }
       }
 

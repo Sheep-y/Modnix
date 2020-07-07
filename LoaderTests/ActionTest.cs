@@ -23,13 +23,15 @@ namespace Sheepy.Modnix.Tests {
             CreateDef( "Action", "Default", "More", "Def2" ),
             CreateDef( "Skip", "Splash", "Phase", "SplashMod" ),
             CreateDef( "All", "Native" ),
+            CreateDef( "Action", "Default", "More", "Def3" ),
+            CreateDef( "Image", "bug.jpg" ),
          };
          ModA.Metadata.Normalise();
          AddMod( ModA );
          ResolveMods();
 
          var acts = ModA.Metadata.Actions;
-         Assert.AreEqual( 3, acts.Length, "3 merged actions" );
+         Assert.AreEqual( 4, acts.Length, "3 merged actions" );
          Assert.AreEqual( "Code1", acts[0]["eval"], "[0].Eval" );
          Assert.AreEqual( "Def1", acts[0]["all"], "[0].All" );
          Assert.AreEqual( "Splash", acts[1]["skip"], "[1].Skip" );
@@ -37,6 +39,9 @@ namespace Sheepy.Modnix.Tests {
          Assert.AreEqual( "Def2", acts[1]["more"], "[1].More" );
          Assert.AreEqual( "Native", acts[2]["all"], "[2].All" );
          Assert.AreEqual( "Def2", acts[2]["more"], "[2].More" );
+         Assert.IsFalse( acts[3].ContainsKey( "eval" ), "[3].Eval" );
+         Assert.AreEqual( "bug.jpg", acts[3]["image"], "[3].Img" );
+         Assert.AreEqual( "Def3", acts[3]["more"], "[3].More" );
       }
 
       [TestMethod] public void InlistTest () {
