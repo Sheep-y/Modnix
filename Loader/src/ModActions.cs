@@ -1,6 +1,7 @@
 ﻿using Sheepy.Logging;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 
@@ -104,16 +105,23 @@ namespace Sheepy.Modnix {
          return parsed?.Contains( val ) == true;
       }
 
-      internal static ActionDef[] Resolve ( ActionDef[] list ) {
+      internal static ActionDef[] Resolve ( ModEntry mod, ActionDef[] list ) {
          ActionDef defValues = null;
          var actions = new List<ActionDef>();
          foreach ( var a in list ) {
-            if ( string.Equals( a.GetText( "action" ), "default", StringComparison.InvariantCultureIgnoreCase ) )
+            if ( a.GetText( "include" ) is string file )
+               actions.AddRange( LoadInclude( mod, file ) );
+            else if ( string.Equals( a.GetText( "action" ), "default", StringComparison.InvariantCultureIgnoreCase ) )
                MergeDefAction( ref defValues, a );
             else
                actions.Add( AddDefAction( a, defValues ) );
          }
          return actions.Count > 0 ? actions.ToArray() : null;
+      }
+
+      private static ActionDef[] LoadInclude ( ModEntry mod, string file ) {
+         // todo: refactor mod path, sanitise file path
+         return Json.Parse<ActionDef[]>( Tools.ReadText( Path.Combine( Path.GetDirectoryName( mod.Path ), file ) ) );
       }
 
       private static object RunActionHandler ( ModEntry mod, DllMeta dll, ActionDef act ) { try {
