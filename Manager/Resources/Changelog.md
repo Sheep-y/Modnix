@@ -5,6 +5,7 @@ Roadmap: https://github.com/Sheep-y/Modnix/issues/24
 
 * New: "mod_stack" api to get api callstack.
 * New: Actions now support multiple (comma separated) phsaes.
+* New: Re-implement Action.OnError to properly support "continue", "skip", and "stop".
 * Gui: Mod load order updated to match Modnix 3 phases.
 * Log: OS type and version are now logged.
 
