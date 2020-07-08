@@ -89,22 +89,6 @@ namespace Sheepy.Modnix {
          return found.Count > 0 ? found : null;
       }
 
-      private static readonly Dictionary< string, HashSet< string > > StrLists = new Dictionary<string, HashSet<string>>();
-
-      private static bool InList ( string list, string val ) {
-         if ( string.IsNullOrWhiteSpace( list ) ) return false;
-         list = list.Trim().ToLowerInvariant();
-         HashSet<string> parsed;
-         lock ( StrLists ) {
-            if ( ! StrLists.TryGetValue( list, out parsed ) ) {
-               parsed = new HashSet<string>( list.Split( new char[]{ ',' }, StringSplitOptions.RemoveEmptyEntries ).Select( e => e.Trim() ) );
-               if ( parsed.Count == 0 ) parsed = null;
-               StrLists.Add( list, parsed );
-            }
-         }
-         return parsed?.Contains( val ) == true;
-      }
-
       internal static ActionDef[] Resolve ( ModEntry mod, ActionDef[] list ) {
          ActionDef defValues = null;
          var actions = new List<ActionDef>();
@@ -147,6 +131,7 @@ namespace Sheepy.Modnix {
          return null;
       } catch ( Exception ex ) { mod.Error( ex ); return null; } }
 
+      #region Helpers
       private static object ParamValue ( ActionDef act, ParameterInfo arg, ModEntry actionMod, ModEntry handler ) {
          if ( arg.ParameterType == typeof( ActionDef ) )
             return act;
@@ -178,6 +163,22 @@ namespace Sheepy.Modnix {
          else a[ "phase" ] = a[ "phase" ].ToString().Trim().ToLowerInvariant();
          return a;
       }
-   }
 
+      private static readonly Dictionary< string, HashSet< string > > StrLists = new Dictionary<string, HashSet<string>>();
+
+      private static bool InList ( string list, string val ) {
+         if ( string.IsNullOrWhiteSpace( list ) ) return false;
+         list = list.Trim().ToLowerInvariant();
+         HashSet<string> parsed;
+         lock ( StrLists ) {
+            if ( ! StrLists.TryGetValue( list, out parsed ) ) {
+               parsed = new HashSet<string>( list.Split( new char[]{ ',' }, StringSplitOptions.RemoveEmptyEntries ).Select( e => e.Trim() ) );
+               if ( parsed.Count == 0 ) parsed = null;
+               StrLists.Add( list, parsed );
+            }
+         }
+         return parsed?.Contains( val ) == true;
+      }
+      #endregion
+   }
 }
