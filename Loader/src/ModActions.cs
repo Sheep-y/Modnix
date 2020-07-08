@@ -13,25 +13,26 @@ namespace Sheepy.Modnix {
       internal const string DEFAULT_PHASE = "gamemod";
       private const string DEFAULT_PHASE_LOWER = "gamemod";
 
-      private static List<DllMeta> ActionHandlers;
+      private static DllMeta[] ActionHandlers;
       private static Dictionary<DllMeta,ModEntry> ActionMods;
 
       private static bool InitActionHandlers () { lock ( DEFAULT_PHASE ) {
          if ( ActionHandlers == null ) {
             if ( ! ModLoader.ModsInPhase.TryGetValue( "actionmod", out List<ModEntry> mods ) )
                return false;
-            ActionHandlers = new List<DllMeta>();
+            var Handlers = new List<DllMeta>();
             ActionMods = new Dictionary<DllMeta, ModEntry>();
             foreach ( var mod in mods )
                foreach ( var dll in mod.Metadata.Dlls )
                   if ( dll.Methods.ContainsKey( "ActionMod" ) ) {
-                     ActionHandlers.Add( dll );
+                     Handlers.Add( dll );
                      ActionMods.Add( dll, mod );
                   }
-            if ( ActionHandlers.Count == 0 )
+            ActionHandlers = Handlers.ToArray();
+            if ( Handlers.Count == 0 )
                ModLoader.Log.Error( "No action handlers found, please install mods to support actions.  Actions will not be processed." );
          }
-         return ActionHandlers.Count > 0;
+         return ActionHandlers.Length > 0;
       } }
 
       internal static void RunActions ( ModEntry mod, string phase ) { try {
