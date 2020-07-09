@@ -430,7 +430,7 @@ namespace Sheepy.Modnix.MainGUI {
          CurrentGame.WriteFile( AppRes.CECI_DLL, AssemblyLoader.GetResourceStream( AppRes.CECI_DLL ) );
          CurrentGame.WriteFile( AppRes.LOADER  , AssemblyLoader.GetResourceStream( AppRes.LOADER   ) );
          CurrentGame.WriteFile( AppRes.INJECTOR, AssemblyLoader.GetResourceStream( AppRes.INJECTOR ) );
-         CurrentGame.WriteFile( CurrentGame.GameDir, AppRes.DOOR_DLL, AssemblyLoader.GetResourceStream( AppRes.DOOR_DLL ) );
+         //CurrentGame.WriteFile( CurrentGame.GameDir, AppRes.DOOR_DLL, AssemblyLoader.GetResourceStream( AppRes.DOOR_DLL ) );
          CurrentGame.RunInjector( "/y" );
          CheckInjectionStatus( true );
          if ( CurrentGame.Status == "modnix" ) {

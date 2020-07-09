@@ -9,7 +9,14 @@ Roadmap: https://github.com/Sheep-y/Modnix/issues/24
 * Gui: Mod load order updated to match Modnix 3 phases.
 * Log: OS type and version are now logged.
 
-# Version 2.5.2, in development
+# Version 2.5.3, 2020-07-09
+https://github.com/Sheep-y/Modnix/releases/tag/v2.5.3
+
+* Misc: Update injector's game version extraction for game 1.5.2.
+* Misc: Update loader's game version acquisition for game 1.5.2.
+
+# Version 2.5.2, 2020-07-01
+https://github.com/Sheep-y/Modnix/releases/tag/v2.5.2
 
 * Fix: Empty zip/7z no longer creates empty mod folder.
 * Fix: Adding an empty 7z no longer throws AggregateException. (#30)
