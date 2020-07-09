@@ -46,7 +46,8 @@ namespace Sheepy.Modnix {
       internal const string PPML02_INJECTOR_METHOD = "Initialize";
 
       internal const string GAME_VERSION_TYPE   = "Base.Build.RuntimeBuildInfo";
-      internal const string GAME_VERSION_METHOD = "get_Version";
+      internal const string GAME_VERSION_METHOD1 = "get_Version";
+      internal const string GAME_VERSION_METHOD2 = "get_BuildVersion";
 
       private static readonly AppState State = new AppState();
       private static readonly ReceivedOptions OptionsIn = new ReceivedOptions();
@@ -500,31 +501,62 @@ namespace Sheepy.Modnix {
       }
 
       private static string FindGameVersion ( TypeDefinition type ) {
-         var method = type.Methods.FirstOrDefault( e => e.Name == Injector.GAME_VERSION_METHOD );
-         if ( method == null || ! method.HasBody ) return "ERR ver method not found";
-
-         try {
-            var version = new int[2];
-            var ldcCount = 0;
-            foreach ( var code in method.Body.Instructions ) {
-               var op = code.OpCode.ToString();
-               if ( ! op.StartsWith( "ldc.i4" ) ) continue;
-               if ( ldcCount >= 2 ) return "ERR too many vers";
-
-               var ver = 0;
-               if ( code.Operand is int num ) ver = num;
-               else if ( code.Operand is sbyte num2 ) ver = num2;
-               else if ( code.OpCode.Code.Equals( Code.Ldc_I4_M1 ) ) ver = -1;
-               else ver = int.Parse( op.Substring( 7 ) );
-
-               version[ ldcCount ] = ver;
-               ++ldcCount;
-            }
-            if ( ldcCount < 2 ) return "ERR too few vers";
-            return version[0].ToString() + '.' + version[1];
-         } catch ( Exception e ) {
-            return $"ERR {e.GetType()}";
-         }
+         var method = type.Methods.FirstOrDefault( e => e.Name == Injector.GAME_VERSION_METHOD2 );
+         if ( method != null && method.HasBody ) return FindGameVersion2( method );
+         method = type.Methods.FirstOrDefault( e => e.Name == Injector.GAME_VERSION_METHOD1 );
+         if ( method != null && method.HasBody ) return FindGameVersion1( method );
+         return "ERR ver method not found";
       }
+
+      // 1.0.58929 (2020-06-17) and below
+      private static string FindGameVersion1 ( MethodDefinition method ) { try {
+         var version = new int[2];
+         var ldcCount = 0;
+         foreach ( var code in method.Body.Instructions ) {
+            var op = code.OpCode.ToString();
+            if ( ! op.StartsWith( "ldc.i4" ) ) continue;
+            if ( ldcCount >= 2 ) return "ERR too many vers";
+
+            var ver = 0;
+            if ( code.Operand is int num ) ver = num;
+            else if ( code.Operand is sbyte num2 ) ver = num2;
+            else if ( code.OpCode.Code.Equals( Code.Ldc_I4_M1 ) ) ver = -1;
+            else ver = int.Parse( op.Substring( 7 ) );
+
+            version[ ldcCount ] = ver;
+            ++ldcCount;
+         }
+         if ( ldcCount < 2 ) return "ERR too few vers";
+         return version[0].ToString() + '.' + version[1];
+      } catch ( Exception e ) {
+         return $"ERR {e.GetType()}";
+      } }
+
+      // Danforth 1.5.2 (2020-07-07) and up
+      private static string FindGameVersion2 ( MethodDefinition method ) { try {
+         var version = new int[3];
+         var ldcCount = 0;
+         foreach ( var code in method.Body.Instructions ) {
+            var op = code.OpCode.ToString();
+            if ( ! op.StartsWith( "ldc.i4" ) ) continue;
+            if ( ldcCount > 7 ) return "ERR too many vers";
+
+            var ver = 0;
+            if ( code.Operand is int num ) ver = num;
+            else if ( code.Operand is sbyte num2 ) ver = num2;
+            else if ( code.OpCode.Code.Equals( Code.Ldc_I4_M1 ) ) ver = -1;
+            else ver = int.Parse( op.Substring( 7 ) );
+            switch ( ldcCount ) {
+               case 2 : version[ 0 ] = ver; break;
+               case 4 : version[ 1 ] = ver; break;
+               case 6 : version[ 2 ] = ver; break;
+            }
+            ++ldcCount;
+         }
+         if ( ldcCount <= 7 ) return "ERR too few vers";
+         return version[0].ToString() + '.' + version[1] + '.' + version[2];
+      } catch ( Exception e ) {
+         return $"ERR {e.GetType()}";
+      } }
    }
 }
