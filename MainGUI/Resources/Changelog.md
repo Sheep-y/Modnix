@@ -1,5 +1,10 @@
 Modnix Changelog
 
+# Version 2.5.3, 2020-07-09
+
+* Misc: Update injector's game version extraction for game 1.5.2.
+* Misc: Update loader's game version acquisition for game 1.5.2.
+
 # Version 2.5.2, 2020-07-01
 
 * Fix: Empty zip/7z no longer creates empty mod folder.

@@ -194,7 +194,9 @@ namespace Sheepy.Modnix {
       public static void LogGameVersion () { try { lock ( MOD_PATH ) {
          var game = GetGameAssembly();
          if ( game == null ) return;
-         var ver = game.GetType( "Base.Build.RuntimeBuildInfo" ).GetProperty( "Version" ).GetValue( null )?.ToString();
+         var ver = game.GetType( "Base.Build.RuntimeBuildInfo" ).GetProperty( "BuildVersion" ).GetValue( null )?.ToString();
+         if ( ver == null )
+            ver = game.GetType( "Base.Build.RuntimeBuildInfo" ).GetProperty( "Version" ).GetValue( null )?.ToString();
          Log.Info( "{0}/{1}", Path.GetFileNameWithoutExtension( game.CodeBase ), ver );
          GameVersion = Version.Parse( ver );
       } } catch ( Exception ex ) { Log?.Error( ex ); } } 
