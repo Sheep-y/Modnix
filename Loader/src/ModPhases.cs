@@ -69,6 +69,10 @@ namespace Sheepy.Modnix {
                if ( ! a.IsDynamic && a.Location == path )
                   return a;
          }
+         if ( ! Tools.IsSafePath( path ) ) {
+            mod.Log().Error( "Invalid or unsafe path: {0}", path );
+            return null;
+         }
          mod.Log().Info( "Loading {0}", path );
          var asm = Assembly.LoadFrom( path );
          if ( asm == null ) return null;

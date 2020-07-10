@@ -104,9 +104,13 @@ namespace Sheepy.Modnix {
          return actions.Count > 0 ? actions.ToArray() : null;
       }
 
-      private static ActionDef[] LoadInclude ( ModEntry mod, string file ) {
-         // todo: refactor mod path, sanitise file path
-         return Json.Parse<ActionDef[]>( Tools.ReadText( Path.Combine( Path.GetDirectoryName( mod.Path ), file ) ) );
+      private static ActionDef[] LoadInclude ( ModEntry mod, string path ) {
+         if ( ! Tools.IsSafePath( path ) ) {
+            mod.Log().Error( "Invalid or unsafe path: {0}", path );
+            return new ActionDef[0];
+         }
+         // todo: refactor mod path
+         return Json.Parse<ActionDef[]>( Tools.ReadText( Path.Combine( Path.GetDirectoryName( mod.Path ), path ) ) );
       }
 
       private static object RunActionHandler ( ModEntry mod, DllMeta dll, ActionDef act ) { try {
