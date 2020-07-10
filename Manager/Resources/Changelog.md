@@ -5,8 +5,10 @@ Roadmap: https://github.com/Sheep-y/Modnix/issues/24
 
 * New: "mod_stack" api to get api callstack.
 * New: Actions now support multiple (comma separated) phsaes.
+* New: Actions now support "Include".
 * New: Re-implement Action.OnError to properly support "continue", "skip", and "stop".
 * Gui: Mod load order updated to match Modnix 3 phases.
+* Mod: Dlls and action includes must be in same or subfolder relative to the mod.
 * Log: OS type and version are now logged.
 
 # Version 2.5.3, 2020-07-09

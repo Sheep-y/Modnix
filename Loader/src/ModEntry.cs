@@ -742,7 +742,7 @@ namespace Sheepy.Modnix {
          if ( val.Length == 0 ) val = null;
       }
 
-      private static void NormDictArray ( ref Dictionary<string,object>[] val ) {
+      internal static void NormDictArray ( ref Dictionary<string,object>[] val ) {
          if ( val == null ) return;
          for ( int i = val.Length - 1 ; i >= 0 ; i-- ) {
             var dict = val[i];

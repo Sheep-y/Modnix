@@ -110,7 +110,9 @@ namespace Sheepy.Modnix {
             return new ActionDef[0];
          }
          // todo: refactor mod path
-         return Json.Parse<ActionDef[]>( Tools.ReadText( Path.Combine( Path.GetDirectoryName( mod.Path ), path ) ) );
+         var actions = Json.Parse<ActionDef[]>( Tools.ReadText( Path.Combine( Path.GetDirectoryName( mod.Path ), path ) ) );
+         ModMeta.NormDictArray( ref actions );
+         return actions;
       }
 
       private static object RunActionHandler ( ModEntry mod, DllMeta dll, ActionDef act ) { try {
@@ -128,7 +130,7 @@ namespace Sheepy.Modnix {
                LogActionError( handler.Log(), act, ex );
                if ( InList( act.GetText( "onerror" ), "continue" ) ) continue;
                if ( InList( act.GetText( "onerror" ), "skip" ) ) return null;
-               mod.Log().Info( "Aborting Actions. Set OnError to Continue or Skip to not abort." );
+               mod.Log().Info( "Aborting Actions. Set OnError to \"Log,Continue\" or \"Log,Skip\" to ignore the error." );
                return ex;
             } else if ( result != null )
                handler.Log().Error( "Unexpected ActionMod result: {0}", result.GetType() );
