@@ -90,16 +90,19 @@ namespace Sheepy.Modnix {
          return found.Count > 0 ? found : null;
       }
 
-      internal static ActionDef[] Resolve ( ModEntry mod, ActionDef[] list ) {
+      internal static ActionDef[] Resolve ( ModEntry mod, ActionDef[] list ) { try {
          ActionDef defValues = null;
-         return PreprocessActions( mod, list, ref defValues );
-      }
+         return PreprocessActions( mod, list, ref defValues, 0 );
+      } catch ( Exception ex ) {
+         mod.Log().Error( ex );
+         return new ActionDef[0];
+      } }
 
-      private static ActionDef[] PreprocessActions ( ModEntry mod, ActionDef[] list, ref ActionDef defValues ) {
+      private static ActionDef[] PreprocessActions ( ModEntry mod, ActionDef[] list, ref ActionDef defValues, int level ) {
          var actions = new List<ActionDef>();
          foreach ( var a in list ) {
             if ( a.GetText( "include" ) is string file )
-               actions.AddRange( LoadInclude( mod, file, ref defValues ) );
+               actions.AddRange( LoadInclude( mod, file, ref defValues, level + 1 ) );
             else if ( string.Equals( a.GetText( "action" ), "default", StringComparison.InvariantCultureIgnoreCase ) )
                MergeDefAction( ref defValues, a );
             else
@@ -108,15 +111,20 @@ namespace Sheepy.Modnix {
          return actions.Count > 0 ? actions.ToArray() : null;
       }
 
-      private static ActionDef[] LoadInclude ( ModEntry mod, string path, ref ActionDef defValues ) {
+      private static ActionDef[] LoadInclude ( ModEntry mod, string path, ref ActionDef defValues, int level ) {
          if ( ! Tools.IsSafePath( path ) ) {
             mod.Log().Error( "Invalid or unsafe path: {0}", path );
             return new ActionDef[0];
          }
+         if ( level > 9 ) throw new ApplicationException( "Action includes too deep: " + path );
          // todo: refactor mod path
          var actions = Json.Parse<ActionDef[]>( Tools.ReadText( Path.Combine( Path.GetDirectoryName( mod.Path ), path ) ) );
          ModMeta.NormDictArray( ref actions );
-         return PreprocessActions( mod, actions, ref defValues );
+         try {
+            return PreprocessActions( mod, actions, ref defValues, level );
+         } catch ( ApplicationException ex ) {
+            throw new ApplicationException( "Error when including " + path, ex );
+         }
       }
 
       private static object RunActionHandler ( ModEntry mod, DllMeta dll, ActionDef act ) { try {
