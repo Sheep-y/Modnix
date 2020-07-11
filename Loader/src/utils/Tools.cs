@@ -1,5 +1,7 @@
-﻿using System.IO;
-using System.Runtime.Remoting.Messaging;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace Sheepy.Modnix {
@@ -29,6 +31,25 @@ namespace Sheepy.Modnix {
          using ( var stream = new StreamReader( input, Encoding.UTF8, true ) ) {
             return stream.ReadToEnd();
          }
+      }
+
+      private static readonly Dictionary< string, HashSet< string > > StrLists = new Dictionary<string, HashSet<string>>();
+      private static readonly char[] ListSeparator = new char[]{ ',', ';' };
+
+      internal static bool InList ( string[] list, string val ) => InList( string.Join( ",", list ), val );
+
+      internal static bool InList ( string list, string val ) {
+         if ( string.IsNullOrWhiteSpace( list ) ) return false;
+         list = list.Trim().ToLowerInvariant();
+         HashSet<string> parsed;
+         lock ( StrLists ) {
+            if ( ! StrLists.TryGetValue( list, out parsed ) ) {
+               parsed = new HashSet<string>( list.Split( ListSeparator, StringSplitOptions.RemoveEmptyEntries ).Select( e => e.Trim() ) );
+               if ( parsed.Count == 0 ) parsed = null;
+               StrLists.Add( list, parsed );
+            }
+         }
+         return parsed?.Contains( val ) == true;
       }
    }
 }

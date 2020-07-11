@@ -132,7 +132,7 @@ namespace Sheepy.Modnix {
 
          foreach ( var mod in EnabledMods.ToArray() ) {
             var flags = mod.Metadata.Flags;
-            if ( flags != null && flags.Any( e => e.Trim().ToLowerInvariant() == "library" ) && ! dependees.Contains( mod.Key ) )
+            if ( flags != null && Tools.InList( flags, "library" ) && ! dependees.Contains( mod.Key ) )
                DisableAndRemoveMod( mod, "no_dependent", "library disabled because no mods require it" );
          }
       }

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using static Sheepy.Modnix.Tools;
 
 namespace Sheepy.Modnix {
    using ActionDef = Dictionary<string,object>;
@@ -181,22 +182,6 @@ namespace Sheepy.Modnix {
          if ( ! a.ContainsKey( "phase" ) ) a.Add( "phase", DEFAULT_PHASE_LOWER );
          else a[ "phase" ] = a[ "phase" ].ToString().Trim().ToLowerInvariant();
          return a;
-      }
-
-      private static readonly Dictionary< string, HashSet< string > > StrLists = new Dictionary<string, HashSet<string>>();
-
-      private static bool InList ( string list, string val ) {
-         if ( string.IsNullOrWhiteSpace( list ) ) return false;
-         list = list.Trim().ToLowerInvariant();
-         HashSet<string> parsed;
-         lock ( StrLists ) {
-            if ( ! StrLists.TryGetValue( list, out parsed ) ) {
-               parsed = new HashSet<string>( list.Split( new char[]{ ',' }, StringSplitOptions.RemoveEmptyEntries ).Select( e => e.Trim() ) );
-               if ( parsed.Count == 0 ) parsed = null;
-               StrLists.Add( list, parsed );
-            }
-         }
-         return parsed?.Contains( val ) == true;
       }
       #endregion
    }
