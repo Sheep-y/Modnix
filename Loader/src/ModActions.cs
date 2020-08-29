@@ -113,13 +113,13 @@ namespace Sheepy.Modnix {
       }
 
       private static ActionDef[] LoadInclude ( ModEntry mod, string path, ref ActionDef defValues, int level ) {
-         if ( ! Tools.IsSafePath( path ) ) {
+         if ( ! IsSafePath( path ) ) {
             mod.Log().Error( "Invalid or unsafe path: {0}", path );
             return new ActionDef[0];
          }
          if ( level > 9 ) throw new ApplicationException( "Action includes too deep: " + path );
          // todo: refactor mod path
-         var actions = Json.Parse<ActionDef[]>( Tools.ReadText( Path.Combine( Path.GetDirectoryName( mod.Path ), path ) ) );
+         var actions = Json.Parse<ActionDef[]>( ReadText( Path.Combine( Path.GetDirectoryName( mod.Path ), path ) ) );
          ModMeta.NormDictArray( ref actions );
          try {
             return PreprocessActions( mod, actions, ref defValues, level );
