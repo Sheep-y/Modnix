@@ -11,6 +11,7 @@ Roadmap: https://github.com/Sheep-y/Modnix/issues/24
 * Gui: Mod load order updated to match Modnix 3 phases.
 * Mod: Action includes must be in same folder as the mod or a subfolder.
 * Log: OS type and version are now logged.
+* Log: Flushing log no longer log reason as "null".
 
 # Version 2.5.3, 2020-07-09
 https://github.com/Sheep-y/Modnix/releases/tag/v2.5.3

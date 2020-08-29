@@ -444,7 +444,7 @@ namespace Sheepy.Modnix {
             case 'f':
                if ( "flush".Equals( level ) ) {
                   lock ( this ) if ( Logger == null ) return true;
-                  Logger.Verbo( "Flushing log.{0}{1}", param == null ? "" : " Reason: ", param );
+                  Logger.Verbo( "Flushing log.{0}{1}", param == null ? "" : " Reason: ", param ?? "" );
                   Logger.Flush();
                   return true;
                }
