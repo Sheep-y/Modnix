@@ -614,7 +614,13 @@ namespace Sheepy.Modnix.MainGUI {
       private void RichModInfo_TextChanged ( object sender, TextChangedEventArgs e ) {
          if ( UpdatingModInfo ) return;
          if ( TabSetModInfo.SelectedItem == null || TabSetModInfo.SelectedItem != TabModConfig ) return;
-         CurrentMod?.Do( AppAction.EDIT_CONFIG, RichModInfo.Document.TextRange().Text );
+         string text = RichModInfo.Document.TextRange().Text;
+         if ( text.TrimEnd().Contains( "\r\n" ) ) { // Pasted text from Notepad; remove paragraph breaks from config box
+            UpdatingModInfo = true;
+            RichModInfo.Document.TextRange().Text = WpfHelper.Lf2Cr( text );
+            UpdatingModInfo = false;
+         }
+         CurrentMod?.Do( AppAction.EDIT_CONFIG, text );
          RefreshConfButtions();
       }
 

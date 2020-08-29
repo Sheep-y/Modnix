@@ -7,6 +7,7 @@ Roadmap: https://github.com/Sheep-y/Modnix/issues/24
 * New: Actions now support multiple (comma separated) phsaes.
 * New: Actions now support "Include".
 * New: Re-implement Action.OnError to properly support "continue", "skip", and "stop".
+* Fix: Pasting config text from Notepad no longer generate excessive blank lines.
 * Gui: Mod load order updated to match Modnix 3 phases.
 * Mod: Action includes must be in same folder as the mod or a subfolder.
 * Log: OS type and version are now logged.
