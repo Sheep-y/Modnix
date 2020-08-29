@@ -98,8 +98,11 @@ namespace Sheepy.Logging {
       public void Warn  ( object message, params object[] args ) => Log( TraceEventType.Warning, message, args );
       public void Error ( object message, params object[] args ) => Log( TraceEventType.Error, message, args );
 
-      // Clear the log.
+      // Clear the log.  Textbox log will clear the box, file log will delete file, etc.
       public abstract void Clear ();
+
+      // Return number of enqueued (unprocessed) log entry.
+      public virtual int Queued => 0;
 
       // Immediately process all queued messages. The call blocks until they finish processing on this thread.
       public abstract void Flush ();
@@ -149,7 +152,7 @@ namespace Sheepy.Logging {
    public abstract class BackgroundLogger : Logger {
       protected BackgroundLogger ( int writeDelay = 100 ) {
          _WriteDelay = Math.Max( 0, writeDelay );
-         _Queue   = new List<LogEntry>();
+         _Queue = new List<LogEntry>();
       }
 
       ~BackgroundLogger () => Flush();
@@ -172,6 +175,8 @@ namespace Sheepy.Logging {
             _Queue.Clear();
          }
       }
+
+      public override int Queued { get { lock ( _Queue ) return _Queue.Count; } }
 
       public override void Flush () => ProcessQueue();
 
@@ -314,6 +319,8 @@ namespace Sheepy.Logging {
             master.Clear();
          } catch ( Exception ex ) { CallOnError( ex ); }
       }
+
+      public override int Queued => _Masters.ToArray().Sum( e => e.Queued );
 
       public override void Flush () {
          foreach ( Logger master in _Masters.ToArray() ) try {
