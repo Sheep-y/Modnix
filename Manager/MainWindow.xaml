@@ -294,6 +294,11 @@
                   </Button>
                </Grid>
                <DataGrid x:Name="GridModList" VerticalScrollBarVisibility="Visible" AutoGenerateColumns="False" IsReadOnly="True" Margin="0,5" SelectionChanged="GridModList_SelectionChanged" LoadingRow="GridModList_LoadingRow" PreviewKeyDown="GridModList_PreviewKeyDown">
+                  <DataGrid.Resources>
+                     <Style TargetType="DataGridRow">
+                        <EventSetter Event="MouseDoubleClick" Handler="GridModList_DoubleClick"/>
+                     </Style>
+                  </DataGrid.Resources>
                   <DataGrid.Columns>
                      <DataGridTextColumn Header="#" Binding="{Binding Order}" ClipboardContentBinding="{x:Null}" />
                      <DataGridTextColumn Header="Mod" Binding="{Binding Name}" ClipboardContentBinding="{x:Null}" SortDirection="Ascending"/>

@@ -9,6 +9,7 @@ Roadmap: https://github.com/Sheep-y/Modnix/issues/24
 * New: Re-implement Action.OnError to properly support "continue", "skip", and "stop".
 * Fix: Pasting config text from Notepad no longer generate excessive blank lines.
 * Gui: Mod load order updated to match Modnix 3 phases.
+* Gui: Double click now enable / disable a mod.
 * Mod: Action includes must be in same folder as the mod or a subfolder.
 * Log: OS type and version are now logged.
 * Log: Flushing log no longer log reason as "null".

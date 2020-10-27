@@ -463,6 +463,13 @@ namespace Sheepy.Modnix.MainGUI {
          SetSelectedMod( GridModList.SelectedItem as ModInfo );
       }
 
+      private void GridModList_DoubleClick ( object sender, MouseButtonEventArgs evt ) {
+         if ( ! ( GridModList.SelectedItem is ModInfo mod ) ) return;
+         mod.Do( mod.Is( ModQuery.ENABLED ) ? AppAction.DISABLE_MOD : AppAction.ENABLE_MOD );
+         App.SaveSettings();
+         App.GetModList();
+      }
+
       private void GridModList_LoadingRow ( object sender, DataGridRowEventArgs e ) {
          var row = e.Row;
          if ( ! ( row.Item is ModInfo mod ) || ! mod.Is( ModQuery.ENABLED ) )
