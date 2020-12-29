@@ -348,6 +348,10 @@ namespace Sheepy.Modnix.MainGUI {
 
       private string SearchRegistry () { try {
          Log( $"Finding {GAME_EXE} in Windows Game Bar registry" );
+         using ( RegistryKey steamPP = Registry.LocalMachine.OpenSubKey( "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Steam App 839770" ) ) {
+            var path = steamPP?.GetValue( "InstallLocation" )?.ToString();
+            if ( IsGamePath( path ) ) return path;
+         }
          using ( RegistryKey gamebar = Registry.CurrentUser.OpenSubKey( "System\\GameConfigStore\\Children" ) ) {
             foreach ( var game in gamebar.GetSubKeyNames() ) {
                using ( RegistryKey key = gamebar.OpenSubKey( game ) ) {
@@ -366,7 +370,9 @@ namespace Sheepy.Modnix.MainGUI {
          foreach ( var drive in DriveInfo.GetDrives() ) try {
             if ( drive.DriveType != DriveType.Fixed ) continue;
             if ( ! drive.IsReady ) continue;
-            var path = Path.Combine( drive.Name, "Program Files", "Epic Games", "PhoenixPoint" );
+            var path = Path.Combine( drive.Name, "Program Files (x86)", "Steam", "steamapps", "common", "PhoenixPoint" );
+            if ( IsGamePath( path ) ) return path;
+            path = Path.Combine( drive.Name, "Program Files", "Epic Games", "PhoenixPoint" );
             if ( IsGamePath( path ) ) return path;
          } catch ( SystemException ) { }
          return null;

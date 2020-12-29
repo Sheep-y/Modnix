@@ -1,5 +1,9 @@
 Modnix Changelog
 
+# Version 2.5.4, 2020-12-30
+
+* New: Support Steam installation, detected with priority over EGS.
+
 # Version 2.5.3, 2020-07-09
 
 * Misc: Update injector's game version extraction for game 1.5.2.
