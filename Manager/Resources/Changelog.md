@@ -14,6 +14,10 @@ Roadmap: https://github.com/Sheep-y/Modnix/issues/24
 * Log: OS type and version are now logged.
 * Log: Flushing log no longer log reason as "null".
 
+# Version 2.5.4, 2020-12-30
+
+* New: Support Steam installation, detected with priority over EGS.
+
 # Version 2.5.3, 2020-07-09
 https://github.com/Sheep-y/Modnix/releases/tag/v2.5.3
 

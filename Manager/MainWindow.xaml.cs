@@ -156,7 +156,7 @@ namespace Sheepy.Modnix.MainGUI {
          Log( "Refreshing app buttons" );
          ButtonSetup.IsEnabled = ! SharedGui.IsAppWorking && SharedGui.AppState != null;
          ButtonRunOnline.IsEnabled  = ButtonRunOffline.IsEnabled  = SharedGui.CanModify && SharedGui.IsGameFound;
-         ButtonRunOnline.Foreground = ButtonRunOffline.Foreground = 
+         ButtonRunOnline.Foreground = ButtonRunOffline.Foreground =
             ButtonRunOnline.IsEnabled && SharedGui.AppState != null && ! SharedGui.IsInjected ? Brushes.Red : Brushes.Black;
          SetCollapseState();
 
@@ -952,7 +952,7 @@ namespace Sheepy.Modnix.MainGUI {
             case "nexus"  : url = "https://www.nexusmods.com/phoenixpoint/mods/?BH=0"; break;
             case "reddit" : url = "https://www.reddit.com/r/PhoenixPoint/"; break;
             case "twitter": url = "https://twitter.com/Phoenix_Point"; break;
-            case "wiki"   : url = "https://phoenixpoint.fandom.com/wiki/"; break;
+            case "wiki"   : url = "http://wiki.phoenixpoint.com/Phoenix_Point_Wiki"; break;
             case "www"    : url = "https://phoenixpoint.info/"; break;
             default       : return;
          }
