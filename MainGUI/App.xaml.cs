@@ -347,11 +347,12 @@ namespace Sheepy.Modnix.MainGUI {
       } catch ( IOException ex ) { gamePath = null; return Log( ex, false ); } }
 
       private string SearchRegistry () { try {
-         Log( $"Finding {GAME_EXE} in Windows Game Bar registry" );
+         Log( $"Checking Steam App Uninstall registry" );
          using ( RegistryKey steamPP = Registry.LocalMachine.OpenSubKey( "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Steam App 839770" ) ) {
             var path = steamPP?.GetValue( "InstallLocation" )?.ToString();
             if ( IsGamePath( path ) ) return path;
          }
+         Log( $"Scanning Windows Game Bar registry" );
          using ( RegistryKey gamebar = Registry.CurrentUser.OpenSubKey( "System\\GameConfigStore\\Children" ) ) {
             foreach ( var game in gamebar.GetSubKeyNames() ) {
                using ( RegistryKey key = gamebar.OpenSubKey( game ) ) {
@@ -379,7 +380,7 @@ namespace Sheepy.Modnix.MainGUI {
       } catch ( Exception ex ) { return Log< string >( ex, null ); } }
 
       internal bool IsGamePath ( string path ) { try {
-         if ( string.IsNullOrWhiteSpace( path ) ) return false;
+         if ( string.IsNullOrWhiteSpace( path ) || ! Directory.Exists( path ) ) return false;
          string exe = Path.Combine( path, GAME_EXE ), dll = Path.Combine( path, DLL_PATH, GAME_DLL );
          Log( $"Detecting game at {path}" );
          return File.Exists( exe ) && File.Exists( dll );
