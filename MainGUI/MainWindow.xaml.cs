@@ -157,7 +157,7 @@ namespace Sheepy.Modnix.MainGUI {
          Log( "Refreshing app buttons" );
          ButtonSetup.IsEnabled = ! SharedGui.IsAppWorking && SharedGui.AppState != null;
          ButtonRunOnline.IsEnabled  = ButtonRunOffline.IsEnabled  = SharedGui.CanModify && SharedGui.IsGameFound;
-         ButtonRunOnline.Foreground = ButtonRunOffline.Foreground = 
+         ButtonRunOnline.Foreground = ButtonRunOffline.Foreground =
             ButtonRunOnline.IsEnabled && SharedGui.AppState != null && ! SharedGui.IsInjected ? Brushes.Red : Brushes.Black;
          SetCollapseState();
 

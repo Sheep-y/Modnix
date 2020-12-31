@@ -396,8 +396,12 @@ namespace Sheepy.Modnix.MainGUI {
          CurrentGame.DeleteRootFile( GAME_LOG );
          if ( type == "online" ) {
             if ( CurrentGame.GameType == "epic" ) {
-               Log( "Launching through epic game launcher" );
+               Log( "Launching through Epic Games" );
                Process.Start( Settings.EgsCommand ?? "com.epicgames.launcher://apps/Iris?action=launch", Settings.EgsParameter );
+               return;
+            } else {
+               Log( "Launching through Steam" );
+               Process.Start( Settings.SteamCommand ?? "steam://rungameid/839770" );
                return;
             }
          } else {
