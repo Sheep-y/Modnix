@@ -334,7 +334,7 @@ namespace Sheepy.Modnix.MainGUI {
       } catch ( Exception ex ) { return Log( ex, "error" ); } }
 
       // Try to detect game path
-      private bool FoundGame ( out string gamePath ) { gamePath = null; try {
+      private bool FoundGame ( out string gamePath ) { try {
          if ( IsGamePath( gamePath = Settings.GamePath ) ) return true;
          foreach ( var path in new string[] { ".", "..", Path.Combine( "..", ".." ) } )
             if ( IsGamePath( gamePath = path ) ) return true;
@@ -347,12 +347,17 @@ namespace Sheepy.Modnix.MainGUI {
       } catch ( IOException ex ) { gamePath = null; return Log( ex, false ); } }
 
       private string SearchRegistry () { try {
-         Log( $"Checking Steam App Uninstall registry" );
+         Log( "Checking Steam registry" );
+         using ( RegistryKey steam = Registry.LocalMachine.OpenSubKey( "SOFTWARE\\WOW6432Node\\Valve\\Steam" ) ) {
+            var path = Path.Combine( steam?.GetValue( "InstallPath" )?.ToString(), "steamapps", "common", "Phoenix Point" );
+            if ( IsGamePath( path ) ) return path;
+         }
+         Log( "Checking Steam App Uninstall registry" );
          using ( RegistryKey steamPP = Registry.LocalMachine.OpenSubKey( "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Steam App 839770" ) ) {
             var path = steamPP?.GetValue( "InstallLocation" )?.ToString();
             if ( IsGamePath( path ) ) return path;
          }
-         Log( $"Scanning Windows Game Bar registry" );
+         Log( "Scanning Windows Game Bar registry" );
          using ( RegistryKey gamebar = Registry.CurrentUser.OpenSubKey( "System\\GameConfigStore\\Children" ) ) {
             foreach ( var game in gamebar.GetSubKeyNames() ) {
                using ( RegistryKey key = gamebar.OpenSubKey( game ) ) {
@@ -371,7 +376,7 @@ namespace Sheepy.Modnix.MainGUI {
          foreach ( var drive in DriveInfo.GetDrives() ) try {
             if ( drive.DriveType != DriveType.Fixed ) continue;
             if ( ! drive.IsReady ) continue;
-            var path = Path.Combine( drive.Name, "Program Files (x86)", "Steam", "steamapps", "common", "PhoenixPoint" );
+            var path = Path.Combine( drive.Name, "Program Files (x86)", "Steam", "steamapps", "common", "Phoenix Point" );
             if ( IsGamePath( path ) ) return path;
             path = Path.Combine( drive.Name, "Program Files", "Epic Games", "PhoenixPoint" );
             if ( IsGamePath( path ) ) return path;
