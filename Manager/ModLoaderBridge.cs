@@ -1,4 +1,5 @@
-﻿using Sheepy.Logging;
+﻿using Markdig;
+using Sheepy.Logging;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -373,8 +374,49 @@ namespace Sheepy.Modnix.MainGUI {
                doc.TextRange().Load( mem, DataFormats.Rtf );
             return;
          } catch ( ArgumentException ex ) { Log( ex ); }
-         doc.TextRange().Text = WpfHelper.Lf2Cr( text );
+         try {
+            var tree = Markdown.Parse( text, new MarkdownPipelineBuilder().UseAutoLinks().UseTaskLists().Build() );
+            doc.Blocks.Clear();
+            foreach ( var block in tree )
+               doc.Blocks.Add( BuildBlock( block ) );
+         } catch ( Exception ex ) {
+            Log( ex );
+            doc.TextRange().Text = WpfHelper.Lf2Cr( text );
+         }
       } catch ( SystemException ex ) { doc.TextRange().Text = ex.ToString(); } }
+
+      private static Block BuildBlock ( Markdig.Syntax.Block block ) {
+         if ( block is Markdig.Syntax.HeadingBlock h ) {
+            return BuildInline( h.Inline, 19 - h.Level, 700 );
+         } else if ( block is Markdig.Syntax.ParagraphBlock p ) {
+            return BuildInline( p.Inline );
+         } else if ( block is Markdig.Syntax.ListBlock l ) {
+            var list = new List();
+            foreach ( var item in l ) {
+               var li = new ListItem();
+               li.Blocks.Add( BuildBlock( item ) );
+               list.ListItems.Add( li );
+            }
+            return list;
+         } else if ( block is Markdig.Syntax.ContainerBlock c ) {
+            var blk = new Section();
+            foreach ( var e in c ) blk.Blocks.Add( BuildBlock( e ) );
+            return blk;
+         } else {
+            return new Paragraph( new Run( block.ToString() ) );
+         }
+      }
+
+      private static Paragraph BuildInline ( Markdig.Syntax.Inlines.ContainerInline content, double size = 0.0, int weight = 500 ) {
+         var blk = new Paragraph();
+         foreach ( var inline in content ) {
+            var txt = new Run( inline.ToString() );
+            if ( size != 0.0 ) txt.FontSize = size;
+            if ( weight != 500 ) txt.FontWeight = FontWeight.FromOpenTypeWeight( weight );
+            blk.Inlines.Add( txt );
+         }
+         return blk;
+      }
 
       private void BuildBasicDesc ( ModMeta meta, InlineCollection list ) {
          /* Experimental image code. Online image does not work, sadly.
