@@ -40,6 +40,7 @@ namespace Sheepy.Modnix.MainGUI {
       internal const string HARM_DLL = "0Harmony.dll";
       internal const string CECI_DLL = "Mono.Cecil.dll";
       internal const string JSON_DLL = "Newtonsoft.Json.dll";
+      internal const string MRKD_DLL = "Markdig.dll";
       internal const string DOOR_DLL = "version.dll";
    }
 
@@ -907,6 +908,8 @@ namespace Sheepy.Modnix.MainGUI {
             return app.Load( GetResourceBytes( AppRes.CECI_DLL ) );
          if ( dll.Name.StartsWith( "Newtonsoft.Json,", StringComparison.OrdinalIgnoreCase ) )
             return app.Load( GetResourceBytes( AppRes.JSON_DLL ) );
+         if ( dll.Name.StartsWith( "Markdig,", StringComparison.OrdinalIgnoreCase ) )
+            return app.Load( GetResourceBytes( AppRes.MRKD_DLL ) );
          return null;
       }
 
