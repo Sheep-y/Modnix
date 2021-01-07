@@ -25,7 +25,7 @@ and [Troubleshooting](https://github.com/Sheep-y/Modnix/wiki/Troubleshooting-Mod
 
 ## Modder Features
 
-1. Mods can be built to support PPML, Modnix, and any future tools, without explicit Modnix dependency.
+1. Mods can be built to support both PPML and Modnix.
 2. Display mod information and documents to users, such as author, links, readme, changelog etc.
 3. Mod are placed in their own folder, with optional round-trip json config managed by Modnix.
 4. Declarative mod dependencies, conflicts, and avoidances.  Opt-in pre-splash loading and lazy loading.
