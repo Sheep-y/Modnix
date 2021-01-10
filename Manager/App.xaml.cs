@@ -481,8 +481,8 @@ namespace Sheepy.Modnix.MainGUI {
          return File.Exists( there );
       } catch ( Exception ex ) { return Log( ex, false ); } }
 
-      internal Exception CreateRuntimeConfig () { try {
-         var confPath = ModGuiExe + ".config";
+      internal Exception CreateRuntimeConfig ( string exePath ) { try {
+         var confPath = Path.Combine( Path.GetDirectoryName( exePath ), Path.GetFileNameWithoutExtension( exePath ) ) + ".config";
          Log( "Creating .Net config at " + confPath );
          File.WriteAllText( confPath, "<?xml version=\"1.0\" encoding=\"utf-8\"?><configuration><runtime><loadFromRemoteSources enabled=\"true\"/></runtime></configuration>" );
          return null;

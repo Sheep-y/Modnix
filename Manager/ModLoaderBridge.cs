@@ -763,7 +763,7 @@ namespace Sheepy.Modnix.MainGUI {
          } catch ( Exception ex ) {
             AppControl.Instance.Log( ex );
             if ( ex is NotSupportedException ) {
-               ex = AppControl.Instance.CreateRuntimeConfig() ?? new NotSupportedException( "\nPlease restart Modnix to fix mod sandbox.\n\n", ex );
+               ex = AppControl.Instance.CreateRuntimeConfig( AppControl.Instance.MyPath ) ?? new NotSupportedException( "\nPlease restart Modnix to fix mod sandbox.\n\n", ex );
             }
             return new Sandbox{ Error = ex };
          }
