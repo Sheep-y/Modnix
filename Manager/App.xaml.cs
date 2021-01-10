@@ -105,6 +105,10 @@ namespace Sheepy.Modnix.MainGUI {
                   GUI = new SetupWindow( "launch" );
                else
                   GUI = new SetupWindow( "setup" );
+            } else if ( CheckRuntimeConfigAndRestart() && LaunchModnixIgnoreSelf( MyPath ) ) {
+               Log( $"Restarting after created .Net config" );
+               Shutdown();
+               return;
             }
          }
          Log( $"Launching main window" );
@@ -221,9 +225,10 @@ namespace Sheepy.Modnix.MainGUI {
          return NativeMethods.SetForegroundWindow( handle );
       } catch ( Exception ex ) { return Log( ex, false ); } }
 
-      internal void LaunchInstalledManager () { try {
-         Process.Start( ModGuiExe, "/i " + Process.GetCurrentProcess().Id );
-      } catch ( Exception ex ) { Log( ex ); } }
+      internal bool LaunchModnixIgnoreSelf ( string target ) { try {
+         Process.Start( target, "/i " + Process.GetCurrentProcess().Id );
+         return true;
+      } catch ( Exception ex ) { Log( ex ); return false; } }
 
       private bool FoundInstalledManager () { try {
          if ( ! File.Exists( ModGuiExe ) ) return false;
@@ -451,7 +456,7 @@ namespace Sheepy.Modnix.MainGUI {
          CurrentGame.RunInjector( "/y" );
          CheckInjectionStatus( true );
          if ( CurrentGame.Status == "modnix" ) {
-            //CreateRuntimeConfig();
+            CreateRuntimeConfig( ModGuiExe );
             SaveSettings();
             // Migrate mods
             if ( MigrateLegacy() )
@@ -481,8 +486,17 @@ namespace Sheepy.Modnix.MainGUI {
          return File.Exists( there );
       } catch ( Exception ex ) { return Log( ex, false ); } }
 
+      private string RuntimeConfigPath ( string exePath ) => Path.Combine( Path.GetDirectoryName( exePath ), Path.GetFileNameWithoutExtension( exePath ) ) + ".config";
+
+      private bool CheckRuntimeConfigAndRestart () {
+         string confPath = RuntimeConfigPath( MyPath );
+         if ( File.Exists( confPath ) ) return false;
+         if ( CreateRuntimeConfig( MyPath ) != null ) return false;
+         return File.Exists( confPath );
+      }
+
       internal Exception CreateRuntimeConfig ( string exePath ) { try {
-         var confPath = Path.Combine( Path.GetDirectoryName( exePath ), Path.GetFileNameWithoutExtension( exePath ) ) + ".config";
+         var confPath = RuntimeConfigPath( exePath );
          Log( "Creating .Net config at " + confPath );
          File.WriteAllText( confPath, "<?xml version=\"1.0\" encoding=\"utf-8\"?><configuration><runtime><loadFromRemoteSources enabled=\"true\"/></runtime></configuration>" );
          return null;
