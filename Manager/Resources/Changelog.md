@@ -15,7 +15,15 @@ Roadmap: https://github.com/Sheep-y/Modnix/issues/24
 * Log: OS type and version are now logged.
 * Log: Flushing log no longer log reason as "null".
 
+# Version 2.5.5, 2021-01-12
+https://github.com/Sheep-y/Modnix/releases/tag/v2.5.5
+
+* Gui: Create runtime settings (loadfromRemoteSources) on install and on launch, to further reduce sandbox creation error.
+* Gui: Unblock mod dlls downloaded from Internet so that they can be loaded for config.
+* Gui: Replaced fandom icon with generic wiki icon, since the button no longer points to fandom.
+
 # Version 2.5.4, 2020-12-30
+https://github.com/Sheep-y/Modnix/releases/tag/v2.5.4
 
 * New: Support Steam installation, detected with priority over EGS.
 
