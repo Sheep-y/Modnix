@@ -2,8 +2,9 @@ Modnix Changelog
 
 # Version 2.5.5, 2021-01-12
 
-* Gui: Create runtime settings (loadfromRemoteSources) on install and on launch, to further reduce sandbox creation error.
-* Gui: Unblock mod dlls downloaded from Internet so that they can be loaded for config.
+* Gui: Create runtime settings (loadfromRemoteSources) on install and on launch, to further reduce sandbox creation error. (#33)
+* Gui: Unblock mod dlls downloaded from Internet so that they can be loaded for config. (#33)
+* Gui: Replace fandom icon with generic wiki icon, since the button no longer points to fandom.
 
 # Version 2.5.4, 2020-12-30
 
