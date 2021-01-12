@@ -90,10 +90,8 @@ namespace Sheepy.Modnix.MainGUI {
                BrowseGame();
             else
                DoSetup();
-         } else { // Launch
-            App.LaunchInstalledModnix();
+         } else if ( App.LaunchManagerIgnoreSelf( App.ModGuiExe ) ) // Launch
             Close();
-         }
       } catch ( Exception ex ) { Log( ex ); } }
 
       private void BrowseGame () {
