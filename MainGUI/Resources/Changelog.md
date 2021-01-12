@@ -1,5 +1,10 @@
 Modnix Changelog
 
+# Version 2.5.5, 2021-01-12
+
+* Gui: Create runtime settings (loadfromRemoteSources) on install and on launch, to further reduce sandbox creation error.
+* Gui: Unblock mod dlls downloaded from Internet so that they can be loaded for config.
+
 # Version 2.5.4, 2020-12-30
 
 * New: Support Steam installation, detected with priority over EGS.

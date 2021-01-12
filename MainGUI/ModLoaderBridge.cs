@@ -270,13 +270,12 @@ namespace Sheepy.Modnix.MainGUI {
          try {
             var dll = Mod.Metadata.Dlls;
             proxy = Sandbox.GetSandbox();
-            if ( proxy.GetError() != null )
-               return proxy.GetError();
+            if ( proxy.GetError() != null ) return proxy.GetError();
             if ( dll != null ) {
                Log( $"Sandbox loading {dll.Length} dlls." );
                proxy.LoadDlls( dll.Select( e => e.Path ).ToArray() );
             }
-            var typeName = Mod.Metadata.ConfigType;
+            var typeName = Mod.Metadata.ConfigType; // Load error may not affect config resolve, so ignore error for now
             if ( string.IsNullOrWhiteSpace( typeName ) )
                return new ArgumentNullException( "ConfigType" ).ToString();
             Log( $"Sandbox resolving {typeName}" );
@@ -622,8 +621,28 @@ namespace Sheepy.Modnix.MainGUI {
             ModDlls = new HashSet<Assembly>();
             ModMetaJson.TrimVersion( new Version() ); // Call something to load ModLoader.
          }
-         ModDlls.Add( Assembly.LoadFrom( path ) );
+         try {
+            ModDlls.Add( Assembly.LoadFrom( path ) );
+         } catch ( FileLoadException ex ) when ( ex.GetBaseException() is NotSupportedException ) { // dll blocked because of "Downloaded From Internet" flag
+            RecurUnblock( Path.GetDirectoryName( path ) );
+            ModDlls.Add( Assembly.Load( File.ReadAllBytes( path ) ) );
+         }
       } catch ( Exception ex ) { Error = ex; } }
+
+      // Remove "Downloaded from Internet" mark. Inefficient, but good enough for the mods we have now
+      private void RecurUnblock ( string path, int level = 0 ) {
+         foreach ( var file in Directory.GetFiles( path ) ) try { using ( Process p = new Process() ) {
+            p.StartInfo.FileName = "cmd.exe";
+            p.StartInfo.Arguments = $"/c echo. > \"{file}\":Zone.Identifier";
+            p.StartInfo.WorkingDirectory = Path.GetDirectoryName( file );
+            p.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+            p.Start();
+            p.WaitForExit( 15_000 );
+         } } catch ( Exception ) {}
+         if ( level < 5 )
+            foreach ( var dir in Directory.GetDirectories( path ) )
+               RecurUnblock( dir, level + 1 );
+      }
 
       public string Stringify ( string typeName ) { try {
          foreach ( var asm in ModDlls ) {
@@ -637,7 +656,7 @@ namespace Sheepy.Modnix.MainGUI {
       public string GetError () => Error?.ToString();
 
       private static readonly ConcurrentQueue<Sandbox> Cache = new ConcurrentQueue<Sandbox>();
-      
+
       internal static Sandbox GetSandbox () {
          Cache.TryDequeue( out Sandbox cache );
          EnqueueSandbox();
@@ -662,9 +681,8 @@ namespace Sheepy.Modnix.MainGUI {
             proxy.Initiate();
             return proxy;
          } catch ( Exception ex ) {
-            if ( ex is NotSupportedException ) {
-               ex = AppControl.Instance.CreateRuntimeConfig() ?? new NotSupportedException( "\nPlease restart Modnix to fix mod sandbox.\n\n", ex );
-            }
+            if ( ex is NotSupportedException )
+               ex = AppControl.Instance.CreateRuntimeConfig( AppControl.Instance.MyPath ) ?? new NotSupportedException( "\nPlease restart Modnix to fix mod sandbox.\n\n", ex );
             return new Sandbox{ Error = ex };
          }
       }
