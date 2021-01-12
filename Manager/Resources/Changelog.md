@@ -26,6 +26,7 @@ https://github.com/Sheep-y/Modnix/releases/tag/v2.5.5
 https://github.com/Sheep-y/Modnix/releases/tag/v2.5.4
 
 * New: Support Steam installation, detected with priority over EGS.
+* Gui: Wiki link now opens official wiki instead of fandom wiki.
 
 # Version 2.5.3, 2020-07-09
 https://github.com/Sheep-y/Modnix/releases/tag/v2.5.3

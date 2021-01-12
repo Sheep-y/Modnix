@@ -721,7 +721,7 @@ namespace Sheepy.Modnix.MainGUI {
          }
          try {
             ModDlls.Add( Assembly.LoadFrom( path ) );
-         } catch ( FileLoadException ex ) when ( ErrorIsInternetFlag( ex ) ) { // dll blocked because of "Downloaded From Internet" flag
+         } catch ( FileLoadException ex ) when ( ex.GetBaseException() is NotSupportedException ) { // dll blocked because of "Downloaded From Internet" flag
             RecurUnblock( Path.GetDirectoryName( path ) );
             ModDlls.Add( Assembly.Load( File.ReadAllBytes( path ) ) );
          }
@@ -752,8 +752,6 @@ namespace Sheepy.Modnix.MainGUI {
       } catch ( Exception ex ) { Error = ex; return null; } }
 
       public string GetError () => Error?.ToString();
-
-      public bool ErrorIsInternetFlag ( Exception ex = null ) => ( ex ?? Error ) is FileLoadException && ( ex ?? Error ).GetBaseException() is NotSupportedException;
 
       private static readonly ConcurrentQueue<Sandbox> Cache = new ConcurrentQueue<Sandbox>();
 

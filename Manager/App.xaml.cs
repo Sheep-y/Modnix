@@ -105,7 +105,7 @@ namespace Sheepy.Modnix.MainGUI {
                   GUI = new SetupWindow( "launch" );
                else
                   GUI = new SetupWindow( "setup" );
-            } else if ( CheckRuntimeConfigAndRestart() && LaunchModnixIgnoreSelf( MyPath ) ) {
+            } else if ( CheckRuntimeConfigAndRestart() && LaunchManagerIgnoreSelf( MyPath ) ) {
                Log( $"Restarting after created .Net config" );
                Shutdown();
                return;
@@ -225,7 +225,7 @@ namespace Sheepy.Modnix.MainGUI {
          return NativeMethods.SetForegroundWindow( handle );
       } catch ( Exception ex ) { return Log( ex, false ); } }
 
-      internal bool LaunchModnixIgnoreSelf ( string target ) { try {
+      internal bool LaunchManagerIgnoreSelf ( string target ) { try {
          Process.Start( target, "/i " + Process.GetCurrentProcess().Id );
          return true;
       } catch ( Exception ex ) { Log( ex ); return false; } }

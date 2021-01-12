@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -90,7 +88,7 @@ namespace Sheepy.Modnix.MainGUI {
                BrowseGame();
             else
                DoSetup();
-         } else if ( App.LaunchModnixIgnoreSelf( App.ModGuiExe ) ) // Launch
+         } else if ( App.LaunchManagerIgnoreSelf( App.ModGuiExe ) ) // Launch
             Close();
       } catch ( Exception ex ) { Log( ex ); } }
 
