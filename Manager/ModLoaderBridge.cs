@@ -102,7 +102,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       private static GridModItem ToGridItem ( ModEntry mod ) { try {
          var modPath = mod.Path;
-         var order = ModLoader.EnabledMods.Contains( mod ) ? -1f : float.PositiveInfinity;
+         var order = ModLoader.EnabledMods.Contains( mod ) ? 0f : float.PositiveInfinity;
          if ( string.IsNullOrWhiteSpace( modPath ) ) return new GridModItem( mod ){ _Order = order };
          var doc = new Dictionary< ModDoc, string >();
          var dir = Path.GetDirectoryName( modPath );
@@ -111,18 +111,18 @@ namespace Sheepy.Modnix.MainGUI {
             var name = Path.GetFileName( file ).ToLowerInvariant();
             if ( ! doc.ContainsKey( ModDoc.README ) && ReadmeFiles.Contains( name ) )
                doc.Add( ModDoc.README, file );
-            else if ( ! doc.ContainsKey( ModDoc.README ) && ChangeFiles.Contains( name ) )
+            else if ( ! doc.ContainsKey( ModDoc.CHANGELOG ) && ChangeFiles.Contains( name ) )
                doc.Add( ModDoc.CHANGELOG, file );
-            else if ( ! doc.ContainsKey( ModDoc.README ) && LicenseFiles.Contains( name ) )
+            else if ( ! doc.ContainsKey( ModDoc.LICENSE ) && LicenseFiles.Contains( name ) )
                doc.Add( ModDoc.LICENSE, file );
          }
          if ( modPath.EndsWith( ".dll", StringComparison.OrdinalIgnoreCase ) ) {
             AppControl.Instance.Log( "Scanning embedded docs in " + modPath );
-            if ( ! doc.ContainsKey( ModDoc.README ) && ( ModScanner.FindEmbeddedFile( modPath, null, ReadmeFiles ) != null ) )
+            if ( ! doc.ContainsKey( ModDoc.README ) && ModScanner.FindEmbeddedFile( modPath, null, ReadmeFiles ) != null )
                doc.Add( ModDoc.README, "embedded" );
-            if ( ! doc.ContainsKey( ModDoc.CHANGELOG ) && ( ModScanner.FindEmbeddedFile( modPath, null, ChangeFiles ) != null ) )
+            if ( ! doc.ContainsKey( ModDoc.CHANGELOG ) && ModScanner.FindEmbeddedFile( modPath, null, ChangeFiles ) != null )
                doc.Add( ModDoc.CHANGELOG, "embedded" );
-            if ( ! doc.ContainsKey( ModDoc.LICENSE ) && ( ModScanner.FindEmbeddedFile( modPath, null, LicenseFiles ) != null ) )
+            if ( ! doc.ContainsKey( ModDoc.LICENSE ) && ModScanner.FindEmbeddedFile( modPath, null, LicenseFiles ) != null )
                doc.Add( ModDoc.LICENSE, "embedded" );
          }
          return new GridModItem( mod ) { _Order = order, Docs = doc.Count == 0 ? null : doc };
@@ -456,27 +456,33 @@ namespace Sheepy.Modnix.MainGUI {
          */
          list.Add( new Bold( new Run( meta.Name.ToString( "en" ) ) ) );
          if ( meta.Version != null ) list.Add( $" \tVer {Json.RegxVerTrim.Replace( Version.ToString(), "" )}" );
-         list.Add( $" \t{Type} mod" );
-         if ( Is( ModQuery.HAS_CONFIG ) ) list.Add( ", can config" );
-         if ( meta.Lang != null ) {
-            string lang;
-            if ( meta.Lang.Contains( "*" ) )
-               lang = AppControl.LangIdToName( "*" );
-            else if ( meta.Lang.Any( e => e == "-" || e == "--" ) )
-               lang = AppControl.LangIdToName( "-" );
-            else
-               lang = string.Join( ", ", meta.Lang.Select( AppControl.LangIdToName ) );
-            list.Add( $"\rLanguages\t{lang}" );
-         }
+         var IsPack = Type.Equals( "Pack" );
+         if ( ! IsPack ) {
+            list.Add( $" \t{Type} mod" );
+            if ( Is( ModQuery.HAS_CONFIG ) ) list.Add( ", can config" );
+            if ( meta.Lang != null ) {
+               string lang;
+               if ( meta.Lang.Contains( "*" ) )
+                  lang = AppControl.LangIdToName( "*" );
+               else if ( meta.Lang.Any( e => e == "-" || e == "--" ) )
+                  lang = AppControl.LangIdToName( "-" );
+               else
+                  lang = string.Join( ", ", meta.Lang.Select( AppControl.LangIdToName ) );
+               list.Add( $"\rLanguages\t{lang}" );
+            }
+         } else
+            list.Add( $" \tMod pack" );
          if ( meta.Author != null ) list.Add( $"\rAuthor\t\t{Author}" );
-         if ( Mod.Index != 0 ) list.Add( $"\rLoad Index\t{Mod.Index}" );
-         if ( Mod.Index != meta.LoadIndex ) list.Add( $" (Original {meta.LoadIndex})" );
-         switch ( meta.Duration ) {
-            case "temp"    : list.Add( "\rMod claims to be temporary and not break saves." ); break;
-            //case "instant" : list.Add( "\rMod claims to be instantaneous and not break saves." ); break;
-            case "newgame" : list.Add( "\rMod claims to affect new game and not break saves." ); break;
-            case "dlc"     : list.Add( "\rMod claims to not affect existing campaigns." ); break;
-            case "perm"    : list.Add( "\rSaves made with this mod on may become dependent on this mod." ); break;
+         if ( ! IsPack ) {
+            if ( Mod.Index != 0 ) list.Add( $"\rLoad Index\t{Mod.Index}" );
+            if ( Mod.Index != meta.LoadIndex ) list.Add( $" (Original {meta.LoadIndex})" );
+            switch ( meta.Duration ) {
+               case "temp"    : list.Add( "\rMod claims to be temporary and not break saves." ); break;
+               //case "instant" : list.Add( "\rMod claims to be instantaneous and not break saves." ); break;
+               case "newgame" : list.Add( "\rMod claims to affect new game and not break saves." ); break;
+               case "dlc"     : list.Add( "\rMod claims to not affect existing campaigns." ); break;
+               case "perm"    : list.Add( "\rSaves made with this mod on may become dependent on this mod." ); break;
+            }
          }
          foreach ( var notice in Mod.GetNotices() )
             list.Add( FormatNotice( notice ) );
@@ -607,6 +613,7 @@ namespace Sheepy.Modnix.MainGUI {
       public override string Path => Mod.Path;
 
       public override string Type { get { lock ( Mod ) {
+         if ( Mod.IsModPack ) return "Pack";
          var hasAction = Mod.Metadata.Actions != null;
          var dlls = Mod.Metadata.Dlls;
          if ( dlls == null ) return hasAction ? "Actions" : "???";

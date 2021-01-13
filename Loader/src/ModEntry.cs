@@ -527,7 +527,7 @@ namespace Sheepy.Modnix {
       }
 
       public bool HasConfig { get { lock ( Metadata ) {
-         return Metadata.ConfigType != null || Metadata.ConfigText != null || CheckConfigFile() != null;
+         return ! IsModPack && ( Metadata.ConfigType != null || Metadata.ConfigText != null || CheckConfigFile() != null );
       } } }
 
       public string GetConfigFile () { try {

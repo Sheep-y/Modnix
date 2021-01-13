@@ -85,7 +85,7 @@ namespace Sheepy.Modnix {
                   continue;
                }
                var submod = ParseMod( path, Path.GetFileName( path ) );
-               if ( submod != null ) continue;
+               if ( submod == null ) continue;
                submod.AddNotice( TraceEventType.Information, "parent", mod );
                mod.AddNotice( TraceEventType.Information, "submod", submod );
                AddMod( submod );
