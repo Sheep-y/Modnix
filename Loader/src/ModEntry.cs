@@ -60,6 +60,7 @@ namespace Sheepy.Modnix {
          Metadata = meta ?? throw new ArgumentNullException( nameof( meta ) );
       }
 
+      public bool IsModPack { get { lock ( Metadata ) { return Metadata.Mods != null; } } }
       public string Key { get { lock ( Metadata ) { return ModScanner.NormaliseModId( Metadata.Id ); } } }
       internal DateTime? LastModified => Path == null ? (DateTime?) null : new FileInfo( Path ).LastWriteTime;
       internal List< Assembly > ModAssemblies; // Use List insead of HashSet to preserve order.

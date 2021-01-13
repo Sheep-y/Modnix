@@ -3,7 +3,7 @@ Modnix Changelog
 # Version 3 Beta 2, in development
 Roadmap: https://github.com/Sheep-y/Modnix/issues/24
 
-* New: Mod Sets support.  Multiple mods may now be pre-configured and bundled into one package.
+* New: Mod Pack support.  Multiple mods may now be pre-configured and bundled into one package.
 * New: "mod_stack" api to get api callstack.
 * New: Actions now support multiple (comma separated) phsaes.
 * New: Actions now support "Include".

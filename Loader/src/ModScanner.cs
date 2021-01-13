@@ -72,19 +72,23 @@ namespace Sheepy.Modnix {
       private static bool AddMod ( ModEntry mod ) {
          if ( mod == null ) return false;
          ModLoader.AllMods.Add( mod );
-         if ( mod.Metadata.Mods != null ) {
+         if ( mod.IsModPack ) {
             if ( ModResolver.GetSettings( mod )?.Disabled == false ) return true;
             foreach ( var modPath in mod.Metadata.Mods ) try {
-               if ( modPath.StartsWith( "/" ) || modPath.Contains( ":/" ) || modPath.Contains( "//" ) || modPath.Contains( "../" ) || modPath.Contains( "..\\" ) )
-                  throw new ArgumentException( "Mods must not be absolute, and must not go up" );
-               var path = Path.Combine( Path.GetDirectoryName( mod.Path ), modPath );
-               if ( ! File.Exists( path ) ) Log.Error( $"Sub-mod of {mod.Metadata.Id} not found: {path}" );
-               var submod = ParseMod( path, Path.GetFileName( path ) );
-               if ( submod != null ) {
-                  submod.AddNotice( TraceEventType.Information, "parent", mod );
-                  mod.AddNotice( TraceEventType.Information, "submod", submod );
-                  AddMod( submod );
+               if ( Path.IsPathRooted( modPath ) || modPath.Contains( "../" ) || modPath.Contains( "..\\" ) ) {
+                  mod.Log().Error( "Invalid path: {0}", modPath );
+                  continue;
                }
+               var path = Path.Combine( Path.GetDirectoryName( mod.Path ), modPath );
+               if ( ! File.Exists( path ) ) {
+                  mod.Log().Error( $"Not found: {0}", path );
+                  continue;
+               }
+               var submod = ParseMod( path, Path.GetFileName( path ) );
+               if ( submod != null ) continue;
+               submod.AddNotice( TraceEventType.Information, "parent", mod );
+               mod.AddNotice( TraceEventType.Information, "submod", submod );
+               AddMod( submod );
             } catch ( Exception ex ) { Log.Log( ex ); }
          }
          return true;
@@ -268,7 +272,7 @@ namespace Sheepy.Modnix {
                return false;
          }
          if ( meta.Mods != null && ( meta.Dlls != null || meta.Actions != null ) ) {
-            Log.Warn( "Mod Set cannot specify own dlls and actions." );
+            Log.Warn( "Mod Pack cannot directly owns dlls and actions. Only mods allowed." );
             return false;
          }
          return true;

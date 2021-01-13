@@ -68,7 +68,7 @@ namespace Sheepy.Modnix {
          Log.Verbo( "Check duplicate mods" );
          var IdList = new HashSet<string>( EnabledMods.Select( e => e.Key ) );
          foreach ( var mod in EnabledMods.ToArray() ) {
-            if ( mod.Disabled ) continue; // Already removed as a dup
+            if ( mod.Disabled || mod.IsModPack ) continue; // Already removed as a dup
             var key = mod.Key;
             if ( ! IdList.Contains( key ) ) continue; // Already removed dups
             RemoveDuplicates( EnabledMods.Where( e => e.Key == key ).ToArray() );
@@ -79,7 +79,7 @@ namespace Sheepy.Modnix {
       private static void RemoveDuplicates ( ModEntry[] clones ) {
          var keep = FindLatestMod( clones );
          foreach ( var mod in clones ) {
-            if ( mod == keep ) continue;
+            if ( mod == keep || mod.IsModPack ) continue;
             DisableAndRemoveMod( mod, "duplicate", "duplicate of {2}.", keep, mod.Path, keep.Path );
          }
       }
@@ -87,11 +87,11 @@ namespace Sheepy.Modnix {
       private static void RemoveRecessMods () {
          Log.Verbo( "Check mod avoidances" );
          foreach ( var mod in EnabledMods.ToArray() ) {
-            if ( mod.Disabled ) continue;
+            if ( mod.Disabled || mod.IsModPack ) continue;
             var reqs = mod.Metadata.Avoids;
             if ( reqs == null ) continue;
             foreach ( var req in reqs ) {
-               if ( ! ModLoader.GetVersionById( req.Id, out ModEntry target, out Version ver ) || target.Disabled ) continue;
+               if ( ! ModLoader.GetVersionById( req.Id, out ModEntry target, out Version ver ) || target.Disabled || target.IsModPack ) continue;
                if ( target == mod ) {
                   mod.Log().Warn( "Mod {0} not allowed to disable itself with mod_info.Avoids.", req.Id );
                   continue;
@@ -108,7 +108,7 @@ namespace Sheepy.Modnix {
          Log.Verbo( "Check mod requirements" );
          var dependees = new HashSet< string >();
          foreach ( var mod in EnabledMods.ToArray() ) {
-            if ( mod.Disabled ) continue;
+            if ( mod.Disabled || mod.IsModPack ) continue;
             var reqs = mod.Metadata.Requires;
             if ( reqs == null ) continue;
             var requirements = new Dictionary<string, List<AppVer>>();
@@ -124,7 +124,7 @@ namespace Sheepy.Modnix {
                   mod.Log().Warn( "Mod {0} not allowed to depends on itself with mod_info.Requires", reqSet.Key );
                   continue;
                }
-               if ( found )
+               if ( found && ! target.IsModPack )
                   fulfill = reqSet.Value.Any( r => ( r.Min == null || r.Min <= ver ) && ( r.Max == null || r.Max >= ver ) );
                if ( ! fulfill ) {
                   var r = reqs.FirstOrDefault( e => ModScanner.NormaliseModId( e.Id ) == reqSet.Key );
@@ -137,7 +137,7 @@ namespace Sheepy.Modnix {
 
          foreach ( var mod in EnabledMods.ToArray() ) {
             var flags = mod.Metadata.Flags;
-            if ( flags != null && Tools.InList( flags, "library" ) && ! dependees.Contains( mod.Key ) )
+            if ( flags != null && Tools.InList( flags, "library" ) && ! dependees.Contains( mod.Key ) && ! mod.IsModPack )
                DisableAndRemoveMod( mod, "no_dependent", "library disabled because no mods require it" );
          }
       }
@@ -145,7 +145,7 @@ namespace Sheepy.Modnix {
       private static void RemoveConflictMods () {
          Log.Verbo( "Check mod conflicts" );
          foreach ( var mod in EnabledMods.ToArray() ) {
-            if ( mod.Disabled ) continue;
+            if ( mod.Disabled || mod.IsModPack ) continue;
             var targets = mod.Metadata.Disables;
             if ( targets == null ) continue;
             foreach ( var req in targets ) {
@@ -154,6 +154,7 @@ namespace Sheepy.Modnix {
                   mod.Log().Warn( "Mod {0} not allowed to disable itself with mod_info.Disables.", req.Id );
                   continue;
                }
+               if ( target.IsModPack ) continue;
                if ( req.Min != null && req.Min > ver ) continue;
                if ( req.Max != null && req.Max < ver ) continue;
                DisableAndRemoveMod( target, "disable", "disabled by {1} [{2},{3}]", mod, mod.Metadata.Id, req.Min, req.Max );
@@ -199,7 +200,8 @@ namespace Sheepy.Modnix {
          } catch ( Exception ex ) { mod.Log().Warn( ex ); }
 
          foreach ( var mod in unassigned )
-            DisableAndRemoveMod( mod, "no_phase", "no matching mod phases." );
+            if ( ! mod.IsModPack )
+               DisableAndRemoveMod( mod, "no_phase", "no matching mod phases." );
       } }
 
       private static void AddModToPhase ( ModEntry mod, string phase, ref bool assigned ) {
