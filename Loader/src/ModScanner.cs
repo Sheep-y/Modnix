@@ -71,17 +71,22 @@ namespace Sheepy.Modnix {
 
       private static bool AddMod ( ModEntry mod ) {
          if ( mod == null ) return false;
+         ModLoader.AllMods.Add( mod );
          if ( mod.Metadata.Mods != null ) {
-            // TODO: Check whether mod is manually disabled
+            if ( ModResolver.GetSettings( mod )?.Disabled == false ) return true;
             foreach ( var modPath in mod.Metadata.Mods ) try {
                if ( modPath.StartsWith( "/" ) || modPath.Contains( ":/" ) || modPath.Contains( "//" ) || modPath.Contains( "../" ) || modPath.Contains( "..\\" ) )
                   throw new ArgumentException( "Mods must not be absolute, and must not go up" );
-               var path = Path.Combine( mod.Path, modPath );
+               var path = Path.Combine( Path.GetDirectoryName( mod.Path ), modPath );
                if ( ! File.Exists( path ) ) Log.Error( $"Sub-mod of {mod.Metadata.Id} not found: {path}" );
-               AddMod( ParseMod( path, Path.GetFileName( path ) ) );
+               var submod = ParseMod( path, Path.GetFileName( path ) );
+               if ( submod != null ) {
+                  submod.AddNotice( TraceEventType.Information, "parent", mod );
+                  mod.AddNotice( TraceEventType.Information, "submod", submod );
+                  AddMod( submod );
+               }
             } catch ( Exception ex ) { Log.Log( ex ); }
-         } else
-            ModLoader.AllMods.Add( mod );
+         }
          return true;
       }
 

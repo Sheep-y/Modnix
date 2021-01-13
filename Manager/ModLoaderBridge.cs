@@ -491,14 +491,16 @@ namespace Sheepy.Modnix.MainGUI {
                txt.Text = string.Format( "\rDisabled by {0}.", notice.Args[0] ); break;
             case "duplicate" :
                txt.Text = string.Format( "\rDisabled: Duplicate of {0}.", notice.Args[0] ); break;
-            case "manual"  :
+            case "manual" :
                txt.Text = "\rManually Disabled"; break;
-            case "no_actionmod"  :
+            case "no_actionmod" :
                txt.Text = "\rDisabled: Requires mod action handler(s)."; break;
-            case "no_dependent"  :
+            case "no_dependent" :
                txt.Text = "\rDisabled: No other mods require this library."; break;
-            case "no_phase"  :
+            case "no_phase" :
                txt.Text = "\rDisabled: No mod phase found."; break;
+            case "parent" :
+               txt.Text = string.Format( "\rPart of {0}", notice.Args[0] ); break;
             case "require" :
                if ( ! string.IsNullOrWhiteSpace( notice.Args[3]?.ToString() ) )
                   return new Hyperlink( new Run( string.Format( "\rDisabled: Missing requirement {0}", notice.Args[2] ) ){ Foreground = Brushes.Red } ){ NavigateUri = new Uri( notice.Args[3]?.ToString() ) };
@@ -508,6 +510,8 @@ namespace Sheepy.Modnix.MainGUI {
                txt.Text = "\rRuntime error(s) detected on last run, mod may not work as designed."; break;
             case "runtime_warning" :
                txt.Text = "\rRuntime warning(s) detected on last run."; break;
+            case "submod" :
+               txt.Text = string.Format( "\rSubmod: {0}", notice.Args[0] ); break;
             default :
                txt.Text = "\r" + notice.Message; break;
          }

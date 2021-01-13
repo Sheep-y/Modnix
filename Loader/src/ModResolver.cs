@@ -38,12 +38,17 @@ namespace Sheepy.Modnix {
          Log.Info( "Assigned {0} mods to {1} phases", countMod, ModsInPhase.Count );
       }
 
-      private static void ApplyUserOverride () {
+      internal static ModSettings GetSettings ( ModEntry mod ) {
          var settings = ModLoader.Settings.Mods;
-         if ( settings == null ) return;
+         return settings != null && settings.TryGetValue( mod.Key, out ModSettings conf ) ? conf : null;
+      }
+
+      private static void ApplyUserOverride () {
+         if ( ModLoader.Settings.Mods == null ) return;
          Log.Verbo( "Check manual mod settings" );
          foreach ( var mod in EnabledMods.ToArray() ) {
-            if ( ! settings.TryGetValue( mod.Key, out ModSettings modSetting ) ) continue;
+            var modSetting = GetSettings( mod );
+            if ( modSetting == null ) continue;
             if ( modSetting.Disabled )
                DisableAndRemoveMod( mod, "manual", "mod is manually disabled." );
             else {
