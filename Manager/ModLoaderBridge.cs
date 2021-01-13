@@ -118,11 +118,11 @@ namespace Sheepy.Modnix.MainGUI {
          }
          if ( modPath.EndsWith( ".dll", StringComparison.OrdinalIgnoreCase ) ) {
             AppControl.Instance.Log( "Scanning embedded docs in " + modPath );
-            if ( ! doc.ContainsKey( ModDoc.README ) && ( ModScanner.FindEmbeddedFile( modPath, null, ReadmeFiles ) ) )
+            if ( ! doc.ContainsKey( ModDoc.README ) && ( ModScanner.FindEmbeddedFile( modPath, null, ReadmeFiles ) != null ) )
                doc.Add( ModDoc.README, "embedded" );
-            if ( ! doc.ContainsKey( ModDoc.CHANGELOG ) && ( ModScanner.FindEmbeddedFile( modPath, null, ChangeFiles ) ) )
+            if ( ! doc.ContainsKey( ModDoc.CHANGELOG ) && ( ModScanner.FindEmbeddedFile( modPath, null, ChangeFiles ) != null ) )
                doc.Add( ModDoc.CHANGELOG, "embedded" );
-            if ( ! doc.ContainsKey( ModDoc.LICENSE ) && ( ModScanner.FindEmbeddedFile( modPath, null, LicenseFiles ) ) )
+            if ( ! doc.ContainsKey( ModDoc.LICENSE ) && ( ModScanner.FindEmbeddedFile( modPath, null, LicenseFiles ) != null ) )
                doc.Add( ModDoc.LICENSE, "embedded" );
          }
          return new GridModItem( mod ) { _Order = order, Docs = doc.Count == 0 ? null : doc };
@@ -352,16 +352,17 @@ namespace Sheepy.Modnix.MainGUI {
       } }
 
       private void BuildSupportDoc ( ModDoc type, FlowDocument doc, string[] fileList ) { try {
-         string text = null;
+         string text = null, ext = null;
          if ( Docs.TryGetValue( type, out string file ) && ! "embedded".Equals( file, StringComparison.Ordinal ) ) {
             Log( $"Reading {type} {file}" );
             text = Utils.ReadFile( file );
          } else {
             Log( $"Reading embedded {type} from {Path}" );
             var buf = new StringBuilder();
-            if ( ! ModScanner.FindEmbeddedFile( Path, buf, fileList ) ) return;
+            if ( ( file = ModScanner.FindEmbeddedFile( Path, buf, fileList ) ) == null ) return;
             text = buf.ToString();
          }
+         ext = System.IO.Path.GetExtension( file );
          if ( string.IsNullOrEmpty( text ) ) {
             doc.TextRange().Text = "(No Data)";
             return;
@@ -371,15 +372,14 @@ namespace Sheepy.Modnix.MainGUI {
                doc.TextRange().Load( mem, DataFormats.Rtf );
             return;
          } catch ( ArgumentException ex ) { Log( ex ); }
-         try {
+         if ( ext?.Equals( ".md", StringComparison.OrdinalIgnoreCase ) == true ) try {
             var tree = Markdown.Parse( text, new MarkdownPipelineBuilder().UseAutoLinks().Build() );
             doc.Blocks.Clear();
             foreach ( var block in tree )
                doc.Blocks.Add( BuildBlock( block ) );
-         } catch ( Exception ex ) {
-            Log( ex );
-            doc.TextRange().Text = WpfHelper.Lf2Cr( text );
-         }
+            return;
+         } catch ( Exception ex ) { Log( ex ); }
+         doc.TextRange().Text = WpfHelper.Lf2Cr( text );
       } catch ( SystemException ex ) { doc.TextRange().Text = ex.ToString(); } }
 
       private static Block BuildBlock ( Markdig.Syntax.Block block ) {

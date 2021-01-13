@@ -95,7 +95,7 @@ namespace Sheepy.Modnix {
             meta = ParseDllInfo( file );
             if ( meta == null ) return null;
             var info = new StringBuilder();
-            if ( FindEmbeddedFile( file, info, "mod_info", "mod_info.js", "mod_info.json" ) ) {
+            if ( FindEmbeddedFile( file, info, "mod_info", "mod_info.js", "mod_info.json" ) != null ) {
                Log.Verbo( "Parsing embedded mod_info" );
                meta.ImportFrom( ParseInfoJs( info.ToString() )?.EraseModsAndDlls() );
             }
@@ -160,15 +160,15 @@ namespace Sheepy.Modnix {
          }.Normalise();
       } catch ( Exception ex ) { Log.Warn( ex ); return null; } }
 
-      public static bool FindEmbeddedFile ( string file, StringBuilder text, params string[] names ) { try {
+      public static string FindEmbeddedFile ( string file, StringBuilder text, params string[] names ) { try {
          var dotName = names.Select( e => '.' + e ).ToArray();
          using ( var lib = AssemblyDefinition.ReadAssembly( file ) ) {
-            if ( ! lib.MainModule.HasResources ) return false;
+            if ( ! lib.MainModule.HasResources ) return null;
             foreach ( var resource in lib.MainModule.Resources ) {
                if ( ! ( resource is EmbeddedResource res ) || res.ResourceType != ResourceType.Embedded ) continue;
                if ( dotName.Any( e => res.Name.EndsWith( e, StringComparison.OrdinalIgnoreCase ) ) ) {
                   text?.Append( Tools.ReadText( res.GetResourceStream() ) );
-                  return true;
+                  return res.Name;
                }
                if ( ! res.Name.EndsWith( ".resources", StringComparison.OrdinalIgnoreCase ) ) continue;
                using ( var reader = new ResourceReader( res.GetResourceStream() ) ) {
@@ -177,14 +177,14 @@ namespace Sheepy.Modnix {
                      var item = data.Key.ToString();
                      if ( names.Any( e => item.EndsWith( e, StringComparison.OrdinalIgnoreCase ) ) ) {
                         text?.Append( data.Value is Stream stream ? Tools.ReadText( stream ) : data.Value?.ToString() );
-                        return true;
+                        return item;
                      }
                   }
                }
             }
          }
-         return false;
-      } catch ( Exception ex ) { Log.Warn( ex ); return false; } }
+         return null;
+      } catch ( Exception ex ) { Log.Warn( ex ); return null; } }
 
       private static DllEntryMeta ParseEntryPoints ( string file, bool active ) {
          DllEntryMeta result = null;
