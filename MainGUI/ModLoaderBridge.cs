@@ -410,6 +410,8 @@ namespace Sheepy.Modnix.MainGUI {
                txt.Text = "\rDefaultConfig different from new instance defaults."; break;
             case "unsupported_actions" :
                txt.Text = "Mod Actions requires Modnix 3 or above.\rMod may not work or only partially work."; break;
+            case "unsupported_mod_pack" :
+               txt.Text = "Mod Pack requires Modnix 3 or above."; break;
             default :
                txt.Text = "\r" + notice.Message; break;
          }
@@ -505,6 +507,7 @@ namespace Sheepy.Modnix.MainGUI {
       public override string Path => Mod.Path;
 
       public override string Type { get { lock ( Mod ) {
+         if ( Mod.Metadata.Mods != null ) return "Pack";
          var hasAction = Mod.Metadata.Actions != null;
          var dlls = Mod.Metadata.Dlls;
          if ( dlls == null ) return hasAction ? "Actions" : "???";

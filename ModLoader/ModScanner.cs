@@ -416,6 +416,10 @@ namespace Sheepy.Modnix {
          Log.Verbo( "Check mod requirements" );
          foreach ( var mod in EnabledMods.ToArray() ) {
             if ( mod.Disabled ) continue;
+            if ( mod.Metadata.Mods != null && ( mod.Metadata.Dlls == null ) ) {
+               DisableAndRemoveMod( mod, "unsupported_mod_pack", "mod pack not supported" );
+               continue;
+            }
             var reqs = mod.Metadata.Requires;
             if ( reqs == null ) continue;
             var requirements = new Dictionary<string, List<AppVer>>();

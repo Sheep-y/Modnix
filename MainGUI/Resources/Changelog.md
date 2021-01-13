@@ -1,5 +1,9 @@
 Modnix Changelog
 
+# Version 2.5.6, in development
+
+* New: Identify and disable Modnix 3 mod packs.
+
 # Version 2.5.5, 2021-01-12
 
 * Gui: Create runtime settings (loadfromRemoteSources) on install and on launch, to further reduce sandbox creation error. (#33)
