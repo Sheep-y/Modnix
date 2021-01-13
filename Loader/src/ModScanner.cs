@@ -71,7 +71,17 @@ namespace Sheepy.Modnix {
 
       private static bool AddMod ( ModEntry mod ) {
          if ( mod == null ) return false;
-         ModLoader.AllMods.Add( mod );
+         if ( mod.Metadata.Mods != null ) {
+            // TODO: Check whether mod is manually disabled
+            foreach ( var modPath in mod.Metadata.Mods ) try {
+               if ( modPath.StartsWith( "/" ) || modPath.Contains( ":/" ) || modPath.Contains( "//" ) || modPath.Contains( "../" ) || modPath.Contains( "..\\" ) )
+                  throw new ArgumentException( "Mods must not be absolute, and must not go up" );
+               var path = Path.Combine( mod.Path, modPath );
+               if ( ! File.Exists( path ) ) Log.Error( $"Sub-mod of {mod.Metadata.Id} not found: {path}" );
+               AddMod( ParseMod( path, Path.GetFileName( path ) ) );
+            } catch ( Exception ex ) { Log.Log( ex ); }
+         } else
+            ModLoader.AllMods.Add( mod );
          return true;
       }
 
@@ -253,7 +263,7 @@ namespace Sheepy.Modnix {
                return false;
          }
          if ( meta.Mods != null && ( meta.Dlls != null || meta.Actions != null ) ) {
-            Log.Warn( "Mod Set cannot directly specify dlls and actions." );
+            Log.Warn( "Mod Set cannot specify own dlls and actions." );
             return false;
          }
          return true;
