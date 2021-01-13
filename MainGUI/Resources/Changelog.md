@@ -3,6 +3,7 @@ Modnix Changelog
 # Version 2.5.6, in development
 
 * New: Identify and disable Modnix 3 mod packs.
+* Fix: Multiple Changlog / License resources no longer prevent all documents from being displayed.
 
 # Version 2.5.5, 2021-01-12
 

@@ -89,9 +89,9 @@ namespace Sheepy.Modnix.MainGUI {
             var name = Path.GetFileName( file ).ToLowerInvariant();
             if ( ! doc.ContainsKey( ModDoc.README ) && ReadmeFiles.Contains( name ) )
                doc.Add( ModDoc.README, file );
-            else if ( ! doc.ContainsKey( ModDoc.README ) && ChangeFiles.Contains( name ) )
+            else if ( ! doc.ContainsKey( ModDoc.CHANGELOG ) && ChangeFiles.Contains( name ) )
                doc.Add( ModDoc.CHANGELOG, file );
-            else if ( ! doc.ContainsKey( ModDoc.README ) && LicenseFiles.Contains( name ) )
+            else if ( ! doc.ContainsKey( ModDoc.LICENSE ) && LicenseFiles.Contains( name ) )
                doc.Add( ModDoc.LICENSE, file );
          }
          if ( modPath.EndsWith( ".dll", StringComparison.OrdinalIgnoreCase ) ) {
