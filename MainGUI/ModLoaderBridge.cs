@@ -409,9 +409,9 @@ namespace Sheepy.Modnix.MainGUI {
             case "config_mismatch" :
                txt.Text = "\rDefaultConfig different from new instance defaults."; break;
             case "unsupported_actions" :
-               txt.Text = "Mod Actions requires Modnix 3 or above.\rMod may not work or only partially work."; break;
+               txt.Text = "\rMod Actions requires Modnix 3 or above.\rMod may not work or only partially work."; break;
             case "unsupported_mod_pack" :
-               txt.Text = "Mod Pack requires Modnix 3 or above."; break;
+               txt.Text = "\rMod Pack requires Modnix 3 or above."; break;
             default :
                txt.Text = "\r" + notice.Message; break;
          }
@@ -485,11 +485,11 @@ namespace Sheepy.Modnix.MainGUI {
          return new Paragraph( new Run( txt ) );
       }
 
-      private Block BuildBlock ( Action<ModMeta,InlineCollection> builder ) {
+      private Block BuildBlock ( Action<ModMeta,InlineCollection> builder ) { try {
          var block = new Paragraph();
          builder( Mod.Metadata, block.Inlines );
          return block.Inlines.Count == 0 ? null : block;
-      }
+      } catch ( Exception ex ) { Log( ex ); return null; } }
 
       private static void BuildDict ( TextSet data, InlineCollection list ) {
          if ( data.Dict == null ) {
@@ -500,7 +500,11 @@ namespace Sheepy.Modnix.MainGUI {
             string name = e.Key, link = e.Value;
             if ( string.IsNullOrWhiteSpace( name ) || string.IsNullOrWhiteSpace( link ) ) continue;
             list.Add( "\r" + name + "\t" );
-            list.Add( new Hyperlink( new Run( link ){ Foreground = Brushes.Blue } ){ NavigateUri = new Uri( link ) } );
+            try {
+               list.Add( new Hyperlink( new Run( link ){ Foreground = Brushes.Blue } ){ NavigateUri = new Uri( link ) } );
+            } catch ( UriFormatException ) {
+               list.Add( new Run( link ) );
+            }
          }
       }
 
