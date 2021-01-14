@@ -162,6 +162,17 @@ namespace Sheepy.Modnix {
          }
       }
 
+      private static void DisableAndRemoveMod ( ModEntry mod, string reason, string log, params object[] augs ) { lock ( mod ) {
+         if ( mod.Disabled ) return;
+         mod.Log().Info( "Mod Disabled: " + log, augs );
+         mod.Disabled = true;
+         mod.AddNotice( TraceEventType.Error, reason, augs );
+         EnabledMods.Remove( mod );
+         ResolveModAgain = true;
+      } }
+      #endregion
+
+      #region Phase Assignment
       private static void AssignModsToPhases () { lock ( ModsInPhase ) {
          ModsInPhase.Clear();
          var unassigned = new List<ModEntry>( EnabledMods );
@@ -190,7 +201,6 @@ namespace Sheepy.Modnix {
             if ( actions.Length < origLen ) {
                mod.Metadata.Actions = actions;
                mod.Log().Verbo( "Merged {0} default actions.", origLen - actions.Length );
-               if ( actions == null ) return assigned;
             }
             if ( ModsInPhase.ContainsKey( "actionmod" ) )
                foreach ( var phase in ModActions.FindPhases( actions ) )
@@ -210,15 +220,6 @@ namespace Sheepy.Modnix {
          list.Add( mod );
          assigned = true;
       }
-
-      private static void DisableAndRemoveMod ( ModEntry mod, string reason, string log, params object[] augs ) { lock ( mod ) {
-         if ( mod.Disabled ) return;
-         mod.Log().Info( "Mod Disabled: " + log, augs );
-         mod.Disabled = true;
-         mod.AddNotice( TraceEventType.Error, reason, augs );
-         EnabledMods.Remove( mod );
-         ResolveModAgain = true;
-      } }
       #endregion
 
       #region Helpers
