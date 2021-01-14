@@ -591,11 +591,11 @@ namespace Sheepy.Modnix.MainGUI {
          return new Paragraph( new Run( txt ) );
       }
 
-      private Block BuildBlock ( Action<ModMeta,InlineCollection> builder ) {
+      private Block BuildBlock ( Action<ModMeta,InlineCollection> builder ) { try {
          var block = new Paragraph();
          builder( Mod.Metadata, block.Inlines );
          return block.Inlines.Count == 0 ? null : block;
-      }
+      } catch ( Exception ex ) { Log( ex ); return null; } }
 
       private static void BuildDict ( TextSet data, InlineCollection list ) {
          if ( data.Dict == null ) {
