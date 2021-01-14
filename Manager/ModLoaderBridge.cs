@@ -101,11 +101,10 @@ namespace Sheepy.Modnix.MainGUI {
          "copyright.rtf", "copyright.txt", "copyright.md", "copyright" };
 
       private static GridModItem ToGridItem ( ModEntry mod ) { try {
-         var modPath = mod.Path;
+         string modPath = mod.Path, dir = mod.Dir;
          var order = ModLoader.EnabledMods.Contains( mod ) ? 0f : float.PositiveInfinity;
          if ( string.IsNullOrWhiteSpace( modPath ) ) return new GridModItem( mod ){ _Order = order };
          var doc = new Dictionary< ModDoc, string >();
-         var dir = Path.GetDirectoryName( modPath );
          AppControl.Instance.Log( "Scanning docs in " + dir );
          foreach ( var file in Directory.EnumerateFiles( dir ) ) {
             var name = Path.GetFileName( file ).ToLowerInvariant();

@@ -62,6 +62,7 @@ namespace Sheepy.Modnix {
 
       public bool IsModPack { get { lock ( Metadata ) { return Metadata.Mods != null; } } }
       public string Key { get { lock ( Metadata ) { return ModScanner.NormaliseModId( Metadata.Id ); } } }
+      public string Dir => System.IO.Path.GetDirectoryName( Path );
       internal DateTime? LastModified => Path == null ? (DateTime?) null : new FileInfo( Path ).LastWriteTime;
       internal List< Assembly > ModAssemblies; // Use List insead of HashSet to preserve order.
 
@@ -531,9 +532,7 @@ namespace Sheepy.Modnix {
       } } }
 
       public string GetConfigFile () { try {
-         if ( Path == null ) return null;
-         var name = System.IO.Path.GetFileNameWithoutExtension( Path );
-         return System.IO.Path.Combine( System.IO.Path.GetDirectoryName( Path ), name + ".conf" );
+         return Path == null ? null : System.IO.Path.Combine( Dir, System.IO.Path.GetFileNameWithoutExtension( Path ) + ".conf" );
       } catch ( Exception ex ) { Error( ex ); return null; } }
 
       public string CheckConfigFile () { try {

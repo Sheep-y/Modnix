@@ -119,7 +119,7 @@ namespace Sheepy.Modnix {
          }
          if ( level > 9 ) throw new ApplicationException( "Action includes too deep: " + path );
          // todo: refactor mod path
-         var actions = Json.Parse<ActionDef[]>( ReadText( Path.Combine( Path.GetDirectoryName( mod.Path ), path ) ) );
+         var actions = Json.Parse<ActionDef[]>( ReadText( Path.Combine( mod.Dir, path ) ) );
          ModMeta.NormDictArray( ref actions );
          try {
             return PreprocessActions( mod, actions, ref defValues, level );

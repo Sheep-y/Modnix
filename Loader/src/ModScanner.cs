@@ -79,7 +79,7 @@ namespace Sheepy.Modnix {
                   mod.Log().Error( "Invalid path: {0}", modPath );
                   continue;
                }
-               var path = Path.Combine( Path.GetDirectoryName( mod.Path ), modPath );
+               var path = Path.Combine( mod.Dir, modPath );
                if ( ! File.Exists( path ) ) {
                   mod.Log().Error( $"Not found: {0}", path );
                   continue;
