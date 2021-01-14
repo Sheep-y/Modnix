@@ -19,7 +19,9 @@ Roadmap: https://github.com/Sheep-y/Modnix/issues/24
 # Version 2.5.6, in development
 
 * New: Identify and disable Modnix 3 mod packs.
+* Fix: Contacts and Urls that are not proper uri, are now displayed correctly and no longer blank the mod info.
 * Fix: Multiple Changlog / License resources no longer prevent all documents from being displayed.
+* Fix: Unsupported Modnix 3 features are now displayed on a new line.
 
 # Version 2.5.5, 2021-01-12
 https://github.com/Sheep-y/Modnix/releases/tag/v2.5.5

@@ -606,7 +606,11 @@ namespace Sheepy.Modnix.MainGUI {
             string name = e.Key, link = e.Value;
             if ( string.IsNullOrWhiteSpace( name ) || string.IsNullOrWhiteSpace( link ) ) continue;
             list.Add( "\r" + name + "\t" );
-            list.Add( new Hyperlink( new Run( link ){ Foreground = Brushes.Blue } ){ NavigateUri = new Uri( link ) } );
+            try {
+               list.Add( new Hyperlink( new Run( link ){ Foreground = Brushes.Blue } ){ NavigateUri = new Uri( link ) } );
+            } catch ( UriFormatException ) {
+               list.Add( new Run( link ) );
+            }
          }
       }
 
