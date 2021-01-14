@@ -17,7 +17,7 @@ namespace Sheepy.Modnix {
       private static DllMeta[] ActionHandlers;
       private static Dictionary<DllMeta,ModEntry> ActionMods;
 
-      private static bool InitActionHandlers () { lock ( DEFAULT_PHASE ) {
+      private static bool InitActionHandlers () { lock ( ModLoader.ModsInPhase ) {
          if ( ActionHandlers == null ) {
             if ( ! ModLoader.ModsInPhase.TryGetValue( "actionmod", out List<ModEntry> mods ) )
                return false;

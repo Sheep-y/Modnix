@@ -198,8 +198,6 @@ namespace Sheepy.Modnix.MainGUI {
             case ModQuery.IS_FOLDER :
                var path = System.IO.Path.GetDirectoryName( Path );
                return path != AppControl.Instance.ModFolder && Directory.EnumerateFileSystemEntries( path ).Count() > 1;
-            case ModQuery.IS_CHILD :
-               return Mod.Parent != null;
             case ModQuery.ERROR :
                return Mod.GetNotices().Any( e => e.Level == TraceEventType.Error || e.Level == TraceEventType.Critical );
             case ModQuery.WARNING :

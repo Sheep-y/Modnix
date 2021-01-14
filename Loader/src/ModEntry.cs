@@ -51,8 +51,6 @@ namespace Sheepy.Modnix {
    public class ModEntry : ModSettings {
       public readonly string Path;
       public readonly ModMeta Metadata;
-      public ModEntry Parent;
-      public List<ModEntry> Children;
 
       public ModEntry ( ModMeta meta ) : this( null, meta ) { }
       public ModEntry ( string path, ModMeta meta ) {
@@ -60,15 +58,18 @@ namespace Sheepy.Modnix {
          Metadata = meta ?? throw new ArgumentNullException( nameof( meta ) );
       }
 
-      public bool IsModPack { get { lock ( Metadata ) { return Metadata.Mods != null; } } }
-      public string Key { get { lock ( Metadata ) { return ModScanner.NormaliseModId( Metadata.Id ); } } }
+      public bool IsModPack { get { lock ( Metadata ) return Metadata.Mods != null; } }
+      public string Key { get { lock ( Metadata ) return ModScanner.NormaliseModId( Metadata.Id ); } }
+      public long Index { get { lock ( Metadata ) return LoadIndex ?? Metadata.LoadIndex; } }
+
       public string Dir => System.IO.Path.GetDirectoryName( Path );
       internal DateTime? LastModified => Path == null ? (DateTime?) null : new FileInfo( Path ).LastWriteTime;
       internal List< Assembly > ModAssemblies; // Use List insead of HashSet to preserve order.
 
-      public long Index { get { lock ( Metadata ) { return LoadIndex ?? Metadata.LoadIndex; } } }
+      private bool _IsUnloaded;
+      public bool IsUnloaded { get { lock ( this ) return _IsUnloaded; } private set => _IsUnloaded = value; }
 
-      #region API
+      #region API Framework
       private static readonly Dictionary<string,MethodInfo> NativeApi = new Dictionary<string, MethodInfo>();
       private static readonly Dictionary<string,API_Func> ApiExtension = new Dictionary<string, API_Func>();
       private static readonly Dictionary<string,KeyValuePair<ModEntry,MethodInfo>> ApiExtOwner = new Dictionary<string, KeyValuePair<ModEntry,MethodInfo>>();
@@ -92,6 +93,8 @@ namespace Sheepy.Modnix {
          AddNativeApi( "logger"    , nameof( GetLogger ) );
          AddNativeApi( "mod_info"  , nameof( GetModInfo ) );
          AddNativeApi( "mod_list"  , nameof( ListMods ) );
+         AddNativeApi( "mod_load"  , nameof( LoadMod ) );
+         AddNativeApi( "mod_unload", nameof( UnloadMod ) );
          AddNativeApi( "path"      , nameof( GetPath ) );
          AddNativeApi( "stacktrace", nameof( Stacktrace ) );
          AddNativeApi( "version"   , nameof( GetVersion ) );
@@ -117,6 +120,8 @@ namespace Sheepy.Modnix {
                      case "logger"     : return GetLogger( param );
                      case "mod_info"   : return GetModInfo( param );
                      case "mod_list"   : return ListMods( param );
+                     case "mod_load"   : return LoadMod( param );
+                     case "mod_unload" : return UnloadMod( param );
                      case "path"       : return GetPath( param );
                      case "stacktrace" : return Stacktrace( spec );
                      case "version"    : return GetVersion( param );
@@ -170,7 +175,9 @@ namespace Sheepy.Modnix {
          text = param?.ToString().Trim().ToLowerInvariant();
          return string.IsNullOrEmpty( text );
       }
+      #endregion
 
+      #region Game and Mods
       private static Assembly GameAssembly;
 
       private Assembly GetAssembly ( object target ) => GetAssemblies( target )?.FirstOrDefault();
@@ -234,13 +241,48 @@ namespace Sheepy.Modnix {
       }
 
       private static IEnumerable<string> ListMods ( object target ) =>
-         FilterStringList( ModLoader.EnabledMods.Select( e => e.Metadata.Id ), target );
+         FilterStringList( ModLoader.EnabledMods.Where( e => ! e.IsUnloaded ).Select( e => e.Metadata.Id ), target );
 
       private static IEnumerable<string> FilterStringList ( IEnumerable<string> list, object param ) {
          if ( param == null ) return list;
          if ( param is string txt ) return list.Where( e => e.IndexOf( txt, StringComparison.OrdinalIgnoreCase ) >= 0 );
          if ( param is Regex reg ) return list.Where( e => reg.IsMatch( e ) );
          return null;
+      }
+
+      private bool? LoadMod ( object param ) {
+         if ( param == null || ! ( param is string ) ) throw new ArgumentException( "mod_load requires mod id as parameter" );
+         var mod = ModLoader.GetModById( param?.ToString() );
+         if ( mod == null ) return null;
+         lock ( mod ) {
+            if ( mod.IsUnloaded ) return false;
+            Info( "Loading mod {0}", mod.Metadata.Id );
+            ModPhases.RunPastPhaseOnMod( mod );
+            mod.IsUnloaded = false;
+         }
+         return true;
+      }
+
+      private bool? UnloadMod ( object param ) {
+         if ( param == null || ! ( param is string ) ) throw new ArgumentException( "mod_unload requires mod id as parameter" );
+         var mod = ModLoader.GetModById( param?.ToString() );
+         List< ModEntry > mods = null;
+         lock( ModLoader.ModsInPhase ) ModLoader.ModsInPhase.TryGetValue( "unloadmod", out mods );
+         if ( mod == null || mods?.Contains( mod ) != true ) return null;
+         lock ( mod ) {
+            if ( ! mod.IsUnloaded ) return false;
+            Info( "Unloading mod '{0}'", mod.Metadata.Id );
+            ModPhases.RunPhaseOnMod( mod, "UnloadMod" );
+            mod.IsUnloaded = false;
+         }
+         lock ( ApiExtension ) {
+            foreach ( var entry in ApiExtOwner.ToArray() )
+               if ( entry.Value.Key == mod ) {
+                  RemoveApiCmd( entry.Key );
+                  Log().Verbo( "Unloaded API '{0}'", entry.Key ); // TODO: Multi level logging
+               }
+         }
+         return true;
       }
       #endregion
 
@@ -377,13 +419,15 @@ namespace Sheepy.Modnix {
          lock ( ApiExtension ) ApiExtOwner.TryGetValue( cmd, out info );
          if ( info.Key != this )
             throw new UnauthorizedAccessException( $"Non-owner cannot api_remove '{cmd}'. Owner is '{info.Key?.Metadata?.Id ?? "null"}'." );
-         lock ( ApiExtension ) {
-            ApiExtension.Remove( cmd );
-            ApiExtOwner.Remove( cmd );
-         }
+         RemoveApiCmd( cmd );
          Info( "Removed API '{0}'", cmd );
          return true;
       }
+
+      private void RemoveApiCmd ( string cmd ) { lock ( ApiExtension ) {
+         ApiExtension.Remove( cmd );
+         ApiExtOwner.Remove( cmd );
+      } }
 
       private static MethodInfo InfoApi ( object param ) {
          if ( param == null ) return null;

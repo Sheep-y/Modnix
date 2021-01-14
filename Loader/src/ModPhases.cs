@@ -45,7 +45,12 @@ namespace Sheepy.Modnix {
          Log.Flush();
       } catch ( Exception ex ) { Log.Error( ex ); } }
 
-      private static void RunPhaseOnMod ( ModEntry mod, string phase ) { try {
+      internal static void RunPastPhaseOnMod ( ModEntry mod ) { try { lock ( LoadedPhases ) {
+         foreach ( var phase in LoadedPhases )
+            RunPhaseOnMod( mod, phase );
+      } } catch ( Exception ex ) { mod.Error( ex ); } }
+
+      internal static void RunPhaseOnMod ( ModEntry mod, string phase ) { try {
          lock ( mod.Metadata ) ;
          if ( mod.Metadata.Dlls != null )
             foreach ( var dll in mod.Metadata.Dlls )
