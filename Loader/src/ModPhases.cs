@@ -40,19 +40,21 @@ namespace Sheepy.Modnix {
             return;
          }
          Log.Info( "PHASE {0}", phase );
-         foreach ( var mod in list ) {
-            lock ( mod.Metadata ) ;
-            if ( mod.Metadata.Dlls != null )
-               foreach ( var dll in mod.Metadata.Dlls )
-                  RunPhaseOnDll( mod, dll, phase );
-            if ( mod.Metadata.Actions != null )
-               ModActions.RunActions( mod, phase );
-         }
+         foreach ( var mod in list ) RunPhaseOnMod( mod, phase );
          Log.Verbo( "Phase {0} ended", phase );
          Log.Flush();
       } catch ( Exception ex ) { Log.Error( ex ); } }
 
-      public static void RunPhaseOnDll ( ModEntry mod, DllMeta dll, string phase ) { try {
+      private static void RunPhaseOnMod ( ModEntry mod, string phase ) { try {
+         lock ( mod.Metadata ) ;
+         if ( mod.Metadata.Dlls != null )
+            foreach ( var dll in mod.Metadata.Dlls )
+               RunPhaseOnDll( mod, dll, phase );
+         if ( mod.Metadata.Actions != null )
+            ModActions.RunActions( mod, phase );
+      } catch ( Exception ex ) { mod.Error( ex ); } }
+
+      private static void RunPhaseOnDll ( ModEntry mod, DllMeta dll, string phase ) { try {
          if ( dll.Methods == null ) return;
          if ( ! dll.Methods.TryGetValue( phase, out var entries ) ) return;
          var lib = LoadDll( mod, dll.Path );
@@ -62,7 +64,7 @@ namespace Sheepy.Modnix {
                Log.Error( err );
       } catch ( Exception ex ) { mod.Error( ex ); } }
 
-      public static Assembly LoadDll ( ModEntry mod, string path ) { try {
+      internal static Assembly LoadDll ( ModEntry mod, string path ) { try {
          if ( mod.ModAssemblies != null ) {
             foreach ( var a in mod.ModAssemblies )
                if ( ! a.IsDynamic && a.Location == path )
