@@ -444,9 +444,7 @@ namespace Sheepy.Modnix.MainGUI {
             return new Run( "{" + inline.ToString() + "}" );
       }
 
-      private Block BuildBasicDesc ( ModMeta meta ) {
-         var p = new Paragraph();
-         var list = p.Inlines;
+      private void BuildBasicDesc ( ModMeta meta, InlineCollection list ) {
          /* Experimental image code. Online image does not work, sadly.
          BitmapImage img = new BitmapImage();
          img.BeginInit();
@@ -487,7 +485,6 @@ namespace Sheepy.Modnix.MainGUI {
          }
          foreach ( var notice in Mod.GetNotices() )
             list.Add( FormatNotice( notice ) );
-         return p;
       }
 
       private static Inline FormatNotice ( LogEntry notice ) {
@@ -537,31 +534,25 @@ namespace Sheepy.Modnix.MainGUI {
          return txt;
       }
 
-      private static Block BuildProvidedDesc ( ModMeta meta ) {
+      private static void BuildProvidedDesc ( ModMeta meta, InlineCollection list ) {
          var desc = meta.Description?.ToString( "en" );
-         if ( string.IsNullOrWhiteSpace( desc ) ) return null;
-         return new Paragraph( new Run( desc ) );
+         if ( string.IsNullOrWhiteSpace( desc ) ) return;
+         list.Add( desc );
       }
 
-      private static Block BuildLinks ( ModMeta meta ) {
-         if ( meta.Url == null ) return null;
-         var section = new Section();
-         section.Blocks.Add( new Paragraph( new Run( "Link(s)" ) ) );
-         section.Blocks.Add( BuildDict( meta.Url ) );
-         return section;
+      private static void BuildLinks ( ModMeta meta, InlineCollection list ) {
+         if ( meta.Url == null ) return;
+         list.Add( "Link(s)" );
+         BuildDict( meta.Url, list );
       }
 
-      private static Block BuildContacts ( ModMeta meta ) {
-         if ( meta.Contact == null ) return null;
-         var section = new Section();
-         section.Blocks.Add( new Paragraph( new Run( "Contact(s)" ) ) );
-         section.Blocks.Add( BuildDict( meta.Contact ) );
-         return section;
+      private static void BuildContacts ( ModMeta meta, InlineCollection list ) {
+         if ( meta.Contact == null ) return;
+         list.Add( "Contact(s)" );
+         BuildDict( meta.Contact, list );
       }
 
-      private Block BuildFileList ( ModMeta meta ) {
-         var p = new Paragraph();
-         var list = p.Inlines;
+      private void BuildFileList ( ModMeta meta, InlineCollection list ) {
          Func< string, string > fileName = System.IO.Path.GetFileName;
          list.Add( $"Path\r" );
          var pathTxt = new Run( System.IO.Path.GetDirectoryName( Path ) + System.IO.Path.DirectorySeparatorChar ){ Foreground = Brushes.Blue };
@@ -586,7 +577,6 @@ namespace Sheepy.Modnix.MainGUI {
                if ( row.Value != "embedded" )
                   list.Add( "\r" + row.Value + " [Doc]" );
          }
-         return p;
       }
 
       private Block BuildCopyright () {
@@ -600,29 +590,27 @@ namespace Sheepy.Modnix.MainGUI {
          return new Paragraph( new Run( txt ) );
       }
 
-      private Block BuildBlock ( Func<ModMeta,Block> builder ) { try {
-         return builder( Mod.Metadata );
+      private Block BuildBlock ( Action<ModMeta,InlineCollection> builder ) { try {
+         var block = new Paragraph();
+         builder( Mod.Metadata, block.Inlines );
+         return block.Inlines.Count == 0 ? null : block;
       } catch ( Exception ex ) { Log( ex ); return null; } }
 
-      private static Block BuildDict ( TextSet data ) {
-         var list = new List();
+      private static void BuildDict ( TextSet data, InlineCollection list ) {
          if ( data.Dict == null ) {
-            if ( string.IsNullOrEmpty( data.Default ) ) return null;
-            list.ListItems.Add( new ListItem( new Paragraph( new Run( data.Default ) ) ) );
-         } else {
-            foreach ( var e in data.Dict ) {
-               string name = e.Key, link = e.Value;
-               if ( string.IsNullOrWhiteSpace( name ) || string.IsNullOrWhiteSpace( link ) ) continue;
-               var p = name == "*" ? new Paragraph() : new Paragraph( new Run( name + "\t" ) );
-               try {
-                  p.Inlines.Add( new Hyperlink( new Run( link ){ Foreground = Brushes.Blue } ){ NavigateUri = new Uri( link ) } );
-               } catch ( UriFormatException ) {
-                  p.Inlines.Add( new Run( link ) );
-               }
-               list.ListItems.Add( new ListItem( p ) );
+            list.Add( data.Default );
+            return;
+         }
+         foreach ( var e in data.Dict ) {
+            string name = e.Key, link = e.Value;
+            if ( string.IsNullOrWhiteSpace( name ) || string.IsNullOrWhiteSpace( link ) ) continue;
+            list.Add( "\r" + name + "\t" );
+            try {
+               list.Add( new Hyperlink( new Run( link ){ Foreground = Brushes.Blue } ){ NavigateUri = new Uri( link ) } );
+            } catch ( UriFormatException ) {
+               list.Add( new Run( link ) );
             }
          }
-         return list;
       }
 
       public override string Path => Mod.Path;
