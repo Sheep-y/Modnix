@@ -20,20 +20,19 @@ namespace Sheepy.Modnix {
 
       public const char LOG_DIVIDER = '┊';
 
-      private static readonly HashSet<string> LoadedPhases = new HashSet<string>();
+      private static readonly List<string> LoadedPhases = new List<string>();
 
       internal static volatile string LastPhase;
 
       public static void RunPhase ( string phase ) { try {
-         // Make sure Init, Initialize, and *Mod phases are not repeated
-         if ( phase.StartsWith( "Init" ) || phase.EndsWith( "Mod" ) ) lock ( LoadedPhases ) {
-            if ( LoadedPhases.Contains( phase ) ) return;
-            LoadedPhases.Add( phase );
-            // UnloadMod and ActionMod should not go through here!
-            if ( phase == "UnloadMod" || phase == "ActionMod" ) {
-               Log.Error( new ArgumentException( phase ) );
-               return;
-            }
+         // UnloadMod and ActionMod should not go through here!
+         if ( phase == "UnloadMod" || phase == "ActionMod" ) throw new ArgumentException( phase );
+         lock ( LoadedPhases ) {
+            if ( LoadedPhases.Contains( phase ) ) {
+               // Make sure Init, Initialize, and *Mod phases are not repeated
+               if ( phase.StartsWith( "Init" ) || phase.EndsWith( "Mod" ) ) return;
+            } else
+               LoadedPhases.Add( phase );
          }
          LastPhase = phase;
          if ( ! ModLoader.ModsInPhase.TryGetValue( phase.ToLowerInvariant(), out List<ModEntry> list ) ) {
