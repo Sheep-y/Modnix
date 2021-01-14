@@ -166,7 +166,7 @@ namespace Sheepy.Modnix {
          ModsInPhase.Clear();
          var unassigned = new List<ModEntry>( EnabledMods );
          foreach ( var mod in EnabledMods.ToArray() )
-            if ( AddModToPhases( mod ) || AddModActions( mod ) )
+            if ( AddModToPhases( mod ) )
                unassigned.Remove( mod );
          foreach ( var mod in unassigned )
             if ( ! mod.IsModPack )
@@ -176,44 +176,39 @@ namespace Sheepy.Modnix {
       private static bool AddModToPhases ( ModEntry mod ) { lock ( ModsInPhase ) try {
          var assigned = false;
          var dlls = mod.Metadata.Dlls;
-         if ( dlls == null ) return false;
-         foreach ( var dll in dlls ) {
-            if ( dll.Methods == null ) continue;
-            foreach ( var phase in dll.Methods.Keys )
-               AddModToPhase( mod, phase.ToLowerInvariant(), ref assigned );
+         if ( dlls != null ) {
+            foreach ( var dll in dlls )
+               if ( dll.Methods != null )
+                  foreach ( var phase in dll.Methods.Keys )
+                     AddModToPhase( mod, phase.ToLowerInvariant(), ref assigned );
          }
-         return assigned;
-      } catch ( Exception ex ) { mod.Log().Warn( ex ); return false; } }
-
-      private static bool AddModActions ( ModEntry mod ) { lock ( ModsInPhase ) try {
-         var assigned = false;
          ref var actions = ref mod.Metadata.Actions;
-         if ( actions == null ) return false;
-         var origLen = actions.Length;
-         actions = ModActions.Resolve( mod, actions );
-         if ( actions == null ) return false;
-         if ( actions.Length < origLen ) {
-            mod.Metadata.Actions = actions;
-            mod.Log().Verbo( "Merged {0} default actions.", origLen - actions.Length );
-            if ( actions == null ) return false;
+         if ( actions != null ) {
+            var origLen = actions.Length;
+            actions = ModActions.Resolve( mod, actions );
+            if ( actions == null ) return assigned;
+            if ( actions.Length < origLen ) {
+               mod.Metadata.Actions = actions;
+               mod.Log().Verbo( "Merged {0} default actions.", origLen - actions.Length );
+               if ( actions == null ) return assigned;
+            }
+            if ( ModsInPhase.ContainsKey( "actionmod" ) )
+               foreach ( var phase in ModActions.FindPhases( actions ) )
+                  AddModToPhase( mod, phase, ref assigned );
+            else if ( ! assigned )
+               DisableAndRemoveMod( mod, "no_actionmod", "no action handler mods." );
          }
-         if ( ! ModsInPhase.ContainsKey( "actionmod" ) && mod.Metadata.Dlls == null ) {
-            DisableAndRemoveMod( mod, "no_actionmod", "no action handler mods." );
-            return false;
-         }
-         foreach ( var phase in ModActions.FindPhases( actions ) )
-            AddModToPhase( mod, phase, ref assigned );
          return assigned;
       } catch ( Exception ex ) { mod.Log().Warn( ex ); return false; } }
 
       private static void AddModToPhase ( ModEntry mod, string phase, ref bool assigned ) {
          if ( ! ModsInPhase.TryGetValue( phase, out List<ModEntry> list ) )
             ModsInPhase.Add( phase, list = new List<ModEntry>() );
-         if ( ! list.Contains( mod ) ) {
-            Log.Verbo( "Mod {0} added to {1}", mod.Metadata.Id, phase );
-            list.Add( mod );
-            assigned = true;
-         }
+         else
+            if ( list.Contains( mod ) ) return;
+         Log.Verbo( "Mod {0} added to {1}", mod.Metadata.Id, phase );
+         list.Add( mod );
+         assigned = true;
       }
 
       private static void DisableAndRemoveMod ( ModEntry mod, string reason, string log, params object[] augs ) { lock ( mod ) {

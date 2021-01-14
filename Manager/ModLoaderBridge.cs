@@ -75,7 +75,7 @@ namespace Sheepy.Modnix.MainGUI {
          OrderMods( "GeoscapeOnHide", added, ordered );
          OrderMods( "TacticalOnHide", added, ordered );
          OrderMods( "GameOnHide", added, ordered );
-      
+
          var map = list.ToDictionary( e => e.Id );
          for ( var i = 0 ; i < ordered.Count ; i++ )
             map[ ordered[ i ].Metadata.Id ]._Order = i + 1;
