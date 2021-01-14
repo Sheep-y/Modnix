@@ -75,7 +75,7 @@ namespace Sheepy.Modnix {
          if ( mod.IsModPack ) {
             if ( ModResolver.GetSettings( mod )?.Disabled == false ) return true;
             foreach ( var modPath in mod.Metadata.Mods ) try {
-               if ( Path.IsPathRooted( modPath ) || modPath.Contains( "../" ) || modPath.Contains( "..\\" ) ) {
+               if ( ! Tools.IsSafePath( modPath ) ) {
                   mod.Log().Error( "Invalid path: {0}", modPath );
                   continue;
                }

@@ -9,11 +9,8 @@ namespace Sheepy.Modnix {
       internal static string FixSlash ( this string path ) => path.Replace( '/', Path.DirectorySeparatorChar );
 
       internal static bool IsSafePath ( string path ) {
-         if ( string.IsNullOrWhiteSpace( path ) ) return false;
-         if ( path.Trim().Length != path.Length ) return false;
-         if ( path.IndexOf( ".." ) >= 0 ) return false;
-         if ( path.IndexOfAny( new char[]{ '/', '\\', ':' } ) == 0 ) return false;
-         if ( path.Length >= 2 && path[1] == ':' ) return false;
+         if ( string.IsNullOrWhiteSpace( path ) || path.Trim().Length != path.Length ) return false;
+         if ( path.IndexOf( ".." ) >= 0 || Path.IsPathRooted( path ) ) return false;
          foreach ( var chr in Path.GetInvalidFileNameChars() ) {
             if ( chr == '/' || chr == '\\' ) continue;
             if ( path.IndexOf( chr ) >= 0 ) return false;

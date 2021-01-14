@@ -114,7 +114,7 @@ namespace Sheepy.Modnix {
 
       private static ActionDef[] LoadInclude ( ModEntry mod, string path, ref ActionDef defValues, int level ) {
          if ( ! IsSafePath( path ) ) {
-            mod.Log().Error( "Invalid or unsafe path: {0}", path );
+            mod.Log().Error( "Invalid path: {0}", path );
             return new ActionDef[0];
          }
          if ( level > 9 ) throw new ApplicationException( "Action includes too deep: " + path );
