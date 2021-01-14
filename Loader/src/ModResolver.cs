@@ -165,44 +165,46 @@ namespace Sheepy.Modnix {
       private static void AssignModsToPhases () { lock ( ModsInPhase ) {
          ModsInPhase.Clear();
          var unassigned = new List<ModEntry>( EnabledMods );
-         foreach ( var mod in EnabledMods.ToArray() ) {
-            var assigned = false;
-            var dlls = mod.Metadata.Dlls;
-            if ( dlls == null ) continue;
-            foreach ( var dll in dlls ) {
-               if ( dll.Methods == null ) continue;
-               foreach ( var phase in dll.Methods.Keys )
-                  AddModToPhase( mod, phase.ToLowerInvariant(), ref assigned );
-            }
-            if ( assigned ) unassigned.Remove( mod );
-         }
-
-         var hasActionHandler = ModsInPhase.ContainsKey( "actionmod" );
-         foreach ( var mod in EnabledMods.ToArray() ) try {
-            var assigned = false;
-            ref var actions = ref mod.Metadata.Actions;
-            if ( actions == null ) continue;
-            var origLen = actions.Length;
-            actions = ModActions.Resolve( mod, actions );
-            if ( actions == null ) continue;
-            if ( actions.Length < origLen ) {
-               mod.Metadata.Actions = actions;
-               mod.Log().Verbo( "Merged {0} default actions.", origLen - actions.Length );
-               if ( actions == null ) continue;
-            }
-            if ( ! hasActionHandler && mod.Metadata.Dlls == null ) {
-               DisableAndRemoveMod( mod, "no_actionmod", "no action handler mods." );
-               continue;
-            }
-            foreach ( var phase in ModActions.FindPhases( actions ) )
-               AddModToPhase( mod, phase, ref assigned );
-            if ( assigned ) unassigned.Remove( mod );
-         } catch ( Exception ex ) { mod.Log().Warn( ex ); }
-
+         foreach ( var mod in EnabledMods.ToArray() )
+            if ( AddModToPhases( mod ) || AddModActions( mod ) )
+               unassigned.Remove( mod );
          foreach ( var mod in unassigned )
             if ( ! mod.IsModPack )
                DisableAndRemoveMod( mod, "no_phase", "no matching mod phases." );
       } }
+
+      private static bool AddModToPhases ( ModEntry mod ) { lock ( ModsInPhase ) try {
+         var assigned = false;
+         var dlls = mod.Metadata.Dlls;
+         if ( dlls == null ) return false;
+         foreach ( var dll in dlls ) {
+            if ( dll.Methods == null ) continue;
+            foreach ( var phase in dll.Methods.Keys )
+               AddModToPhase( mod, phase.ToLowerInvariant(), ref assigned );
+         }
+         return assigned;
+      } catch ( Exception ex ) { mod.Log().Warn( ex ); return false; } }
+
+      private static bool AddModActions ( ModEntry mod ) { lock ( ModsInPhase ) try {
+         var assigned = false;
+         ref var actions = ref mod.Metadata.Actions;
+         if ( actions == null ) return false;
+         var origLen = actions.Length;
+         actions = ModActions.Resolve( mod, actions );
+         if ( actions == null ) return false;
+         if ( actions.Length < origLen ) {
+            mod.Metadata.Actions = actions;
+            mod.Log().Verbo( "Merged {0} default actions.", origLen - actions.Length );
+            if ( actions == null ) return false;
+         }
+         if ( ! ModsInPhase.ContainsKey( "actionmod" ) && mod.Metadata.Dlls == null ) {
+            DisableAndRemoveMod( mod, "no_actionmod", "no action handler mods." );
+            return false;
+         }
+         foreach ( var phase in ModActions.FindPhases( actions ) )
+            AddModToPhase( mod, phase, ref assigned );
+         return assigned;
+      } catch ( Exception ex ) { mod.Log().Warn( ex ); return false; } }
 
       private static void AddModToPhase ( ModEntry mod, string phase, ref bool assigned ) {
          if ( ! ModsInPhase.TryGetValue( phase, out List<ModEntry> list ) )
