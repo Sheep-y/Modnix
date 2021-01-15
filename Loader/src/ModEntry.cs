@@ -255,7 +255,7 @@ namespace Sheepy.Modnix {
          var mod = ModLoader.GetModById( param?.ToString() );
          if ( mod == null ) return null;
          lock ( mod ) {
-            if ( mod.IsUnloaded ) return false;
+            if ( ! mod.IsUnloaded ) return false;
             Info( "Loading mod {0}", mod.Metadata.Id );
             ModPhases.RunPastPhaseOnMod( mod );
             mod.IsUnloaded = false;
@@ -270,10 +270,10 @@ namespace Sheepy.Modnix {
          lock( ModLoader.ModsInPhase ) ModLoader.ModsInPhase.TryGetValue( "unloadmod", out mods );
          if ( mod == null || mods?.Contains( mod ) != true ) return null;
          lock ( mod ) {
-            if ( ! mod.IsUnloaded ) return false;
+            if ( mod.IsUnloaded ) return false;
             Info( "Unloading mod '{0}'", mod.Metadata.Id );
             ModPhases.RunPhaseOnMod( mod, "UnloadMod" );
-            mod.IsUnloaded = false;
+            mod.IsUnloaded = true;
          }
          lock ( ApiExtension ) {
             foreach ( var entry in ApiExtOwner.ToArray() )
