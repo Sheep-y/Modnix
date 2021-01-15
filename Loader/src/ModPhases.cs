@@ -51,7 +51,7 @@ namespace Sheepy.Modnix {
       } } catch ( Exception ex ) { mod.Error( ex ); } }
 
       internal static void RunPhaseOnMod ( ModEntry mod, string phase ) { try {
-         lock ( mod.Metadata ) ;
+         lock ( mod.Metadata ) if ( mod.IsUnloaded ) return;
          if ( mod.Metadata.Dlls != null )
             foreach ( var dll in mod.Metadata.Dlls )
                RunPhaseOnDll( mod, dll, phase );
