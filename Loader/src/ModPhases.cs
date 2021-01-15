@@ -112,11 +112,13 @@ namespace Sheepy.Modnix {
             "Calling {1}.{2}({3}) in {0}", dll.Location, typeName, methodName, argTxt );
          object target = null;
          if ( ! func.IsStatic ) lock ( ModInstances ) {
-            if ( ! ModInstances.TryGetValue( type, out WeakReference<object> wref ) || ! wref.TryGetTarget( out target ) )
+            if ( ! ModInstances.TryGetValue( type, out WeakReference<object> wref ) || ! wref.TryGetTarget( out target ) ) {
+               log.Verbo( "Instantiating {0} {1}", type, ModInstances.ContainsKey( type ) ? "after gc" : "1st time" );
                ModInstances[ type ] = new WeakReference<object>( target = Activator.CreateInstance( type ) );
+            }
          }
          var result = func.Invoke( target, args.ToArray() );
-         log.Trace( "Done calling {1}.{2}", typeName, methodName );
+         log.Trace( "Done calling {0}.{1}", typeName, methodName );
          return result;
       } catch ( Exception ex ) { return ex; } }
 

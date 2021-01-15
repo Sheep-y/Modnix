@@ -15,6 +15,7 @@ Roadmap: https://github.com/Sheep-y/Modnix/issues/24
 * Mod: Action includes must be in same folder as the mod or a subfolder.
 * Log: OS type and version are now logged.
 * Log: Flushing log no longer log reason as "null".
+* Log: Instantiation of mod classes by the Loader are now logged.
 
 # Version 2.5.6, in development
 
