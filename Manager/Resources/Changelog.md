@@ -8,7 +8,7 @@ Roadmap: https://github.com/Sheep-y/Modnix/issues/24
 * New: Actions now support multiple (comma separated) phsaes.
 * New: Actions now support "Include".
 * New: Re-implement Action.OnError to properly support "continue", "skip", and "stop".
-* New: API action "mod_load" and "mod_unload" to support dynamic mod unloading and reloading.
+* New: API action "mod_disarm" and "mod_rearm" to support dynamic mod disarming and rearming.
 * New: Mismatching mod loader is now detected, and make install button do Setup.
 * Fix: Pasting config text from Notepad no longer generate excessive blank lines.
 * Fix: Always close handles on embedded files to use less system resources.

@@ -67,7 +67,7 @@ namespace Sheepy.Modnix {
       internal List< Assembly > ModAssemblies; // Use List insead of HashSet to preserve order.
 
       private bool _IsUnloaded;
-      public bool IsUnloaded { get { lock ( this ) return _IsUnloaded; } private set => _IsUnloaded = value; }
+      public bool IsDisarmed { get { lock ( this ) return _IsUnloaded; } private set => _IsUnloaded = value; }
 
       #region API Framework
       private static readonly Dictionary<string,MethodInfo> NativeApi = new Dictionary<string, MethodInfo>();
@@ -91,10 +91,10 @@ namespace Sheepy.Modnix {
          AddNativeApi( "dir"       , nameof( GetDir ) );
          AddNativeApi( "log"       , nameof( DoLog ) );
          AddNativeApi( "logger"    , nameof( GetLogger ) );
+         AddNativeApi( "mod_disarm", nameof( DisarmMod ) );
          AddNativeApi( "mod_info"  , nameof( GetModInfo ) );
          AddNativeApi( "mod_list"  , nameof( ListMods ) );
-         AddNativeApi( "mod_load"  , nameof( LoadMod ) );
-         AddNativeApi( "mod_unload", nameof( UnloadMod ) );
+         AddNativeApi( "mod_rearm" , nameof( RearmMod ) );
          AddNativeApi( "path"      , nameof( GetPath ) );
          AddNativeApi( "stacktrace", nameof( Stacktrace ) );
          AddNativeApi( "version"   , nameof( GetVersion ) );
@@ -118,10 +118,10 @@ namespace Sheepy.Modnix {
                      case "dir"        : return GetDir( param );
                      case "log"        : return DoLog( spec, param );
                      case "logger"     : return GetLogger( param );
+                     case "mod_disarm" : return DisarmMod( param );
                      case "mod_info"   : return GetModInfo( param );
                      case "mod_list"   : return ListMods( param );
-                     case "mod_load"   : return LoadMod( param );
-                     case "mod_unload" : return UnloadMod( param );
+                     case "mod_rearm"  : return RearmMod( param );
                      case "path"       : return GetPath( param );
                      case "stacktrace" : return Stacktrace( spec );
                      case "version"    : return GetVersion( param );
@@ -241,7 +241,7 @@ namespace Sheepy.Modnix {
       }
 
       private static IEnumerable<string> ListMods ( object target ) =>
-         FilterStringList( ModLoader.EnabledMods.Where( e => ! e.IsUnloaded ).Select( e => e.Metadata.Id ), target );
+         FilterStringList( ModLoader.EnabledMods.Where( e => ! e.IsDisarmed ).Select( e => e.Metadata.Id ), target );
 
       private static IEnumerable<string> FilterStringList ( IEnumerable<string> list, object param ) {
          if ( param == null ) return list;
@@ -250,37 +250,37 @@ namespace Sheepy.Modnix {
          return null;
       }
 
-      private bool? LoadMod ( object param ) {
+      private bool? RearmMod ( object param ) {
          if ( param == null || ! ( param is string ) ) throw new ArgumentException( "mod_load requires mod id as parameter" );
          var mod = ModLoader.GetModById( param?.ToString() );
          if ( mod == null ) return null;
          lock ( mod ) {
-            if ( ! mod.IsUnloaded ) return false;
-            Info( "Loading mod {0}", mod.Metadata.Id );
-            mod.IsUnloaded = false;
+            if ( ! mod.IsDisarmed ) return false;
+            Info( "Rearming mod {0}", mod.Metadata.Id );
+            mod.IsDisarmed = false;
             ModPhases.RunPastPhasesOnMod( mod );
          }
          return true;
       }
 
-      private bool? UnloadMod ( object param ) {
+      private bool? DisarmMod ( object param ) {
          if ( param == null || ! ( param is string ) ) throw new ArgumentException( "mod_unload requires mod id as parameter" );
          var mod = ModLoader.GetModById( param?.ToString() );
          List< ModEntry > mods = null;
-         lock( ModLoader.ModsInPhase ) ModLoader.ModsInPhase.TryGetValue( "unloadmod", out mods );
+         lock( ModLoader.ModsInPhase ) ModLoader.ModsInPhase.TryGetValue( "disarmmod", out mods );
          if ( mod == null || mods?.Contains( mod ) != true ) return null;
          lock ( ApiExtension ) {
             foreach ( var entry in ApiExtOwner.ToArray() )
                if ( entry.Value.Key == mod ) {
                   RemoveApiCmd( entry.Key );
-                  Log().Verbo( "Unloaded API '{0}' of '{1}'", entry.Key, mod.Metadata.Id );
+                  Log().Verbo( "Removed API '{1}' of '{0}'", mod.Metadata.Id, entry.Key );
                }
          }
          lock ( mod ) {
-            if ( mod.IsUnloaded ) return false;
-            Info( "Unloading mod '{0}'", mod.Metadata.Id );
-            ModPhases.RunPhaseOnMod( mod, "UnloadMod" );
-            mod.IsUnloaded = true;
+            if ( mod.IsDisarmed ) return false;
+            Info( "Disarming mod '{0}'", mod.Metadata.Id );
+            ModPhases.RunPhaseOnMod( mod, "DisarmMod" );
+            mod.IsDisarmed = true;
          }
          return true;
       }

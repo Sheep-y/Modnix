@@ -9,7 +9,7 @@ namespace Sheepy.Modnix {
 
    internal static class ModPhases {
       internal static readonly HashSet<string> PHASES = new HashSet<string>(
-         new string[]{ "SplashMod", "ActionMod", "UnloadMod", // Do not start phases with P.
+         new string[]{ "SplashMod", "ActionMod", "DisarmMod", // Do not start phases with P.
             "Init", "Initialize", "MainMod",                  // P are fast skipped as Prefix/Postfix
             "HomeMod", "HomeOnShow", "HomeOnHide",
             "GameMod", "GameOnShow", 
@@ -25,8 +25,8 @@ namespace Sheepy.Modnix {
       internal static volatile string LastPhase;
 
       public static void RunPhase ( string phase ) { try {
-         // UnloadMod and ActionMod should not go through here!
-         if ( phase == "UnloadMod" || phase == "ActionMod" ) throw new ArgumentException( phase );
+         // DisarmMod and ActionMod should not go through here!
+         if ( phase == "DisarmMod" || phase == "ActionMod" ) throw new ArgumentException( phase );
          lock ( LoadedPhases ) {
             if ( LoadedPhases.Contains( phase ) ) {
                // Make sure Init, Initialize, and *Mod phases are not repeated
@@ -40,7 +40,7 @@ namespace Sheepy.Modnix {
             return;
          }
          Log.Info( "PHASE {0}", phase );
-         foreach ( var mod in list.Where( e => ! e.IsUnloaded ).ToArray() )
+         foreach ( var mod in list.Where( e => ! e.IsDisarmed ).ToArray() )
             RunPhaseOnMod( mod, phase );
          Log.Verbo( "Phase {0} ended", phase );
          Log.Flush();
@@ -52,8 +52,8 @@ namespace Sheepy.Modnix {
       } } catch ( Exception ex ) { mod.Error( ex ); } }
 
       internal static void RunPhaseOnMod ( ModEntry mod, string phase ) { try {
-         lock ( mod.Metadata ) if ( mod.IsUnloaded ) return;
-         if ( mod.Metadata.Dlls != null && ( phase != "UnloadMod" || mod.ModAssemblies != null ) )
+         lock ( mod.Metadata ) if ( mod.IsDisarmed ) return;
+         if ( mod.Metadata.Dlls != null && ( phase != "DisarmMod" || mod.ModAssemblies != null ) )
             foreach ( var dll in mod.Metadata.Dlls )
                RunPhaseOnDll( mod, dll, phase );
          if ( mod.Metadata.Actions != null )

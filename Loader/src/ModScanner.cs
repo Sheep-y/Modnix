@@ -236,7 +236,7 @@ namespace Sheepy.Modnix {
          if ( result != null ) {
             // Count non-legacy initialisers
             var hasSplash = result.ContainsKey( "SplashMod" );
-            var initCount = result.Keys.Count( e => e != "UnloadMod" && e != "ActionMod" );
+            var initCount = result.Keys.Count( e => e != "DisarmMod" && e != "ActionMod" );
             if ( initCount > 1 ) // Ignore PPML+ first to prevent giving the wrong signal, since we don't support console commands.
                initCount = TryRemoveInit( file, result, "Initialize", initCount );
             if ( initCount > 1 )
