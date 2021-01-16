@@ -350,7 +350,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void BuildSupportDoc ( ModDoc type, FlowDocument doc, string[] fileList ) { try {
          string text = null, ext = null;
-         if ( Docs.TryGetValue( type, out string file ) && ! "embedded".Equals( file, StringComparison.Ordinal ) ) {
+         if ( Docs.TryGetValue( type, out string file ) && file != "embedded" ) {
             Log( $"Reading {type} {file}" );
             text = Utils.ReadFile( file );
          } else {

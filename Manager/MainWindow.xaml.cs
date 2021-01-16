@@ -111,7 +111,7 @@ namespace Sheepy.Modnix.MainGUI {
          switch ( info ) {
             case GuiInfo.VISIBILITY : ShowWindow(); break;
             case GuiInfo.APP_UPDATE : Update = value; UpdateChecked(); RefreshUpdateStatus(); break;
-            case GuiInfo.MOD        : SetSelectedMod( ListedMods.First( e => e.Path.Equals( value?.ToString(), StringComparison.Ordinal ) ) ); break;
+            case GuiInfo.MOD        : SetSelectedMod( ListedMods.First( e => e.Path == value?.ToString() ) ); break;
             case GuiInfo.MOD_LIST   : SetModList( value as IEnumerable<ModInfo> ); break;
             default : SharedGui.SetInfo( info, value ); break;
          }

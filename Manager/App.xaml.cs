@@ -326,7 +326,7 @@ namespace Sheepy.Modnix.MainGUI {
             using ( var fs = AssemblyLoader.GetResourceStream( AppRes.LOADER ) )
                embedded = BitConverter.ToString( hasher.ComputeHash( fs ) ).Replace( "-", "" );
             Log( $"Embedded loader hash: {embedded}" );
-            if ( ! installed.Equals( embedded, StringComparison.Ordinal ) )
+            if ( installed != embedded )
                CurrentGame.Status = "mismatch";
          }
       } catch ( Exception ex ) { Log( ex ); } }
