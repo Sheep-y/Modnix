@@ -40,19 +40,20 @@ namespace Sheepy.Modnix {
             return;
          }
          Log.Info( "PHASE {0}", phase );
-         foreach ( var mod in list ) RunPhaseOnMod( mod, phase );
+         foreach ( var mod in list.Where( e => ! e.IsUnloaded ).ToArray() )
+            RunPhaseOnMod( mod, phase );
          Log.Verbo( "Phase {0} ended", phase );
          Log.Flush();
       } catch ( Exception ex ) { Log.Error( ex ); } }
 
-      internal static void RunPastPhaseOnMod ( ModEntry mod ) { try { lock ( LoadedPhases ) {
+      internal static void RunPastPhasesOnMod ( ModEntry mod ) { try { lock ( LoadedPhases ) {
          foreach ( var phase in LoadedPhases )
             RunPhaseOnMod( mod, phase );
       } } catch ( Exception ex ) { mod.Error( ex ); } }
 
       internal static void RunPhaseOnMod ( ModEntry mod, string phase ) { try {
-         lock ( mod.Metadata ) if ( mod.IsUnloaded ) return;
-         if ( mod.Metadata.Dlls != null )
+         lock ( mod.Metadata ) ;
+         if ( mod.Metadata.Dlls != null && ( phase != "UnloadMod" || mod.ModAssemblies != null ) )
             foreach ( var dll in mod.Metadata.Dlls )
                RunPhaseOnDll( mod, dll, phase );
          if ( mod.Metadata.Actions != null )
