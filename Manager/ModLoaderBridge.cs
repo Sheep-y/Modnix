@@ -76,9 +76,9 @@ namespace Sheepy.Modnix.MainGUI {
          OrderMods( "TacticalOnHide", added, ordered );
          OrderMods( "GameOnHide", added, ordered );
 
-         var map = list.ToDictionary( e => e.Id );
+         var map = list.ToDictionary( e => e.Path );
          for ( var i = 0 ; i < ordered.Count ; i++ )
-            map[ ordered[ i ].Metadata.Id ]._Order = i + 1;
+            map[ ordered[ i ].Path ]._Order = i + 1;
          return list.ToArray();
       }
 
@@ -87,7 +87,7 @@ namespace Sheepy.Modnix.MainGUI {
          var key = phase.ToLowerInvariant();
          if ( ! all.ContainsKey( key ) ) return;
          foreach ( var mod in all[ key ] ) {
-            var id = mod.Metadata.Id;
+            var id = mod.Path;
             if ( added.Contains( id ) ) continue;
             added.Add( id );
             ordered.Add( mod );

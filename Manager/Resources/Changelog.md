@@ -10,6 +10,7 @@ Roadmap: https://github.com/Sheep-y/Modnix/issues/24
 * New: "mod_disarm" and "mod_rearm" api to support dynamic mod disarming and rearming.
 * Fix: Pasting config text from Notepad no longer generate excessive blank lines.
 * Fix: Always close handles on embedded files to use less system resources.
+* Fix: Multiple mods with same Id no longer crash the Manager (regression).
 * Gui: Mod load order updated to match Modnix 3 phases.
 * Gui: Double click now enable / disable a mod.
 * Gui: Update wording of game status.
