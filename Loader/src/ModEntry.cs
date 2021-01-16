@@ -269,18 +269,18 @@ namespace Sheepy.Modnix {
          List< ModEntry > mods = null;
          lock( ModLoader.ModsInPhase ) ModLoader.ModsInPhase.TryGetValue( "unloadmod", out mods );
          if ( mod == null || mods?.Contains( mod ) != true ) return null;
+         lock ( ApiExtension ) {
+            foreach ( var entry in ApiExtOwner.ToArray() )
+               if ( entry.Value.Key == mod ) {
+                  RemoveApiCmd( entry.Key );
+                  Log().Verbo( "Unloaded API '{0}' of '{1}'", entry.Key, mod.Metadata.Id );
+               }
+         }
          lock ( mod ) {
             if ( mod.IsUnloaded ) return false;
             Info( "Unloading mod '{0}'", mod.Metadata.Id );
             ModPhases.RunPhaseOnMod( mod, "UnloadMod" );
             mod.IsUnloaded = true;
-         }
-         lock ( ApiExtension ) {
-            foreach ( var entry in ApiExtOwner.ToArray() )
-               if ( entry.Value.Key == mod ) {
-                  RemoveApiCmd( entry.Key );
-                  Log().Verbo( "Unloaded API '{0}'", entry.Key ); // TODO: Multi level logging
-               }
          }
          return true;
       }
