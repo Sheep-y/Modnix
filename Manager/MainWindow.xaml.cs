@@ -264,7 +264,7 @@ namespace Sheepy.Modnix.MainGUI {
             return;
          }
          switch ( SharedGui.AppState ) {
-            case "ppml" : case "both" : case "none" :
+            case "ppml" : case "both" : case "none" : case "mismatch" :
                DoSetup();
                break;
             case "modnix" :

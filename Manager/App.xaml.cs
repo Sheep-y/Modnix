@@ -284,11 +284,11 @@ namespace Sheepy.Modnix.MainGUI {
             if ( CheckVersion )
                Task.Run( () => {
                   var ver = CheckGameVer();
-                  var gameVer = ver == "1.0" ? new Version( 1, 0, 999999 ) : Version.Parse( ver );
-                  ModLoader.GameVersion = gameVer;
+                  ModLoader.GameVersion = ver == "1.0" ? new Version( 1, 0, 999999 ) : Version.Parse( ver );
                   GUI.SetInfo( GuiInfo.GAME_VER, ver );
                } );
             if ( CheckInjected() ) {
+               CheckLoader();
                GUI.SetInfo( GuiInfo.APP_STATE, CurrentGame.Status );
                return;
             }
@@ -308,16 +308,28 @@ namespace Sheepy.Modnix.MainGUI {
       } catch ( IOException ex ) { return Log( ex, false ); } }
 
       // Return true if injectors are in place and injected.
-      private bool CheckInjected () {
-         try {
-            Log( "Detecting injection status." );
-            var result = CurrentGame.Status = CurrentGame.RunInjector( "/d" );
-            return result == "modnix" || result == "both";
-         } catch ( Exception ex ) {
-            CurrentGame.Status = "error";
-            return Log( ex, false );
+      private bool CheckInjected () { try {
+         Log( "Detecting injection status." );
+         var result = CurrentGame.Status = CurrentGame.RunInjector( "/d" );
+         return result == "modnix" || result == "both";
+      } catch ( Exception ex ) {
+         CurrentGame.Status = "error";
+         return Log( ex, false );
+      } }
+
+      private void CheckLoader () { try {
+         using ( var hasher = System.Security.Cryptography.SHA256.Create() ) {
+            string installed, embedded;
+            using ( var fs = new FileStream( CurrentGame.Loader, FileMode.Open, FileAccess.Read ) )
+               installed = BitConverter.ToString( hasher.ComputeHash( fs ) ).Replace( "-", "" );
+            Log( $"Installed loader hash: {installed}" );
+            using ( var fs = AssemblyLoader.GetResourceStream( AppRes.LOADER ) )
+               embedded = BitConverter.ToString( hasher.ComputeHash( fs ) ).Replace( "-", "" );
+            Log( $"Embedded loader hash: {embedded}" );
+            if ( ! installed.Equals( embedded, StringComparison.Ordinal ) )
+               CurrentGame.Status = "mismatch";
          }
-      }
+      } catch ( Exception ex ) { Log( ex ); } }
 
       internal string CheckAppVer () { try {
          var version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
@@ -881,6 +893,7 @@ namespace Sheepy.Modnix.MainGUI {
          using ( var writer = new FileStream( target, FileMode.Create ) ) {
             source.CopyTo( writer );
          }
+         source.Close();
       }
 
       internal bool DeleteRootFile ( string file ) { try {

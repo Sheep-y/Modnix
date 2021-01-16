@@ -676,7 +676,7 @@ namespace Sheepy.Modnix.MainGUI {
          lock ( EXE ) {
             if ( ! File.Exists( exe ) ) using ( var writer = new FileStream( exe, FileMode.Create ) ) {
                Log( $"Creating {exe}" );
-               AssemblyLoader.GetResourceStream( EXE ).CopyTo( writer );
+               using ( var fs = AssemblyLoader.GetResourceStream( EXE ) ) fs.CopyTo( writer );
             }
          }
          return exe;

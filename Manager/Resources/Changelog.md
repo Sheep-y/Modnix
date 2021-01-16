@@ -9,7 +9,9 @@ Roadmap: https://github.com/Sheep-y/Modnix/issues/24
 * New: Actions now support "Include".
 * New: Re-implement Action.OnError to properly support "continue", "skip", and "stop".
 * New: API action "mod_load" and "mod_unload" to support dynamic mod unloading and reloading.
+* New: Mismatching mod loader is now detected, and make install button do Setup.
 * Fix: Pasting config text from Notepad no longer generate excessive blank lines.
+* Fix: Always close handles on embedded files to use less system resources.
 * Gui: Mod load order updated to match Modnix 3 phases.
 * Gui: .md documents are now parsed and displayed as markdown, instead of plain text.
 * Gui: Double click now enable / disable a mod.
