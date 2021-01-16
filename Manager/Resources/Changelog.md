@@ -4,19 +4,19 @@ Modnix Changelog
 Roadmap: https://github.com/Sheep-y/Modnix/issues/24
 
 * New: Mod Pack support.  Multiple mods may now be pre-configured and bundled into one package.
+* New: Actions now support "Include", allowing actions to be spread over multiple json files.
+* New: .md documents are now parsed and displayed as markdown, instead of plain text.
 * New: "mod_stack" api to get api callstack.
-* New: Actions now support multiple (comma separated) phsaes.
-* New: Actions now support "Include".
-* New: Re-implement Action.OnError to properly support "continue", "skip", and "stop".
-* New: API action "mod_disarm" and "mod_rearm" to support dynamic mod disarming and rearming.
-* New: Mismatching mod loader is now detected, and make install button do Setup.
+* New: "mod_disarm" and "mod_rearm" api to support dynamic mod disarming and rearming.
 * Fix: Pasting config text from Notepad no longer generate excessive blank lines.
 * Fix: Always close handles on embedded files to use less system resources.
 * Gui: Mod load order updated to match Modnix 3 phases.
-* Gui: .md documents are now parsed and displayed as markdown, instead of plain text.
 * Gui: Double click now enable / disable a mod.
 * Gui: Update wording of game status.
+* Gui: Mismatching mod loader is now detected, and make install button do Setup.
 * Mod: Action includes must be in same folder as the mod or a subfolder.
+* Mod: Action.OnError now properly supports "continue", "skip", and "stop".
+* Mod: Actions now support multiple (comma separated) phsaes.
 * Log: OS type and version are now logged.
 * Log: Flushing log no longer log reason as "null".
 * Log: Instantiation of mod classes by the Loader are now logged.
