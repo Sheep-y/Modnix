@@ -257,8 +257,8 @@ namespace Sheepy.Modnix {
          lock ( mod ) {
             if ( ! mod.IsUnloaded ) return false;
             Info( "Loading mod {0}", mod.Metadata.Id );
-            ModPhases.RunPastPhaseOnMod( mod );
             mod.IsUnloaded = false;
+            ModPhases.RunPastPhaseOnMod( mod );
          }
          return true;
       }
