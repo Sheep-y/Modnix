@@ -8,10 +8,12 @@ Roadmap: https://github.com/Sheep-y/Modnix/issues/24
 * New: Actions now support multiple (comma separated) phsaes.
 * New: Actions now support "Include".
 * New: Re-implement Action.OnError to properly support "continue", "skip", and "stop".
+* New: API action "mod_load" and "mod_unload" to support dynamic mod unloading and reloading.
 * Fix: Pasting config text from Notepad no longer generate excessive blank lines.
 * Gui: Mod load order updated to match Modnix 3 phases.
-* Gui: Double click now enable / disable a mod.
 * Gui: .md documents are now parsed and displayed as markdown, instead of plain text.
+* Gui: Double click now enable / disable a mod.
+* Gui: Update wording of game status.
 * Mod: Action includes must be in same folder as the mod or a subfolder.
 * Log: OS type and version are now logged.
 * Log: Flushing log no longer log reason as "null".
