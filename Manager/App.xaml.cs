@@ -65,7 +65,8 @@ namespace Sheepy.Modnix.MainGUI {
       internal const string GAME_LOG = "Console.log";
       internal const string EPIC_DIR = ".egstore";
 
-      private string[] UNSAFE_DLL = new string[] { AppRes.DOOR_DLL, AppRes.LOADER, AppRes.CECI_DLL, AppRes.HARM_DLL, INJECTOR, JBA_DLL, PAST, PAST_DL1, PAST_DL2 };
+      private string[] LEGACY_CODE = new string[] { AppRes.DOOR_DLL, AppRes.LOADER, AppRes.CECI_DLL, AppRes.HARM_DLL, DOOR_CNF, INJECTOR, JBA_DLL, PAST, PAST_DL1, PAST_DL2 };
+      private string[] UNSAFE_ROOT = new string[] { INJECTOR, JBA_DLL, PAST, PAST_DL1, PAST_DL2 };
       internal readonly string ModFolder = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.MyDocuments ), MOD_PATH );
 
       private string _ModGuiExe;
@@ -303,7 +304,8 @@ namespace Sheepy.Modnix.MainGUI {
       internal bool LoaderInPlace () { try {
          foreach ( var file in new string[]{ AppRes.DOOR_DLL, DOOR_CNF, AppRes.LOADER, AppRes.CECI_DLL, AppRes.HARM_DLL } ) {
             var path = CurrentGame.RootFile( file );
-            if ( ! File.Exists( path ) ) return Log( $"Missing loader file: {path}", false );
+            if ( ! File.Exists( path ) || new FileInfo( path ).Length <= 0 )
+               return Log( $"Missing loader file: {path}", false );
          }
          CurrentGame.Status = "modnix";
          return Log( $"All loader files found in {CurrentGame.CodeDir}", true );
@@ -456,11 +458,21 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       private void DoSetup () { try {
-         Log( $"Running setup" );
+         Log( "Running setup" );
          var flags = PromptFlag.NONE;
          // Copy exe to mod folder
          if ( CopySelf( MyPath, ModGuiExe ) )
             flags |= PromptFlag.SETUP_SELF_COPY;
+         // Remove old loaders
+         CheckLegacyInjection();
+         if ( CurrentGame.Status == "legacy" ) {
+            InjectionChecker.RestoreBackup( CurrentGame.CodeDir );
+            CheckInjectionStatus();
+            if ( CurrentGame.Status == "legacy" )
+               throw new ApplicationException( "Failed to remove legacy mod loader." );
+            foreach ( var file in LEGACY_CODE )
+               CurrentGame.DeleteCodeFile( file );
+         }
          // Copy loader files
          CurrentGame.WriteFile( AppRes.DOOR_DLL, AssemblyLoader.GetResourceStream( AppRes.DOOR_DLL ) );
          CurrentGame.WriteFile( AppRes.HARM_DLL, AssemblyLoader.GetResourceStream( AppRes.HARM_DLL ) );
@@ -478,12 +490,12 @@ namespace Sheepy.Modnix.MainGUI {
             if ( HasLegacy() && CurrentGame.RenameCodeFile( PAST, PAST_BK ) )
                flags |= PromptFlag.SETUP_PPML;
             // Cleanup - accident prevention. Old dlls at game base may override dlls in the managed folder.
-            foreach ( var file in UNSAFE_DLL )
+            foreach ( var file in UNSAFE_ROOT )
                CurrentGame.DeleteRootFile( file );
             //CurrentGame.DeleteCodeFile( JBA_DLL );
             GUI.Prompt( AppAction.SETUP, flags );
          } else
-            throw new ApplicationException( "Loader injection failed" );
+            throw new ApplicationException( "Setup failed" );
       } catch ( Exception ex ) {
          GUI.Prompt( AppAction.SETUP, PromptFlag.ERROR, ex );
       } }
@@ -522,10 +534,6 @@ namespace Sheepy.Modnix.MainGUI {
             CreateShortcut();
             return false;
          }
-         // Delete a few files that should not be in the mods folder
-         var modDir = new GameInstallation( OldPath );
-         foreach ( var dll in UNSAFE_DLL )
-            modDir.DeleteRootFile( dll );
          if ( IsSameDir( OldPath, ModFolder ) ) {
             Log( $"{OldPath} seems to be symbolic link, skipping migration." );
             return false;
@@ -591,15 +599,15 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       private void DoRestore () { try {
-         // TODO
-         Log( $"Running restore" );
-         throw new NotImplementedException();
+         Log( "Running restore" );
+         InjectionChecker.RestoreBackup( CurrentGame.CodeDir );
+         foreach ( var file in LEGACY_CODE )
+            CurrentGame.DeleteRootFile( file );
          CheckInjectionStatus();
-         if ( CurrentGame.Status == "none" ) {
-            CurrentGame.DeleteCodeFile( AppRes.LOADER );
+         if ( CurrentGame.Status != "none" )
+            throw new ApplicationException( "Failed to remove mod loader" );
+         else
             GUI.Prompt( AppAction.REVERT );
-         } else
-            throw new ApplicationException( "Loader revert failed" );
       } catch ( Exception ex ) {
          GUI.Prompt( AppAction.REVERT, PromptFlag.ERROR, ex );
       } }
