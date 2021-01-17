@@ -3,6 +3,7 @@ Modnix Changelog
 # Version 3 Beta 2, in development
 Roadmap: https://github.com/Sheep-y/Modnix/issues/24
 
+* New: Injection-less mod loader.  Simpler, less risk, less permission, easier to install and remove.
 * New: Mod Pack support.  Multiple mods may now be pre-configured and bundled into one package.
 * New: Actions now support "Include", allowing actions to be spread over multiple json files.
 * New: .md documents are now parsed and displayed as markdown, instead of plain text.
