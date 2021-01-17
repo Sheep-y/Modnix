@@ -221,11 +221,10 @@ namespace Sheepy.Modnix.MainGUI {
             txt = "Busy";
          else
             switch ( SharedGui.AppState ) {
-               case "ppml"   : txt = "PPML only.  Please setup"; break;
-               case "both"   : txt = "PPML found.  Please remove"; break;
-               case "mismatch":txt = "Loader Mismatch.  Please Setup"; break;
-               case "modnix" : txt = "Moddable"; break;
-               case "none"   : txt = "Not Moddable.  Please Setup"; break;
+               case "legacy" : txt = "Legacy loader found.  Please re-setup"; break;
+               case "mismatch":txt = "Loader mismatch.  Please setup"; break;
+               case "modnix" : txt = "Mod loader ready"; break;
+               case "none"   : txt = "Mod loader not found.  Please setup"; break;
                case "no_game": txt = "Game not found"; break;
                default: txt = $"Unknown injection state {SharedGui.AppState}"; break;
             }
@@ -264,7 +263,7 @@ namespace Sheepy.Modnix.MainGUI {
             return;
          }
          switch ( SharedGui.AppState ) {
-            case "ppml" : case "both" : case "none" : case "mismatch" :
+            case "legacy" : case "none" : case "mismatch" :
                DoSetup();
                break;
             case "modnix" :

@@ -313,8 +313,8 @@ namespace Sheepy.Modnix.MainGUI {
       // Return true if injectors are in place and injected.
       private bool CheckInjected () { try {
          Log( "Detecting injection status." );
-         var result = CurrentGame.Status = "modnix2"; //CurrentGame.RunInjector( "/d" ); TODO
-         return result == "modnix" || result == "both";
+         var result = CurrentGame.Status = "legacy"; //CurrentGame.RunInjector( "/d" ); TODO
+         return result == "modnix";
       } catch ( Exception ex ) {
          CurrentGame.Status = "error";
          return Log( ex, false );

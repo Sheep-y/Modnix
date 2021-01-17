@@ -112,7 +112,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       public void Prompt ( AppAction action, PromptFlag flags = PromptFlag.NONE, Exception ex = null ) { this.Dispatch( () => { try {
          Log( $"Prompt {action} {flags}" );
-         if ( SharedGui.AppState == "modnix" || SharedGui.AppState == "both" )
+         if ( SharedGui.AppState == "modnix" )
             EnableLaunch();
          SharedGui.Prompt( action, flags, ex, () => {
             AppControl.Explore( App.ModGuiExe );

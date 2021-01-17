@@ -80,7 +80,7 @@ namespace Sheepy.Modnix.MainGUI {
          AppWorkingChanged.Invoke();
       } }
 
-      internal static bool IsInjected => AppState == "modnix" || AppState == "both";
+      internal static bool IsInjected => AppState == "modnix";
       internal static bool IsGameFound => GamePath != null;
       internal static bool CanModify => AppState != null && ! IsGameRunning && ! IsAppWorking;
 
