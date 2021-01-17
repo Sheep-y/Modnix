@@ -8,7 +8,7 @@ namespace Sheepy.Modnix {
    public static class GameVersionReader {
       private static Logger Log => ModLoader.Log;
 
-      internal static string ParseVersionWithCecil ( string gameDllPath ) {
+      public static string ParseVersionWithCecil ( string gameDllPath ) {
          using ( var dll = ModuleDefinition.ReadModule( gameDllPath ) ) {
             foreach ( var type in dll.Types ) {
                if ( type.FullName == "Base.Build.RuntimeBuildInfo" ) {

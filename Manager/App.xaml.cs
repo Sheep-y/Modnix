@@ -54,6 +54,7 @@ namespace Sheepy.Modnix.MainGUI {
       internal const string GAME_EXE = "PhoenixPointWin64.exe";
       internal const string GAME_DLL = "Assembly-CSharp.dll";
       internal const string JBA_DLL  = "JetBrains.Annotations.dll";
+      internal const string DOOR_CNF = "doorstop_config.ini";
       internal const string PAST     = "PhoenixPointModLoaderInjector.exe";
       internal const string PAST_BK  = "PhoenixPointModLoaderInjector.exe.orig";
       internal const string PAST_DL1 = "PPModLoader.dll";
@@ -280,7 +281,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void CheckInjectionStatus ( bool CheckVersion = false ) {
          GUI.SetInfo( GuiInfo.GAME_RUNNING, IsGameRunning() );
-         if ( InjectorInPlace() ) {
+         if ( LoaderInPlace() ) {
             if ( CheckVersion )
                Task.Run( () => {
                   var ver = CheckGameVer();
@@ -301,16 +302,18 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       // Check that mod injector and mod loader is in place
-      internal bool InjectorInPlace () { try {
-         if ( ! File.Exists( CurrentGame.Injector ) ) return Log( $"Missing injector: {CurrentGame.Injector}", false );
-         if ( ! File.Exists( CurrentGame.Loader   ) ) return Log( $"Missing loader: {CurrentGame.Loader}", false );
-         return Log( $"Injector and loader found in {CurrentGame.CodeDir}", true );
+      internal bool LoaderInPlace () { try {
+         foreach ( var file in new string[]{ AppRes.DOOR_DLL, DOOR_CNF, AppRes.LOADER, AppRes.CECI_DLL, AppRes.HARM_DLL } ) {
+            var path = CurrentGame.RootFile( file );
+            if ( ! File.Exists( path ) ) return Log( $"Missing loader file: {path}", false );
+         }
+         return Log( $"All loader files found in {CurrentGame.CodeDir}", true );
       } catch ( IOException ex ) { return Log( ex, false ); } }
 
       // Return true if injectors are in place and injected.
       private bool CheckInjected () { try {
          Log( "Detecting injection status." );
-         var result = CurrentGame.Status = CurrentGame.RunInjector( "/d" );
+         var result = CurrentGame.Status = "modnix2"; //CurrentGame.RunInjector( "/d" ); TODO
          return result == "modnix" || result == "both";
       } catch ( Exception ex ) {
          CurrentGame.Status = "error";
@@ -337,12 +340,11 @@ namespace Sheepy.Modnix.MainGUI {
       } catch ( Exception ex ) { return Log( ex, "error" ); } }
 
       internal string CheckGameVer () { try {
-         Log( "Detecting game version." );
          try {
             var logFile = Path.Combine( ModFolder, MOD_LOG );
             if ( File.Exists( logFile ) &&
                  File.GetLastWriteTime( logFile ) > File.GetLastWriteTime( Path.Combine( CurrentGame.CodeDir, GAME_DLL ) ) ) {
-               Log( $"Parsing {logFile}" );
+               Log( $"Parsing {logFile} for game version." );
                var line = Utils.ReadLine( logFile, 1 );
                var match = Regex.Match( line ?? "", "Assembly-CSharp/([^ ;]+)", RegexOptions.IgnoreCase );
                if ( match.Success )
@@ -350,7 +352,11 @@ namespace Sheepy.Modnix.MainGUI {
             }
          } catch ( Exception ex ) { Log( ex ); }
 
-         return CurrentGame.RunInjector( "/g" );
+         if ( File.Exists( CurrentGame.GameAssembly ) ) {
+            Log( $"Parsing {CurrentGame.GameAssembly} for game version." );
+            return GameVersionReader.ParseVersionWithCecil( CurrentGame.GameAssembly );
+         }
+         return null;
       } catch ( Exception ex ) { return Log( ex, "error" ); } }
 
       // Try to detect game path
@@ -588,11 +594,11 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       private void DoRestore () { try {
+         // TODO
          Log( $"Running restore" );
-         CurrentGame.RunInjector( "/y /r" );
+         throw new NotImplementedException();
          CheckInjectionStatus();
          if ( CurrentGame.Status == "none" ) {
-            CurrentGame.DeleteCodeFile( AppRes.INJECTOR );
             CurrentGame.DeleteCodeFile( AppRes.LOADER );
             GUI.Prompt( AppAction.REVERT );
          } else
@@ -848,15 +854,15 @@ namespace Sheepy.Modnix.MainGUI {
       internal GameInstallation ( string gameDir ) {
          GameDir  = gameDir;
          CodeDir  = Path.Combine( gameDir, AppControl.DLL_PATH );
-         Injector = Path.Combine( CodeDir, AppRes.INJECTOR );
-         Loader   = Path.Combine( CodeDir, AppRes.LOADER );
+         Loader   = Path.Combine( gameDir, AppRes.LOADER );
+         GameAssembly = Path.Combine( CodeDir, AppControl.GAME_DLL );
       }
 
       internal readonly AppControl App = AppControl.Instance;
       internal readonly string GameDir;
       internal readonly string CodeDir;
-      internal readonly string Injector;
       internal readonly string Loader;
+      internal readonly string GameAssembly;
 
       internal string _Status; // Injection status
       internal string Status  {
@@ -864,10 +870,13 @@ namespace Sheepy.Modnix.MainGUI {
          set { lock( this ) { _Status = value; } } }
 
       internal string GameType { get {
-         if ( Directory.Exists( Path.Combine( GameDir, AppControl.EPIC_DIR ) ) )
+         if ( Directory.Exists( RootFile( AppControl.EPIC_DIR ) ) )
             return "epic";
          return "offline";
       } }
+
+      internal string RootFile ( string file ) => Path.Combine( GameDir, file );
+      internal string CodeFile ( string file ) => Path.Combine( CodeDir, file );
 
       internal void WriteFile ( string file, Stream source ) => WriteFile( GameDir, file, source );
 
@@ -881,16 +890,10 @@ namespace Sheepy.Modnix.MainGUI {
          source.Close();
       }
 
-      internal bool DeleteRootFile ( string file ) { try {
-         var subject = Path.Combine( GameDir, file );
-         if ( ! File.Exists( subject ) ) return false;
-         App.Log( $"Deleting {subject}" );
-         File.Delete( subject );
-         return ! File.Exists( subject );
-      } catch ( Exception ex ) { return App.Log( ex, false ); } }
+      internal bool DeleteRootFile ( string file ) => DeleteFile( RootFile( file ) );
+      internal bool DeleteCodeFile ( string file ) => DeleteFile( CodeFile( file ) );
 
-      internal bool DeleteCodeFile ( string file ) { try {
-         var subject = Path.Combine( CodeDir, file );
+      private bool DeleteFile ( string subject ) { try {
          if ( ! File.Exists( subject ) ) return false;
          App.Log( $"Deleting {subject}" );
          File.Delete( subject );
@@ -898,8 +901,7 @@ namespace Sheepy.Modnix.MainGUI {
       } catch ( Exception ex ) { return App.Log( ex, false ); } }
 
       internal bool RenameCodeFile ( string file, string toName ) { try {
-         var subject = Path.Combine( CodeDir, file   );
-         var target  = Path.Combine( CodeDir, toName );
+         string subject = CodeFile( file ), target = CodeFile( toName );
          DeleteCodeFile( toName );
          App.Log( $"Renaming {subject} to {toName}" );
          File.Move( subject, target );
