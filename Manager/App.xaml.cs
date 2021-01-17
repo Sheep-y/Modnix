@@ -282,12 +282,11 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void CheckInjectionStatus () {
          GUI.SetInfo( GuiInfo.GAME_RUNNING, IsGameRunning() );
-         if ( LoaderInPlace() && CheckInjected() ) {
-            CheckLoader();
-            GUI.SetInfo( GuiInfo.APP_STATE, CurrentGame.Status );
-            return;
-         }
-         GUI.SetInfo( GuiInfo.APP_STATE, "none" );
+         CurrentGame.Status = "none";
+         CheckLegacyInjection();
+         if ( LoaderInPlace() )
+            VerifyLoaderHash();
+         GUI.SetInfo( GuiInfo.APP_STATE, CurrentGame.Status );
       }
 
       private void CheckGameVersion () {
@@ -306,20 +305,18 @@ namespace Sheepy.Modnix.MainGUI {
             var path = CurrentGame.RootFile( file );
             if ( ! File.Exists( path ) ) return Log( $"Missing loader file: {path}", false );
          }
+         CurrentGame.Status = "modnix";
          return Log( $"All loader files found in {CurrentGame.CodeDir}", true );
       } catch ( IOException ex ) { return Log( ex, false ); } }
 
       // Return true if injectors are in place and injected.
-      private bool CheckInjected () { try {
-         Log( "Detecting injection status." );
-         var result = CurrentGame.Status = "legacy"; //CurrentGame.RunInjector( "/d" ); TODO
-         return result == "modnix";
-      } catch ( Exception ex ) {
-         CurrentGame.Status = "error";
-         return Log( ex, false );
-      } }
+      private void CheckLegacyInjection () { try {
+         Log( "Detecting PPML / Legacy Modnix injection." );
+         if ( InjectionChecker.FindModnix2Injection( CurrentGame.CodeDir ) || InjectionChecker.FindPpmlInjection( CurrentGame.CodeDir ) )
+            CurrentGame.Status = "legacy";
+      } catch ( Exception ex ) { Log( ex ); } }
 
-      private void CheckLoader () { try {
+      private void VerifyLoaderHash () { try {
          using ( var hasher = System.Security.Cryptography.SHA256.Create() ) {
             string installed, embedded;
             using ( var fs = new FileStream( CurrentGame.Loader, FileMode.Open, FileAccess.Read ) )

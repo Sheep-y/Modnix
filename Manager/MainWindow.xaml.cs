@@ -198,7 +198,7 @@ namespace Sheepy.Modnix.MainGUI {
          } else if ( ModList == null ) {
             LabelModList.Content = "Checking";
          } else if ( SharedGui.AppState != null && ! SharedGui.IsInjected ) {
-            LabelModList.Content = "NOT INSTALLED";
+            LabelModList.Content = SharedGui.AppState == "none" ? "NOT INSTALLED" : "Loader mismatch";
             LabelModList.Foreground = Brushes.Red;
          } else {
             int total = ModList.Count(), enabled = ModList.Count( e => e.Is( ModQuery.ENABLED ) );

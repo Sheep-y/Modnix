@@ -1,51 +1,47 @@
 ﻿using Mono.Cecil;
 using Mono.Cecil.Cil;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.IO;
 
 namespace Sheepy.Modnix.MainGUI {
-   [Flags]
-   internal enum InjectionState { NONE, MODNIX , PPML, BOTH = MODNIX | PPML }
 
-   internal class InjectionChecker {
-      internal InjectionState CheckInjectionOf ( string target ) {
-         using ( var dll = ModuleDefinition.ReadModule( target ) ) {
-            foreach ( var typeName in new string[]{ "PhoenixPoint.Common.Game.PhoenixGame", "Cinemachine.CinemachineBrain" } ) {
-               var type = dll.GetType( typeName );
-               if ( type == null ) continue;
-               var result = CheckInjection( type );
-               if ( result != InjectionState.NONE ) return result;
-            }
+   internal static class InjectionChecker {
+
+      internal static bool FindPpmlInjection ( string codeDir ) =>
+         ScanInjectionTarget( Path.Combine( codeDir, "Assembly-CSharp.dll" ), "PhoenixPoint.Common.Game.PhoenixGame",
+            "System.Void PhoenixPointModLoader.PPModLoader::Init(", "System.Void PhoenixPointModLoader.PhoenixPointModLoader::Initialize(" );
+
+      internal static bool FindModnix2Injection ( string codeDir ) =>
+         ScanInjectionTarget( Path.Combine( codeDir, "Cinemachine.dll" ), "Cinemachine.CinemachineBrain", "System.Void Sheepy.Modnix.ModLoader::Init(" );
+
+      private static bool ScanInjectionTarget ( string file, string typeName, params string[] hooks ) { try {
+         using ( var dll = ModuleDefinition.ReadModule( file ) ) {
+            var type = dll.GetType( typeName );
+            if ( type == null ) return false;
+            AppControl.Instance.Log( $"Scanning {typeName} of {file}" );
+            return ScanTypeMethods( type, hooks );
          }
-         return InjectionState.NONE;
+      } catch ( Exception ex ) { return AppControl.Instance.Log( ex, false ); } }
+
+      private static bool ScanTypeMethods ( TypeDefinition type, string[] hooks ) {
+         foreach ( var meth in type.Methods )
+            if ( meth.Body != null && ScanInjectedCalls( meth, hooks ) )
+               return true;
+         foreach ( var subtype in type.NestedTypes )
+            if ( ScanTypeMethods( subtype, hooks ) )
+               return true;
+         return false;
       }
 
-      private InjectionState CheckInjection ( TypeDefinition typeDefinition ) {
-         // Check standard methods, then in places like IEnumerator generated methods (Nested)
-         var result = typeDefinition.Methods.Select( CheckInjection ).FirstOrDefault( e => e != InjectionState.NONE );
-         if ( result != InjectionState.NONE ) return result;
-         return typeDefinition.NestedTypes.Select( CheckInjection ).FirstOrDefault( e => e != InjectionState.NONE );
-      }
-
-      private static readonly string ModnixInjectCheck = $"System.Void Sheepy.Modnix.ModLoader::Init(";
-      private static readonly string PPML01InjectCheck = $"System.Void PhoenixPointModLoader.PPModLoader::Init(";
-      private static readonly string PPML02InjectCheck = $"System.Void PhoenixPointModLoader.PhoenixPointModLoader::Initialize(";
-
-      private static InjectionState CheckInjection ( MethodDefinition methodDefinition ) {
-         if ( methodDefinition.Body == null )
-            return InjectionState.NONE;
-         foreach ( var instruction in methodDefinition.Body.Instructions ) {
+      private static bool ScanInjectedCalls ( MethodDefinition meth, string[] hooks ) {
+         foreach ( var instruction in meth.Body.Instructions ) {
             if ( ! instruction.OpCode.Equals( OpCodes.Call ) ) continue;
             var op = instruction.Operand.ToString();
-            if ( op.StartsWith( ModnixInjectCheck ) )
-               return InjectionState.MODNIX;
-            else if ( op.StartsWith( PPML01InjectCheck ) || op.StartsWith( PPML02InjectCheck ) )
-               return InjectionState.PPML;
+            foreach ( var hook in hooks )
+               if ( op.StartsWith( hook ) )
+                  return true;
          }
-         return InjectionState.NONE;
+         return false;
       }
    }
 }
