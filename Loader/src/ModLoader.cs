@@ -36,7 +36,8 @@ namespace Sheepy.Modnix {
 
       private static void ModLoaderAsmLoaded ( object sender, AssemblyLoadEventArgs args ) {
          var asmName = args.LoadedAssembly.FullName;
-         if ( ! asmName.StartsWith( "Assembly-CSharp,", StringComparison.OrdinalIgnoreCase ) ) return;
+         //if ( ! asmName.StartsWith( "Assembly-CSharp,", StringComparison.OrdinalIgnoreCase ) ) return;
+         if ( ! asmName.StartsWith( "System.Runtime,", StringComparison.OrdinalIgnoreCase ) ) return;
          AppDomain.CurrentDomain.AssemblyLoad -= ModLoaderAsmLoaded;
          Init();
       }
@@ -167,9 +168,11 @@ namespace Sheepy.Modnix {
       public static void LogGameVersion () { try { lock ( MOD_PATH ) {
          var game = GamePatcher.GameAssembly;
          if ( game == null ) return;
-         var ver = game.GetType( "Base.Build.RuntimeBuildInfo" ).GetProperty( "BuildVersion" ).GetValue( null )?.ToString();
-         if ( ver == null )
-            ver = game.GetType( "Base.Build.RuntimeBuildInfo" ).GetProperty( "Version" ).GetValue( null )?.ToString();
+         var ver = game.GetType( "Base.Build.RuntimeBuildInfo" )?.GetProperty( "BuildVersion" )?.GetValue( null )?.ToString();
+         if ( ver == null ) {
+            ver = game.GetType( "Base.Build.RuntimeBuildInfo" )?.GetProperty( "Version" )?.GetValue( null )?.ToString();
+            if ( ver == null ) ver = "0.0.0.0";
+         }
          Log.Info( "{0}/{1}", Path.GetFileNameWithoutExtension( game.CodeBase ), ver );
          GameVersion = Version.Parse( ver );
       } } catch ( Exception ex ) { Log?.Error( ex ); } } 
