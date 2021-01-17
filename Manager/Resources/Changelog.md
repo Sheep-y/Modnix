@@ -22,6 +22,7 @@ Roadmap: https://github.com/Sheep-y/Modnix/issues/24
 * Log: OS type and version are now logged.
 * Log: Flushing log no longer log reason as "null".
 * Log: Instantiation of mod classes by the Loader are now logged.
+* Lib: Updated Mono Cecil to 0.11.3.
 
 # Version 2.5.6, in development
 
