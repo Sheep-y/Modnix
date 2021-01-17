@@ -273,28 +273,27 @@ namespace Sheepy.Modnix.MainGUI {
             }
             CurrentGame = new GameInstallation( gamePath );
             GUI.SetInfo( GuiInfo.GAME_PATH, gamePath );
-            CheckInjectionStatus( true );
+            CheckGameVersion();
+            CheckInjectionStatus();
          } else {
             GUI.SetInfo( GuiInfo.APP_STATE, "no_game" );
          }
       } catch ( Exception ex ) { Log( ex ); } }
 
-      private void CheckInjectionStatus ( bool CheckVersion = false ) {
+      private void CheckInjectionStatus () {
          GUI.SetInfo( GuiInfo.GAME_RUNNING, IsGameRunning() );
-         if ( LoaderInPlace() ) {
-            if ( CheckVersion )
-               Task.Run( () => {
-                  var ver = CheckGameVer();
-                  ModLoader.GameVersion = ver == "1.0" ? new Version( 1, 0, 999999 ) : Version.Parse( ver );
-                  GUI.SetInfo( GuiInfo.GAME_VER, ver );
-               } );
-            if ( CheckInjected() ) {
-               CheckLoader();
-               GUI.SetInfo( GuiInfo.APP_STATE, CurrentGame.Status );
-               return;
-            }
+         if ( LoaderInPlace() && CheckInjected() ) {
+            CheckLoader();
+            GUI.SetInfo( GuiInfo.APP_STATE, CurrentGame.Status );
+            return;
          }
          GUI.SetInfo( GuiInfo.APP_STATE, "none" );
+      }
+
+      private void CheckGameVersion () {
+         var ver = ParseGameVer();
+         ModLoader.GameVersion = ver == "1.0" ? new Version( 1, 0, 999999 ) : Version.Parse( ver );
+         GUI.SetInfo( GuiInfo.GAME_VER, ver );
       }
 
       public static bool IsGameRunning () {
@@ -339,7 +338,7 @@ namespace Sheepy.Modnix.MainGUI {
          return Json.RegxVerTrim.Replace( version, "" );
       } catch ( Exception ex ) { return Log( ex, "error" ); } }
 
-      internal string CheckGameVer () { try {
+      internal string ParseGameVer () { try {
          try {
             var logFile = Path.Combine( ModFolder, MOD_LOG );
             if ( File.Exists( logFile ) &&
@@ -465,12 +464,13 @@ namespace Sheepy.Modnix.MainGUI {
          // Copy exe to mod folder
          if ( CopySelf( MyPath, ModGuiExe ) )
             flags |= PromptFlag.SETUP_SELF_COPY;
-         // Copy hook files
+         // Copy loader files
          CurrentGame.WriteFile( AppRes.DOOR_DLL, AssemblyLoader.GetResourceStream( AppRes.DOOR_DLL ) );
          CurrentGame.WriteFile( AppRes.HARM_DLL, AssemblyLoader.GetResourceStream( AppRes.HARM_DLL ) );
          CurrentGame.WriteFile( AppRes.CECI_DLL, AssemblyLoader.GetResourceStream( AppRes.CECI_DLL ) );
          CurrentGame.WriteFile( AppRes.LOADER  , AssemblyLoader.GetResourceStream( AppRes.LOADER   ) );
-         CheckInjectionStatus( true );
+         File.WriteAllText( CurrentGame.RootFile( DOOR_CNF ), "[UnityDoorstop]\ntargetAssembly=" + AppRes.LOADER );
+         CheckInjectionStatus();
          if ( CurrentGame.Status == "modnix" ) {
             CreateRuntimeConfig( ModGuiExe );
             SaveSettings();
