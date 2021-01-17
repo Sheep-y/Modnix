@@ -1,7 +1,6 @@
 ﻿using Harmony;
 using Sheepy.Logging;
 using System;
-using System.Diagnostics;
 using System.Reflection;
 using static System.Reflection.BindingFlags;
 
@@ -87,15 +86,15 @@ namespace Sheepy.Modnix {
          }
       }
 
-      private static Assembly _GameAssembly;
-
-      internal static Assembly GameAssembly { get {
-         if ( _GameAssembly != null ) return _GameAssembly;
+      internal static Assembly FindAssembly ( string name ) {
          foreach ( var e in AppDomain.CurrentDomain.GetAssemblies() )
-            if ( e.FullName.StartsWith( "Assembly-CSharp, ", StringComparison.OrdinalIgnoreCase ) )
-               return _GameAssembly = e;
+            if ( e.FullName.StartsWith( name + ", ", StringComparison.OrdinalIgnoreCase ) )
+               return e;
          return null;
-      } }
+      }
+
+      private static Assembly _GameAssembly;
+      internal static Assembly GameAssembly => _GameAssembly ?? ( _GameAssembly = FindAssembly( "Assembly-CSharp" ) );
 
       private static MethodInfo GameMethod ( string type, string method ) => GameAssembly.GetType( type ).GetMethod( method, Public | NonPublic | Static | Instance );
 
