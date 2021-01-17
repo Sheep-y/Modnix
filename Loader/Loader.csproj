@@ -67,6 +67,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="src\GameVersionReader.cs" />
     <Compile Include="src\ModActions.cs" />
     <Compile Include="src\GamePatcher.cs" />
     <Compile Include="src\ModPhases.cs" />
