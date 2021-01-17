@@ -178,8 +178,6 @@ namespace Sheepy.Modnix {
       #endregion
 
       #region Game and Mods
-      private static Assembly GameAssembly;
-
       private Assembly GetAssembly ( object target ) => GetAssemblies( target )?.FirstOrDefault();
 
       private IEnumerable < Assembly > GetAssemblies ( object target ) {
@@ -199,9 +197,7 @@ namespace Sheepy.Modnix {
                return new Assembly[]{ ModLoader.PpmlAssembly };
 
             case "phoenixpoint" : case "phoenix point" : case "game" :
-               if ( GameAssembly == null ) // No need to lock. No conflict.
-                  GameAssembly = Array.Find( AppDomain.CurrentDomain.GetAssemblies(), e => e.FullName.StartsWith( "Assembly-CSharp," ) );
-               return new Assembly[]{ GameAssembly };
+               return new Assembly[]{ GamePatcher.GameAssembly };
 
             default:
                var mod = ModLoader.GetModById( id );

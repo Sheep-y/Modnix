@@ -21,10 +21,10 @@ namespace Sheepy.Modnix {
          //patcher.Patch( GameMethod( "Base.Core.Game", "QuitGame" ), postfix: ToHarmony( nameof( BeforeQuit ) ) );
          //patcher.Patch( GameMethod( "Base.Platforms.Platform", "Abort" ), postfix: ToHarmony( nameof( BeforeQuit ) ) );
          Log.Verbo( "Patched OnLevelStateChanged and HideTip" );
-         foreach ( var e in AppDomain.CurrentDomain.GetAssemblies() )
-            if ( e.FullName.StartsWith( "UnityEngine.CoreModule,", StringComparison.OrdinalIgnoreCase ) ) try {
-               patcher.Patch( e.GetType( "UnityEngine.Application" ).GetMethod( "Quit", new Type[] { } ), ToHarmony( nameof( BeforeQuit ) ) );
-            } catch ( Exception ex ) { Log.Warn( ex ); }
+         var core = FindAssembly( "UnityEngine.CoreModule" );
+         if ( core != null ) try {
+            patcher.Patch( core.GetType( "UnityEngine.Application" ).GetMethod( "Quit", new Type[] { } ), ToHarmony( nameof( BeforeQuit ) ) );
+         } catch ( Exception ex ) { Log.Warn( ex ); }
          return true;
       } catch ( Exception ex ) {
          Log.Error( ex );
