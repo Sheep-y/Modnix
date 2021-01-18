@@ -222,10 +222,10 @@ namespace Sheepy.Modnix.MainGUI {
          else
             switch ( SharedGui.AppState ) {
                case "legacy" : txt = "Legacy loader found.  Please re-setup"; break;
-               case "mismatch":txt = "Loader mismatch.  Please setup"; break;
-               case "modnix" : txt = "Mod loader ready"; break;
-               case "none"   : txt = "Mod loader not found.  Please setup"; break;
-               case "no_game": txt = "Game not found"; break;
+               case "mismatch":txt = "Mod loader mismatch.  Please setup"; break;
+               case "modnix" : txt = "Mod loader ready."; break;
+               case "none"   : txt = "Mod loader missing.  Please setup"; break;
+               case "no_game": txt = "Game not found or not moddable"; break;
                default: txt = $"Unknown injection state {SharedGui.AppState}"; break;
             }
          var state = new Run( txt );
@@ -263,7 +263,7 @@ namespace Sheepy.Modnix.MainGUI {
             return;
          }
          switch ( SharedGui.AppState ) {
-            case "legacy" : case "none" : case "mismatch" :
+            case "legacy" : case "none" : case "mismatch" : case "error" :
                DoSetup();
                break;
             case "modnix" :
@@ -271,16 +271,19 @@ namespace Sheepy.Modnix.MainGUI {
                   DoRestore();
                break;
             case "no_game" :
-               if ( SharedGui.BrowseGame() ) {
-                  App.SaveSettings();
-                  App.CheckStatusTask( false );
-               }
+               ChangeGamePath();
                break;
             default:
                MessageBox.Show( $"Unknown injection state {SharedGui.AppState}", "Error", MessageBoxButton.OK, MessageBoxImage.Error );
                break;
          }
       } catch ( Exception ex ) { Log( ex ); } }
+
+      private void ChangeGamePath () {
+         if ( ! SharedGui.BrowseGame() ) return;
+         App.SaveSettings();
+         App.CheckStatusTask( false );
+      }
 
       private void DoSetup () {
          Log( "Calling setup" );
@@ -322,6 +325,8 @@ namespace Sheepy.Modnix.MainGUI {
                WpfHelper.Linkify( txt, () => AppControl.Explore( Path.Combine( Path.GetFullPath( SharedGui.GamePath ), AppControl.GAME_EXE ) ) );
                p.Inlines.Add( "\r" );
                p.Inlines.Add( txt );
+               p.Inlines.Add( "\t" );
+               p.Inlines.Add( WpfHelper.Linkify( new Run( "(Change)" ), ChangeGamePath ) );
             }
          } else
             p.Inlines.Add( new Run( "\rGame not found" ){ Foreground = Brushes.Red } );

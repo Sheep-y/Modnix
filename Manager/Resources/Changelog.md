@@ -16,8 +16,9 @@ Roadmap: https://github.com/Sheep-y/Modnix/issues/24
 * Gui: Install/Setup/Revert will now revert PPML and legacy (injection-based) Modnix.
 * Gui: Mod load order updated to match Modnix 3 phases.
 * Gui: Double click now enable / disable a mod.
-* Gui: Update wording of game status.
 * Gui: Mismatching mod loader is now detected, and make install button do Setup.
+* Gui: Added a link to change Game path.
+* Gui: Update wording of game status.
 * Mod: Action includes must be in same folder as the mod or a subfolder.
 * Mod: Action.OnError now properly supports "continue", "skip", and "stop".
 * Mod: Actions now support multiple (comma separated) phsaes.
