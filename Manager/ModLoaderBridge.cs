@@ -452,7 +452,7 @@ namespace Sheepy.Modnix.MainGUI {
          list.Add( new Image(){ Source = img, Stretch = Stretch.UniformToFill } );
          */
          list.Add( new Bold( new Run( meta.Name.ToString( "en" ) ) ) );
-         if ( meta.Version != null ) list.Add( $" \tVer {Json.RegxVerTrim.Replace( Version.ToString(), "" )}" );
+         if ( meta.Version != null ) list.AddMulti( " \tVer ", Json.RegxVerTrim.Replace( Version, "" ) );
          var IsPack = Type.Equals( "Pack" );
          if ( ! IsPack ) {
             list.Add( $" \t{Type} mod" );
@@ -528,7 +528,7 @@ namespace Sheepy.Modnix.MainGUI {
                txt.Foreground = Brushes.DarkBlue; break;
          }
          if ( notice.Args?.Length > 0 && notice.Args[0] is ModEntry cause )
-            WpfHelper.Linkify( txt, () => AppControl.Instance.GUI.SetInfo( GuiInfo.MOD, cause.Path ) );
+            txt.Linkify( () => AppControl.Instance.GUI.SetInfo( GuiInfo.MOD, cause.Path ) );
          return txt;
       }
 
@@ -552,10 +552,10 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void BuildFileList ( ModMeta meta, InlineCollection list ) {
          Func< string, string > fileName = System.IO.Path.GetFileName;
-         list.Add( $"Path\r" );
-         var pathTxt = new Run( System.IO.Path.GetDirectoryName( Path ) + System.IO.Path.DirectorySeparatorChar ){ Foreground = Brushes.Blue };
-         list.Add( WpfHelper.Linkify( pathTxt, () => AppControl.Explore( Path ) ) );
-         list.Add( "\r\rKnown File(s)" );
+         list.AddMulti( "Path\r",
+            new Run( System.IO.Path.GetDirectoryName( Path ) + System.IO.Path.DirectorySeparatorChar ){ Foreground = Brushes.Blue }
+               .Linkify( () => AppControl.Explore( Path ) ),
+            "\r\rKnown File(s)" );
          var self = fileName( Path );
          var selfRun = new Run( "\r" + self );
          list.Add( selfRun );

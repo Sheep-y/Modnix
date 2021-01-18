@@ -232,14 +232,12 @@ namespace Sheepy.Modnix.MainGUI {
          if ( SharedGui.AppState != "modnix" ) state.Foreground = Brushes.Red;
          var p = new Paragraph();
          if ( ! App.Settings.MinifyLoaderPanel ) {
-            p.Inlines.Add( new Bold( new Run( AppControl.LIVE_NAME ) ) );
-            p.Inlines.Add( $"\tVer {SharedGui.AppVer}{build}" );
+            p.Inlines.AddMulti( new Bold( new Run( AppControl.LIVE_NAME ) ), $"\tVer {SharedGui.AppVer}{build}" );
             if ( SharedGui.AppVer != null )
                p.Inlines.Add( " w/ PPML 0.1 + 0.2" );
             p.Inlines.Add( "\r" );
          }
-         p.Inlines.Add( "Status: " );
-         p.Inlines.Add( state );
+         p.Inlines.AddMulti( "Status: ", state );
          RichAppInfo.Document.Replace( p );
          CheckLogVerbo.IsChecked = ( App.Settings.LogLevel & SourceLevels.Verbose ) == SourceLevels.Verbose;
          CheckLogMonitor.IsChecked = App.Settings.LogMonitor;
@@ -320,14 +318,11 @@ namespace Sheepy.Modnix.MainGUI {
          if ( SharedGui.IsGameFound ) {
             if ( SharedGui.GameVer != null )
                p.Inlines.Add( $"\tVer {SharedGui.GameVer}" );
-            if ( ! App.Settings.MinifyGamePanel ) {
-               var txt = new Run( Path.GetFullPath( SharedGui.GamePath ) ){ Foreground = Brushes.Blue };
-               WpfHelper.Linkify( txt, () => AppControl.Explore( Path.Combine( Path.GetFullPath( SharedGui.GamePath ), AppControl.GAME_EXE ) ) );
-               p.Inlines.Add( "\r" );
-               p.Inlines.Add( txt );
-               p.Inlines.Add( "\t" );
-               p.Inlines.Add( WpfHelper.Linkify( new Run( "(Change)" ), ChangeGamePath ) );
-            }
+            if ( ! App.Settings.MinifyGamePanel )
+               p.Inlines.AddMulti( "\r",
+                  new Run( Path.GetFullPath( SharedGui.GamePath ) ){ Foreground = Brushes.Blue }
+                     .Linkify( () => AppControl.Explore( Path.Combine( Path.GetFullPath( SharedGui.GamePath ), AppControl.GAME_EXE ) ) ),
+                  "\t", new Run( "(Change)" ).Linkify( ChangeGamePath ) );
          } else
             p.Inlines.Add( new Run( "\rGame not found" ){ Foreground = Brushes.Red } );
          RichGameInfo.Document.Replace( p );

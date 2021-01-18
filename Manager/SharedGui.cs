@@ -188,7 +188,7 @@ namespace Sheepy.Modnix.MainGUI {
       public static string Lf2Cr ( string text ) => text?.Replace( "\r", "" ).Replace( '\n', '\r' );
       public static StringBuilder Lf2Cr ( StringBuilder text ) => text?.Replace( "\r", "" ).Replace( '\n', '\r' );
 
-      public static T Linkify < T > ( T elem, Action onClick ) where T : Inline {
+      public static T inkify < T > ( this T elem, Action onClick ) where T : Inline {
          elem.PreviewMouseDown += ( a, b ) => onClick();
          elem.MouseEnter += ( a, b ) => elem.TextDecorations.Add( TextDecorations.Underline );
          elem.MouseLeave += ( a, b ) => elem.TextDecorations.Clear();
@@ -197,6 +197,12 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       public static TextRange TextRange ( this FlowDocument doc ) => new TextRange( doc.ContentStart, doc.ContentEnd );
+
+      public static void AddMulti ( this InlineCollection inlines, params object[] elements ) {
+         foreach ( var e in elements )
+            if ( e is string txt ) inlines.Add( txt );
+            else if ( e is Inline i ) inlines.Add( i );
+      }
 
       public static void Replace ( this FlowDocument doc, params Block[] blocks ) => Replace( doc, (IEnumerable<Block>) blocks );
       public static void Replace ( this FlowDocument doc, IEnumerable< Block > blocks ) {
