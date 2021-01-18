@@ -3,18 +3,19 @@ Modnix Changelog
 # Version 3 Beta 2, in development
 Roadmap: https://github.com/Sheep-y/Modnix/issues/24
 
-* New: Injection-less mod loader.  Simpler, less risk, less permission, easier to install and remove.
+* New: Injection-less mod loader.  Simpler, less risk, earlier load, easier to install and remove.
 * New: Mod Pack support.  Multiple mods may now be pre-configured and bundled into one package.
-* New: Actions now support "Include", allowing actions to be spread over multiple json files.
+* New: "Include" Action, allowing actions to be spread over multiple js/json files.
 * New: "Preloads" mod field, which is copied by manager to the preload folder on install/enable.
-* New: .md documents are now parsed and displayed as markdown, instead of plain text.
 * New: "mod_stack" api to get api callstack.
 * New: "mod_disarm" and "mod_rearm" api to support dynamic mod disarming and rearming.
+* New: Mod field "Preloads" for overriding game dlls without replacing them.
 * Fix: Pasting config text from Notepad no longer generate excessive blank lines.
 * Fix: Always close handles on embedded files to use less system resources.
 * Fix: Multiple mods with same Id no longer crash the Manager (regression).
-* Gui: Install/Setup/Revert will now revert PPML and legacy (injection-based) Modnix.
 * Gui: Mod load order updated to match Modnix 3 phases.
+* Gui: Install/Setup/Revert will now revert PPML and legacy (injection-based) Modnix.
+* Gui: .md documents are now parsed and displayed as markdown, instead of plain text.
 * Gui: Double click now enable / disable a mod.
 * Gui: Mismatching mod loader is now detected, and make install button do Setup.
 * Gui: Added a link to change Game path.

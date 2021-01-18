@@ -608,13 +608,13 @@ namespace Sheepy.Modnix.MainGUI {
       private GithubRelease CheckUpdate() => UpdateChecker.FindUpdate( Myself.Version );
       #endregion
 
-      #region Mods
+      #region Loading Mods
       internal string LoaderLog => Path.Combine( ModFolder, "ModnixLoader.log" );
       internal string ConsoleLog => CurrentGame == null ? null : Path.Combine( CurrentGame.GameDir, "Console.log" );
 
       private bool IsLoadingModList;
-      private HashSet< string > ModWithError = new HashSet<string>();
-      private HashSet< string > ModWithWarning = new HashSet<string>();
+      private readonly HashSet< string > ModWithError = new HashSet<string>();
+      private readonly HashSet< string > ModWithWarning = new HashSet<string>();
       private DateTime LoaderLogLastModified;
       private readonly Regex RegexModCaptureLine = new Regex( "^(?>[\\d:\\.]+) (EROR|WARN) ([^┊]+)┊", RegexOptions.Compiled );
 
@@ -642,6 +642,8 @@ namespace Sheepy.Modnix.MainGUI {
                   else if ( ModWithWarning.Contains( mod.Id ) ) ModLoaderBridge.AddLoaderLogNotice( mod, "runtime_warning" );
                }
             }
+            if ( list.Any( e => e.Is( ModQuery.HAS_PRELOAD ) ) )
+               GetPreloads( list );
             GUI.SetInfo( GuiInfo.MOD_LIST, list );
          } finally {
             lock ( ModWithError ) IsLoadingModList = false;
@@ -750,6 +752,59 @@ namespace Sheepy.Modnix.MainGUI {
             case "zh" : return "中文";
             default   : return id;
          }
+      }
+      #endregion
+
+      #region Preloads
+      private void GetPreloads ( ModInfo[] mods ) {
+         Log( "Fetching preload list" );
+         HashSet<string> preloads = new HashSet<string>();
+         foreach ( var mod in mods ) mod.Do( AppAction.GET_PRELOADS, preloads );
+         Task.Run( () => UpdatePreloads( preloads ) );
+      }
+
+      private void UpdatePreloads( HashSet<string> preloads ) {
+         var dlls = SortPreloads( preloads );
+         var dir = Path.Combine( ModFolder, "ModnixFiles", "Preloads" );
+         Log( $"Updating {dlls.Count} preloads" );
+         foreach ( var f in Directory.GetFiles( dir, "*.dll" ) )
+            if ( ! dlls.ContainsKey( Path.GetFileName( f ) ) ) try {
+               Log( $"Deleting {f}" );
+               File.Delete( f );
+            } catch ( Exception ex ) { Log( ex ); }
+         foreach ( var pair in dlls ) try {
+            var path = Path.Combine( dir, pair.Key );
+            if ( File.Exists( path ) && new FileInfo( path ).Length == new FileInfo( pair.Value ).Length ) {
+               Log( $"Skipping {pair.Value} (same size)" );
+               continue;
+            }
+            Log( $"Copying {pair.Value} to {pair.Key}" );
+            File.Copy( pair.Value, path, true );
+         } catch ( Exception ex ) { Log( ex ); }
+         Log( "Preloads updated" );
+      }
+
+      private Dictionary< string, string > SortPreloads ( HashSet<string> preloads ) {
+         Log( $"Sorting {preloads.Count} preloads" );
+         Dictionary< string, string > nameMap = new Dictionary<string, string>();
+         foreach ( var path in preloads ) {
+            string filename = Path.GetFileName( path )?.ToLowerInvariant();
+            if ( ! File.Exists( path ) ) {
+               Log( "Not found: ", path );
+            } else if ( ! filename.EndsWith( ".dll", StringComparison.OrdinalIgnoreCase ) ) {
+               Log( "Ignoring non-DLL " + path );
+            } else if ( ! nameMap.ContainsKey( filename ) ) {
+               Log( $"{filename} <= {path}" );
+               nameMap.Add( filename, path );
+            } else try {
+               string v1 = FileVersionInfo.GetVersionInfo( path )?.FileVersion, v2 = FileVersionInfo.GetVersionInfo( nameMap[ filename ] )?.FileVersion;
+               if ( v1 != v2 && v1 != null && ( v2 == null || Version.Parse( v1 ).CompareTo( Version.Parse( v2 ) ) > 0 ) ) {
+                  Log( $"{filename} <= {path} (replace)" );
+                  nameMap[ filename ] = path;
+               }
+            } catch ( Exception ex ) { Log( ex ); }
+         }
+         return nameMap;
       }
       #endregion
 

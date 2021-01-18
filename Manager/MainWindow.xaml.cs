@@ -25,7 +25,7 @@ namespace Sheepy.Modnix.MainGUI {
       private readonly object SynGetSet = new object();
 
       private event Action ModListChanged;
-      private Timer GameStatusTimer;
+      private readonly Timer GameStatusTimer;
 
       public MainWindow () { try {
          InitializeComponent();
@@ -134,8 +134,7 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       private void CheckGameRunning ( object _ = null ) {
-         var IsRunning = AppControl.IsGameRunning();
-         SharedGui.IsGameRunning = IsRunning;
+         SharedGui.IsGameRunning = AppControl.IsGameRunning();
          CheckLogRefresh();
       }
 
@@ -280,7 +279,7 @@ namespace Sheepy.Modnix.MainGUI {
       private void ChangeGamePath () {
          if ( ! SharedGui.BrowseGame() ) return;
          App.SaveSettings();
-         App.CheckStatusTask( false );
+         App.CheckStatusTask( false ); // TODO: Changing game path (and thus version) may change how the mod list play out.
       }
 
       private void DoSetup () {

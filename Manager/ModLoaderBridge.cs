@@ -214,6 +214,8 @@ namespace Sheepy.Modnix.MainGUI {
                return Docs?.ContainsKey( ModDoc.CHANGELOG ) == true;
             case ModQuery.HAS_LICENSE :
                return Docs?.ContainsKey( ModDoc.LICENSE ) == true;
+            case ModQuery.HAS_PRELOAD :
+               return Mod.Metadata.Preloads != null;
             default:
                return false;
          }
@@ -242,6 +244,11 @@ namespace Sheepy.Modnix.MainGUI {
                return;
             case AppAction.SAVE_CONFIG :
                SaveConfig();
+               return;
+            case AppAction.GET_PRELOADS :
+               if ( param is ICollection<string> list && Mod.Metadata.Preloads != null )
+                  foreach ( var dll in Mod.Metadata.Preloads )
+                     list.Add( dll );
                return;
             default:
                return;

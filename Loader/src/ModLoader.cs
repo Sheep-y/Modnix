@@ -78,8 +78,8 @@ namespace Sheepy.Modnix {
             SetLog( new FileLogger( Path.Combine( ModDirectory, Assembly.GetExecutingAssembly().GetName().Name + ".log" ) ) { TimeFormat = "HH:mm:ss.fff " }, true );
             LogGameVersion();
          }
-         var corlib = new Uri( typeof( string ).Assembly.CodeBase ).LocalPath;
          LoadSettings();
+         var corlib = new Uri( typeof( string ).Assembly.CodeBase ).LocalPath;
          var os = new OperatingSystem( Environment.OSVersion.Platform, Environment.OSVersion.Version );
          Log.Verbo( "{0}/{1}; .Net/{2}; mscorlib/{3} {4}", os.Platform, os.Version, Environment.Version, FileVersionInfo.GetVersionInfo( corlib ).FileVersion, corlib );
       } } catch ( Exception ex ) { Log?.Error( ex ); } }
