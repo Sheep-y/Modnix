@@ -20,19 +20,40 @@ namespace Sheepy.Modnix {
       public const char LOG_DIVIDER = '┊';
 
       public const string CONF_FILE = "Modnix.conf";
+      public const string SUB_DIR = "ModnixFiles";
+      public const string PRE_DIR = "Preloads";
+
       private static LoaderSettings _Settings;
       public static LoaderSettings Settings { get { lock( MOD_PATH ) { return _Settings; } } set { lock( MOD_PATH ) { _Settings = value; } } }
 
       public static Version LoaderVersion, GameVersion;
       internal readonly static Version PPML_COMPAT = new Version( 0, 2 );
 
+      private static bool Initialised;
       public static string ModDirectory { get; private set; }
       public static string LoaderPath => Assembly.GetExecutingAssembly().Location;
       public static string DnFrameworkDir => Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.Windows ), "Microsoft.NET/Framework/v4.0.30319".FixSlash() );
 
       public static void Main () {
          AppDomain.CurrentDomain.AssemblyLoad += ModLoaderAsmLoaded;
+         Bootstrap();
+
+         var preloadDir = Path.Combine( ModDirectory, CONF_FILE, PRE_DIR );
+         if ( Directory.Exists( preloadDir ) ) {
+            foreach ( var dll in Directory.GetFiles( preloadDir, "*.dll" ) ) try {
+               Console.WriteLine( "[Modnix] Preloading " + dll );
+               Assembly.LoadFrom( dll );
+            } catch ( Exception ex ) { Console.WriteLine( ex ); }
+            Console.WriteLine( "[Modnix] Preload finished." );
+         }
       }
+
+      public static void Bootstrap () { lock( MOD_PATH ) {
+         if ( ModDirectory != null ) return;
+         ModDirectory = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.MyDocuments ), MOD_PATH );
+         AppDomain.CurrentDomain.AssemblyResolve += ModLoaderResolve;
+         AppDomain.CurrentDomain.UnhandledException += ModLoaderException;
+      } }
 
       private static bool IsGameLoaded => GamePatcher.GameAssembly != null;
       private static bool IsRuntimeLoaded => GamePatcher.FindAssembly( "System.Runtime" ) != null;
@@ -63,15 +84,12 @@ namespace Sheepy.Modnix {
             Log.Error( ex );
       } }
 
-      public static bool NeedSetup { get { lock( MOD_PATH ) {
-         return ModDirectory == null;
-      } } }
+      public static bool NeedSetup { get { lock( MOD_PATH ) { return ! Initialised; } } }
 
       public static void Setup () { try { lock( MOD_PATH ) {
-         if ( ModDirectory != null ) return;
-         AppDomain.CurrentDomain.AssemblyResolve += ModLoaderResolve;
-         AppDomain.CurrentDomain.UnhandledException += ModLoaderException;
-         ModDirectory = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.MyDocuments ), MOD_PATH );
+         if ( Initialised ) return;
+         Bootstrap();
+         Initialised = true;
          if ( Log == null ) {
             if ( ! Directory.Exists( ModDirectory ) )
                Directory.CreateDirectory( ModDirectory );
@@ -92,26 +110,26 @@ namespace Sheepy.Modnix {
          if ( name.StartsWith( "Microsoft.VisualStudio.", StringComparison.OrdinalIgnoreCase ) ) return null;
          var app = domain as AppDomain ?? AppDomain.CurrentDomain;
          if ( name.StartsWith( "PhoenixPointModLoader,", StringComparison.OrdinalIgnoreCase ) ) {
-            Log.Info( "Loading embedded PPML" );
+            Log?.Info( "Loading embedded PPML" );
             return PpmlAssembly = app.Load( GetResourceBytes( "PPML_0_2.dll" ) );
          }
          if ( name.StartsWith( "System." ) && dll.Name.Contains( ',' ) ) { // Generic system library lookup
             var file = dll.Name.Substring( 0, dll.Name.IndexOf( ',' ) ) + ".dll";
             var target = Path.Combine( DnFrameworkDir, file );
             if ( File.Exists( target ) ) {
-               Log.Info( "Loading {0}", target );
+               Log?.Info( "Loading {0}", target );
                return Assembly.LoadFrom( target );
             }
          } else {
-            Log.Warn( "Cannot resolve {0}", name );
-            Log.Flush(); // The app may crash right after the failure, so flush the log now
+            Log?.Warn( "Cannot resolve {0}", name );
+            Log?.Flush(); // The app may crash right after the failure, so flush the log now
          }
          return null;
       } catch ( Exception ex ) { Log?.Error( ex ); return null; } }
 
       private static void ModLoaderException ( object sender, UnhandledExceptionEventArgs e ) {
-         Log.Log( SourceLevels.Critical, e );
-         Log.Flush();
+         Log?.Log( SourceLevels.Critical, e );
+         Log?.Flush();
       }
 
       private static Stream GetResourceStream ( string path ) {

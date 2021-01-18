@@ -188,7 +188,7 @@ namespace Sheepy.Modnix.MainGUI {
       public static string Lf2Cr ( string text ) => text?.Replace( "\r", "" ).Replace( '\n', '\r' );
       public static StringBuilder Lf2Cr ( StringBuilder text ) => text?.Replace( "\r", "" ).Replace( '\n', '\r' );
 
-      public static T inkify < T > ( this T elem, Action onClick ) where T : Inline {
+      public static T Linkify < T > ( this T elem, Action onClick ) where T : Inline {
          elem.PreviewMouseDown += ( a, b ) => onClick();
          elem.MouseEnter += ( a, b ) => elem.TextDecorations.Add( TextDecorations.Underline );
          elem.MouseLeave += ( a, b ) => elem.TextDecorations.Clear();

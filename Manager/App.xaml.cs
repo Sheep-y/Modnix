@@ -765,7 +765,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void UpdatePreloads( HashSet<string> preloads ) {
          var dlls = SortPreloads( preloads );
-         var dir = Path.Combine( ModFolder, "ModnixFiles", "Preloads" );
+         var dir = Path.Combine( ModFolder, ModLoader.SUB_DIR, ModLoader.PRE_DIR );
          Log( $"Updating {dlls.Count} preloads" );
          foreach ( var f in Directory.GetFiles( dir, "*.dll" ) )
             if ( ! dlls.ContainsKey( Path.GetFileName( f ) ) ) try {
