@@ -91,7 +91,7 @@ namespace Sheepy.Modnix {
             var reqs = mod.Metadata.Avoids;
             if ( reqs == null ) continue;
             foreach ( var req in reqs ) {
-               if ( ! ModLoader.GetVersionById( req.Id, out ModEntry target, out Version ver ) || target.Disabled || target.IsModPack ) continue;
+               if ( ! ModLoader.GetVersionById( req.Id, out ModEntry target, out Version ver ) || target == null || target.Disabled || target.IsModPack ) continue;
                if ( target == mod ) {
                   mod.Log().Warn( "Mod {0} not allowed to disable itself with mod_info.Avoids.", req.Id );
                   continue;
@@ -124,7 +124,7 @@ namespace Sheepy.Modnix {
                   mod.Log().Warn( "Mod {0} not allowed to depends on itself with mod_info.Requires", reqSet.Key );
                   continue;
                }
-               if ( found && ! target.IsModPack )
+               if ( found && target?.IsModPack != true )
                   fulfill = reqSet.Value.Any( r => ( r.Min == null || r.Min <= ver ) && ( r.Max == null || r.Max >= ver ) );
                if ( ! fulfill ) {
                   var r = reqs.FirstOrDefault( e => ModScanner.NormaliseModId( e.Id ) == reqSet.Key );
@@ -149,12 +149,11 @@ namespace Sheepy.Modnix {
             var targets = mod.Metadata.Disables;
             if ( targets == null ) continue;
             foreach ( var req in targets ) {
-               if ( ! ModLoader.GetVersionById( req.Id, out ModEntry target, out Version ver ) || target.Disabled ) continue;
+               if ( ! ModLoader.GetVersionById( req.Id, out ModEntry target, out Version ver ) || target == null || target.Disabled || target.IsModPack ) continue;
                if ( target == mod ) {
                   mod.Log().Warn( "Mod {0} not allowed to disable itself with mod_info.Disables.", req.Id );
                   continue;
                }
-               if ( target.IsModPack ) continue;
                if ( req.Min != null && req.Min > ver ) continue;
                if ( req.Max != null && req.Max < ver ) continue;
                DisableAndRemoveMod( target, "disable", "disabled by {1} [{2},{3}]", mod, mod.Metadata.Id, req.Min, req.Max );
