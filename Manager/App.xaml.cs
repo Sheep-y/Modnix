@@ -314,7 +314,7 @@ namespace Sheepy.Modnix.MainGUI {
       // Return true if injectors are in place and injected.
       private void CheckLegacyInjection () { try {
          Log( "Detecting PPML / Legacy Modnix injection." );
-         if ( LegacyLoader.FindModnix2Injection( CurrentGame.CodeDir ) || LegacyLoader.FindPpmlInjection( CurrentGame.CodeDir ) )
+         if ( LegacyLoader.FindLegacyInjection( CurrentGame.CodeDir ) )
             CurrentGame.Status = "legacy";
       } catch ( Exception ex ) { Log( ex ); } }
 
@@ -464,15 +464,13 @@ namespace Sheepy.Modnix.MainGUI {
          if ( CopySelf( MyPath, ModGuiExe ) )
             flags |= PromptFlag.SETUP_SELF_COPY;
          // Remove old loaders
-         CheckLegacyInjection();
-         if ( CurrentGame.Status == "legacy" ) {
+         if ( LegacyLoader.FindLegacyInjection( CurrentGame.CodeDir ) ) {
             LegacyLoader.RestoreBackup( CurrentGame.CodeDir );
-            CheckInjectionStatus();
-            if ( CurrentGame.Status == "legacy" )
+            if ( LegacyLoader.FindLegacyInjection( CurrentGame.CodeDir ) )
                throw new ApplicationException( "Failed to remove legacy mod loader." );
-            foreach ( var file in LEGACY_CODE )
-               CurrentGame.DeleteCodeFile( file );
          }
+         foreach ( var file in LEGACY_CODE )
+            CurrentGame.DeleteCodeFile( file );
          // Copy loader files
          CurrentGame.WriteFile( AppRes.DOOR_DLL, AssemblyLoader.GetResourceStream( AppRes.DOOR_DLL ) );
          CurrentGame.WriteFile( AppRes.HARM_DLL, AssemblyLoader.GetResourceStream( AppRes.HARM_DLL ) );

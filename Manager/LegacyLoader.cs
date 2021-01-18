@@ -9,11 +9,13 @@ namespace Sheepy.Modnix.MainGUI {
 
       private static void Log ( object msg ) => AppControl.Instance.Log( msg );
 
-      internal static bool FindPpmlInjection ( string codeDir ) =>
+      internal static bool FindLegacyInjection ( string codeDir ) => FindModnix2Injection( codeDir ) || FindPpmlInjection( codeDir );
+
+      private static bool FindPpmlInjection ( string codeDir ) =>
          ScanInjectionTarget( Path.Combine( codeDir, "Assembly-CSharp.dll" ), "PhoenixPoint.Common.Game.PhoenixGame",
             "System.Void PhoenixPointModLoader.PPModLoader::Init(", "System.Void PhoenixPointModLoader.PhoenixPointModLoader::Initialize(" );
 
-      internal static bool FindModnix2Injection ( string codeDir ) =>
+      private static bool FindModnix2Injection ( string codeDir ) =>
          ScanInjectionTarget( Path.Combine( codeDir, "Cinemachine.dll" ), "Cinemachine.CinemachineBrain", "System.Void Sheepy.Modnix.ModLoader::Init(" );
 
       internal static void RestoreBackup ( string codeDir ) {
