@@ -658,6 +658,7 @@ namespace Sheepy.Modnix {
       public long      LoadIndex;
 
       public string[]  Mods;
+      public string[] Preloads;
       public DllMeta[] Dlls;
       public Dictionary<string,object>[] Actions;
 
@@ -686,6 +687,7 @@ namespace Sheepy.Modnix {
             CopyNonNull( overrider.Disables, ref Disables );
             CopyNonNull( overrider.LoadIndex, ref LoadIndex );
             CopyNonNull( overrider.Mods, ref Mods );
+            CopyNonNull( overrider.Preloads, ref Preloads );
             CopyNonNull( overrider.Dlls, ref Dlls );
             CopyNonNull( overrider.Actions, ref Actions );
             CopyNonNull( overrider.ConfigType, ref ConfigType );
@@ -694,7 +696,7 @@ namespace Sheepy.Modnix {
       }
 
       internal ModMeta EraseModsAndDlls () { lock ( this ) {
-         Mods = null;
+         Mods = Preloads = null;
          Dlls = null;
          return this;
       } }
@@ -722,6 +724,7 @@ namespace Sheepy.Modnix {
          NormAppVer( ref Requires );
          NormAppVer( ref Disables );
          NormStringArray( ref Mods );
+         NormStringArray( ref Preloads );
          NormDllMeta( ref Dlls );
          NormDictArray( ref Actions );
          ConfigType = NormString( ConfigType );
