@@ -314,7 +314,7 @@ namespace Sheepy.Modnix.MainGUI {
       // Return true if injectors are in place and injected.
       private void CheckLegacyInjection () { try {
          Log( "Detecting PPML / Legacy Modnix injection." );
-         if ( InjectionChecker.FindModnix2Injection( CurrentGame.CodeDir ) || InjectionChecker.FindPpmlInjection( CurrentGame.CodeDir ) )
+         if ( LegacyLoader.FindModnix2Injection( CurrentGame.CodeDir ) || LegacyLoader.FindPpmlInjection( CurrentGame.CodeDir ) )
             CurrentGame.Status = "legacy";
       } catch ( Exception ex ) { Log( ex ); } }
 
@@ -466,7 +466,7 @@ namespace Sheepy.Modnix.MainGUI {
          // Remove old loaders
          CheckLegacyInjection();
          if ( CurrentGame.Status == "legacy" ) {
-            InjectionChecker.RestoreBackup( CurrentGame.CodeDir );
+            LegacyLoader.RestoreBackup( CurrentGame.CodeDir );
             CheckInjectionStatus();
             if ( CurrentGame.Status == "legacy" )
                throw new ApplicationException( "Failed to remove legacy mod loader." );
@@ -600,7 +600,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void DoRestore () { try {
          Log( "Running restore" );
-         InjectionChecker.RestoreBackup( CurrentGame.CodeDir );
+         LegacyLoader.RestoreBackup( CurrentGame.CodeDir );
          foreach ( var file in LEGACY_CODE )
             CurrentGame.DeleteRootFile( file );
          CheckInjectionStatus();

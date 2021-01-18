@@ -5,7 +5,7 @@ using System.IO;
 
 namespace Sheepy.Modnix.MainGUI {
 
-   internal static class InjectionChecker {
+   internal static class LegacyLoader {
 
       private static void Log ( object msg ) => AppControl.Instance.Log( msg );
 
