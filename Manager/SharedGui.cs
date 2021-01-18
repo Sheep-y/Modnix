@@ -23,6 +23,7 @@ namespace Sheepy.Modnix.MainGUI {
       public abstract void Do ( AppAction action, object param = null );
       public abstract void BuildDocument ( ModDoc type, FlowDocument doc );
       public abstract string Path { get; }
+      public abstract string Dir { get; }
    }
 
    internal enum ModQuery { NONE, ENABLED, FORCE_DISABLED, EDITING, ERROR, WARNING, IS_FOLDER, IS_CHILD,

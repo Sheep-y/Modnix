@@ -135,7 +135,7 @@ namespace Sheepy.Modnix.MainGUI {
       internal static void AddLoaderLogNotice ( ModInfo mod, string reason ) => Mod( mod ).AddNotice( TraceEventType.Warning, reason );
       
       internal void DeleteMod ( ModInfo mod ) {
-         var path = Path.GetDirectoryName( mod.Path );
+         var path = mod.Dir;
          if ( path == ModLoader.ModDirectory ) {
             App.Log( $"Deleting {mod.Path}" );
             File.Delete( mod.Path );
@@ -196,8 +196,7 @@ namespace Sheepy.Modnix.MainGUI {
             case ModQuery.FORCE_DISABLED :
                return Mod.Disabled && Settings?.Disabled != true;
             case ModQuery.IS_FOLDER :
-               var path = System.IO.Path.GetDirectoryName( Path );
-               return path != AppControl.Instance.ModFolder && Directory.EnumerateFileSystemEntries( path ).Count() > 1;
+               return Dir != AppControl.Instance.ModFolder && Directory.EnumerateFileSystemEntries( Dir ).Count() > 1;
             case ModQuery.ERROR :
                return Mod.GetNotices().Any( e => e.Level == TraceEventType.Error || e.Level == TraceEventType.Critical );
             case ModQuery.WARNING :
@@ -248,7 +247,7 @@ namespace Sheepy.Modnix.MainGUI {
             case AppAction.GET_PRELOADS :
                if ( param is ICollection<string> list && Mod.Metadata.Preloads != null )
                   foreach ( var dll in Mod.Metadata.Preloads )
-                     list.Add( dll );
+                     list.Add( System.IO.Path.Combine( Dir, dll ) );
                return;
             default:
                return;
@@ -560,12 +559,14 @@ namespace Sheepy.Modnix.MainGUI {
       private void BuildFileList ( ModMeta meta, InlineCollection list ) {
          Func< string, string > fileName = System.IO.Path.GetFileName;
          list.AddMulti( "Path\r",
-            new Run( System.IO.Path.GetDirectoryName( Path ) + System.IO.Path.DirectorySeparatorChar ){ Foreground = Brushes.Blue }
-               .Linkify( () => AppControl.Explore( Path ) ),
+            new Run( Dir + System.IO.Path.DirectorySeparatorChar ){ Foreground = Brushes.Blue }.Linkify( () => AppControl.Explore( Path ) ),
             "\r\rKnown File(s)" );
          var self = fileName( Path );
          var selfRun = new Run( "\r" + self );
          list.Add( selfRun );
+         if ( meta.Preloads != null )
+            foreach ( var e in meta.Preloads )
+               list.Add( "\r" + e + " [Preload]" );
          if ( meta.Dlls != null )
             foreach ( var e in meta.Dlls ) {
                var path = fileName( e.Path );
@@ -619,6 +620,7 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       public override string Path => Mod.Path;
+      public override string Dir =>  Mod.Dir;
 
       public override string Type { get { lock ( Mod ) {
          if ( Mod.IsModPack ) return "Pack";

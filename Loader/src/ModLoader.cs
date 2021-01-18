@@ -38,7 +38,7 @@ namespace Sheepy.Modnix {
          AppDomain.CurrentDomain.AssemblyLoad += ModLoaderAsmLoaded;
          Bootstrap();
 
-         var preloadDir = Path.Combine( ModDirectory, CONF_FILE, PRE_DIR );
+         var preloadDir = Path.Combine( ModDirectory, SUB_DIR, PRE_DIR );
          if ( Directory.Exists( preloadDir ) ) {
             foreach ( var dll in Directory.GetFiles( preloadDir, "*.dll" ) ) try {
                Console.WriteLine( "[Modnix] Preloading " + dll );
@@ -100,6 +100,9 @@ namespace Sheepy.Modnix {
          var corlib = new Uri( typeof( string ).Assembly.CodeBase ).LocalPath;
          var os = new OperatingSystem( Environment.OSVersion.Platform, Environment.OSVersion.Version );
          Log.Verbo( "{0}/{1}; .Net/{2}; mscorlib/{3} {4}", os.Platform, os.Version, Environment.Version, FileVersionInfo.GetVersionInfo( corlib ).FileVersion, corlib );
+         foreach ( var asm in AppDomain.CurrentDomain.GetAssemblies() )
+            if ( ! asm.IsDynamic )
+               Log.Verbo( "In Domain - {0} @ {1}", asm.FullName, asm.Location );
       } } catch ( Exception ex ) { Log?.Error( ex ); } }
 
       internal static volatile Assembly PpmlAssembly;

@@ -642,8 +642,7 @@ namespace Sheepy.Modnix.MainGUI {
                   else if ( ModWithWarning.Contains( mod.Id ) ) ModLoaderBridge.AddLoaderLogNotice( mod, "runtime_warning" );
                }
             }
-            if ( list.Any( e => e.Is( ModQuery.HAS_PRELOAD ) ) )
-               GetPreloads( list );
+            GetPreloads( list );
             GUI.SetInfo( GuiInfo.MOD_LIST, list );
          } finally {
             lock ( ModWithError ) IsLoadingModList = false;
@@ -759,7 +758,9 @@ namespace Sheepy.Modnix.MainGUI {
       private void GetPreloads ( ModInfo[] mods ) {
          Log( "Fetching preload list" );
          HashSet<string> preloads = new HashSet<string>();
-         foreach ( var mod in mods ) mod.Do( AppAction.GET_PRELOADS, preloads );
+         foreach ( var mod in mods )
+            if ( mod.Is( ModQuery.ENABLED ) )
+               mod.Do( AppAction.GET_PRELOADS, preloads );
          Task.Run( () => UpdatePreloads( preloads ) );
       }
 
@@ -767,11 +768,15 @@ namespace Sheepy.Modnix.MainGUI {
          var dlls = SortPreloads( preloads );
          var dir = Path.Combine( ModFolder, ModLoader.SUB_DIR, ModLoader.PRE_DIR );
          Log( $"Updating {dlls.Count} preloads" );
-         foreach ( var f in Directory.GetFiles( dir, "*.dll" ) )
-            if ( ! dlls.ContainsKey( Path.GetFileName( f ) ) ) try {
-               Log( $"Deleting {f}" );
-               File.Delete( f );
-            } catch ( Exception ex ) { Log( ex ); }
+         if ( ! Directory.Exists( dir ) ) {
+            if ( dlls.Count > 0 )
+               Directory.CreateDirectory( dir );
+         } else
+            foreach ( var f in Directory.GetFiles( dir, "*.dll" ) )
+               if ( ! dlls.ContainsKey( Path.GetFileName( f ) ) ) try {
+                  Log( $"Deleting {f}" );
+                  File.Delete( f );
+               } catch ( Exception ex ) { Log( ex ); }
          foreach ( var pair in dlls ) try {
             var path = Path.Combine( dir, pair.Key );
             if ( File.Exists( path ) && new FileInfo( path ).Length == new FileInfo( pair.Value ).Length ) {

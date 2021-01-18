@@ -658,7 +658,7 @@ namespace Sheepy.Modnix {
       public long      LoadIndex;
 
       public string[]  Mods;
-      public string[] Preloads;
+      public string[]  Preloads;
       public DllMeta[] Dlls;
       public Dictionary<string,object>[] Actions;
 
@@ -696,7 +696,7 @@ namespace Sheepy.Modnix {
       }
 
       internal ModMeta EraseModsAndDlls () { lock ( this ) {
-         Mods = Preloads = null;
+         Mods = null;
          Dlls = null;
          return this;
       } }
