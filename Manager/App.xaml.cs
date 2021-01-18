@@ -256,7 +256,7 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       private void CheckStatus () { try {
-         Log( $"Checking app and game status" );
+         Log( "Checking app and game status" );
          GUI.SetInfo( GuiInfo.APP_VER, CheckAppVer() );
          if ( FoundGame( out string gamePath ) ) {
             Log( $"Found game at {gamePath}" );
