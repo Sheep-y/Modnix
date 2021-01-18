@@ -53,20 +53,12 @@ namespace Sheepy.Modnix.MainGUI {
       internal const string APP_EXT  = ".exe";
       internal const string GAME_EXE = "PhoenixPointWin64.exe";
       internal const string GAME_DLL = "Assembly-CSharp.dll";
-      internal const string JBA_DLL  = "JetBrains.Annotations.dll";
       internal const string DOOR_CNF = "doorstop_config.ini";
-      internal const string PAST     = "PhoenixPointModLoaderInjector.exe";
-      internal const string PAST_BK  = "PhoenixPointModLoaderInjector.exe.orig";
-      internal const string PAST_DL1 = "PPModLoader.dll";
-      internal const string PAST_DL2 = "PhoenixPointModLoader.dll";
       internal const string PAST_MOD = "Mods";
-      internal const string INJECTOR = "ModnixInjector.exe";
       internal const string MOD_LOG  = "ModnixLoader.log";
       internal const string GAME_LOG = "Console.log";
       internal const string EPIC_DIR = ".egstore";
 
-      private string[] LEGACY_CODE = new string[] { AppRes.DOOR_DLL, AppRes.LOADER, AppRes.CECI_DLL, AppRes.HARM_DLL, DOOR_CNF, INJECTOR, JBA_DLL, PAST, PAST_DL1, PAST_DL2 };
-      private string[] UNSAFE_ROOT = new string[] { INJECTOR, JBA_DLL, PAST, PAST_DL1, PAST_DL2 };
       internal readonly string ModFolder = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.MyDocuments ), MOD_PATH );
 
       private string _ModGuiExe;
@@ -468,9 +460,9 @@ namespace Sheepy.Modnix.MainGUI {
             LegacyLoader.RestoreBackup( CurrentGame.CodeDir );
             if ( LegacyLoader.FindLegacyInjection( CurrentGame.CodeDir ) )
                throw new ApplicationException( "Failed to remove legacy mod loader." );
+            foreach ( var file in LegacyLoader.LEGACY_CODE )
+               CurrentGame.DeleteCodeFile( file );
          }
-         foreach ( var file in LEGACY_CODE )
-            CurrentGame.DeleteCodeFile( file );
          // Copy loader files
          CurrentGame.WriteFile( AppRes.DOOR_DLL, AssemblyLoader.GetResourceStream( AppRes.DOOR_DLL ) );
          CurrentGame.WriteFile( AppRes.HARM_DLL, AssemblyLoader.GetResourceStream( AppRes.HARM_DLL ) );
@@ -485,10 +477,10 @@ namespace Sheepy.Modnix.MainGUI {
             if ( MigrateLegacy() )
                flags |= PromptFlag.SETUP_MOD_MOVED;
             // Disable PPML
-            if ( HasLegacy() && CurrentGame.RenameCodeFile( PAST, PAST_BK ) )
+            if ( LegacyLoader.FoundAndDelPpmlInjector( CurrentGame.CodeDir ) )
                flags |= PromptFlag.SETUP_PPML;
             // Cleanup - accident prevention. Old dlls at game base may override dlls in the managed folder.
-            foreach ( var file in UNSAFE_ROOT )
+            foreach ( var file in LegacyLoader.UNSAFE_ROOT )
                CurrentGame.DeleteRootFile( file );
             //CurrentGame.DeleteCodeFile( JBA_DLL );
             GUI.Prompt( AppAction.SETUP, flags );
@@ -580,11 +572,6 @@ namespace Sheepy.Modnix.MainGUI {
          return true;
       }
 
-      private bool HasLegacy () { try {
-         return File.Exists( Path.Combine( CurrentGame.CodeDir, PAST ) );
-      } catch ( Exception ex ) { return Log( ex, false ); } }
-
-
       internal void CreateShortcut () {
          var name = Path.Combine( CurrentGame.GameDir, PAST_MOD );
          Log( "Creating Mods shortcut to support legacy mods." );
@@ -599,7 +586,7 @@ namespace Sheepy.Modnix.MainGUI {
       private void DoRestore () { try {
          Log( "Running restore" );
          LegacyLoader.RestoreBackup( CurrentGame.CodeDir );
-         foreach ( var file in LEGACY_CODE )
+         foreach ( var file in LegacyLoader.LEGACY_CODE )
             CurrentGame.DeleteRootFile( file );
          CheckInjectionStatus();
          if ( CurrentGame.Status != "none" )

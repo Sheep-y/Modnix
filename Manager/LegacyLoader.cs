@@ -7,7 +7,25 @@ namespace Sheepy.Modnix.MainGUI {
 
    internal static class LegacyLoader {
 
+      private const string PAST     = "PhoenixPointModLoaderInjector.exe";
+      private const string PAST_BK  = "PhoenixPointModLoaderInjector.exe.orig";
+      private const string PAST_DL1 = "PPModLoader.dll";
+      private const string PAST_DL2 = "PhoenixPointModLoader.dll";
+      private const string JBA_DLL  = "JetBrains.Annotations.dll";
+      private const string INJECTOR = "ModnixInjector.exe";
+
+      internal static string[] LEGACY_CODE = new string[] { AppRes.DOOR_DLL, AppRes.LOADER, AppRes.CECI_DLL, AppRes.HARM_DLL, AppControl.DOOR_CNF, INJECTOR, JBA_DLL, PAST, PAST_DL1, PAST_DL2 };
+      internal static string[] UNSAFE_ROOT = new string[] { INJECTOR, JBA_DLL, PAST, PAST_DL1, PAST_DL2 };
+
       private static void Log ( object msg ) => AppControl.Instance.Log( msg );
+
+      internal static bool FoundAndDelPpmlInjector ( string codeDir ) { try {
+         var injector = Path.Combine( codeDir, PAST );
+         if ( ! File.Exists( injector ) ) return false;
+         File.Delete( injector );
+         if ( File.Exists( injector + ".orig" ) ) File.Delete( injector + ".orig" );
+         return ! File.Exists( injector );
+      } catch ( Exception ex ) { Log( ex ); return false; } }
 
       internal static bool FindLegacyInjection ( string codeDir ) => FindModnix2Injection( codeDir ) || FindPpmlInjection( codeDir );
 
