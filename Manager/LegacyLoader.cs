@@ -8,7 +8,6 @@ namespace Sheepy.Modnix.MainGUI {
    internal static class LegacyLoader {
 
       private const string PAST     = "PhoenixPointModLoaderInjector.exe";
-      private const string PAST_BK  = "PhoenixPointModLoaderInjector.exe.orig";
       private const string PAST_DL1 = "PPModLoader.dll";
       private const string PAST_DL2 = "PhoenixPointModLoader.dll";
       private const string JBA_DLL  = "JetBrains.Annotations.dll";
@@ -19,12 +18,8 @@ namespace Sheepy.Modnix.MainGUI {
 
       private static void Log ( object msg ) => AppControl.Instance.Log( msg );
 
-      internal static bool FoundAndDelPpmlInjector ( string codeDir ) { try {
-         var injector = Path.Combine( codeDir, PAST );
-         if ( ! File.Exists( injector ) ) return false;
-         File.Delete( injector );
-         if ( File.Exists( injector + ".orig" ) ) File.Delete( injector + ".orig" );
-         return ! File.Exists( injector );
+      internal static bool FoundAndRenamePpmlInjector ( string codeDir, Func<string,string,bool> renamer ) { try {
+         return File.Exists( Path.Combine( codeDir, PAST ) ) && renamer( PAST, PAST + ".orig" );
       } catch ( Exception ex ) { Log( ex ); return false; } }
 
       internal static bool FindLegacyInjection ( string codeDir ) => FindModnix2Injection( codeDir ) || FindPpmlInjection( codeDir );

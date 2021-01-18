@@ -477,7 +477,7 @@ namespace Sheepy.Modnix.MainGUI {
             if ( MigrateLegacy() )
                flags |= PromptFlag.SETUP_MOD_MOVED;
             // Disable PPML
-            if ( LegacyLoader.FoundAndDelPpmlInjector( CurrentGame.CodeDir ) )
+            if ( LegacyLoader.FoundAndRenamePpmlInjector( CurrentGame.CodeDir, CurrentGame.RenameCodeFile ) )
                flags |= PromptFlag.SETUP_PPML;
             // Cleanup - accident prevention. Old dlls at game base may override dlls in the managed folder.
             foreach ( var file in LegacyLoader.UNSAFE_ROOT )
