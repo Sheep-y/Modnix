@@ -23,7 +23,7 @@ Roadmap: https://github.com/Sheep-y/Modnix/issues/24
 * Mod: Action includes must be in same folder as the mod or a subfolder.
 * Mod: Action.OnError now properly supports "continue", "skip", and "stop".
 * Mod: Actions now support multiple (comma separated) phsaes.
-* Mod: Game version is now loaded in two stages - 3 parts at SplashMod, 4 parts before MainMod.
+* Mod: API "path" and "dir" see two new params: "assembly-csharp" and "managed".
 * Log: OS type and version are now logged.
 * Log: Flushing log no longer log reason as "null".
 * Log: Instantiation of mod classes by the Loader are now logged.

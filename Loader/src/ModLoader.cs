@@ -73,7 +73,7 @@ namespace Sheepy.Modnix {
       public static void Init () { try {
          if ( Log != null ) return;
          Setup();
-         ModScanner.BuildModList();
+         ModScanner.BuildModList(); // TODO: Split from Init and run after runtime, to eliminate the need to use Cecil to parse version.
          ModPhases.RunPhase( "SplashMod" );
          if ( ! GamePatcher.PatchPhases() )
             Log.Log( SourceLevels.Critical, "Cannot patch game with Harmony. Non-SplashMods may not be loaded." );
@@ -99,7 +99,7 @@ namespace Sheepy.Modnix {
          LoadSettings();
          var corlib = new Uri( typeof( string ).Assembly.CodeBase ).LocalPath;
          var os = new OperatingSystem( Environment.OSVersion.Platform, Environment.OSVersion.Version );
-         Log.Verbo( "{0}/{1}; .Net/{2}; mscorlib/{3} {4}", os.Platform, os.Version, Environment.Version, FileVersionInfo.GetVersionInfo( corlib ).FileVersion, corlib );
+         Log.Verbo( "{0}/{1}; .Net/{2}; mscorlib/{3}", os.Platform, os.Version, Environment.Version, FileVersionInfo.GetVersionInfo( corlib ).FileVersion );
          foreach ( var asm in AppDomain.CurrentDomain.GetAssemblies() )
             if ( ! asm.IsDynamic )
                Log.Verbo( "In Domain - {0} @ {1}", asm.FullName, asm.Location );

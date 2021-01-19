@@ -225,6 +225,8 @@ namespace Sheepy.Modnix {
                return ModLoader.LoaderPath;
             case "phoenixpoint" : case "phoenix point" : case "game" :
                return Process.GetCurrentProcess().MainModule?.FileName;
+            case "assembly-csharp" : case "managed" :
+               return GamePatcher.FindAssembly( "Assembly-CSharp" )?.Location;
             default :
                return ModLoader.GetModById( id )?.Path;
          }
@@ -232,7 +234,7 @@ namespace Sheepy.Modnix {
 
       private string GetDir ( object target ) {
          var path = GetPath( target );
-         if ( path == null || object.ReferenceEquals( path, ModLoader.ModDirectory ) ) return path;
+         if ( path == null || ReferenceEquals( path, ModLoader.ModDirectory ) ) return path;
          return System.IO.Path.GetDirectoryName( path );
       }
 
