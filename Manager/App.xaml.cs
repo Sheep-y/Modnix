@@ -460,9 +460,9 @@ namespace Sheepy.Modnix.MainGUI {
             LegacyLoader.RestoreBackup( CurrentGame.CodeDir );
             if ( LegacyLoader.FindLegacyInjection( CurrentGame.CodeDir ) )
                throw new ApplicationException( "Failed to remove legacy mod loader." );
-            foreach ( var file in LegacyLoader.LEGACY_CODE )
-               CurrentGame.DeleteCodeFile( file );
          }
+         foreach ( var file in LegacyLoader.LEGACY_CODE )
+            CurrentGame.DeleteCodeFile( file );
          // Copy loader files
          CurrentGame.WriteFile( AppRes.DOOR_DLL, AssemblyLoader.GetResourceStream( AppRes.DOOR_DLL ) );
          CurrentGame.WriteFile( AppRes.HARM_DLL, AssemblyLoader.GetResourceStream( AppRes.HARM_DLL ) );
