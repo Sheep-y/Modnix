@@ -7,6 +7,7 @@ Modnix Changelog
 * Fix: Multiple Changlog / License resources no longer prevent all documents from being displayed.
 * Fix: Unsupported Modnix 3 features are now displayed on a new line.
 * Gui: Removed leading asterisk from one-line string Contact and Url.
+* Gui: Setup and Revert now remove Modnix 3 bootloader (doorstep).
 
 # Version 2.5.5, 2021-01-12
 
