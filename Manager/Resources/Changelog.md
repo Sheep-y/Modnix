@@ -14,6 +14,7 @@ Roadmap: https://github.com/Sheep-y/Modnix/issues/24
 * Fix: Always close handles on embedded files to use less system resources.
 * Fix: Multiple mods with same Id no longer crash the Manager (regression).
 * Fix: Actions without phase are now processed correctly.
+* Fix: When an action handler returns true, the process now correctly moves on to next action.
 * Gui: Mod load order updated to match Modnix 3 phases.
 * Gui: Install/Setup/Revert will now revert PPML and legacy (injection-based) Modnix.
 * Gui: .md documents are now parsed and displayed as markdown, instead of plain text.
@@ -27,6 +28,7 @@ Roadmap: https://github.com/Sheep-y/Modnix/issues/24
 * Mod: API "path" and "dir" see two new params: "assembly-csharp" and "managed".
 * Log: OS type and version are now logged.
 * Log: Flushing log no longer log reason as "null".
+* Log: Unhandled actions are now logged as warnings.
 * Log: Instantiation of mod classes by the Loader are now logged.
 * Log: Initial assemblies are now logged, to help diagnose preloads.
 * Lib: Updated Mono Cecil to 0.11.3.

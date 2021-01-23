@@ -50,11 +50,23 @@ namespace Sheepy.Modnix {
                handler.Log().Filters.Add( modPrefix );
          }
          foreach ( var act in actions ) {
+            var handled = false;
             foreach ( var dll in ActionHandlers ) {
                var result = RunActionHandler( mod, dll, act );
-               if ( result is Exception ex ) return;
+               if ( result is bool flag ) {
+                  if ( flag ) {
+                     handled = true;
+                     break;
+                  }
+               } else if ( result is Exception ex )
+                  goto Cleanup;
+            }
+            if ( ! handled ) {
+               Func<string> stringify = () => Json.Stringify( act );
+               mod.Log().Warn( "Unhandled action: {0}", stringify );
             }
          }
+         Cleanup:
          foreach ( var dll in ActionHandlers )
             ActionMods[ dll ].Log().Filters.Remove( modPrefix );
       } catch ( Exception ex ) { mod.Log().Error( ex ); } }
