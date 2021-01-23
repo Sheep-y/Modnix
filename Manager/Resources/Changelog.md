@@ -13,6 +13,7 @@ Roadmap: https://github.com/Sheep-y/Modnix/issues/24
 * Fix: Pasting config text from Notepad no longer generate excessive blank lines.
 * Fix: Always close handles on embedded files to use less system resources.
 * Fix: Multiple mods with same Id no longer crash the Manager (regression).
+* Fix: Actions without phase are now processed correctly.
 * Gui: Mod load order updated to match Modnix 3 phases.
 * Gui: Install/Setup/Revert will now revert PPML and legacy (injection-based) Modnix.
 * Gui: .md documents are now parsed and displayed as markdown, instead of plain text.

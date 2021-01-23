@@ -39,6 +39,8 @@ namespace Sheepy.Modnix {
          if ( string.IsNullOrWhiteSpace( list ) ) return false;
          list = list.Trim().ToLowerInvariant();
          HashSet<string> parsed;
+         if ( list == val ) return true;
+         if ( ! list.Contains( ',' ) && ! list.Contains( ';' ) ) return false;
          lock ( StrLists ) {
             if ( ! StrLists.TryGetValue( list, out parsed ) ) {
                parsed = new HashSet<string>( list.Split( ListSeparator, StringSplitOptions.RemoveEmptyEntries ).Select( e => e.Trim() ) );
@@ -47,6 +49,10 @@ namespace Sheepy.Modnix {
             }
          }
          return parsed?.Contains( val ) == true;
+      }
+
+      internal static V SafeGet < K, V > ( this Dictionary< K, V > map, K key, V defVal = default ) {
+         return map.TryGetValue( key, out V val ) ? val : defVal;
       }
    }
 }

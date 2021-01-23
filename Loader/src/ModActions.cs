@@ -11,7 +11,7 @@ namespace Sheepy.Modnix {
 
    public static class ModActions {
 
-      internal const string DEFAULT_PHASE = "gamemod";
+      internal const string DEFAULT_PHASE = "Gamemod";
       private const string DEFAULT_PHASE_LOWER = "gamemod";
 
       private static DllMeta[] ActionHandlers;
@@ -61,7 +61,7 @@ namespace Sheepy.Modnix {
 
       private static ActionDef[] FilterActions ( ActionDef[] actions, string phase ) {
          phase = phase.ToLowerInvariant();
-         var result = actions.Where( e => InList( e["phase"]?.ToString(), phase ) ).ToArray();
+         var result = actions.Where( e => InList( e.SafeGet( "phase" )?.ToString() ?? DEFAULT_PHASE_LOWER, phase ) ).ToArray();
          return result.Length > 0 ? result : null;
       }
 
@@ -175,10 +175,11 @@ namespace Sheepy.Modnix {
 
       private static ActionDef AddDefAction ( ActionDef a, ActionDef defValues ) {
          a = new ActionDef( a );
-         if ( defValues == null ) return a;
-         foreach ( var e in defValues )
-            if ( ! a.ContainsKey( e.Key ) )
-               a.Add( e.Key, e.Value );
+         if ( defValues != null ) {
+            foreach ( var e in defValues )
+               if ( ! a.ContainsKey( e.Key ) )
+                  a.Add( e.Key, e.Value );
+         }
          if ( ! a.ContainsKey( "phase" ) ) a.Add( "phase", DEFAULT_PHASE_LOWER );
          else a[ "phase" ] = a[ "phase" ].ToString().Trim().ToLowerInvariant();
          return a;
