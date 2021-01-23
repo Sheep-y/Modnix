@@ -265,7 +265,7 @@ namespace Sheepy.Modnix {
          if ( param == null || ! ( param is string ) ) throw new ArgumentException( "mod_unload requires mod id as parameter" );
          var mod = ModLoader.GetModById( param?.ToString() );
          List< ModEntry > mods = null;
-         lock( ModLoader.ModsInPhase ) ModLoader.ModsInPhase.TryGetValue( "disarmmod", out mods );
+         lock ( ModLoader.ModsInPhase ) ModLoader.ModsInPhase.TryGetValue( "disarmmod", out mods );
          if ( mod == null || mods?.Contains( mod ) != true ) return null;
          lock ( ApiExtension ) {
             foreach ( var entry in ApiExtOwner.ToArray() )

@@ -65,7 +65,7 @@ namespace Sheepy.Modnix {
          } else {
             var methods = e.Methods;
             if ( methods == null ) e.Methods = methods = new Dictionary< string, HashSet< string > >();
-            if ( !methods.TryGetValue( prop, out var list ) )
+            if ( ! methods.TryGetValue( prop, out var list ) )
                methods[ prop ] = list = new HashSet<string>();
             list.Add( txt );
          }

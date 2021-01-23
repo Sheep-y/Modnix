@@ -89,8 +89,7 @@ namespace Sheepy.Modnix {
          var found = new HashSet< string >();
          var hasDefault = false;
          foreach ( var act in actions ) {
-            act.TryGetValue( "phase", out object phaseObj );
-            var txt = phaseObj?.ToString()?.ToLowerInvariant();
+            var txt = act.SafeGet( "phase" )?.ToString()?.ToLowerInvariant();
             if ( ! string.IsNullOrWhiteSpace( txt ) ) {
                foreach ( var p in txt.Split( ',' ) )
                   if ( ! string.IsNullOrWhiteSpace( p ) )
@@ -173,8 +172,7 @@ namespace Sheepy.Modnix {
       }
 
       private static string GetText ( this ActionDef act, string key, string fallback = null ) {
-         if ( act.TryGetValue( key, out object o ) && o is string txt ) return txt;
-         return fallback;
+         return act.SafeGet( key ) is string txt ? txt : fallback;
       }
 
       private static void MergeDefAction ( ref ActionDef defValues, ActionDef a ) {

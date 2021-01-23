@@ -113,7 +113,7 @@ namespace Sheepy.Modnix {
             "Calling {1}.{2}({3}) in {0}", dll.Location, typeName, methodName, argTxt );
          object target = null;
          if ( ! func.IsStatic ) lock ( ModInstances ) {
-            if ( ! ModInstances.TryGetValue( type, out WeakReference<object> wref ) || ! wref.TryGetTarget( out target ) ) {
+            if ( ModInstances.SafeGet( type )?.TryGetTarget( out target ) != true ) {
                log.Verbo( "Instantiating {0} {1}", type, ModInstances.ContainsKey( type ) ? "after gc" : "1st time" );
                ModInstances[ type ] = new WeakReference<object>( target = Activator.CreateInstance( type ) );
             }

@@ -38,10 +38,7 @@ namespace Sheepy.Modnix {
          Log.Info( "Assigned {0} mods to {1} phases", countMod, ModsInPhase.Count );
       }
 
-      internal static ModSettings GetSettings ( ModEntry mod ) {
-         var settings = ModLoader.Settings.Mods;
-         return settings != null && settings.TryGetValue( mod.Key, out ModSettings conf ) ? conf : null;
-      }
+      internal static ModSettings GetSettings ( ModEntry mod ) => ModLoader.Settings.Mods?.SafeGet( mod.Key );
 
       private static void ApplyUserOverride () {
          if ( ModLoader.Settings.Mods == null ) return;
