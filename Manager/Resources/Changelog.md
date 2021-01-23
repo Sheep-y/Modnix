@@ -36,6 +36,7 @@ Roadmap: https://github.com/Sheep-y/Modnix/issues/24
 * Fix: Contact and Url that are not proper uri, are now displayed correctly and no longer blank the mod info.
 * Fix: Multiple Changlog / License resources no longer prevent all documents from being displayed.
 * Fix: Unsupported Modnix 3 features are now displayed on a new line.
+* Gui: Log filter now cascades from first line to following lines, e.g. stacktrace.
 * Gui: Removed leading asterisk from one-line string Contact and Url.
 * Gui: Setup and Revert now remove Modnix 3 bootloader (doorstep).
 

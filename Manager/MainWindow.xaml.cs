@@ -913,7 +913,14 @@ namespace Sheepy.Modnix.MainGUI {
       private string ApplyLogFilter ( string log ) {
          var filter = TextLogFilter.Text;
          if ( string.IsNullOrWhiteSpace( filter ) ) return log;
-         return string.Join( "\r", Linebreaks.Split( log ).Where( e => e.IndexOf( filter, StringComparison.OrdinalIgnoreCase ) >= 0 ) );
+         bool matching = false;
+         var buf = new StringBuilder();
+         foreach ( var line in Linebreaks.Split( log ) ) {
+            if ( line.Length >= 15 && line[2] == ':' && line[5] == ':' && ( line[8] == '.' || line[8] == ' ' ) ) // "hh:mm:ss levl ?"
+               matching = line.IndexOf( filter, StringComparison.OrdinalIgnoreCase ) >= 0;
+            if ( matching ) buf.Append( line ).Append( '\r' );
+         }
+         return buf.ToString();
       }
 
       private void CheckLogRefresh () { this.Dispatch( () => {
