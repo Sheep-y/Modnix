@@ -557,32 +557,39 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       private void BuildFileList ( ModMeta meta, InlineCollection list ) {
-         Func< string, string > fileName = System.IO.Path.GetFileName;
          list.AddMulti( "Path\r",
             new Run( Dir + System.IO.Path.DirectorySeparatorChar ){ Foreground = Brushes.Blue }.Linkify( () => AppControl.Explore( Path ) ),
             "\r\rKnown File(s)" );
-         var self = fileName( Path );
-         var selfRun = new Run( "\r" + self );
-         list.Add( selfRun );
+
+         var fileList = new List< KeyValuePair< string, List< string > > >();
+         AddToFileList( fileList, Path, "mod_info" );
          if ( meta.Preloads != null )
             foreach ( var e in meta.Preloads )
-               list.Add( "\r" + e + " [Preload]" );
+               AddToFileList( fileList, e, "Preload" );
          if ( meta.Dlls != null )
-            foreach ( var e in meta.Dlls ) {
-               var path = fileName( e.Path );
-               var txt = "\r" + path + " [" + string.Join( ", ", e.Methods.Keys ) + "]";
-               if ( path == self ) selfRun.Text = txt;
-               else list.Add( txt );
-            }
-         if ( Mod.HasConfig ) {
-            var config = Mod.CheckConfigFile();
-            if ( config != null ) list.Add( $"\r{fileName(config)} [Config]" );
-         }
-         if ( Docs != null ) {
+            foreach ( var e in meta.Dlls )
+               AddToFileList( fileList, e.Path, string.Join( ", ", e.Methods.Keys ) );
+         if ( Mod.HasConfig )
+            AddToFileList( fileList, Mod.CheckConfigFile(), "Config" );
+         if ( Docs != null )
             foreach ( var row in Docs )
                if ( row.Value != "embedded" )
-                  list.Add( "\r" + row.Value + " [Doc]" );
+                  AddToFileList( fileList, row.Value, "Doc" );
+
+         foreach ( var file in fileList )
+            list.Add( "\r" + file.Key + " [" + string.Join( ", ", file.Value.ToArray() ) + "]" );
+      }
+
+      private void AddToFileList ( List< KeyValuePair< string, List< string > > > list, string path, string tag ) {
+         if ( string.IsNullOrEmpty( path ) ) return;
+         if ( path.StartsWith( Dir ) ) path = path.Substring( Dir.Length + 1 );
+         var row = list.Find( e => e.Key == path );
+         if ( row.Key == null ) {
+            list.Add( new KeyValuePair<string, List<string>>( path, new List<string>{ tag } ) );
+            return;
          }
+         if ( ! row.Value.Contains( tag ) )
+            row.Value.Add( tag );
       }
 
       private Block BuildCopyright () {
