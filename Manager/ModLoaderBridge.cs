@@ -569,6 +569,9 @@ namespace Sheepy.Modnix.MainGUI {
          if ( meta.Dlls != null )
             foreach ( var e in meta.Dlls )
                AddToFileList( fileList, e.Path, string.Join( ", ", e.Methods.Keys ) );
+         if ( Mod.ActionFiles != null )
+            foreach ( var e in Mod.ActionFiles )
+               AddToFileList( fileList, e, "Actions" );
          if ( Mod.HasConfig )
             AddToFileList( fileList, Mod.CheckConfigFile(), "Config" );
          if ( Docs != null )

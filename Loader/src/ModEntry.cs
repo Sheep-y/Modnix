@@ -65,6 +65,7 @@ namespace Sheepy.Modnix {
       public string Dir => System.IO.Path.GetDirectoryName( Path );
       internal DateTime? LastModified => Path == null ? (DateTime?) null : new FileInfo( Path ).LastWriteTime;
       internal List< Assembly > ModAssemblies; // Use List insead of HashSet to preserve order.
+      public List< string > ActionFiles { get; internal set; }
 
       private bool _IsUnloaded;
       public bool IsDisarmed { get { lock ( this ) return _IsUnloaded; } private set => _IsUnloaded = value; }

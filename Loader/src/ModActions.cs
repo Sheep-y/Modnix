@@ -105,7 +105,8 @@ namespace Sheepy.Modnix {
       internal static ActionDef[] Resolve ( ModEntry mod, ActionDef[] list ) { try {
          ActionDef defValues = null;
          var defCount = 0;
-         var result = PreprocessActions( mod, list, ref defValues, ref defCount, 0 );
+         AddToModActionFiles( mod, mod.Path );
+         var result = PreprocessActions( mod, list, mod.Dir, ref defValues, ref defCount, 0 );
          if ( defCount > 0 ) mod.Log().Verbo( "Merged {0} default actions.", defCount );
          return result;
       } catch ( Exception ex ) {
@@ -113,11 +114,11 @@ namespace Sheepy.Modnix {
          return new ActionDef[0];
       } }
 
-      private static ActionDef[] PreprocessActions ( ModEntry mod, ActionDef[] list, ref ActionDef defValues, ref int defCount, int level ) {
-         var actions = new List<ActionDef>();
+      private static ActionDef[] PreprocessActions ( ModEntry mod, ActionDef[] list, string basedir, ref ActionDef defValues, ref int defCount, int level ) {
+         var actions = new List< ActionDef >();
          foreach ( var a in list ) {
             if ( a.GetText( "include" ) is string file )
-               actions.AddRange( LoadInclude( mod, file, ref defValues, ref defCount, level + 1 ) );
+               actions.AddRange( LoadInclude( mod, basedir, file, ref defValues, ref defCount, level + 1 ) );
             else if ( string.Equals( a.GetText( "action" ), "default", StringComparison.InvariantCultureIgnoreCase ) ) {
                MergeDefAction( ref defValues, a );
                defCount++;
@@ -127,20 +128,28 @@ namespace Sheepy.Modnix {
          return actions.Count > 0 ? actions.ToArray() : null;
       }
 
-      private static ActionDef[] LoadInclude ( ModEntry mod, string path, ref ActionDef defValues, ref int defCount, int level ) {
+      private static ActionDef[] LoadInclude ( ModEntry mod, string basedir, string path, ref ActionDef defValues, ref int defCount, int level ) {
+         if ( level > 9 ) throw new ApplicationException( "Action includes too deep: " + path );
          if ( ! IsSafePath( path ) ) {
             mod.Log().Error( "Invalid path: {0}", path );
             return new ActionDef[0];
          }
-         if ( level > 9 ) throw new ApplicationException( "Action includes too deep: " + path );
-         // todo: refactor mod path
-         var actions = Json.Parse<ActionDef[]>( ReadText( Path.Combine( mod.Dir, path ) ) );
-         ModMeta.NormDictArray( ref actions );
+         string fullpath = Path.Combine( basedir, path );
          try {
-            return PreprocessActions( mod, actions, ref defValues, ref defCount, level );
-         } catch ( ApplicationException ex ) {
+            AddToModActionFiles( mod, fullpath );
+            var actions = Json.Parse< ActionDef[] >( ReadText( fullpath ) );
+            ModMeta.NormDictArray( ref actions );
+            return PreprocessActions( mod, actions, Path.GetDirectoryName( fullpath ), ref defValues, ref defCount, level );
+         } catch ( Exception ex ) {
+            mod.ActionFiles?.Remove( fullpath );
+            if ( mod.ActionFiles?.Count == 0 ) mod.ActionFiles = null;
             throw new ApplicationException( "Error when including " + path, ex );
          }
+      }
+
+      private static void AddToModActionFiles ( ModEntry mod, string file ) {
+         if ( mod.ActionFiles == null ) mod.ActionFiles = new List< string >{ file };
+         else mod.ActionFiles.Add( file );
       }
 
       private static object RunActionHandler ( ModEntry mod, DllMeta dll, ActionDef act ) { try {
