@@ -104,26 +104,30 @@ namespace Sheepy.Modnix {
 
       internal static ActionDef[] Resolve ( ModEntry mod, ActionDef[] list ) { try {
          ActionDef defValues = null;
-         return PreprocessActions( mod, list, ref defValues, 0 );
+         var defCount = 0;
+         var result = PreprocessActions( mod, list, ref defValues, ref defCount, 0 );
+         if ( defCount > 0 ) mod.Log().Verbo( "Merged {0} default actions.", defCount );
+         return result;
       } catch ( Exception ex ) {
          mod.Log().Error( ex );
          return new ActionDef[0];
       } }
 
-      private static ActionDef[] PreprocessActions ( ModEntry mod, ActionDef[] list, ref ActionDef defValues, int level ) {
+      private static ActionDef[] PreprocessActions ( ModEntry mod, ActionDef[] list, ref ActionDef defValues, ref int defCount, int level ) {
          var actions = new List<ActionDef>();
          foreach ( var a in list ) {
             if ( a.GetText( "include" ) is string file )
-               actions.AddRange( LoadInclude( mod, file, ref defValues, level + 1 ) );
-            else if ( string.Equals( a.GetText( "action" ), "default", StringComparison.InvariantCultureIgnoreCase ) )
+               actions.AddRange( LoadInclude( mod, file, ref defValues, ref defCount, level + 1 ) );
+            else if ( string.Equals( a.GetText( "action" ), "default", StringComparison.InvariantCultureIgnoreCase ) ) {
                MergeDefAction( ref defValues, a );
-            else
+               defCount++;
+            } else
                actions.Add( AddDefAction( a, defValues ) );
          }
          return actions.Count > 0 ? actions.ToArray() : null;
       }
 
-      private static ActionDef[] LoadInclude ( ModEntry mod, string path, ref ActionDef defValues, int level ) {
+      private static ActionDef[] LoadInclude ( ModEntry mod, string path, ref ActionDef defValues, ref int defCount, int level ) {
          if ( ! IsSafePath( path ) ) {
             mod.Log().Error( "Invalid path: {0}", path );
             return new ActionDef[0];
@@ -133,7 +137,7 @@ namespace Sheepy.Modnix {
          var actions = Json.Parse<ActionDef[]>( ReadText( Path.Combine( mod.Dir, path ) ) );
          ModMeta.NormDictArray( ref actions );
          try {
-            return PreprocessActions( mod, actions, ref defValues, level );
+            return PreprocessActions( mod, actions, ref defValues, ref defCount, level );
          } catch ( ApplicationException ex ) {
             throw new ApplicationException( "Error when including " + path, ex );
          }

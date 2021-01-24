@@ -10,8 +10,8 @@ namespace Sheepy.Modnix {
    public static class ModResolver {
       private static Logger Log => ModLoader.Log;
 
-      private static List<ModEntry> EnabledMods => ModLoader.EnabledMods;
-      private static Dictionary<string,List<ModEntry>> ModsInPhase => ModLoader.ModsInPhase;
+      private static List< ModEntry > EnabledMods => ModLoader.EnabledMods;
+      private static Dictionary< string, List< ModEntry > > ModsInPhase => ModLoader.ModsInPhase;
 
       #region Resolving
       private static bool ResolveModAgain;
@@ -191,13 +191,8 @@ namespace Sheepy.Modnix {
          }
          ref var actions = ref mod.Metadata.Actions;
          if ( actions != null ) {
-            var origLen = actions.Length;
-            actions = ModActions.Resolve( mod, actions );
+            mod.Metadata.Actions = actions = ModActions.Resolve( mod, actions );
             if ( actions == null ) return assigned;
-            if ( actions.Length < origLen ) {
-               mod.Metadata.Actions = actions;
-               mod.Log().Verbo( "Merged {0} default actions.", origLen - actions.Length );
-            }
             if ( ModsInPhase.ContainsKey( "actionmod" ) )
                foreach ( var phase in ModActions.FindPhases( actions ) )
                   AddModToPhase( mod, phase, ref assigned );
