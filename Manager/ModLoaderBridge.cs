@@ -137,8 +137,13 @@ namespace Sheepy.Modnix.MainGUI {
       internal void DeleteMod ( ModInfo mod ) {
          var path = mod.Dir;
          if ( path == ModLoader.ModDirectory ) {
-            App.Log( $"Deleting {mod.Path}" );
-            File.Delete( mod.Path );
+            App.Log( $"Deleting root mod {mod.Path}" );
+            foreach ( var record in ( mod as GridModItem ).GetFileList() ) {
+               var file = Path.IsPathRooted( record.Key ) ? record.Key : Path.Combine( mod.Dir, record.Key );
+               if ( ! File.Exists( file ) || IsConfig( file ) ) continue;
+               App.Log( $"Deleting {file}" );
+               File.Delete( file );
+            }
             return;
          }
          RecurDelete( path );
@@ -147,7 +152,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void RecurDelete ( string path ) {
          foreach ( var file in Directory.EnumerateFiles( path ) ) {
-            if ( Path.GetExtension( file ).Equals( ".conf", StringComparison.OrdinalIgnoreCase ) ) continue;
+            if ( IsConfig( file ) ) continue;
             App.Log( $"Deleting {file}" );
             File.Delete( file );
          }
@@ -158,6 +163,8 @@ namespace Sheepy.Modnix.MainGUI {
             Directory.Delete( path );
          }
       }
+
+      private static bool IsConfig ( string path ) => Path.GetExtension( path ).Equals( ".conf", StringComparison.OrdinalIgnoreCase );
 
       private void RemoveEmptyFolders ( string path ) {
          path = Path.GetDirectoryName( path );
@@ -566,7 +573,8 @@ namespace Sheepy.Modnix.MainGUI {
             list.Add( "\r" + file.Key + " [" + string.Join( ", ", file.Value.ToArray() ) + "]" );
       }
 
-      internal List< KeyValuePair< string, List< string > > > GetFileList ( ModMeta meta ) {
+      internal List< KeyValuePair< string, List< string > > > GetFileList ( ModMeta meta = null ) {
+         if ( meta == null ) meta = Mod.Metadata;
          var fileList = new List< KeyValuePair< string, List< string > > >();
          AddToFileList( fileList, Path, "mod_info" );
          if ( meta.Preloads != null )

@@ -59,7 +59,7 @@ namespace Sheepy.Modnix {
       private static DllMeta AssignDllMetaProp ( DllMeta e, string prop, object val ) {
          prop = prop.Trim();
          var txt = val.ToString().Trim();
-         if ( prop.Length <= 0 || txt.Length <= 0 ) return e;
+         if ( prop.Length == 0 || txt.Length == 0 ) return e;
          if ( prop.Equals( "path", StringComparison.OrdinalIgnoreCase ) ) {
             e.Path = txt;
          } else {
