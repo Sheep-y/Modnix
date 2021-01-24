@@ -166,7 +166,7 @@ namespace Sheepy.Modnix.MainGUI {
          ButtonRefreshMod.IsEnabled = Directory.Exists( App.ModFolder ) && ! SharedGui.IsAppWorking;
 
          ButtonModOpenModDir.IsEnabled = CurrentMod != null;
-         ButtonModDelete.IsEnabled = SharedGui.CanModify && CurrentMod != null && ! SelectedMods.Any( e => e.Is( ModQuery.IS_CHILD ) );
+         ButtonModDelete.IsEnabled = SharedGui.CanModify && CurrentMod != null && SelectedMods.Any( e => ! e.Is( ModQuery.IS_CHILD ) );
          var icon = "uncheck";
          if ( IsDisableButton ) {
             icon = "check";
@@ -688,7 +688,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void ButtonModDelete_Click ( object sender, RoutedEventArgs evt ) {
          if ( AbortByCheckSave() ) return;
-         var mods = GridModList.SelectedItems.OfType<ModInfo>();
+         var mods = GridModList.SelectedItems.OfType<ModInfo>().Where( e => ! e.Is( ModQuery.IS_CHILD ) );
          var reset = mods.Where( e => e.Is( ModQuery.HAS_CONFIG_FILE ) ).ToList();
          var msg = "\r\r" + string.Join( "\r", mods.Select( e => e.Name + ( e.Is( ModQuery.HAS_CONFIG_FILE ) ? " (Delete config?)" : "" ) ) );
          if ( reset.Count > 0 ) {

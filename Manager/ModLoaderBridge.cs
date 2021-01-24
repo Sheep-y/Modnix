@@ -197,6 +197,8 @@ namespace Sheepy.Modnix.MainGUI {
                return Mod.Disabled && Settings?.Disabled != true;
             case ModQuery.IS_FOLDER :
                return Dir != AppControl.Instance.ModFolder && Directory.EnumerateFileSystemEntries( Dir ).Count() > 1;
+            case ModQuery.IS_CHILD :
+               return Mod.GetNotices().Any( e => e.Message?.ToString() == "parent" );
             case ModQuery.ERROR :
                return Mod.GetNotices().Any( e => e.Level == TraceEventType.Error || e.Level == TraceEventType.Critical );
             case ModQuery.WARNING :
@@ -560,7 +562,11 @@ namespace Sheepy.Modnix.MainGUI {
          list.AddMulti( "Path\r",
             new Run( Dir + System.IO.Path.DirectorySeparatorChar ){ Foreground = Brushes.Blue }.Linkify( () => AppControl.Explore( Path ) ),
             "\r\rKnown File(s)" );
+         foreach ( var file in GetFileList( meta ) )
+            list.Add( "\r" + file.Key + " [" + string.Join( ", ", file.Value.ToArray() ) + "]" );
+      }
 
+      internal List< KeyValuePair< string, List< string > > > GetFileList ( ModMeta meta ) {
          var fileList = new List< KeyValuePair< string, List< string > > >();
          AddToFileList( fileList, Path, "mod_info" );
          if ( meta.Preloads != null )
@@ -574,13 +580,11 @@ namespace Sheepy.Modnix.MainGUI {
                AddToFileList( fileList, e, "Actions" );
          if ( Mod.HasConfig )
             AddToFileList( fileList, Mod.CheckConfigFile(), "Config" );
-         if ( Docs != null )
+         if ( Docs != null && Dir != ModLoader.ModDirectory )
             foreach ( var row in Docs )
                if ( row.Value != "embedded" )
                   AddToFileList( fileList, row.Value, "Doc" );
-
-         foreach ( var file in fileList )
-            list.Add( "\r" + file.Key + " [" + string.Join( ", ", file.Value.ToArray() ) + "]" );
+         return fileList;
       }
 
       private void AddToFileList ( List< KeyValuePair< string, List< string > > > list, string path, string tag ) {
