@@ -1,12 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Windows;
 using System.Windows.Documents;
-using System.Windows.Input;
-using static System.StringComparison;
 
 namespace Sheepy.Modnix.MainGUI {
 
@@ -183,45 +178,5 @@ namespace Sheepy.Modnix.MainGUI {
       internal static Action Dispatcher ( this Window win, Action task ) => () => win.Dispatch( task );
 
       internal static bool Has ( this PromptFlag haysack, PromptFlag needle ) => ( haysack & needle ) == needle;
-   }
-
-   public static class WpfHelper {
-      public static string Lf2Cr ( string text ) => text?.Replace( "\r", "" ).Replace( '\n', '\r' );
-      public static StringBuilder Lf2Cr ( StringBuilder text ) => text?.Replace( "\r", "" ).Replace( '\n', '\r' );
-
-      public static T Linkify < T > ( this T elem, Action onClick ) where T : Inline {
-         elem.PreviewMouseDown += ( a, b ) => onClick();
-         elem.MouseEnter += ( a, b ) => elem.TextDecorations.Add( TextDecorations.Underline );
-         elem.MouseLeave += ( a, b ) => elem.TextDecorations.Clear();
-         elem.Cursor = Cursors.Hand;
-         return elem;
-      }
-
-      public static TextRange TextRange ( this FlowDocument doc ) => new TextRange( doc.ContentStart, doc.ContentEnd );
-
-      public static void AddMulti ( this InlineCollection inlines, params object[] elements ) {
-         foreach ( var e in elements )
-            if ( e is string txt ) inlines.Add( txt );
-            else if ( e is Inline i ) inlines.Add( i );
-      }
-
-      public static void Replace ( this FlowDocument doc, params Block[] blocks ) => Replace( doc, (IEnumerable<Block>) blocks );
-      public static void Replace ( this FlowDocument doc, IEnumerable< Block > blocks ) {
-         var body = doc.Blocks;
-         body.Clear();
-         foreach ( var e in blocks )
-            if ( e != null )
-               body.Add( e );
-      }
-
-      public static Paragraph P ( params Inline[] inlines ) => P( (IEnumerable<Inline>) inlines );
-      public static Paragraph P ( IEnumerable< Inline > inlines ) {
-         var result = new Paragraph();
-         var body = result.Inlines;
-         foreach ( var e in inlines )
-            if ( e != null )
-               body.Add( e );
-         return result;
-      }
    }
 }

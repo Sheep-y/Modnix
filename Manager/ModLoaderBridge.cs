@@ -1,5 +1,4 @@
-﻿using Markdig;
-using Sheepy.Logging;
+﻿using Sheepy.Logging;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -385,77 +384,13 @@ namespace Sheepy.Modnix.MainGUI {
             return;
          } catch ( ArgumentException ex ) { Log( ex ); }
          if ( ext?.Equals( ".md", StringComparison.OrdinalIgnoreCase ) == true ) try {
-            var tree = Markdown.Parse( text, new MarkdownPipelineBuilder().UseAutoLinks().Build() );
             doc.Blocks.Clear();
-            foreach ( var block in tree )
-               doc.Blocks.Add( BuildBlock( block ) );
+            foreach ( var block in MarkdigConverter.Parse( text ) )
+               doc.Blocks.Add( block );
             return;
          } catch ( Exception ex ) { Log( ex ); }
          doc.TextRange().Text = WpfHelper.Lf2Cr( text );
       } catch ( SystemException ex ) { doc.TextRange().Text = ex.ToString(); } }
-
-      private static Block BuildBlock ( Markdig.Syntax.Block block ) {
-         //return new Paragraph( new Run( block.GetType().FullName ) );
-         if ( block is Markdig.Syntax.HeadingBlock h ) {
-            var result = BuildInline( h.Inline );
-            result.FontSize = 19 - h.Level;
-            result.FontWeight = FontWeights.Bold;
-            return new Paragraph( result );
-         } else if ( block is Markdig.Syntax.ParagraphBlock p ) {
-            return WpfHelper.P( p.Inline.Select( BuildInline ) );
-         } else if ( block is Markdig.Syntax.ListBlock l ) {
-            var result = new List();
-            foreach ( var item in l ) {
-               var li = new ListItem();
-               li.Blocks.Add( BuildBlock( item ) );
-               result.ListItems.Add( li );
-            }
-            result.MarkerStyle = l.IsOrdered ? TextMarkerStyle.Decimal : TextMarkerStyle.Disc;
-            return result;
-         } else if ( block is Markdig.Syntax.CodeBlock code ) {
-            var result = new Paragraph();
-            foreach ( var e in code.Lines ) result.Inlines.Add( new Run( e.ToString() + "\n" ) );
-            result.FontFamily = new FontFamily( "Consolas, Courier New, Monospace" );
-            return result;
-         } else if ( block is Markdig.Syntax.ContainerBlock blk ) {
-            var result = new Section();
-            foreach ( var e in blk ) result.Blocks.Add( BuildBlock( e ) );
-            return result;
-         } else
-            return new Paragraph( new Run( "[" + block.ToString() + "]" ) );
-      }
-
-      private static Inline BuildInline ( Markdig.Syntax.Inlines.Inline inline ) {
-         if ( inline is Markdig.Syntax.Inlines.LiteralInline str ) {
-            return new Run( str.Content.ToString() );
-         } else if ( inline is Markdig.Syntax.Inlines.LinkInline link ) {
-            var lnk = new Hyperlink();
-            lnk.Inlines.AddRange( link.Select( BuildInline ) );
-            lnk.NavigateUri = new Uri( link.Url );
-            return lnk;
-         } else if ( inline is Markdig.Syntax.Inlines.CodeInline code ) {
-            var result = new Run( code.Content );
-            result.FontFamily = new FontFamily( "Consolas, Courier New, Monospace" );
-            return result;
-         } else if ( inline is Markdig.Syntax.Inlines.ContainerInline grp ) {
-            var result = new Span();
-            result.Inlines.AddRange( grp.Select( BuildInline ) );
-            if ( inline is Markdig.Syntax.Inlines.EmphasisInline em ) {
-               if ( em.DelimiterCount >= 2 ) result.FontWeight = FontWeights.Bold;
-               if ( em.DelimiterCount % 2 > 0 ) result.FontStyle = FontStyles.Italic;
-            }
-            return result;
-         //} else if ( inline is Markdig.Extensions.TaskLists.TaskList task ) {
-         //   return new Run( task.Checked ? "☑" : "☐" ); // Inconsistent glyph size; disabled from MarkdownPipelineBuilder
-         } else if ( inline is Markdig.Syntax.Inlines.LineBreakInline ) {
-            return new LineBreak();
-         } else if ( inline is Markdig.Syntax.Inlines.HtmlInline html ) {
-            if ( html.Tag.Equals( "<br>", StringComparison.InvariantCultureIgnoreCase ) ||
-                 html.Tag.Equals( "<br/>", StringComparison.InvariantCultureIgnoreCase ) ) return new LineBreak();
-            return new Run( "<" + html.Tag + ">" );
-         } else
-            return new Run( "{" + inline.ToString() + "}" );
-      }
 
       private void BuildBasicDesc ( ModMeta meta, InlineCollection list ) {
          /* Experimental image code. Online image does not work, sadly.
