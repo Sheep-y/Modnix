@@ -12,7 +12,7 @@ namespace Sheepy.Modnix {
          new string[]{ "SplashMod", "ActionMod", "DisarmMod", // Do not start phases with P.
             "Init", "Initialize", "MainMod",                  // P are fast skipped as Prefix/Postfix
             "HomeMod", "HomeOnShow", "HomeOnHide",
-            "GameMod", "GameOnShow", 
+            "GameMod", "GameOnShow",
             "GeoscapeMod", "GeoscapeOnShow", "GeoscapeOnHide",
             "TacticalMod", "TacticalOnShow", "TacticalOnHide" } );
 

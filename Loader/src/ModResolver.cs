@@ -193,11 +193,17 @@ namespace Sheepy.Modnix {
          if ( actions != null ) {
             mod.Metadata.Actions = actions = ModActions.Resolve( mod, actions );
             if ( actions == null ) return assigned;
-            if ( ModsInPhase.ContainsKey( "actionmod" ) )
-               foreach ( var phase in ModActions.FindPhases( actions ) )
-                  AddModToPhase( mod, phase, ref assigned );
-            else if ( ! assigned )
+            if ( ModsInPhase.ContainsKey( "actionmod" ) ) {
+               var phases = ModActions.FindPhases( actions );
+               if ( phases != null ) {
+                  assigned = true;
+                  foreach ( var phase in phases )
+                     AddModToPhase( mod, phase, ref assigned );
+               }
+            } else if ( ! assigned )
                DisableAndRemoveMod( mod, "no_actionmod", "no action handler mods." );
+            else
+               Log.Warn( "Actions disabled: no action handler mods." );
          }
          return assigned;
       } catch ( Exception ex ) { mod.Log().Warn( ex ); return false; } }

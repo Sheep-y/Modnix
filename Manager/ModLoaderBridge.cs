@@ -451,7 +451,7 @@ namespace Sheepy.Modnix.MainGUI {
             case "no_dependent" :
                txt.Text = "\rDisabled: No other mods require this library."; break;
             case "no_phase" :
-               txt.Text = "\rDisabled: No mod phase found."; break;
+               txt.Text = "\rDisabled: No mod phase(s) found."; break;
             case "parent" :
                txt.Text = string.Format( "\rPart of {0}", notice.Args[0] ); break;
             case "require" :

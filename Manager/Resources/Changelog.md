@@ -13,7 +13,7 @@ Roadmap: https://github.com/Sheep-y/Modnix/issues/24
 * Fix: Pasting config text from Notepad no longer generate excessive blank lines.
 * Fix: Always close handles on embedded files to use less system resources.
 * Fix: Multiple mods with same Id no longer crash the Manager (regression).
-* Fix: Actions without phase are now processed correctly.
+* Fix: Actions without phase or with incorrect phases are now processed correctly.
 * Fix: When an action handler returns true, the process now correctly moves on to next action.
 * Fix: Deleting root mods now also remove all associated files, such as actions.
 * Gui: .json mods may be added.  If a .js or .json mod is an array, it is put in the PPDefModifier folder.
@@ -31,7 +31,7 @@ Roadmap: https://github.com/Sheep-y/Modnix/issues/24
 * Mod: API "path" and "dir" see two new params: "assembly-csharp" and "managed".
 * Log: OS type and version are now logged.
 * Log: Flushing log no longer log reason as "null".
-* Log: Unhandled actions are now logged as warnings.
+* Log: Actions without handler (both at parse and at execution) are now logged as warnings.
 * Log: Instantiation of mod classes by the Loader are now logged.
 * Log: Initial assemblies are now logged, to help diagnose preloads.
 * Lib: Updated Mono Cecil to 0.11.3.
