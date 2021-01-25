@@ -30,7 +30,7 @@ and [Troubleshooting](https://github.com/Sheep-y/Modnix/wiki/Troubleshooting-Mod
 3. Mod are placed in their own folder, with optional round-trip json config managed by Modnix.
 4. Declarative mod dependencies, conflicts, and avoidances.  Opt-in pre-splash loading and lazy loading.
 5. Extensible API for mod config, unified background logger, query game versions, get mod list etc.
-6. (Modnix 3) Plain-text scripting mods supported by [Scripting Library](https://www.nexusmods.com/phoenixpoint/mods/49).
+6. (Modnix 3) Plain-text action mods supported by action handlers, such as PPDefModifier (v1.7 and up).
 
 See the [Wiki](https://github.com/Sheep-y/Modnix/wiki#wiki-wrapper) for mod specs.
 
@@ -42,6 +42,6 @@ You can try to get support on the #mods channel on [official Discord](https://di
 
 ## License
 
-The Injector and Mod Loader are released to the public domain.
+The Mod Loader and Demo Mods are released to the public domain.
 The Manager and most libraries are licensed under MIT,
 except 7-Zip which is license under LGPL.

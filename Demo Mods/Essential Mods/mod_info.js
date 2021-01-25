@@ -1,16 +1,17 @@
 ﻿{
-   Id: "Zy.Core", // Id is still required for management purpose
-   Name: "Essential Mods",
+   Id : "Zy.Core", // Id is still required for management purpose
+   Name : "Essential Mods",
    Version : "2021.01.25",
    Author : "Sheepy",
-   Mods: [
+   Mods : [
       "BlockTelemetry.dll",
       "Subfolder/SkipIntro.dll",
    ],
-   Requires: [{ Id: "Modnix", Min: "3.0.2021.0120" }],
-   Contacts: { Discord : "https://discord.com/channels/322630986431201283/656933530181435392" },
-   Url: { "Modnix Docs": "https://github.com/Sheep-y/Modnix/wiki/", },
-   Description: "
+   Requires : [{ Id: "Modnix", Min: "3.0.2021.0120" }],
+   Contacts : { Discord : "https://discord.com/channels/322630986431201283/656933530181435392" },
+   Url : { "Modnix Docs": "https://github.com/Sheep-y/Modnix/wiki/", },
+   Description :
+"
 This Mod Pack contains two mods: BlockTelemetry and SkipIntro.
 SkipIntro is pre-configured to skip new game intro.
 
@@ -23,4 +24,5 @@ Put some mods in a folder, copy this mod_info.js, open it in Notepad, update mod
 Then simply refresh in Modnix to see and configure the mods.
 When they are ready for release, just zip the folder.
 ",
+   Copyright: "Public Domain",
 }

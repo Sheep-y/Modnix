@@ -35,4 +35,5 @@ The 'Dump Data' mod is designed to put these info in the reach of non-coders.
 
 Good luck!
 ",
+   Copyright: "Public Domain",
 }
