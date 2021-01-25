@@ -52,6 +52,8 @@ namespace Sheepy.Modnix.MainGUI {
       internal const string APP_EXT  = ".exe";
       internal const string GAME_EXE = "PhoenixPointWin64.exe";
       internal const string GAME_DLL = "Assembly-CSharp.dll";
+      internal const string DOOR_DLL = "winhttp.dll";
+      internal const string DOOR_CNF = "doorstop_config.ini";
       internal const string JBA_DLL  = "JetBrains.Annotations.dll";
       internal const string PAST     = "PhoenixPointModLoaderInjector.exe";
       internal const string PAST_BK  = "PhoenixPointModLoaderInjector.exe.orig";
@@ -62,7 +64,7 @@ namespace Sheepy.Modnix.MainGUI {
       internal const string GAME_LOG = "Console.log";
       internal const string EPIC_DIR = ".egstore";
 
-      private string[] UNSAFE_DLL = new string[] { AppRes.LOADER, AppRes.INJECTOR, AppRes.CECI_DLL, AppRes.HARM_DLL, JBA_DLL, PAST, PAST_DL1, PAST_DL2 };
+      private string[] UNSAFE_DLL = new string[] { AppRes.LOADER, AppRes.INJECTOR, AppRes.CECI_DLL, AppRes.HARM_DLL, JBA_DLL, PAST, PAST_DL1, PAST_DL2, DOOR_DLL, DOOR_CNF };
       internal readonly string ModFolder = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.MyDocuments ), MOD_PATH );
 
       private string _ModGuiExe;

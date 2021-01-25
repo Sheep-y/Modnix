@@ -1,5 +1,16 @@
 Modnix Changelog
 
+# Version 2.5.6, 2021-01-25
+
+* New: Identify and disable Modnix 3 mod packs.
+* Fix: Contact and Url that are not proper uri, are now displayed correctly and no longer blank the mod info.
+* Fix: Multiple Changlog / License resources no longer prevent all documents from being displayed.
+* Fix: Unsupported Modnix 3 features are now displayed on a new line.
+* Gui: Log filter now cascades from first line to following lines, e.g. stacktrace.
+* Gui: Removed leading asterisk from one-line string Contact and Url.
+* Gui: Setup and Revert now remove Modnix 3 bootloader (doorstep).
+* Gui: Change Installed column to Last Update, because install time is not recorded and is unknown.
+
 # Version 2.5.5, 2021-01-12
 
 * Gui: Create runtime settings (loadfromRemoteSources) on install and on launch, to further reduce sandbox creation error. (#33)

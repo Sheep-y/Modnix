@@ -89,9 +89,9 @@ namespace Sheepy.Modnix.MainGUI {
             var name = Path.GetFileName( file ).ToLowerInvariant();
             if ( ! doc.ContainsKey( ModDoc.README ) && ReadmeFiles.Contains( name ) )
                doc.Add( ModDoc.README, file );
-            else if ( ! doc.ContainsKey( ModDoc.README ) && ChangeFiles.Contains( name ) )
+            else if ( ! doc.ContainsKey( ModDoc.CHANGELOG ) && ChangeFiles.Contains( name ) )
                doc.Add( ModDoc.CHANGELOG, file );
-            else if ( ! doc.ContainsKey( ModDoc.README ) && LicenseFiles.Contains( name ) )
+            else if ( ! doc.ContainsKey( ModDoc.LICENSE ) && LicenseFiles.Contains( name ) )
                doc.Add( ModDoc.LICENSE, file );
          }
          if ( modPath.EndsWith( ".dll", StringComparison.OrdinalIgnoreCase ) ) {
@@ -160,7 +160,7 @@ namespace Sheepy.Modnix.MainGUI {
       public override string Version => Mod.Metadata.Version?.ToString();
       public override string Author => Mod.Metadata.Author?.ToString( "en" );
       public override string Status { get { lock ( Mod ) return Mod.Disabled ? "Off" : "On"; } }
-      public override DateTime Installed { get { lock ( Mod ) return new FileInfo( Mod.Path ).LastAccessTime; } }
+      public override DateTime LastUpdate { get { lock ( Mod ) return new FileInfo( Mod.Path ).LastWriteTime; } }
 
       private ModSettings Settings { get {
          ModSettings result = null;
@@ -409,7 +409,9 @@ namespace Sheepy.Modnix.MainGUI {
             case "config_mismatch" :
                txt.Text = "\rDefaultConfig different from new instance defaults."; break;
             case "unsupported_actions" :
-               txt.Text = "Mod Actions requires Modnix 3 or above.\rMod may not work or only partially work."; break;
+               txt.Text = "\rMod Actions requires Modnix 3 or above.\rMod may not work or only partially work."; break;
+            case "unsupported_mod_pack" :
+               txt.Text = "\rMod Pack requires Modnix 3 or above."; break;
             default :
                txt.Text = "\r" + notice.Message; break;
          }
@@ -483,11 +485,11 @@ namespace Sheepy.Modnix.MainGUI {
          return new Paragraph( new Run( txt ) );
       }
 
-      private Block BuildBlock ( Action<ModMeta,InlineCollection> builder ) {
+      private Block BuildBlock ( Action<ModMeta,InlineCollection> builder ) { try {
          var block = new Paragraph();
          builder( Mod.Metadata, block.Inlines );
          return block.Inlines.Count == 0 ? null : block;
-      }
+      } catch ( Exception ex ) { Log( ex ); return null; } }
 
       private static void BuildDict ( TextSet data, InlineCollection list ) {
          if ( data.Dict == null ) {
@@ -497,14 +499,19 @@ namespace Sheepy.Modnix.MainGUI {
          foreach ( var e in data.Dict ) {
             string name = e.Key, link = e.Value;
             if ( string.IsNullOrWhiteSpace( name ) || string.IsNullOrWhiteSpace( link ) ) continue;
-            list.Add( "\r" + name + "\t" );
-            list.Add( new Hyperlink( new Run( link ){ Foreground = Brushes.Blue } ){ NavigateUri = new Uri( link ) } );
+            list.Add( "\r" + ( name != "*" ? name + "\t" : "" ) );
+            try {
+               list.Add( new Hyperlink( new Run( link ){ Foreground = Brushes.Blue } ){ NavigateUri = new Uri( link ) } );
+            } catch ( UriFormatException ) {
+               list.Add( new Run( link ) );
+            }
          }
       }
 
       public override string Path => Mod.Path;
 
       public override string Type { get { lock ( Mod ) {
+         if ( Mod.Metadata.Mods != null ) return "Pack";
          var hasAction = Mod.Metadata.Actions != null;
          var dlls = Mod.Metadata.Dlls;
          if ( dlls == null ) return hasAction ? "Actions" : "???";

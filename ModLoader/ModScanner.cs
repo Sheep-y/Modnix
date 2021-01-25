@@ -348,7 +348,7 @@ namespace Sheepy.Modnix {
          }
          foreach ( var e in EnabledMods )
             if ( e.Metadata.Actions != null )
-               AddManagerNotice( TraceEventType.Error, e, "Mod Actions are not supported in Modnix 2.x.", "unsupported_actions", e );
+               AddManagerNotice( TraceEventType.Error, e, "unsupported_actions", "Mod Actions are not supported in Modnix 2.x.", e );
       }
 
       private static void ApplyUserOverride () {
@@ -416,6 +416,10 @@ namespace Sheepy.Modnix {
          Log.Verbo( "Check mod requirements" );
          foreach ( var mod in EnabledMods.ToArray() ) {
             if ( mod.Disabled ) continue;
+            if ( mod.Metadata.Mods != null && ( mod.Metadata.Dlls == null ) ) {
+               DisableAndRemoveMod( mod, "unsupported_mod_pack", "mod pack not supported" );
+               continue;
+            }
             var reqs = mod.Metadata.Requires;
             if ( reqs == null ) continue;
             var requirements = new Dictionary<string, List<AppVer>>();
