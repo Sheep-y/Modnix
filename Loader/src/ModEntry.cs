@@ -669,7 +669,7 @@ namespace Sheepy.Modnix {
       internal string  DefaultConfigText;
       internal string  ConfigText;
 
-      internal bool HasContent => Mods != null || Dlls != null || Actions != null;
+      internal bool HasContent => Mods != null || Dlls != null || Actions != null || Preloads != null;
 
       internal ModMeta ImportFrom ( ModMeta overrider ) {
          lock ( this ) if ( overrider == null ) return this;
