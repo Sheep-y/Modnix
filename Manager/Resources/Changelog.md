@@ -1,23 +1,22 @@
 Modnix Changelog
 
-# Version 3 Beta 2, in development
-Roadmap: https://github.com/Sheep-y/Modnix/issues/24
+# Version 3 Beta 2, 2020-01-25
+https://github.com/Sheep-y/Modnix/releases/tag/v3.0.2021.0125
 
 * New: Injection-less mod loader.  Simpler, less risk, earlier load, easier to install and remove.
 * New: Mod Pack support.  Multiple mods may now be pre-configured and bundled into one package.
-* New: "Include" Action, allowing actions to be spread over multiple js/json files.
-* New: "Preloads" mod field, which is copied by manager to the preload folder on install/enable.
+* New: "Include" Action, allowing actions to be contained in standalone js/json files.
 * New: "mod_stack" api to get api callstack.
 * New: "mod_disarm" and "mod_rearm" api to support dynamic mod disarming and rearming.
-* New: Mod field "Preloads" for overriding game dlls without replacing them.
+* New: "Preloads" mod field for overriding game dlls without replacing them.
+* Fix: Multiple mods with same Id no longer crash the Manager (regression).
+* Fix: Actions without phase or with incorrect phases no longer crash the manager.
+* Fix: Deleting root mods now also remove all associated files, such as actions and preloads.
+* Fix: When an action handler returns true, the process now correctly moves on to next action.
 * Fix: Pasting config text from Notepad no longer generate excessive blank lines.
 * Fix: Always close handles on embedded files to use less system resources.
-* Fix: Multiple mods with same Id no longer crash the Manager (regression).
-* Fix: Actions without phase or with incorrect phases are now processed correctly.
-* Fix: When an action handler returns true, the process now correctly moves on to next action.
-* Fix: Deleting root mods now also remove all associated files, such as actions.
-* Gui: .json mods may be added.  If a .js or .json mod is an array, it is put in the PPDefModifier folder.
 * Gui: Install/Setup/Revert will now revert PPML and legacy (injection-based) Modnix.
+* Gui: .json mods may be added.  If a .js or .json mod is an array, it is put in the PPDefModifier folder.
 * Gui: .md documents are now parsed and displayed as markdown, instead of plain text.
 * Gui: Mismatching mod loader is now detected, and make install button do Setup.
 * Gui: Double click now enable / disable a mod.
@@ -25,19 +24,19 @@ Roadmap: https://github.com/Sheep-y/Modnix/issues/24
 * Gui: Enhanced mod file list that report missing files and can open file explorer.
 * Gui: Added a link to change Game path.
 * Gui: Update wording of game status.
-* Mod: Action includes must be in same folder as the mod or a subfolder.
-* Mod: Action.OnError now properly supports "continue", "skip", and "stop".
+* Mod: Action includes must now be in same folder as the mod or a subfolder.
+* Mod: Action.OnError now properly supports "continue", "skip", and "stop", and now always log unless "silent" is given.
 * Mod: Actions now support multiple (comma separated) phsaes.
 * Mod: API "path" and "dir" see two new params: "assembly-csharp" and "managed".
 * Log: OS type and version are now logged.
 * Log: Flushing log no longer log reason as "null".
-* Log: Actions without handler (both at parse and at execution) are now logged as warnings.
+* Log: Actions without handler (both at parse and at execution) are now logged.
 * Log: Instantiation of mod classes by the Loader are now logged.
 * Log: Initial assemblies are now logged, to help diagnose preloads.
-* Log: Action exceptions are now logged unless a new onerror flag "silent" is specified.
 * Lib: Updated Mono Cecil to 0.11.3.
 
-# Version 2.5.6, in development
+# Version 2.5.6, 2020-01-25
+https://github.com/Sheep-y/Modnix/releases/tag/v2.5.6
 
 * New: Identify and disable Modnix 3 mod packs.
 * Fix: Contact and Url that are not proper uri, are now displayed correctly and no longer blank the mod info.
