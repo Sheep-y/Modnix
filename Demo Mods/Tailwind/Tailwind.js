@@ -21,10 +21,13 @@
    },
    Description:
 "
+* * * Mod STILL WORKS as long as PPDefModifier is available. * * *
+Any mod loader and any PPDefModifier version.
+
 This is a PPDefModifier mods that boost the speed of the four starting air transports.
 
-This is intended as a technical demo to show that Modnix 3 allows PPDefMods to be managed,
-while retaining full compatibility with legacy mod loaders and PPDefModifier.
+It is intended as a technical demo to show how Modnix 3 allows PPDefMods to be managed,
+and still works with legacy mod loaders and PPDefModifier.
 
 To do that, this mod have two parts:
 A '.js' file that contains the mod's meta info such as description,
