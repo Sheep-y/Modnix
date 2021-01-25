@@ -1,6 +1,6 @@
 Modnix Changelog
 
-# Version 2.5.6, in development
+# Version 2.5.6, 2021-01-25
 
 * New: Identify and disable Modnix 3 mod packs.
 * Fix: Contact and Url that are not proper uri, are now displayed correctly and no longer blank the mod info.
