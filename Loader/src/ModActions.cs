@@ -79,10 +79,12 @@ namespace Sheepy.Modnix {
 
       private static void LogActionError ( Logger log, ActionDef act, object err, params object[] args ) {
          var directives = act.GetText( "onerror", "log" );
-         if ( InList( directives, "log" ) || InList( directives, "error" ) ) log.Error( err, args );
+         if ( InList( directives, "log" ) || InList( directives, "error" ) ) ; // Use default handling
          else if ( InList( directives, "warn" ) ) log.Warn( err, args );
          else if ( InList( directives, "info" ) ) log.Info( err, args );
          else if ( InList( directives, "verbo" ) ) log.Verbo( err, args );
+         else if ( InList( directives, "silent" ) ) return;
+         log.Error( err, args );
       }
 
       internal static HashSet< string > FindPhases ( ActionDef[] actions ) {

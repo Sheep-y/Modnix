@@ -34,6 +34,7 @@ Roadmap: https://github.com/Sheep-y/Modnix/issues/24
 * Log: Actions without handler (both at parse and at execution) are now logged as warnings.
 * Log: Instantiation of mod classes by the Loader are now logged.
 * Log: Initial assemblies are now logged, to help diagnose preloads.
+* Log: Action exceptions are now logged unless a new onerror flag "silent" is specified.
 * Lib: Updated Mono Cecil to 0.11.3.
 
 # Version 2.5.6, in development
