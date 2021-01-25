@@ -505,9 +505,15 @@ namespace Sheepy.Modnix.MainGUI {
       private void BuildFileList ( ModMeta meta, InlineCollection list ) {
          list.AddMulti( "Path\r",
             new Run( Dir + System.IO.Path.DirectorySeparatorChar ){ Foreground = Brushes.Blue }.Linkify( () => AppControl.Explore( Path ) ),
-            "\r\rKnown File(s)" );
-         foreach ( var file in GetFileList( meta ) )
-            list.Add( "\r" + file.Key + " [" + string.Join( ", ", file.Value.ToArray() ) + "]" );
+            "\r\rKnown File(s)\r" );
+         foreach ( var item in GetFileList( meta ) ) {
+            string file = item.Key, fullpath = System.IO.Path.Combine( Dir, file );
+            var text = new Run( file );
+            if ( File.Exists( fullpath ) ) text = text.Linkify( () => AppControl.Explore( fullpath ) );
+            else item.Value.Add( "Missing" );
+            list.Add( text );
+            list.Add( " [" + string.Join( ", ", item.Value.ToArray() ) + "]\r" );
+         }
       }
 
       internal List< KeyValuePair< string, List< string > > > GetFileList ( ModMeta meta = null ) {
