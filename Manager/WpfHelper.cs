@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Input;
@@ -50,7 +51,7 @@ namespace Sheepy.Modnix.MainGUI {
    }
 
    public static class MarkdigConverter {
-      public static IEnumerable< Block > Parse ( string text ) =>
+      public static IEnumerable< Block > Convert ( string text ) =>
          Markdown.Parse( text, new MarkdownPipelineBuilder().UseAutoLinks().Build() ).Select( BuildBlock );
 
       private static Block BuildBlock ( Markdig.Syntax.Block block ) {
@@ -109,11 +110,70 @@ namespace Sheepy.Modnix.MainGUI {
          } else if ( inline is Markdig.Syntax.Inlines.LineBreakInline ) {
             return new LineBreak();
          } else if ( inline is Markdig.Syntax.Inlines.HtmlInline html ) {
-            if ( html.Tag.Equals( "<br>", StringComparison.InvariantCultureIgnoreCase ) ||
-                 html.Tag.Equals( "<br/>", StringComparison.InvariantCultureIgnoreCase ) ) return new LineBreak();
-            return new Run( "<" + html.Tag + ">" );
+            switch ( html.Tag.ToLowerInvariant().Replace( " ", "" ) ) {
+               case "<br>" : case "<br/>" :
+                  return new LineBreak();
+               default :
+                  return new Run( html.Tag );
+            }
          } else
             return new Run( "{" + inline.ToString() + "}" );
+      }
+
+      private static class BBCodeConverter {
+         private static Regex regSingle = new Regex( "\\[(hr|line)\\]|\b(https?|email|tel|s?ftp)://[^\\s]+" );
+         private static Regex regQuoted =
+            new Regex( "\\[(b|center|colou?r|font|heading|h[123456]|list|i|img|quote|right|s|spoiler|u|url|youtube)" +
+               "(=[^]]*)?\\](.*?)\\[/\\1\\]" );
+
+         public static IEnumerable< Block > Convert ( string text )
+            => Parse( new BBCode( "", text ) ).ToTree().Select( e => e.ToBlock() );
+
+         private static BBCode Parse ( BBCode code ) {
+            return code;
+         }
+
+      }
+
+      public class BBCode {
+         readonly string tag;
+         readonly string param;
+         List<BBCode> children;
+
+         public BBCode ( string text ) : this( "", text ) { }
+
+         public BBCode ( string tag, string param ) {
+            this.tag = tag;
+            this.param = param;
+         }
+
+         public void Add ( params BBCode[] items ) {
+            if ( children == null ) children = new List< BBCode >();
+            children.AddRange( items );
+         }
+
+         public IEnumerable< BBCode > ToTree () {
+            if ( tag != "" || children == null ) return new BBCode[]{ this };
+            return children;
+         }
+
+         public Inline ToInline () {
+            if ( tag == "" && children == null ) return new Run( param );
+            var result = new Span();
+            switch ( tag ) {
+               case "b" : result.FontWeight = FontWeights.Bold; break; 
+               case "i" : result.FontStyle = FontStyles.Italic; break;
+               case "s" : result.TextDecorations = TextDecorations.Strikethrough; break;
+            }
+            if ( children != null )
+               foreach ( var item in children )
+                  result.Inlines.Add( item.ToInline() );
+            return result;
+         }
+
+         public Block ToBlock () {
+            return new Paragraph( ToInline() );
+         }
       }
    }
 }

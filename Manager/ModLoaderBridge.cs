@@ -385,7 +385,7 @@ namespace Sheepy.Modnix.MainGUI {
          } catch ( ArgumentException ex ) { Log( ex ); }
          if ( ext?.Equals( ".md", StringComparison.OrdinalIgnoreCase ) == true ) try {
             doc.Blocks.Clear();
-            foreach ( var block in MarkdigConverter.Parse( text ) )
+            foreach ( var block in MarkdigConverter.Convert( text ) )
                doc.Blocks.Add( block );
             return;
          } catch ( Exception ex ) { Log( ex ); }

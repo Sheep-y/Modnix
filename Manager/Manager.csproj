@@ -108,6 +108,7 @@
     </Compile>
     <Compile Include="SharedGui.cs" />
     <Compile Include="Updater.cs" />
+    <Compile Include="WpfHelper.cs" />
     <EmbeddedResource Include="Resources\0Harmony.dll.gz" />
     <EmbeddedResource Include="Resources\7za.exe.gz" />
     <None Include="app.config" />
