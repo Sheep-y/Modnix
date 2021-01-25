@@ -306,7 +306,7 @@
                      <DataGridTextColumn Header="Author" Binding="{Binding Author}" ClipboardContentBinding="{x:Null}"/>
                      <DataGridTextColumn Header="Status" Binding="{Binding Status}" ClipboardContentBinding="{x:Null}"/>
                      <DataGridTextColumn Header="Type" Binding="{Binding Type}" ClipboardContentBinding="{x:Null}"/>
-                     <DataGridTextColumn Header="Installed" Binding="{Binding Installed}" ClipboardContentBinding="{x:Null}"/>
+                     <DataGridTextColumn Header="Updated" Binding="{Binding LastUpdate}" ClipboardContentBinding="{x:Null}"/>
                   </DataGrid.Columns>
                </DataGrid>
             </DockPanel>

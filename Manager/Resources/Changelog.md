@@ -45,6 +45,7 @@ https://github.com/Sheep-y/Modnix/releases/tag/v2.5.6
 * Gui: Log filter now cascades from first line to following lines, e.g. stacktrace.
 * Gui: Removed leading asterisk from one-line string Contact and Url.
 * Gui: Setup and Revert now remove Modnix 3 bootloader (doorstep).
+* Gui: Change Installed column to Last Update, because install time is not recorded and is unknown.
 
 # Version 2.5.5, 2021-01-12
 https://github.com/Sheep-y/Modnix/releases/tag/v2.5.5

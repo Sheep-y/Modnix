@@ -187,7 +187,7 @@ namespace Sheepy.Modnix.MainGUI {
       public override string Version => Mod.Metadata.Version?.ToString();
       public override string Author => Mod.Metadata.Author?.ToString( "en" );
       public override string Status { get { lock ( Mod ) return Mod.Disabled ? "Off" : "On"; } }
-      public override DateTime Installed { get { lock ( Mod ) return new FileInfo( Mod.Path ).LastAccessTime; } }
+      public override DateTime LastUpdate { get { lock ( Mod ) return new FileInfo( Mod.Path ).LastWriteTime; } }
 
       private ModSettings Settings { get {
          ModSettings result = null;
