@@ -7,6 +7,7 @@
       {
          Action: "Default", // Default actions will copy its field to all following actions.
          OnError: "Log,Skip", // Here we set the error policy to Log, and Skip (to next action).
+         Phase: "GeoscapeMod", // and that the actions are taken when first entering the Geoscape.
       },
       {
          Include: "PPDefModifier/Tailwind.json" // Load actions from the PPDef json
