@@ -15,6 +15,7 @@ Roadmap: https://github.com/Sheep-y/Modnix/issues/24
 * Fix: Multiple mods with same Id no longer crash the Manager (regression).
 * Fix: Actions without phase are now processed correctly.
 * Fix: When an action handler returns true, the process now correctly moves on to next action.
+* Fix: Deleting root mods now also remove all associated files, such as actions.
 * Gui: Mod load order updated to match Modnix 3 phases.
 * Gui: Install/Setup/Revert will now revert PPML and legacy (injection-based) Modnix.
 * Gui: .md documents are now parsed and displayed as markdown, instead of plain text.
