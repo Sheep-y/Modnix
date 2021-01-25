@@ -63,7 +63,7 @@ namespace Sheepy.Modnix {
             }
             if ( ! handled ) {
                Func<string> stringify = () => Json.Stringify( act );
-               mod.Log().Warn( "Unhandled action: {0}", stringify );
+               LogActionError( log, act, "Unhandled action: {0}", stringify );
             }
          }
          Cleanup:
@@ -77,12 +77,12 @@ namespace Sheepy.Modnix {
          return result.Length > 0 ? result : null;
       }
 
-      private static void LogActionError ( Logger log, ActionDef act, Exception err ) {
+      private static void LogActionError ( Logger log, ActionDef act, object err, params object[] args ) {
          var directives = act.GetText( "onerror", "log" );
-         if ( InList( directives, "log" ) || InList( directives, "error" ) ) log.Error( err );
-         else if ( InList( directives, "warn" ) ) log.Warn( err );
-         else if ( InList( directives, "info" ) ) log.Info( err );
-         else if ( InList( directives, "verbo" ) ) log.Verbo( err );
+         if ( InList( directives, "log" ) || InList( directives, "error" ) ) log.Error( err, args );
+         else if ( InList( directives, "warn" ) ) log.Warn( err, args );
+         else if ( InList( directives, "info" ) ) log.Info( err, args );
+         else if ( InList( directives, "verbo" ) ) log.Verbo( err, args );
       }
 
       internal static HashSet< string > FindPhases ( ActionDef[] actions ) {
