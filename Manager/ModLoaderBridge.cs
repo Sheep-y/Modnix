@@ -131,8 +131,8 @@ namespace Sheepy.Modnix.MainGUI {
 
       private static ModEntry Mod ( ModInfo mod ) => ( mod as GridModItem )?.Mod;
 
-      internal static void AddLoaderLogNotice ( ModInfo mod, string reason ) => Mod( mod ).AddNotice( TraceEventType.Warning, reason );
-      
+      internal static void AddLoaderLogNotice ( ModInfo mod, string reason, params object[] args ) => Mod( mod ).AddNotice( TraceEventType.Warning, reason, args );
+
       internal void DeleteMod ( ModInfo mod ) {
          var path = mod.Dir;
          if ( path == ModLoader.ModDirectory ) {
@@ -454,6 +454,8 @@ namespace Sheepy.Modnix.MainGUI {
                txt.Text = "\rDisabled: No mod phase(s) found."; break;
             case "parent" :
                txt.Text = string.Format( "\rPart of {0}", notice.Args[0] ); break;
+            case "preload_not_found" :
+               txt.Text = string.Format( "\rPreload not found: {0}", notice.Args[0] ); break;
             case "require" :
                if ( ! string.IsNullOrWhiteSpace( notice.Args[3]?.ToString() ) )
                   return new Hyperlink( new Run( string.Format( "\rDisabled: Missing requirement {0}", notice.Args[2] ) ){ Foreground = Brushes.Red } ){ NavigateUri = new Uri( notice.Args[3]?.ToString() ) };

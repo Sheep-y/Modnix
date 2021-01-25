@@ -762,11 +762,17 @@ namespace Sheepy.Modnix.MainGUI {
       #region Preloads
       private void GetPreloads ( ModInfo[] mods ) {
          Log( "Fetching preload list" );
-         HashSet<string> preloads = new HashSet<string>();
-         foreach ( var mod in mods )
-            if ( mod.Is( ModQuery.ENABLED ) )
-               mod.Do( AppAction.GET_PRELOADS, preloads );
-         Task.Run( () => UpdatePreloads( preloads ) );
+         HashSet<string> all = new HashSet<string>(), part = new HashSet<string>();
+         foreach ( var mod in mods ) {
+            if ( ! mod.Is( ModQuery.ENABLED ) ) continue;
+            mod.Do( AppAction.GET_PRELOADS, part );
+            if ( part.Count == 0 ) continue;
+            foreach ( var dll in part )
+               if ( File.Exists( dll ) ) all.Add( dll );
+               else ModLoaderBridge.AddLoaderLogNotice( mod, "preload_not_found", dll );
+            part.Clear();
+         }
+         Task.Run( () => UpdatePreloads( all ) );
       }
 
       private void UpdatePreloads( HashSet<string> preloads ) {
