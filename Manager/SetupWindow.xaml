@@ -11,6 +11,6 @@
       <Button x:Name="ButtonAction" VerticalAlignment="Top" DockPanel.Dock="Bottom" HorizontalAlignment="Center" Margin="10" FontSize="24" Padding="10,5" IsEnabled="False" MinWidth="150" Click="ButtonAction_Click">
          <AccessText x:Name="AccessAction">Loading...</AccessText>
       </Button>
-      <TextBox x:Name="TextMessage" DockPanel.Dock="Top" Margin="20,10,20,0" FontSize="24" HorizontalContentAlignment="Center" Text="Modnix" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" TextWrapping="Wrap"/>
+      <TextBox x:Name="TextMessage" DockPanel.Dock="Top" Margin="20,10,20,0" FontSize="24" HorizontalContentAlignment="Center" Text="Modnix" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" TextWrapping="Wrap" MouseDoubleClick="TextMessage_MouseDoubleClick"/>
    </DockPanel>
 </Window>

@@ -160,7 +160,7 @@ namespace Sheepy.Modnix.MainGUI {
                MessageBox.Show( txt, "Success", MessageBoxButton.OK, MessageBoxImage.Information );
             }
          } else if ( action == AppAction.REVERT ) {
-            MessageBox.Show( "Revert success.\nGame is now Modnix-free.", "Success" );
+            MessageBox.Show( "Revert success.\nGame is now free of mod loaders.", "Success" );
          } else {
             MessageBox.Show( string.Format( "{0} success.", actionTxt ), "Success" );
          }

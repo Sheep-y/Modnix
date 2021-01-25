@@ -22,8 +22,8 @@ https://github.com/Sheep-y/Modnix/releases/tag/v3.0.2021.0125
 * Gui: Double click now enable / disable a mod.
 * Gui: Mod load order updated to match Modnix 3 phases.
 * Gui: Enhanced mod file list that report missing files and can open file explorer.
-* Gui: Added a link to change Game path.
-* Gui: Update wording of game status.
+* Gui: Game path may now be changed in Installer and Manager.
+* Gui: Update wording of game status.  Show build status in Installer.
 * Mod: Action includes must now be in same folder as the mod or a subfolder.
 * Mod: Action.OnError now properly supports "continue", "skip", and "stop", and now always log unless "silent" is given.
 * Mod: Actions now support multiple (comma separated) phsaes.

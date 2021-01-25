@@ -55,7 +55,8 @@ namespace Sheepy.Modnix.MainGUI {
          Log( $"Refreshing {Mode}" );
          if ( Mode == "log" )
             return;
-         string txt = $"Modnix {SharedGui.AppVer}\n";
+         var build = new LoaderSettings().UpdateChannel.Equals( "dev" ) ? " (dev)" : "";
+         var txt = $"Modnix {SharedGui.AppVer}{build}\n";
          if ( Mode == "launch" ) {
             txt += "Installed at " + App.ModGuiExe + "\n\nUse it to resetup or restore.";
             EnableLaunch();
@@ -66,10 +67,14 @@ namespace Sheepy.Modnix.MainGUI {
                txt += "Not Found";
                AccessAction.Text = "_Browse";
                ButtonAction.IsEnabled = true;
-            } else {
-               txt += SharedGui.GamePath ?? "Detecting...";
+            } else if ( SharedGui.GamePath == null ) {
+               txt += "Detecting...";
                AccessAction.Text = "_Setup";
-               ButtonAction.IsEnabled = SharedGui.GamePath != null;
+               ButtonAction.IsEnabled = false;
+            } else {
+               txt += SharedGui.GamePath + "\n(Double-click here to change)";
+               AccessAction.Text = "_Setup";
+               ButtonAction.IsEnabled = true;
             }
          }
          TextMessage.Text = txt;
@@ -78,6 +83,10 @@ namespace Sheepy.Modnix.MainGUI {
       private void EnableLaunch () {
          AccessAction.Text = "_Launch";
          ButtonAction.IsEnabled = File.Exists( App.ModGuiExe );
+      }
+
+      private void TextMessage_MouseDoubleClick ( object sender, MouseButtonEventArgs e ) {
+         if ( Mode == "setup" ) BrowseGame();
       }
 
       private void ButtonAction_Click ( object sender, RoutedEventArgs e ) { try {
