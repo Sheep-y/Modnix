@@ -18,7 +18,7 @@ namespace Sheepy.Modnix.MainGUI {
       public abstract string Author { get; }
       public abstract string Status { get; }
       public abstract string Type { get; }
-      public abstract DateTime Installed { get; }
+      public abstract DateTime LastUpdate { get; }
       public abstract bool Is ( ModQuery prop );
       public abstract void Do ( AppAction action, object param = null );
       public abstract void BuildDocument ( ModDoc type, FlowDocument doc );
