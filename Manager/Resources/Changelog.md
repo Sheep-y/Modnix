@@ -16,11 +16,12 @@ Roadmap: https://github.com/Sheep-y/Modnix/issues/24
 * Fix: Actions without phase are now processed correctly.
 * Fix: When an action handler returns true, the process now correctly moves on to next action.
 * Fix: Deleting root mods now also remove all associated files, such as actions.
-* Gui: Mod load order updated to match Modnix 3 phases.
+* Gui: .json mods may be added.  If a .js or .json mod is an array, it is put in the PPDefModifier folder.
 * Gui: Install/Setup/Revert will now revert PPML and legacy (injection-based) Modnix.
 * Gui: .md documents are now parsed and displayed as markdown, instead of plain text.
-* Gui: Double click now enable / disable a mod.
 * Gui: Mismatching mod loader is now detected, and make install button do Setup.
+* Gui: Double click now enable / disable a mod.
+* Gui: Mod load order updated to match Modnix 3 phases.
 * Gui: Added a link to change Game path.
 * Gui: Update wording of game status.
 * Mod: Action includes must be in same folder as the mod or a subfolder.

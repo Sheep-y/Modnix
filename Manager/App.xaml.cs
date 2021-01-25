@@ -1,4 +1,5 @@
 ﻿using Microsoft.Win32;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -722,6 +723,10 @@ namespace Sheepy.Modnix.MainGUI {
          var folder = Path.Combine( ModFolder, modname );
          if ( ext.Equals( ".js" ) || ext.Equals( ".json" ) || ext.Equals( ".dll" ) ) {
             Log( $"Adding {file} as a single file mod" );
+            if ( ext.StartsWith( ".js" ) ) {
+               var obj = JsonConvert.DeserializeObject( Utils.ReadFile( file ) );
+               if ( obj is Newtonsoft.Json.Linq.JArray ) folder = Path.Combine( ModFolder, "PPDefModifier" );
+            }
             Directory.CreateDirectory( folder );
             var destination = Path.Combine( folder, Path.GetFileName( file ) );
             Log( destination );
