@@ -579,15 +579,22 @@ namespace Sheepy.Modnix.MainGUI {
       public override string Path => Mod.Path;
       public override string Dir =>  Mod.Dir;
 
+      /* private static HashSet< string > Mx3Methods = new HashSet< string > {
+         "homemod","homeonshow","homeonhide", "gameemod","gameeonshow","gameeonhide",
+         "geoscapeemod","geoscapeeonshow","geoscapeeonhide", "tacticalemod","tacticaleonshow","tacticaleonhide",
+         "actionmod", "disarmmod"
+      }; */
+
       public override string Type { get { lock ( Mod ) {
          if ( Mod.IsModPack ) return "Pack";
          var hasAction = Mod.Metadata.Actions != null;
          var dlls = Mod.Metadata.Dlls;
          if ( dlls == null ) return hasAction ? "Actions" : "???";
          var prefix = hasAction ? "Act+" : "";
-         if ( dlls.Any( e => e?.Methods?.ContainsKey( "Init" ) ?? false ) ) return prefix + "PPML";
-         if ( dlls.Any( e => e?.Methods?.ContainsKey( "Initialize" ) ?? false ) ) return prefix + "PPML+";
-         if ( dlls.Any( e => e?.Methods?.ContainsKey( "MainMod" ) ?? false ) ) return prefix + "Mx2";
+         var allMethods = new HashSet< string >( dlls.SelectMany( e => e.Methods.Keys ) );
+         if ( allMethods.Contains( "init" ) ) return prefix + "PPML";
+         if ( allMethods.Contains( "initialize" ) ) return prefix + "PPML+";
+         if ( allMethods.Contains( "mainmod" ) ) return prefix + "Mx2";
          return prefix + "Mx3";
       } } }
 

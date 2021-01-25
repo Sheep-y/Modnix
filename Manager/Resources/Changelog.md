@@ -22,6 +22,7 @@ Roadmap: https://github.com/Sheep-y/Modnix/issues/24
 * Gui: Mismatching mod loader is now detected, and make install button do Setup.
 * Gui: Double click now enable / disable a mod.
 * Gui: Mod load order updated to match Modnix 3 phases.
+* Gui: Action files are now listed, and mod_info files are tagged as such.
 * Gui: Added a link to change Game path.
 * Gui: Update wording of game status.
 * Mod: Action includes must be in same folder as the mod or a subfolder.
