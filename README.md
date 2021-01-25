@@ -15,7 +15,7 @@ If you find bugs, please report on [GitHub](https://github.com/Sheep-y/Modnix/is
 ## User Features
 
 1. Easy to use.  One-click setup, simple mod manager, detailed diagnostic log.
-2. Advanced mods, such as *real* Skip Intro, and can load PPML 0.1 and 0.2 mods plus Modnix mods.
+2. Support advanced mods, such as *real* Skip Intro, as well as most legacy mods.
 3. See and edit mod config for compatible mods.
 4. Quick access to mod files, communities, resources, and of course the game.
 
@@ -25,12 +25,12 @@ and [Troubleshooting](https://github.com/Sheep-y/Modnix/wiki/Troubleshooting-Mod
 
 ## Modder Features
 
-1. Mods can be built to support both PPML and Modnix.
-2. Display mod information and documents to users, such as author, links, readme, changelog etc.
-3. Mod are placed in their own folder, with optional round-trip json config managed by Modnix.
-4. Declarative mod dependencies, conflicts, and avoidances.  Opt-in pre-splash loading and lazy loading.
-5. Extensible API for mod config, unified background logger, query game versions, get mod list etc.
-6. (Modnix 3) Plain-text action mods supported by action handlers, such as PPDefModifier (v1.7 and up).
+1. Display mod information and documents to users, such as author, links, readme, changelog etc.
+2. Mod are placed in their own folder, with optional round-trip json config.
+3. Declarative mod dependencies, conflicts, and avoidances.  Opt-in pre-splash loading and lazy loading.
+4. Extensible API for mod config, unified background logger, query game versions, get mod list etc.
+5. (Modnix 3) Plain-text Action Mods supported by action handlers, such as PPDefModifier (v1.7 and up).
+6. (Modnix 3) Plain-text Mod Packs that bundles and pre-configure other mods.
 
 See the [Wiki](https://github.com/Sheep-y/Modnix/wiki#wiki-wrapper) for mod specs.
 
