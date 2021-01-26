@@ -17,14 +17,14 @@ https://github.com/Sheep-y/Modnix/releases/tag/v3.0.2021.0125
 * Fix: Always close handles on embedded files to use less system resources.
 * Gui: Install/Setup/Revert will now revert PPML and legacy (injection-based) Modnix.
 * Gui: .json mods may be added.  If a .js or .json mod is an array, it is put in the PPDefModifier folder.
-* Gui: .md documents are now parsed and displayed as markdown, instead of plain text.
-* Gui: Mismatching mod loader is now detected, and make install button do Setup.
+* Gui: .md documents are now parsed and formatted, instead of plain text.
+* Gui: Mismatching mod loader is now detected, and switch action button to Setup.
 * Gui: Double click now enable / disable a mod.
 * Gui: Mod load order updated to match Modnix 3 phases.
-* Gui: Enhanced mod file list that report missing files and can open file explorer.
+* Gui: Mod file list updates: now report missing files, and can open file explorer.
 * Gui: Game path may now be changed in Installer and Manager.
 * Gui: Update wording of game status.  Show build status in Installer.
-* Mod: Action includes must now be in same folder as the mod or a subfolder.
+* Mod: Action includes are now restricted to the same folder or a subfolder.
 * Mod: Action.OnError now properly supports "continue", "skip", and "stop", and now always log unless "silent" is given.
 * Mod: Actions now support multiple (comma separated) phsaes.
 * Mod: API "path" and "dir" see two new params: "assembly-csharp" and "managed".
