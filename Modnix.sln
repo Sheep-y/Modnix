@@ -18,12 +18,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Demo Mods", "Demo Mods\Demo Mods.shproj", "{1DFF491D-5C97-4E74-9730-FB74231D642B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Demo Mods", "Demo Mods\Demo Mods.csproj", "{5743B06E-7EF6-4B98-9A16-8595700868AB}"
 EndProject
 Global
-	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		Demo Mods\Demo Mods.projitems*{1dff491d-5c97-4e74-9730-fb74231d642b}*SharedItemsImports = 13
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
@@ -41,6 +38,10 @@ Global
 		{65F0A307-B0B6-4F79-BF3C-1D10AEEDD4EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{65F0A307-B0B6-4F79-BF3C-1D10AEEDD4EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{65F0A307-B0B6-4F79-BF3C-1D10AEEDD4EB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5743B06E-7EF6-4B98-9A16-8595700868AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5743B06E-7EF6-4B98-9A16-8595700868AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5743B06E-7EF6-4B98-9A16-8595700868AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5743B06E-7EF6-4B98-9A16-8595700868AB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
