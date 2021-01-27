@@ -2,6 +2,8 @@
    Id : "Sheepy.LegendPrologue",
    Lang : "-",
    Duration : "temp",
+   Version: 1.1,
+   Author: "Sheepy",
    Name : "Legend Prologue",
    Description : "
 Enables the Prologue and Tutorial option for Legend difficulty, when starting a new game.  It can still be unticked to skip both.
@@ -15,6 +17,7 @@ If you have the 'Debug Console' mod, you can use these commands to disarm and re
 When this mod is disarmed, it will cease to work.
 Note that you need to re-select the Legend difficulty to see the change.
 ",
+   Dll : "LegendPrologue.cs",
    Url : {
       "Nexus" : "https://nexusmods.com/phoenixpoint/mods/13/",
       "GitHub" : "https://github.com/Sheep-y/PhoenixPt-Mods/",

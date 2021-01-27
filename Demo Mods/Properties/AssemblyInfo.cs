@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle( "Legend Prologue" )]
-[assembly: AssemblyDescription( "Phoenix Point mod - Enable Prologue for Legend difficulty" )]
+[assembly: AssemblyDescription( "Phoenix Point mod - Enable Prologue and Tutorial for Legend difficulty" )]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany( "Sheepy" )]
 [assembly: AssemblyProduct( "" )]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("5743b06e-7ef6-4b98-9a16-8595700868ab")]
+[assembly: Guid( "f3d9024c-d1c0-45a3-bfa3-bcc5cbb05ee2" )]
 
 // Version information for an assembly consists of the following four values:
 //
