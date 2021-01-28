@@ -120,7 +120,7 @@ namespace Sheepy.Modnix {
             Log?.Info( "Loading embedded PPML" );
             return PpmlAssembly = app.Load( GetResourceBytes( "PPML_0_2.dll" ) );
          }
-         if ( name.StartsWith( "System." ) && dll.Name.Contains( ',' ) ) { // Generic system library lookup
+         if ( ( name.StartsWith( "System." ) || name.StartsWith( "Microsoft." ) ) && dll.Name.Contains( ',' ) ) { // Generic system library lookup
             var file = dll.Name.Substring( 0, dll.Name.IndexOf( ',' ) ) + ".dll";
             var target = Path.Combine( DnFrameworkDir, file );
             if ( File.Exists( target ) ) {
