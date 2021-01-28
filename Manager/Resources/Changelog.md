@@ -1,5 +1,9 @@
 Modnix Changelog
 
+# Version 3
+
+* Log: DLL mod call exceptions are not logged under the mod's id, instead of standalone.
+
 # Version 3 Beta 2, 2020-01-25
 https://github.com/Sheep-y/Modnix/releases/tag/v3.0.2021.0125
 

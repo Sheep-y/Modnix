@@ -94,33 +94,37 @@ namespace Sheepy.Modnix {
 
       public static object CallInit ( ModEntry mod, Assembly dll, string typeName, string methodName, Func< ParameterInfo, object > paramGetter ) { try {
          Logger log = mod.Log();
-
-         var type = dll.GetType( typeName );
-         if ( type == null ) {
-            log.Error( "Cannot find type {1} in {0}", dll.Location, typeName );
-            return null;
-         }
-
-         var func = type.GetMethods( ModScanner.INIT_METHOD_FLAGS )?.FirstOrDefault( e => e.Name.Equals( methodName ) );
-         if ( func == null ) {
-            log.Error( "Cannot find {1}.{2} in {0}", dll.Location, typeName, methodName );
-            return null;
-         }
-
-         var args = func.GetParameters().Select( paramGetter );
-         Func<string> argTxt = () => string.Join( ", ", args.Select( e => e?.GetType()?.Name ?? "null" ) );
-         log.Log( methodName == "ActionMod" ? SourceLevels.Verbose : SourceLevels.Information,
-            "Calling {1}.{2}({3}) in {0}", dll.Location, typeName, methodName, argTxt );
-         object target = null;
-         if ( ! func.IsStatic ) lock ( ModInstances ) {
-            if ( ModInstances.SafeGet( type )?.TryGetTarget( out target ) != true ) {
-               log.Verbo( "Instantiating {0} {1}", type, ModInstances.ContainsKey( type ) ? "after gc" : "1st time" );
-               ModInstances[ type ] = new WeakReference<object>( target = Activator.CreateInstance( type ) );
+         try {
+            var type = dll.GetType( typeName );
+            if ( type == null ) {
+               log.Error( "Cannot find type {1} in {0}", dll.Location, typeName );
+               return null;
             }
+
+            var func = type.GetMethods( ModScanner.INIT_METHOD_FLAGS )?.FirstOrDefault( e => e.Name.Equals( methodName ) );
+            if ( func == null ) {
+               log.Error( "Cannot find {1}.{2} in {0}", dll.Location, typeName, methodName );
+               return null;
+            }
+
+            var args = func.GetParameters().Select( paramGetter );
+            Func<string> argTxt = () => string.Join( ", ", args.Select( e => e?.GetType()?.Name ?? "null" ) );
+            log.Log( methodName == "ActionMod" ? SourceLevels.Verbose : SourceLevels.Information,
+               "Calling {1}.{2}({3}) in {0}", dll.Location, typeName, methodName, argTxt );
+            object target = null;
+            if ( ! func.IsStatic ) lock ( ModInstances ) {
+               if ( ModInstances.SafeGet( type )?.TryGetTarget( out target ) != true ) {
+                  log.Verbo( "Instantiating {0} {1}", type, ModInstances.ContainsKey( type ) ? "after gc" : "1st time" );
+                  ModInstances[ type ] = new WeakReference<object>( target = Activator.CreateInstance( type ) );
+               }
+            }
+            var result = func.Invoke( target, args.ToArray() );
+            log.Trace( "Done calling {0}.{1}", typeName, methodName );
+            return result;
+         } catch ( Exception ex ) {
+            log.Error( ex );
+            return ex;
          }
-         var result = func.Invoke( target, args.ToArray() );
-         log.Trace( "Done calling {0}.{1}", typeName, methodName );
-         return result;
       } catch ( Exception ex ) { return ex; } }
 
       internal static object ParamValue ( ParameterInfo arg, ModEntry mod ) {
