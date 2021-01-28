@@ -8,6 +8,7 @@ using static Sheepy.Modnix.Tools;
 
 namespace Sheepy.Modnix {
    using ActionDef = Dictionary<string,object>;
+   using IAction = IDictionary<string,object>;
 
    public static class ModActions {
 
@@ -71,13 +72,13 @@ namespace Sheepy.Modnix {
             ActionMods[ dll ].Log().Filters.Remove( modPrefix );
       } catch ( Exception ex ) { mod.Log().Error( ex ); } }
 
-      private static ActionDef[] FilterActions ( ActionDef[] actions, string phase ) {
+      private static IAction[] FilterActions ( IAction[] actions, string phase ) {
          phase = phase.ToLowerInvariant();
          var result = actions.Where( e => InList( e.SafeGet( "phase" )?.ToString() ?? DEFAULT_PHASE_LOWER, phase ) ).ToArray();
          return result.Length > 0 ? result : null;
       }
 
-      private static void LogActionError ( Logger log, ActionDef act, object err, params object[] args ) {
+      private static void LogActionError ( Logger log, IAction act, object err, params object[] args ) {
          var directives = act.GetText( "onerror", "log" );
          if ( InList( directives, "log" ) || InList( directives, "error" ) ) ; // Use default handling
          else if ( InList( directives, "warn" ) ) log.Warn( err, args );
@@ -87,7 +88,7 @@ namespace Sheepy.Modnix {
          log.Error( err, args );
       }
 
-      internal static HashSet< string > FindPhases ( ActionDef[] actions ) {
+      internal static HashSet< string > FindPhases ( IAction[] actions ) {
          var found = new HashSet< string >();
          var hasDefault = false;
          foreach ( var act in actions ) {
@@ -104,8 +105,8 @@ namespace Sheepy.Modnix {
          return found.Count > 0 ? found : null;
       }
 
-      internal static ActionDef[] Resolve ( ModEntry mod, ActionDef[] list ) { try {
-         ActionDef defValues = null;
+      internal static IAction[] Resolve ( ModEntry mod, IAction[] list ) { try {
+         IAction defValues = null;
          var defCount = 0;
          AddToModActionFiles( mod, mod.Path );
          var result = PreprocessActions( mod, list, mod.Dir, ref defValues, ref defCount, 0 );
@@ -113,11 +114,11 @@ namespace Sheepy.Modnix {
          return result;
       } catch ( Exception ex ) {
          mod.Log().Error( ex );
-         return new ActionDef[0];
+         return new IAction[0];
       } }
 
-      private static ActionDef[] PreprocessActions ( ModEntry mod, ActionDef[] list, string basedir, ref ActionDef defValues, ref int defCount, int level ) {
-         var actions = new List< ActionDef >();
+      private static IAction[] PreprocessActions ( ModEntry mod, IAction[] list, string basedir, ref IAction defValues, ref int defCount, int level ) {
+         var actions = new List< IAction >();
          foreach ( var a in list ) {
             if ( a.GetText( "include" ) is string file )
                actions.AddRange( LoadInclude( mod, basedir, file, ref defValues, ref defCount, level + 1 ) );
@@ -130,16 +131,16 @@ namespace Sheepy.Modnix {
          return actions.Count > 0 ? actions.ToArray() : null;
       }
 
-      private static ActionDef[] LoadInclude ( ModEntry mod, string basedir, string path, ref ActionDef defValues, ref int defCount, int level ) {
+      private static IAction[] LoadInclude ( ModEntry mod, string basedir, string path, ref IAction defValues, ref int defCount, int level ) {
          if ( level > 9 ) throw new ApplicationException( "Action includes too deep: " + path );
          if ( ! IsSafePath( path ) ) {
             mod.Log().Error( "Invalid path: {0}", path );
-            return new ActionDef[0];
+            return new IAction[0];
          }
          string fullpath = Path.Combine( basedir, path );
          try {
             AddToModActionFiles( mod, fullpath );
-            var actions = Json.Parse< ActionDef[] >( ReadText( fullpath ) );
+            var actions = Json.Parse< IAction[] >( ReadText( fullpath ) );
             ModMeta.NormDictArray( ref actions );
             return PreprocessActions( mod, actions, Path.GetDirectoryName( fullpath ), ref defValues, ref defCount, level );
          } catch ( Exception ex ) {
@@ -154,7 +155,7 @@ namespace Sheepy.Modnix {
          else mod.ActionFiles.Add( file );
       }
 
-      private static object RunActionHandler ( ModEntry mod, DllMeta dll, ActionDef act ) { try {
+      private static object RunActionHandler ( ModEntry mod, DllMeta dll, IAction act ) { try {
          var lib = ModPhases.LoadDll( mod, dll.Path );
          if ( lib == null ) return false;
          var handler = ActionMods[ dll ];
@@ -178,19 +179,19 @@ namespace Sheepy.Modnix {
       } catch ( Exception ex ) { mod.Error( ex ); return null; } }
 
       #region Helpers
-      private static object ParamValue ( ActionDef act, ParameterInfo arg, ModEntry actionMod, ModEntry handler ) {
-         if ( arg.ParameterType == typeof( ActionDef ) )
+      private static object ParamValue ( IAction act, ParameterInfo arg, ModEntry actionMod, ModEntry handler ) {
+         if ( typeof( IAction ).IsAssignableFrom( arg.ParameterType ) )
             return act;
          if ( arg.ParameterType == typeof( string ) )
             return actionMod.Metadata.Id;
          return ModPhases.ParamValue( arg, handler );
       }
 
-      private static string GetText ( this ActionDef act, string key, string fallback = null ) {
+      private static string GetText ( this IAction act, string key, string fallback = null ) {
          return act.SafeGet( key ) is string txt ? txt : fallback;
       }
 
-      private static void MergeDefAction ( ref ActionDef defValues, ActionDef a ) {
+      private static void MergeDefAction ( ref IAction defValues, IAction a ) {
          if ( defValues == null ) defValues = new ActionDef();
          foreach ( var e in a ) {
             if ( "action".Equals( e.Key ) ) continue;
@@ -198,7 +199,7 @@ namespace Sheepy.Modnix {
          }
       }
 
-      private static ActionDef AddDefAction ( ActionDef a, ActionDef defValues ) {
+      private static IAction AddDefAction ( IAction a, IAction defValues ) {
          a = new ActionDef( a );
          if ( defValues != null ) {
             foreach ( var e in defValues )

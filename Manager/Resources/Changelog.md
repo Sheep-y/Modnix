@@ -3,6 +3,7 @@ Modnix Changelog
 # Version 3, in development
 
 * Fix: Microsoft libraries are now also auto-loaded from system .Net, like framework system libraries.
+* Fix: Action handles may now accept IDictionary param.  Good old Dictionary still works.
 * Log: DLL mod call exceptions are not logged under the mod's id, instead of standalone.
 
 # Version 3 Beta 2, 2020-01-25

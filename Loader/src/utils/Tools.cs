@@ -51,7 +51,7 @@ namespace Sheepy.Modnix {
          return parsed?.Contains( val ) == true;
       }
 
-      internal static V SafeGet < K, V > ( this Dictionary< K, V > map, K key, V defVal = default ) {
+      internal static V SafeGet < K, V > ( this IDictionary< K, V > map, K key, V defVal = default ) {
          return map.TryGetValue( key, out V val ) ? val : defVal;
       }
    }
