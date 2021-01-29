@@ -61,13 +61,14 @@
     <Content Include="Essential Mods\mod_info.js" />
     <Content Include="Essential Mods\Subfolder\SkipIntro.dll" />
     <EmbeddedResource Include="LegendPrologue\mod_info.js" />
+    <Content Include="Tailwind-Legacy\Tailwind.js" />
     <Content Include="Tailwind\Tailwind.js" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Essential Mods\Subfolder\SkipIntro.conf" />
     <EmbeddedResource Include="LegendPrologue\changelog.md" />
     <None Include="packages.config" />
-    <None Include="Tailwind\PPDefModifier\Tailwind.json" />
+    <None Include="Tailwind-Legacy\PPDefModifier\Tailwind.json" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
@@ -84,6 +85,11 @@ if exist "Essential Mods.7z" del "Essential Mods.7z"
 if exist Tailwind.7z del Tailwind.7z
 
 "c:\Program Files\7-Zip\7z.exe" a Tailwind.7z .\Tailwind\*
-</PostBuildEvent>
+
+
+
+if exist Tailwind-Legend.7z del Tailwind-Legacy.7z
+
+"c:\Program Files\7-Zip\7z.exe" a Tailwind-Legacy.7z .\Tailwind-Legacy\*</PostBuildEvent>
   </PropertyGroup>
 </Project>

@@ -1,7 +1,7 @@
 ﻿({
    Id: "Zy.PPDef.Tailwind",
    Name: "Tailwind",
-   Version : 1.1,
+   Version : 1.0,
    Author : "Sheepy",
    Actions: [
       {
@@ -9,39 +9,28 @@
          OnError: "Log,Skip", // Here we set the error policy to Log, and Skip (to next action).
          Phase: "GeoscapeMod", // and that the actions are taken when first entering the Geoscape.
       },
-      // Increase the speed of all vehicles, based on Year One Edition stats.
       {
-         comment : "Manticore Speedup, originally 500",
-         guid  : "228f2cd8-8ca2-4224-ead6-c9c684f52172",
-         field : "BaseStats.Speed.Value",
-         value : 750,
-      },{
-         comment : "Thunderbird Speedup, originally 380",
-         guid  : "4c1178cc-e4a9-3f14-9ab4-2b397780b694",
-         field : "BaseStats.Speed.Value",
-         value : 570,
-      },{
-         comment : "Tiamat Speedup, orignally 375",
-         guid  : "a5a79edb-6d8a-dc54-d828-61ed825cd770",
-         field : "BaseStats.Speed.Value",
-         value : 375,
-      },{
-         comment : "Helios Speedup, originally 650",
-         guid  : "abcc9fdc-b601-cfc4-1b8d-5241e4cbb613",
-         field : "BaseStats.Speed.Value",
-         value : 975,
+         Include: "PPDefModifier/Tailwind.json" // Load actions from the PPDef json
       },
    ],
-   Requries: [{ Id: "tracktwo.PPDefModifier", Min: 1.7 },{ Id: "Modnix", Min: "3.0.2021.0125" }],
-   Description: "
+   Requries: [{ Id: "tracktwo.PPDefModifier", Min: 1.7 }],
+   Description:
+"
+* * * Mod STILL WORKS as long as PPDefModifier is available. * * *
+Any mod loader and any PPDefModifier version.
+
 This is a PPDefModifier mod that boost the speed of the four starting air transports.
+
+This mod is backward compatible with legacy mod loaders and PPDefModifier.
+To do that, this mod have two parts:
+A '.js' file that contains the mod's info such as version and description,
+and its actions which links to a traditional '.json' file in the 'PPDefModifier' folder.
 
 PPDefModifier allows anyone to modify game numbers,
 provided you can find the 'guid' of the game object and the path to the number.
 The PPDefModifier page (below) have more detailed guides.
 
-This mod requires Modnix 3+ and PPDefModifier 1.7+
-A backward compatible version of this mod is also available on GitHub.
+A simpler version of this mod is also available on GitHub, but is not backward compatible.
 
 Good luck!
 ",
