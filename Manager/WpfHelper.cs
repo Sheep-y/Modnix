@@ -119,61 +119,102 @@ namespace Sheepy.Modnix.MainGUI {
          } else
             return new Run( "{" + inline.ToString() + "}" );
       }
+   }
 
-      private static class BBCodeConverter {
-         private static Regex regSingle = new Regex( "\\[(hr|line)\\]|\b(https?|email|tel|s?ftp)://[^\\s]+" );
-         private static Regex regQuoted =
-            new Regex( "\\[(b|center|colou?r|font|heading|h[123456]|list|i|img|quote|right|s|spoiler|u|url|youtube)" +
-               "(=[^]]*)?\\](.*?)\\[/\\1\\]" );
+   public class BBCodeConverter {
+      private static Regex regTagS = new Regex( "(?=\\[/?(?:[a-z]+[1-6]?|\\*)(?:=[^]]*)?\\]|\b(?:https?|email|tel|s?ftp)://[^\\s]+)|(?<=\\])" );
+      private static Regex regTagM = new Regex( "^\\[(/)?([a-z]+[1-6]?|\\*)(=[^]]*)?\\]$|^(?:https?|email|tel|s?ftp)://[^\\s]+$" );
 
-         public static IEnumerable< Block > Convert ( string text )
-            => Parse( new BBCode( "", text ) ).ToTree().Select( e => e.ToBlock() );
+      public IEnumerable< Block > Convert ( string text )
+         => Parse( text ).ToTree().Select( e => e.ToBlock() );
 
-         private static BBCode Parse ( BBCode code ) {
-            return code;
-         }
-
+      public BBCode Parse ( string code ) {
+         tokens = regTagS.Split( code );
+         pos = -1;
+         advance();
+         return Parse( new BBCode() );
       }
 
-      public class BBCode {
-         readonly string tag;
-         readonly string param;
-         List<BBCode> children;
-
-         public BBCode ( string text ) : this( "", text ) { }
-
-         public BBCode ( string tag, string param ) {
-            this.tag = tag;
-            this.param = param;
+      public BBCode Parse ( BBCode code ) {
+         bool isListItem = code.tag == "*";
+         while ( ! eof ) {
+            if ( isListItem && peek == "[*]" ) return code;
+            string token = take();
+            var parts = regTagM.Match( token )?.Groups;
+            BBCode node;
+            if ( parts[0].Success ) {
+               if ( parts[1].Success ) // Close tag
+                  if ( parts[2].Value.Equals( code.tag, StringComparison.OrdinalIgnoreCase ) )
+                     return code;
+                  else
+                     node = new BBCode( null, token );
+               else if ( parts[4].Success ) // Plain url
+                  node = new BBCode( "url", token );
+               else
+                  node = Parse( new BBCode( parts[2].Value, parts[3].Value ) );
+            } else // Non-tag
+               node = new BBCode( null, token );
+            if ( code.children == null ) code.children = new List<BBCode>();
+            code.children.Add( node );
          }
+         return code;
+      }
 
-         public void Add ( params BBCode[] items ) {
-            if ( children == null ) children = new List< BBCode >();
-            children.AddRange( items );
-         }
+      #region parser
+      private string[] tokens;
+      private int pos;
 
-         public IEnumerable< BBCode > ToTree () {
-            if ( tag != "" || children == null ) return new BBCode[]{ this };
-            return children;
-         }
+      // Move to next (non-empty) token
+      private bool eof => pos >= tokens.Length;
+      private void advance () { do { ++pos; } while ( ! eof && string.IsNullOrEmpty( tokens[ pos ] ) ); }
+      private string peek => eof ? null : tokens[ pos ];
+      private string take () {
+         if ( eof ) return null;
+         var result = tokens[ pos ];
+         advance();
+         return result;
+      }
+      #endregion
+   }
 
-         public Inline ToInline () {
-            if ( tag == "" && children == null ) return new Run( param );
-            var result = new Span();
-            switch ( tag ) {
-               case "b" : result.FontWeight = FontWeights.Bold; break; 
-               case "i" : result.FontStyle = FontStyles.Italic; break;
-               case "s" : result.TextDecorations = TextDecorations.Strikethrough; break;
-            }
-            if ( children != null )
-               foreach ( var item in children )
-                  result.Inlines.Add( item.ToInline() );
-            return result;
-         }
+   public class BBCode {
+      public readonly string tag;
+      public readonly string param;
+      public List<BBCode> children;
 
-         public Block ToBlock () {
-            return new Paragraph( ToInline() );
+      public BBCode ( string text = null ) : this( null, text ) { }
+
+      public BBCode ( string tag, string param ) {
+         this.tag = tag;
+         this.param = param;
+      }
+
+      public void Add ( params BBCode[] items ) {
+         if ( children == null ) children = new List< BBCode >();
+         children.AddRange( items );
+      }
+
+      public IEnumerable< BBCode > ToTree () {
+         if ( tag != "" || children == null ) return new BBCode[]{ this };
+         return children;
+      }
+
+      public Inline ToInline () {
+         if ( tag == "" && children == null ) return new Run( param );
+         var result = new Span();
+         switch ( tag ) {
+            case "b" : result.FontWeight = FontWeights.Bold; break; 
+            case "i" : result.FontStyle = FontStyles.Italic; break;
+            case "s" : result.TextDecorations = TextDecorations.Strikethrough; break;
          }
+         if ( children != null )
+            foreach ( var item in children )
+               result.Inlines.Add( item.ToInline() );
+         return result;
+      }
+
+      public Block ToBlock () {
+         return new Paragraph( ToInline() );
       }
    }
 }
