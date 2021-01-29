@@ -74,7 +74,7 @@
   <PropertyGroup>
     <PostBuildEvent>cd "$(ProjectDir)"
 copy /y "$(TargetDir)$(TargetFileName)" "LegendPrologue.dll"
-"c:\Program Files\7-Zip\7z.exe" a "LegendPrologue.7z" "LegendPrologue.dll" "LegendPrologue\LegendPrologue.cs"
+"c:\Program Files\7-Zip\7z.exe" a LegendPrologue.7z LegendPrologue.dll "LegendPrologue\LegendPrologue.cs"
 
 if exist "Essential Mods.7z" del "Essential Mods.7z"
 
@@ -84,12 +84,17 @@ if exist "Essential Mods.7z" del "Essential Mods.7z"
 
 if exist Tailwind.7z del Tailwind.7z
 
-"c:\Program Files\7-Zip\7z.exe" a Tailwind.7z .\Tailwind\*
+"c:\Program Files\7-Zip\7z.exe" a Tailwind.7z ".\Tailwind\*"
 
 
 
 if exist Tailwind-Legend.7z del Tailwind-Legacy.7z
 
-"c:\Program Files\7-Zip\7z.exe" a Tailwind-Legacy.7z .\Tailwind-Legacy\*</PostBuildEvent>
+"c:\Program Files\7-Zip\7z.exe" a Tailwind-Legacy.7z ".\Tailwind-Legacy\*"
+
+
+
+if exist "Demo Mods.tar" del "Demo Mods.tar"
+"c:\Program Files\7-Zip\7z.exe" a "Demo Mods.tar" *.7z</PostBuildEvent>
   </PropertyGroup>
 </Project>
