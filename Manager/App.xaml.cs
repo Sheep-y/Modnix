@@ -7,6 +7,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
+using System.Security.Principal;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -98,6 +99,8 @@ namespace Sheepy.Modnix.MainGUI {
             if ( IsInstaller ) {
                if ( FoundInstalledManager() )
                   GUI = new SetupWindow( "launch" );
+               else if ( ParamIgnorePid == 0 && ReLaunchedAsAdmin() )
+                  Shutdown();
                else
                   GUI = new SetupWindow( "setup" );
             } else if ( CheckRuntimeConfigAndRestart() && LaunchManagerIgnoreSelf( MyPath ) ) {
@@ -239,6 +242,13 @@ namespace Sheepy.Modnix.MainGUI {
          } else if ( ver == Myself.Version )
             return new FileInfo( ModGuiExe ).Length == new FileInfo( Assembly.GetExecutingAssembly().Location ).Length;
          return false;
+      } catch ( Exception ex ) { return Log( ex, false ); } }
+
+      private bool ReLaunchedAsAdmin () { try {
+         using ( WindowsIdentity identity = WindowsIdentity.GetCurrent() ) {
+            if ( new WindowsPrincipal( identity ).IsInRole( WindowsBuiltInRole.Administrator ) ) return false;
+            return CreateProcess( Path.GetDirectoryName( MyPath ), Path.GetFileName( MyPath ), "/i " + Process.GetCurrentProcess().Id, true ).Start();
+         }
       } catch ( Exception ex ) { return Log( ex, false ); } }
 
       private bool IsInstaller =>
@@ -855,20 +865,24 @@ namespace Sheepy.Modnix.MainGUI {
          Process.Start( "explorer.exe", $"/select, \"{filename}\"" );
       }
 
-      internal string RunAndWait ( string path, string exe, string param = null, bool asAdmin = false, bool suppressLog = false ) {
-         Log( $"Running{( asAdmin ? " as admin" : "" )} at {path} : {exe} {param}" );
-         try {
-            using ( Process p = new Process() ) {
-               p.StartInfo.UseShellExecute = asAdmin;
-               p.StartInfo.RedirectStandardOutput = ! asAdmin;
-               p.StartInfo.FileName = exe;
-               p.StartInfo.Arguments = param;
-               p.StartInfo.WorkingDirectory = path;
-               p.StartInfo.CreateNoWindow = true;
-               p.StartInfo.WindowStyle = ProcessWindowStyle.Minimized;
-               if ( asAdmin ) p.StartInfo.Verb = "runas";
-               if ( ! p.Start() ) Log( "Process reused." );
+      internal Process CreateProcess ( string path, string exe, string param = null, bool asAdmin = false ) {
+         Log( $"Creating background process{( asAdmin ? " as admin" : "" )}: {path}{exe} {param}" );
+         Process p = new Process();
+         p.StartInfo.UseShellExecute = asAdmin;
+         p.StartInfo.FileName = exe;
+         p.StartInfo.Arguments = param;
+         p.StartInfo.WorkingDirectory = path;
+         p.StartInfo.CreateNoWindow = true;
+         p.StartInfo.WindowStyle = ProcessWindowStyle.Minimized;
+         if ( asAdmin ) p.StartInfo.Verb = "runas";
+         return p;
+      }
 
+      internal string RunAndWait ( string path, string exe, string param = null, bool asAdmin = false, bool suppressLog = false ) {
+         try {
+            using ( Process p = CreateProcess( path, exe, param, asAdmin ) ) {
+               p.StartInfo.RedirectStandardOutput = ! asAdmin;
+               if ( ! p.Start() ) Log( "Process reused." );
                var output = "";
                if ( ! asAdmin ) {
                   output = p.StandardOutput.ReadToEnd()?.Trim();
