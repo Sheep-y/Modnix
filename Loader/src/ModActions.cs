@@ -180,7 +180,7 @@ namespace Sheepy.Modnix {
 
       #region Helpers
       private static object ParamValue ( IAction act, ParameterInfo arg, ModEntry actionMod, ModEntry handler ) {
-         if ( typeof( IAction ).IsAssignableFrom( arg.ParameterType ) )
+         if ( arg.ParameterType == typeof( IAction ) || arg.ParameterType == typeof( ActionDef ) )
             return act;
          if ( arg.ParameterType == typeof( string ) )
             return actionMod.Metadata.Id;
