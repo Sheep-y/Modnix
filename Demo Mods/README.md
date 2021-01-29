@@ -3,35 +3,38 @@
 These demo mods showcast Modnix's modding features.
 Scroll up to browse their source code.
 
-Packaged mods can be downloaded from the [release page](https://github.com/Sheep-y/Modnix/releases/).
-Extract them from the archive and they can be installed to Modnix.
+Mods packages can be downloaded from the [release page](https://github.com/Sheep-y/Modnix/releases/).
+Extract the archive and you'll get individual 7z files that can be installed to Modnix.
 
 ## Essential Mods
 
 Difficulty: Easy
 
-A [Mod Pack](https://github.com/Sheep-y/Modnix/wiki/Mod-Types#Modnix_3_Mod_Packs) demo that bundles and pre-configure two other mods.
+A [Mod Pack](https://github.com/Sheep-y/Modnix/wiki/Mod-Types#Modnix_3_Mod_Packs) demo that bundles and pre-configure two other mods:
+[Skip Intro](https://www.nexusmods.com/phoenixpoint/mods/17) and [Block Telemetry](https://www.nexusmods.com/phoenixpoint/mods/48).
 
+Mod Packs are very easy to make.  Copy some files, change some text, and zip them up.
 Most mods have an open license that allows them to be bundled this way.
 
 ## Tailwind
 
 Difficulty: Moderate
 
-A PPDef mod that can be managed by Modnix 3, with PPDefModifier 1.7 and up.
+A [PPDefModifier](https://github.com/tracktwo/ppdefmodifier) mod that can be managed by Modnix 3, when using an up-to-date PPDefModifier.
+These mods are plain text and can be created with any text editor, the hardest part is finding the data to mod.
 
 There are two versions, one that is backward compatible with old loaders and old PPDefModifier,
 but is more complicated and can show inconsistent messages on Modnix 2.
 
 The other version is very simple, single file, and is consistent, but is not backward compatible.
 
-The user can install both; the simple version will disable the other version when its requirements is met.
+The user can install both; the simple one will disable the legacy one because it has a higher version.
 
 ## Legend Prologue
 
 Difficulty: Expert
 
-A DLL mod that can be [disarmed](https://github.com/Sheep-y/Modnix/wiki/Mod-Phases#DisarmMod) and rearmed in game.
+A C# DLL mod that can be [disarmed](https://github.com/Sheep-y/Modnix/wiki/Mod-Phases#DisarmMod) and rearmed in game.
 
 1. Install [Debug Console](https://www.nexusmods.com/phoenixpoint/mods/44/) and Legend Prologue.
 2. Launch game, new game, select Legend difficulty and see that Prologue checkbox is visible. (Do not start game!)
