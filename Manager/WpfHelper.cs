@@ -122,13 +122,14 @@ namespace Sheepy.Modnix.MainGUI {
    }
 
    public class BBCodeConverter {
-      private static Regex regTagS = new Regex( "(?=\\[/?(?:[a-z]+[1-6]?|\\*)(?:=[^]]*)?\\]|\b(?:https?|email|tel|s?ftp)://[^\\s]+)|(?<=\\])" );
-      private static Regex regTagM = new Regex( "^\\[(/)?([a-z]+[1-6]?|\\*)(=[^]]*)?\\]$|^(?:https?|email|tel|s?ftp)://[^\\s]+$" );
+      private static Regex regTagS = new Regex( "(?=\\[/?(?:[a-z]+|h[1-6]?|\\*)(?:=[^]]*)?\\]|\b(?:https?|email|tel|s?ftp)://[^\\s]+)|(?<=\\])", RegexOptions.IgnoreCase );
+      private static Regex regTagM = new Regex( "^\\[(/)?([a-z]+|h[1-6]?|\\*)(=[^]]*)?\\]$|^(https?|email|tel|s?ftp)://[^\\s]+$", RegexOptions.IgnoreCase );
 
       public IEnumerable< Block > Convert ( string text )
          => Parse( text ).ToTree().Select( e => e.ToBlock() );
 
       public BBCode Parse ( string code ) {
+         stack.Clear();
          tokens = regTagS.Split( code );
          pos = -1;
          advance();
@@ -136,26 +137,31 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       public BBCode Parse ( BBCode code ) {
-         bool isListItem = code.tag == "*";
+         var autoClose = BBCode.IsAutoClose( code.tag );
          while ( ! eof ) {
-            if ( isListItem && peek == "[*]" ) return code;
-            string token = take();
+            string token = peek;
+            if ( autoClose && code.tag.Equals( token.Substring( 1, token.Length - 2 ), StringComparison.OrdinalIgnoreCase ) )
+               token = "[/" + code.tag + "]";
+            else
+               advance();
             var parts = regTagM.Match( token )?.Groups;
-            BBCode node;
-            if ( parts[0].Success ) {
-               if ( parts[1].Success ) // Close tag
-                  if ( parts[2].Value.Equals( code.tag, StringComparison.OrdinalIgnoreCase ) )
-                     return code;
-                  else
-                     node = new BBCode( null, token );
-               else if ( parts[4].Success ) // Plain url
-                  node = new BBCode( "url", token );
-               else
-                  node = Parse( new BBCode( parts[2].Value, parts[3].Value ) );
-            } else // Non-tag
-               node = new BBCode( null, token );
+            BBCode node = null;
+            if ( parts[2].Success ) { // Tag
+               var tag = parts[2].Value;
+               if ( parts[1].Success ) { // Close tag
+                  var ltag = tag.ToLowerInvariant();
+                  while ( stack.Count > 0 && stack.Contains( ltag ) )
+                     if ( stack.Pop() == ltag )
+                        break;
+                  return code;
+               } else {
+                  stack.Push( tag.ToLowerInvariant() );
+                  node = Parse( new BBCode( tag, parts[3].Value ) );
+               }
+            } else if ( parts[4].Success ) // Plain url
+               node = new BBCode( "url", token ) { children = new List<BBCode> { new BBCode( null, token ) } };
             if ( code.children == null ) code.children = new List<BBCode>();
-            code.children.Add( node );
+            code.children.Add( node ?? new BBCode( null, token ) );
          }
          return code;
       }
@@ -163,17 +169,12 @@ namespace Sheepy.Modnix.MainGUI {
       #region parser
       private string[] tokens;
       private int pos;
+      private readonly Stack< string > stack = new Stack<string>();
 
       // Move to next (non-empty) token
       private bool eof => pos >= tokens.Length;
       private void advance () { do { ++pos; } while ( ! eof && string.IsNullOrEmpty( tokens[ pos ] ) ); }
       private string peek => eof ? null : tokens[ pos ];
-      private string take () {
-         if ( eof ) return null;
-         var result = tokens[ pos ];
-         advance();
-         return result;
-      }
       #endregion
    }
 
@@ -202,7 +203,7 @@ namespace Sheepy.Modnix.MainGUI {
       public Inline ToInline () {
          if ( tag == "" && children == null ) return new Run( param );
          var result = new Span();
-         switch ( tag ) {
+         switch ( tag.ToLowerInvariant() ) {
             case "b" : result.FontWeight = FontWeights.Bold; break; 
             case "i" : result.FontStyle = FontStyles.Italic; break;
             case "s" : result.TextDecorations = TextDecorations.Strikethrough; break;
@@ -216,5 +217,30 @@ namespace Sheepy.Modnix.MainGUI {
       public Block ToBlock () {
          return new Paragraph( ToInline() );
       }
+
+      override public string ToString () {
+         var hasTag = ! string.IsNullOrEmpty( tag );
+         if ( ! hasTag && param != null ) return param;
+         var buf = new StringBuilder();
+         if ( hasTag ) {
+            buf.Append( '[' ).Append( tag );
+            if ( ! string.IsNullOrEmpty( param ) ) buf.Append( '=' ).Append( param );
+            buf.Append( ']' );
+         }
+         if ( children != null )
+            foreach ( var e in children )
+               buf.Append( e.ToString() );
+         if ( hasTag && ! IsAutoClose( tag ) )
+            buf.Append( "[/" ).Append( tag ).Append( ']' );
+         return buf.ToString();
+      }
+
+      public static bool IsAutoClose ( string tag ) {
+         switch ( tag?.ToLowerInvariant() ) {
+            case "*" : case "td" : case "tr" : return true;
+         }
+         return false;
+      }
+
    }
 }
