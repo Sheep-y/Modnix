@@ -1,4 +1,4 @@
-({
+{
    Id : "Zy.LegendPrologue",
    Lang : "-",
    Duration : "temp",
@@ -18,4 +18,4 @@ See GitHub page (below) for more details.
       "Modnix": "https://github.com/Sheep-y/Modnix/wiki/",
    },
    Disable: [{ Id: "Sheepy.LegendPrologue", Max: 1.1 }], // Disable old Id
-})
+}

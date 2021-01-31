@@ -1,4 +1,4 @@
-﻿({
+﻿{
    Id: "Zy.PPDef.Tailwind",
    Name: "Tailwind",
    Version : 1.0,
@@ -41,4 +41,4 @@ Good luck!
       "PPDefModifier" : "https://github.com/tracktwo/ppdefmodifier#readme",
    },
    Copyright: "Public Domain",
-})
+}

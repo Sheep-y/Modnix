@@ -1,4 +1,4 @@
-﻿({
+﻿{
    Id : "Zy.Core", // Id is still required for management purpose
    Name : "Essential Mods",
    Version : "2021.01.25",
@@ -28,4 +28,4 @@ When it is ready for release, just zip the folder.
       "Modnix": "https://github.com/Sheep-y/Modnix/wiki/",
    },
    Copyright: "Public Domain",
-})
+}

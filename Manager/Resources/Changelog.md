@@ -3,7 +3,7 @@ Modnix Changelog
 # Version 3, in development
 
 * Fix: Microsoft libraries are now also auto-loaded from system .Net, like framework system libraries.
-* Fix: Action handles may now accept IDictionary param.  Good old Dictionary still works.
+* Fix: ActionMod may now use IDictionary as param.  Dictionary still works.
 * Gui: Installer now relaunch itself as admin.  GUI setup remains unchanged because it requires major refactor.
 * Log: DLL mod call exceptions are not logged under the mod's id, instead of standalone.
 

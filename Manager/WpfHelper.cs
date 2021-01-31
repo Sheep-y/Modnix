@@ -122,8 +122,8 @@ namespace Sheepy.Modnix.MainGUI {
    }
 
    public class BBCodeConverter {
-      private static Regex regTagS = new Regex( "(?=\\[/?(?:[a-z]+|h[1-6]?|\\*)(?:=[^]]*)?\\]|\b(?:https?|email|tel|s?ftp)://[^\\s]+)|(?<=\\])", RegexOptions.IgnoreCase );
-      private static Regex regTagM = new Regex( "^\\[(/)?([a-z]+|h[1-6]?|\\*)(=[^]]*)?\\]$|^(https?|email|tel|s?ftp)://[^\\s]+$", RegexOptions.IgnoreCase );
+      private static readonly Regex regTagS = new Regex( "(?=\\[/?(?:[a-z]+|h[1-6]?|\\*)(?:=[^]]*)?\\]|\b(?:https?|email|tel|s?ftp)://[^\\s]+)|(?<=\\])", RegexOptions.IgnoreCase );
+      private static readonly Regex regTagM = new Regex( "^\\[(/)?([a-z]+|h[1-6]?|\\*)(=[^]]*)?\\]$|^(https?|email|tel|s?ftp)://[^\\s]+$", RegexOptions.IgnoreCase );
 
       public IEnumerable< Block > Convert ( string text )
          => Parse( text ).ToTree().Select( e => e.ToBlock() );
@@ -166,12 +166,11 @@ namespace Sheepy.Modnix.MainGUI {
          return code;
       }
 
-      #region parser
+      #region parser internals
       private string[] tokens;
       private int pos;
       private readonly Stack< string > stack = new Stack<string>();
 
-      // Move to next (non-empty) token
       private bool eof => pos >= tokens.Length;
       private void advance () { do { ++pos; } while ( ! eof && string.IsNullOrEmpty( tokens[ pos ] ) ); }
       private string peek => eof ? null : tokens[ pos ];
@@ -202,20 +201,54 @@ namespace Sheepy.Modnix.MainGUI {
 
       public Inline ToInline () {
          if ( tag == "" && children == null ) return new Run( param );
-         var result = new Span();
+         var result = children?.Count == 1 ? children[0].ToInline() : new Span();
          switch ( tag.ToLowerInvariant() ) {
-            case "b" : result.FontWeight = FontWeights.Bold; break; 
+            case "b" : result.FontWeight = FontWeights.Bold; break;
             case "i" : result.FontStyle = FontStyles.Italic; break;
-            case "s" : result.TextDecorations = TextDecorations.Strikethrough; break;
+            case "s" : result.TextDecorations.Add( TextDecorations.Strikethrough ); break;
+            case "u" : result.TextDecorations.Add( TextDecorations.Underline ); break;
          }
-         if ( children != null )
+         if ( children?.Count > 1 )
             foreach ( var item in children )
-               result.Inlines.Add( item.ToInline() );
+               ( (Span) result ).Inlines.Add( item.ToInline() );
+         switch ( tag.ToLowerInvariant() ) {
+            case "url" :
+               try {
+                  return new Hyperlink( result ) { NavigateUri = new Uri( tag ) };
+               } catch( UriFormatException ) { }
+               break;
+         }
          return result;
       }
 
       public Block ToBlock () {
-         return new Paragraph( ToInline() );
+         switch ( tag.ToLowerInvariant() ) {
+            case "h1" : case "h2" : case "h3" : case "h4" : case "h5" : case "h6" :
+               return new Paragraph( ToInline() ) { FontWeight = FontWeights.Bold, FontSize = 19 - tag[ 1 ] + '0' };
+            case "list" :
+               var list = new List();
+               if ( children != null )
+                  foreach ( var child in children ) {
+                     var row = new ListItem();
+                     row.Blocks.Add( child.ToBlock() );
+                     list.ListItems.Add( row );
+                  }
+               return list;
+            case "table" :
+               var table = new Table();
+               var body = new TableRowGroup();
+               if ( children != null )
+                  foreach ( var child in children ) {
+                     var row = new TableRow();
+                     var cells = "tr".Equals( child.tag, StringComparison.OrdinalIgnoreCase ) ? child.children : new List<BBCode>{ child };
+                     foreach ( var grandchild in cells )
+                        row.Cells.Add( new TableCell( grandchild.ToBlock() ) );
+                     body.Rows.Add( row );
+                  }
+               table.RowGroups.Add( body );
+               return table;
+         }
+         return new Paragraph( ToInline () );
       }
 
       override public string ToString () {
