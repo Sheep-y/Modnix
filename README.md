@@ -14,7 +14,7 @@ If you find bugs, please report on [GitHub](https://github.com/Sheep-y/Modnix/is
 
 ## User Features
 
-1. Easy to use.  One-click setup, simple mod manager, detailed diagnostic log.
+1. Easy to use.  One-click setup, simple mod manager, detailed log. (Linux Steam [see here](https://github.com/Sheep-y/Modnix/issues/32).)
 2. Support advanced mods, such as *real* Skip Intro, as well as most legacy mods.
 3. See and edit mod config for compatible mods.
 4. Quick access to mod files, communities, resources, and of course the game.
