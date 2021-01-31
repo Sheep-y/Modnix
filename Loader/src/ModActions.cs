@@ -45,31 +45,21 @@ namespace Sheepy.Modnix {
          if ( ! InitActionHandlers() ) return;
 
          var modPrefix = mod.PrefixFilter;
-         foreach ( var dll in ActionHandlers ) {
-            var handler = ActionMods[ dll ];
-            if ( handler != mod )
-               handler.Log().Filters.Add( modPrefix );
-         }
          foreach ( var act in actions ) {
-            var handled = false;
             foreach ( var dll in ActionHandlers ) {
+               var handler = ActionMods[ dll ];
+               if ( handler != mod ) handler.Log().Filters.Add( modPrefix );
                var result = RunActionHandler( mod, dll, act );
-               if ( result is bool flag ) {
-                  if ( flag ) {
-                     handled = true;
-                     break;
-                  }
-               } else if ( result is Exception ex )
-                  goto Cleanup;
+               if ( handler != mod ) handler.Log().Filters.Remove( modPrefix );
+               if ( result is bool flag && flag )
+                  goto NextAction;
+               if ( result is Exception )
+                  return;
             }
-            if ( ! handled ) {
-               Func<string> stringify = () => Json.Stringify( act );
-               LogActionError( log, act, "Unhandled action: {0}", stringify );
-            }
+            Func<string> stringify = () => Json.Stringify( act );
+            LogActionError( log, act, "Unhandled action: {0}", stringify );
+NextAction:;
          }
-         Cleanup:
-         foreach ( var dll in ActionHandlers )
-            ActionMods[ dll ].Log().Filters.Remove( modPrefix );
       } catch ( Exception ex ) { mod.Log().Error( ex ); } }
 
       private static IAction[] FilterActions ( IAction[] actions, string phase ) {
@@ -80,12 +70,12 @@ namespace Sheepy.Modnix {
 
       private static void LogActionError ( Logger log, IAction act, object err, params object[] args ) {
          var directives = act.GetText( "onerror", "log" );
-         if ( InList( directives, "log" ) || InList( directives, "error" ) ) ; // Use default handling
+         if ( InList( directives, "log" ) || InList( directives, "error" ) ) log.Error( err, args );
          else if ( InList( directives, "warn" ) ) log.Warn( err, args );
          else if ( InList( directives, "info" ) ) log.Info( err, args );
          else if ( InList( directives, "verbo" ) ) log.Verbo( err, args );
          else if ( InList( directives, "silent" ) ) return;
-         log.Error( err, args );
+         else log.Error( err, args );
       }
 
       internal static HashSet< string > FindPhases ( IAction[] actions ) {
@@ -169,7 +159,7 @@ namespace Sheepy.Modnix {
             } else if ( result is Exception ex ) {
                LogActionError( handler.Log(), act, ex );
                if ( InList( act.GetText( "onerror" ), "continue" ) ) continue;
-               if ( InList( act.GetText( "onerror" ), "skip" ) ) return null;
+               if ( InList( act.GetText( "onerror" ), "skip" ) ) return true;
                mod.Log().Info( "Aborting Actions. Set OnError to \"Log,Continue\" or \"Log,Skip\" to ignore the error." );
                return ex;
             } else if ( result != null )

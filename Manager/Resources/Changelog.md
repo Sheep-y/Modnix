@@ -4,6 +4,8 @@ Modnix Changelog
 
 * Fix: Microsoft libraries are now also auto-loaded from system .Net, like framework system libraries.
 * Fix: ActionMod may now use IDictionary as param.  Dictionary still works.
+* Fix: Action errors now no longer got reported an additional time at error level (regression).
+* Fix: OnError: "Skip" now properly skip to next action, instead of skipping current handler.
 * Gui: Installer now relaunch itself as admin.  GUI setup remains unchanged because it requires major refactor.
 * Log: DLL mod call exceptions are not logged under the mod's id, instead of standalone.
 
