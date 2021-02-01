@@ -3,8 +3,8 @@
 These demo mods showcast Modnix's modding features.
 Scroll up to browse their source code.
 
-Mods packages can be downloaded from the [release page](https://github.com/Sheep-y/Modnix/releases/).
-Extract the archive and you'll get individual 7z files that can be installed to Modnix.
+Prepackaged demo mods is available on the [release page](https://github.com/Sheep-y/Modnix/releases/).
+Extract the tarball to get a bunch of 7z files that can be installed to Modnix.
 
 ## Essential Mods
 
@@ -32,19 +32,27 @@ The user can install both; the simple one will disable the legacy one because it
 
 ## Laser On Fire
 
-Difficulty: Moderate to Hard
+Difficulty: Hard
 
 A [JavaScript](https://www.nexusmods.com/phoenixpoint/mods/49) mod that adds a small fire damage to all laser weapons.
-Like PPDefModifier, they can be edited with Notepad to change their behaviour.
+Like PPDefModifier mods, JavaScript mods can be created and edited with Notepad, and thus still easier than building DLL mods.
 
-Since JavaScript is a [*complete*](https://en.wikipedia.org/wiki/Turing_completeness) scripting language,
-it is way more powerful, but with a steeper learning curve as you make bigger and bigger dreams.
+They are different from PPDefModifier in that JavaScript is a [complete](https://en.wikipedia.org/wiki/Turing_completeness) scripting language,
+thus they can do a much wider range of operations.  Whatever the game can do, you can do with JavaScript.
+
+As a demo, this mod firmly targets people with some [coding experience](https://eloquentjavascript.net/), starting off with a list of different variables.
+Something that fits the capability of a hobbyist coder.  I guess.
+
+I will see how to split the demo in the future, to make a scripting mod that is easy and does not require coding concepts.
 
 ## Legend Prologue
 
 Difficulty: Expert
 
 A C# DLL mod that can be [disarmed](https://github.com/Sheep-y/Modnix/wiki/Mod-Phases#DisarmMod) and rearmed in game.
+If that does not sound difficult, click the link and you'll see why it is Expert.
+
+Steps to disarm / rearm this mod:
 
 1. Install [Debug Console](https://www.nexusmods.com/phoenixpoint/mods/44/) and Legend Prologue.
 2. Launch game, new game, select Legend difficulty and see that Prologue checkbox is visible. (Do not start game!)
