@@ -4,6 +4,7 @@
 
 * Full rewrite to make code independent and easier to understand.
 * Support Modnix 3 Disarm.
+* Tested on Phoenix Point 1.9.3.66065 with Modnix 3.0.2021.0125.
 
 # Version 1, 2021-01-12
 

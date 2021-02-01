@@ -14,7 +14,7 @@ This Mod Pack contains two mods: BlockTelemetry and SkipIntro.
 SkipIntro is pre-configured to skip new game intro.
 
 This is intended as a technical demo for Modnix 3,
-but the mods are real and tested on Year One Edition.
+but the mods are real and tested on Phoenix Point 1.9.3.
 
 Mod Packs are very easy to create, requires no coding at all.
 Put some mods in a folder, copy this mod_info.js, open it in Notepad, update mod list.

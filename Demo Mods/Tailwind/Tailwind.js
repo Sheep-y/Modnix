@@ -1,7 +1,7 @@
 ﻿{
    Id: "Zy.PPDef.Tailwind",
    Name: "Tailwind",
-   Version : 1.1,
+   Version : "1.1.1",
    Author : "Sheepy",
    Requires: [{ Id: "tracktwo.PPDefModifier", Min: 1.7 },{ Id: "Modnix", Min: "3.0.2021.0125" }],
    Actions: [
@@ -34,7 +34,8 @@
       },
    ],
    Description: "
-This is a PPDefModifier mod that boost the speed of the four starting air transports.
+This is a PPDefModifier mod that boost the speed of the four starting air transports,
+tested on Phoenix Point 1.9.3.
 
 PPDefModifier allows anyone to modify game numbers,
 provided you can find the 'guid' of the game object and the path to the number.

@@ -19,7 +19,8 @@ The mod also declares a counter and log it, for demonstration.
 (Built in helpers are listed in JavaScript Runtime's readme, while common in-game object types are listed by the Dump Data mod.)
 
 This mod requires Modnix 3+ and JavaScript Runtime.
-Tested on Phoenix Point 1.9.3.",
+Tested on Phoenix Point 1.9.3.
+",
    Actions : [{
       "Action" : "Default",    // Required to set "Script" on all actions.
       "Script" : "JavaScript", // When combined with "Eval", cause the Scripting Library 2 to run the actions.
