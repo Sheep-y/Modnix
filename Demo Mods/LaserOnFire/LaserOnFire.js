@@ -1,9 +1,10 @@
 {
-   Id : "Sheepy.LaserOnFire",
+   Id : "Zy.LaserOnFire",
    Name : "Laser on Fire",
    Author : "Sheepy",
-   Version : "1.0",
+   Version : "2.0",
    Requires: "Zy.JavaScript",
+   Disables: "Sheepy.LaserOnFire", // Old Id
    Description : "
 Adds a small fire damage to laser weapons, plus pierce or shred on selected lasers.
 
@@ -32,50 +33,50 @@ Tested on Phoenix Point 1.9.3.",
                 let weapon;',
    },{
       // Add 1 fire damage to "SY_LaserPistol_WeaponDef".
-      "Eval" : 'weapon = Repo.Get( WeaponDef, "SY_LaserPistol_WeaponDef" )
-                             .Fire( 1 );
+      "Eval" : 'weapon = Repo.get( WeaponDef, "SY_LaserPistol_WeaponDef" )
+                             .fire( 1 );
                 done.push( weapon ); ',
    },{
-      "Eval" : 'weapon = Repo.Get( WeaponDef, "SY_LaserAssaultRifle_WeaponDef" )
-                             .Fire( 1 );
+      "Eval" : 'weapon = Repo.get( WeaponDef, "SY_LaserAssaultRifle_WeaponDef" )
+                             .fire( 1 );
                 done.push( weapon ); ', // `done` is a JavaScript array, thus the lowercase methods
    },{
       // Add fire and pierce.
-      "Eval" : 'weapon = Repo.Get( WeaponDef, "SY_LaserSniperRifle_WeaponDef" )
-                             .Fire( 3 )
-                             .Pierce( 5 );
-                done.push( weapon ); ',
-   },{
-      "Eval" : 'weapon = Repo.Get( WeaponDef, "PX_LaserPDW_WeaponDef" )
-                             .Fire( 1 );
+      "Eval" : 'weapon = Repo.get( WeaponDef, "SY_LaserSniperRifle_WeaponDef" )
+                             .fire( 3 )
+                             .pierce( 5 );
                 done.push( weapon ); ',
    },{
       // Add fire and shred.  Normal damage is just "Damage", by the way.
-      "Eval" : 'weapon = Repo.Get( WeaponDef, "PX_LaserTechTurretGun_WeaponDef" )
-                             .Fire( 1 )
-                             .Shred( 2 );
-                done.push( weapon ); ',
-   },{
-      "Eval" : 'weapon = Repo.Get( WeaponDef, "PX_LaserArrayPack_WeaponDef" )
-                             .Fire( 2 );
+      "Eval" : 'weapon = Repo.get( WeaponDef, "PX_LaserTechTurretGun_WeaponDef" )
+                             .fire( 1 )
+                             .shred( 2 );
                 done.push( weapon ); ',
    },{
       // This one is mine.  You didn't know I am an AI on a hidden space platform?
-      "Eval" : 'weapon = Repo.Get( WeaponDef, "ZY_LaserOrbitalPlatform_WeaponDef" )
+      "Eval" : 'weapon = Repo.get( WeaponDef, "ZY_LaserOrbitalPlatform_WeaponDef" )
                              .Fire( 2000 );
                 done.push( weapon ); ', // The first line crashed.  Get return null.  So this line will not run.
       // Of course it would fail.  Too wimpy.  Who would install a weapon that can't wipe out humanity.
       // So, do not log, and skip to next action.  (Log is bugged in Modnix 3 Beta 2; will be fixed.)
       "OnError" : "NoLog, Skip",
    },{
-      // A little gem.  Skip to next code if too complex.
+      // Loop through all remaining laser weapons and add Fire 1, e.g. Laser PDW and Laser Backpack
+      // A proper mod should put this first, then override the damages.  But a demo need to start simple.
+      "Eval" : 'for ( let gun of Repo.getAll( WeaponDef ) ) {
+                   if ( gun.name.includes( "_Laser" ) && gun.name != "SY_LaserBlade_WeaponDef" && ! done.includes( gun ) )
+                      done.push( gun.fire( 1 ) );
+                } ',
+   },{
+      // One last gem.  Skip to next code if too complex.
       // Idea: if Ares AR-1's damage is exactly 25, change it to 30.
-      "Eval" : 'weapon = Repo.Get( WeaponDef, "PX_AssaultRifle_WeaponDef" );
+      "Eval" : 'weapon = Repo.get( WeaponDef, "PX_AssaultRifle_WeaponDef" );
                 let expectedDamage = 25;
-                let actualDamage = weapon?.CompareExchangeDamage( "normal", expectedDamage, 30 );
+                let actualDamage = weapon?.compareExchangeDamage( "normal", expectedDamage, 30 );
                 if ( actualDamage === expectedDamage ) done.push( weapon );
                 actualDamage; ', // The last value, this value, is the action result and will be logged.
       // Now, when the damage is changed, by a future game patch or by another mod, our change will not be applied.
+      // No, it is not laser.  But this example is not expected to run either.
    },{
       "Eval" : '// Log a summary. Yes this comment is _in_ the code!
                 console.log( `Done! ${done.length} lasers now ON FIRE!` );

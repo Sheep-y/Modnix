@@ -61,12 +61,14 @@
     <Content Include="Essential Mods\mod_info.js" />
     <Content Include="Essential Mods\Subfolder\SkipIntro.dll" />
     <EmbeddedResource Include="LegendPrologue\mod_info.js" />
+    <Content Include="LaserOnFire\LaserOnFire.js" />
     <Content Include="Tailwind-Legacy\Tailwind.js" />
     <Content Include="Tailwind\Tailwind.js" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Essential Mods\Subfolder\SkipIntro.conf" />
     <EmbeddedResource Include="LegendPrologue\changelog.md" />
+    <None Include="LaserOnFire\changelog.md" />
     <None Include="packages.config" />
     <None Include="Tailwind-Legacy\PPDefModifier\Tailwind.json" />
   </ItemGroup>

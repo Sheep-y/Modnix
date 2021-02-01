@@ -1,8 +1,9 @@
 Changelog of Laser on Fire, a Phoenix Point Mod by Sheepy
 
-# Version 1, 2021-02-01
+# Version 2, 2021-02-01
 
 * Update to Scripting Library 2, which uses JavaScript instead of C#.
+* More laser weapons are included, to demo looping.
 * Remove Destiny III first person view and camera shake, since they have been implemented in vanilla.
 
 # Version Alpha 0.0.2020.0605
