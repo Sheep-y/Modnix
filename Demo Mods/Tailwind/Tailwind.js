@@ -3,6 +3,7 @@
    Name: "Tailwind",
    Version : 1.1,
    Author : "Sheepy",
+   Requries: [{ Id: "tracktwo.PPDefModifier", Min: 1.7 },{ Id: "Modnix", Min: "3.0.2021.0125" }],
    Actions: [
       {
          Action: "Default", // Default actions will copy its field to all following actions.
@@ -32,7 +33,6 @@
          value : 975,
       },
    ],
-   Requries: [{ Id: "tracktwo.PPDefModifier", Min: 1.7 },{ Id: "Modnix", Min: "3.0.2021.0125" }],
    Description: "
 This is a PPDefModifier mod that boost the speed of the four starting air transports.
 
@@ -45,11 +45,11 @@ A backward compatible version of this mod is also available on GitHub.
 
 Good luck!
 ",
-   Contacts: { Discord: "https://discord.com/channels/322630986431201283/656933530181435392" },
    Url: {
       "GitHub" : "https://github.com/Sheep-y/Modnix/tree/master/Demo%20Mods#readme",
       "Modnix": "https://github.com/Sheep-y/Modnix/wiki/",
       "PPDefModifier" : "https://github.com/tracktwo/ppdefmodifier#readme",
    },
+   Contacts: { Discord: "https://discord.com/channels/322630986431201283/656933530181435392" },
    Copyright: "Public Domain",
 }

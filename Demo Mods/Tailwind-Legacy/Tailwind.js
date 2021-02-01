@@ -3,6 +3,7 @@
    Name: "Tailwind",
    Version : 1.0,
    Author : "Sheepy",
+   Requries: [{ Id: "tracktwo.PPDefModifier", Min: 1.7 }],
    Actions: [
       {
          Action: "Default", // Default actions will copy its field to all following actions.
@@ -13,7 +14,6 @@
          Include: "PPDefModifier/Tailwind.json" // Load actions from the PPDef json
       },
    ],
-   Requries: [{ Id: "tracktwo.PPDefModifier", Min: 1.7 }],
    Description:
 "
 * * * Mod STILL WORKS as long as PPDefModifier is available. * * *
@@ -34,11 +34,11 @@ A simpler version of this mod is also available on GitHub, but is not backward c
 
 Good luck!
 ",
-   Contacts: { Discord: "https://discord.com/channels/322630986431201283/656933530181435392" },
    Url: {
       "GitHub" : "https://github.com/Sheep-y/Modnix/tree/master/Demo%20Mods#readme",
       "Modnix": "https://github.com/Sheep-y/Modnix/wiki/",
       "PPDefModifier" : "https://github.com/tracktwo/ppdefmodifier#readme",
    },
+   Contacts: { Discord: "https://discord.com/channels/322630986431201283/656933530181435392" },
    Copyright: "Public Domain",
 }

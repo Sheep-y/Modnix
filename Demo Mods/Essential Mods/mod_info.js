@@ -3,11 +3,11 @@
    Name : "Essential Mods",
    Version : "2021.01.25",
    Author : "Sheepy",
+   Requires : [{ Id: "Modnix", Min: "3.0.2021.0120" }],
    Mods : [ // List of mods, can be .dll or .json
       "BlockTelemetry.dll",
       "Subfolder/SkipIntro.dll",
    ],
-   Requires : [{ Id: "Modnix", Min: "3.0.2021.0120" }],
    Description :
 "
 This Mod Pack contains two mods: BlockTelemetry and SkipIntro.
@@ -22,10 +22,10 @@ Put some mods in a folder, copy this mod_info.js, open it in Notepad, update mod
 Then simply refresh in Modnix to see the mods, and change their config.
 When it is ready for release, just zip the folder.
 ",
-   Contacts : { Discord : "https://discord.com/channels/322630986431201283/656933530181435392" },
    Url : {
       "GitHub" : "https://github.com/Sheep-y/Modnix/tree/master/Demo%20Mods#readme",
       "Modnix": "https://github.com/Sheep-y/Modnix/wiki/",
    },
+   Contacts : { Discord : "https://discord.com/channels/322630986431201283/656933530181435392" },
    Copyright: "Public Domain",
 }

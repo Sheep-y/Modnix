@@ -389,6 +389,12 @@ namespace Sheepy.Modnix.MainGUI {
                doc.Blocks.Add( block );
             return;
          } catch ( Exception ex ) { Log( ex ); }
+         if ( text.Contains( "[/" ) ) try {
+            doc.Blocks.Clear();
+            foreach ( var block in new BBCodeConverter().Convert( text ) )
+               doc.Blocks.Add( block );
+            return;
+         } catch ( Exception ex ) { Log( ex ); }
          doc.TextRange().Text = WpfHelper.Lf2Cr( text );
       } catch ( SystemException ex ) { doc.TextRange().Text = ex.ToString(); } }
 
