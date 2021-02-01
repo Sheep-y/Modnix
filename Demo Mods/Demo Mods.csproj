@@ -8,7 +8,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Sheepy.PhoenixPt.LegendPrologue</RootNamespace>
-    <AssemblyName>PhoenixPt_LegendPrologue</AssemblyName>
+    <AssemblyName>LegendPrologue</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
@@ -75,8 +75,8 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>cd "$(ProjectDir)"
-copy /y "$(TargetDir)$(TargetFileName)" "LegendPrologue.dll"
-"c:\Program Files\7-Zip\7z.exe" a LegendPrologue.7z LegendPrologue.dll "LegendPrologue\LegendPrologue.cs"
+if exist LegendPrologue.7z del LegendPrologue.7z
+"c:\Program Files\7-Zip\7z.exe" a LegendPrologue.7z "$(TargetDir)$(TargetFileName)" "LegendPrologue\LegendPrologue.cs"
 
 if exist "Essential Mods.7z" del "Essential Mods.7z"
 
