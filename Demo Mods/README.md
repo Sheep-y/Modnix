@@ -30,6 +30,17 @@ The other version is very simple, single file, and is consistent, but is not bac
 
 The user can install both; the simple one will disable the legacy one because it has a higher version.
 
+## Laser On Fire
+
+Difficulty: Moderate and up
+
+A JavaScript mod that allows plain text mods to run code in the game.
+As plain-text mods, they can be edited with Notepad to change their behaviour.
+
+Because JavaScript is a [*complete*](https://en.wikipedia.org/wiki/Turing_completeness) scripting language,
+it is way more powerful than PPDefModifier,
+but have a steeper learning curve as you tread outside the easy helpers and into the deep water.
+
 ## Legend Prologue
 
 Difficulty: Expert

@@ -94,6 +94,12 @@ if exist Tailwind-Legend.7z del Tailwind-Legacy.7z
 
 
 
+if exist LaserOnFire.7z del LaserOnFire.7z
+
+"c:\Program Files\7-Zip\7z.exe" a LaserOnFire.7z ".\LaserOnFire\*"
+
+
+
 if exist "Demo Mods.tar" del "Demo Mods.tar"
 "c:\Program Files\7-Zip\7z.exe" a "Demo Mods.tar" *.7z</PostBuildEvent>
   </PropertyGroup>
