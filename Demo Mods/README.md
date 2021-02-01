@@ -32,14 +32,13 @@ The user can install both; the simple one will disable the legacy one because it
 
 ## Laser On Fire
 
-Difficulty: Moderate and up
+Difficulty: Moderate to Hard
 
-A JavaScript mod that allows plain text mods to run code in the game.
-As plain-text mods, they can be edited with Notepad to change their behaviour.
+A [JavaScript](https://www.nexusmods.com/phoenixpoint/mods/49) mod that adds a small fire damage to all laser weapons.
+Like PPDefModifier, they can be edited with Notepad to change their behaviour.
 
-Because JavaScript is a [*complete*](https://en.wikipedia.org/wiki/Turing_completeness) scripting language,
-it is way more powerful than PPDefModifier,
-but have a steeper learning curve as you tread outside the easy helpers and into the deep water.
+Since JavaScript is a [*complete*](https://en.wikipedia.org/wiki/Turing_completeness) scripting language,
+it is way more powerful, but with a steeper learning curve as you make bigger and bigger dreams.
 
 ## Legend Prologue
 

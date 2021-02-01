@@ -3,7 +3,7 @@
    Name: "Tailwind",
    Version : 1.1,
    Author : "Sheepy",
-   Requries: [{ Id: "tracktwo.PPDefModifier", Min: 1.7 },{ Id: "Modnix", Min: "3.0.2021.0125" }],
+   Requires: [{ Id: "tracktwo.PPDefModifier", Min: 1.7 },{ Id: "Modnix", Min: "3.0.2021.0125" }],
    Actions: [
       {
          Action: "Default", // Default actions will copy its field to all following actions.
