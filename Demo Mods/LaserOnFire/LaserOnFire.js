@@ -58,8 +58,8 @@ Tested on Phoenix Point 1.9.3.",
                              .Fire( 2000 );
                 done.push( weapon ); ', // The first line crashed.  Get return null.  So this line will not run.
       // Of course it would fail.  Too wimpy.  Who would install a weapon that can't wipe out humanity.
-      // So, do not log, and skip to next action.  (Log is bugged in Modnix 3 Beta 2; will be fixed.)
-      "OnError" : "NoLog, Skip",
+      // So, do not log, and skip to next action.
+      "OnError" : "Silent, Skip",
    },{
       // Loop through all remaining laser weapons and add Fire 1, e.g. Laser PDW and Laser Backpack
       // A proper mod should put this first, then override the damages.  But a demo need to start simple.
