@@ -61,6 +61,7 @@
     <Content Include="Essential Mods\mod_info.js" />
     <Content Include="Essential Mods\Subfolder\SkipIntro.dll" />
     <EmbeddedResource Include="LegendPrologue\mod_info.js" />
+    <Content Include="HideSocials\HideSocials.js" />
     <Content Include="LaserOnFire\LaserOnFire.js" />
     <Content Include="Tailwind-Legacy\Tailwind.js" />
     <Content Include="Tailwind\Tailwind.js" />
@@ -68,6 +69,7 @@
   <ItemGroup>
     <None Include="Essential Mods\Subfolder\SkipIntro.conf" />
     <EmbeddedResource Include="LegendPrologue\changelog.md" />
+    <None Include="HideSocials\changelog.md" />
     <None Include="LaserOnFire\changelog.md" />
     <None Include="packages.config" />
     <None Include="Tailwind-Legacy\PPDefModifier\Tailwind.json" />
@@ -84,6 +86,18 @@ if exist "Essential Mods.7z" del "Essential Mods.7z"
 
 
 
+if exist HideSocials.7z del HideSocials.7z
+
+"c:\Program Files\7-Zip\7z.exe" a HideSocials.7z ".\HideSocials\*"
+
+
+
+if exist LaserOnFire.7z del LaserOnFire.7z
+
+"c:\Program Files\7-Zip\7z.exe" a LaserOnFire.7z ".\LaserOnFire\*"
+
+
+
 if exist Tailwind.7z del Tailwind.7z
 
 "c:\Program Files\7-Zip\7z.exe" a Tailwind.7z ".\Tailwind\*"
@@ -93,12 +107,6 @@ if exist Tailwind.7z del Tailwind.7z
 if exist Tailwind-Legend.7z del Tailwind-Legacy.7z
 
 "c:\Program Files\7-Zip\7z.exe" a Tailwind-Legacy.7z ".\Tailwind-Legacy\*"
-
-
-
-if exist LaserOnFire.7z del LaserOnFire.7z
-
-"c:\Program Files\7-Zip\7z.exe" a LaserOnFire.7z ".\LaserOnFire\*"
 
 
 

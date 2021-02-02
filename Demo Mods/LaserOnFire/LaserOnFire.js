@@ -8,8 +8,8 @@
    Description : "
 Adds a small fire damage to laser weapons, plus pierce or shred on selected lasers.
 
-This is done as a simple demo to showcase Modnix 3 Scripting,
-which allows plain-text JavaScript mod to run in the game and modify stuffs.
+This is done as a advanced demo of Modnix 3 Scripting,
+which allow plain-text JavaScript mod to modify stuffs.
 
 Most lines use the 'Repo' helper to find a 'WeaponDef' of a given name,
 then use the damage extensions to set its fire/pierce/shred damage.
