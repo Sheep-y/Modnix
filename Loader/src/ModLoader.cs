@@ -97,15 +97,19 @@ namespace Sheepy.Modnix {
             LogGameVersion();
          }
          LoadSettings();
+         var gamePath = Settings.GamePath ?? "Path:Not:Found";
          var corlib = new Uri( typeof( string ).Assembly.CodeBase ).LocalPath;
          var os = new OperatingSystem( Environment.OSVersion.Platform, Environment.OSVersion.Version );
-         Log.Verbo( "{0}/{1}; .Net/{2}", os.Platform, os.Version, Environment.Version ); 
+         Log.Verbo( "{0}/{1}; .Net/{2}", os.Platform, os.Version, Environment.Version );
          foreach ( var asm in AppDomain.CurrentDomain.GetAssemblies() ) {
             if ( asm.IsDynamic ) continue;
-            Func<string> getVer = () =>
-               ( asm.FullName.Replace( ", Culture=neutral", "" ).Replace( ", PublicKeyToken=null", "" ) + " / " + FileVersionInfo.GetVersionInfo( asm.Location ).FileVersion )
-               .Replace( ", Version=0.0.0.0", "" ).Replace( " / 0.0.0.0", "" );
-            Log.Verbo( "In Domain - {0} @ {1}", getVer, asm.Location );
+            string formatAsm () {
+               var result = asm.FullName.Replace( ", Culture=neutral", "" ).Replace( ", PublicKeyToken=null", "" ).Replace( ", Version=0.0.0.0", "" );
+               var ver = ( " / " + FileVersionInfo.GetVersionInfo( asm.Location ).FileVersion ).Replace( " / 0.0.0.0", "" );
+               var path = asm.Location.Replace( gamePath, "%Game%" ).Replace( "%Game%\\PhoenixPointWin64_Data\\Managed", "%Managed%" );
+               return $"{result}{ver} @ {path}";
+            }
+            Log.Verbo( "Loaded - {0}", (Func<string>) formatAsm );
          }
       } } catch ( Exception ex ) { Log?.Error( ex ); } }
 
