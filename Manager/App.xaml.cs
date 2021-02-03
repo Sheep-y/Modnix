@@ -296,6 +296,7 @@ namespace Sheepy.Modnix.MainGUI {
 
       private void CheckGameVersion () {
          var ver = ParseGameVer();
+         if ( ver == null ) return;
          ModLoader.GameVersion = ver == "1.0" ? new Version( 1, 0, 999999 ) : Version.Parse( ver );
          GUI.SetInfo( GuiInfo.GAME_VER, ver );
       }
