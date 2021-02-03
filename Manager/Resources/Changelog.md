@@ -2,6 +2,18 @@ Modnix Changelog
 
 # Version 3, in development
 
+Major Changes from Version 2.x:
+
+* New injection-less mod loader.  Simpler to install and often not need to reinject after game update.
+* New modding feature: Mod Pack.  Allows multiples mods to be packaged into one pre-configured bundle.
+* New modding feature: Actions.  Make possible managable, plain-text PPDefModifier mods and Scripting mods.
+* Other new modding features:  New API.  Mod disarm and rearm.  DLL preloads.  Auto-load Microsoft dll.  Better requirements display.
+* Mod loader version detection, to make sure the manager is aligned with the loader.
+* Game path can now be changed.  Installer now requests to be Administrator, but will try its best if rejected.
+* Markdown document support.
+
+Full change log from Beta 2:
+
 * Fix: Microsoft libraries are now also auto-loaded from system .Net, like framework system libraries.
 * Fix: ActionMod may now use IDictionary as param.  Dictionary still works.
 * Fix: Action errors now no longer got reported an additional time at error level (regression).

@@ -429,16 +429,15 @@ namespace Sheepy.Modnix.MainGUI {
                return;
             } else if ( CurrentGame.GameType == "gog" ) {
                Log( "Launching through Gog Galaxy" );
-               string launcher = Settings.GogExe;
+               var launcher = Settings.GogExe;
                var param = ( Settings.GogParameter ?? "/gameId=1795581746 /command=runGame /path=\"%GAME_PATH%\"" )
                      .Replace( "%GAME_PATH%", CurrentGame.RootFile( GAME_EXE ).Replace( "\"", "\"\"" ) );
                if ( string.IsNullOrWhiteSpace( launcher ) )
                      using ( RegistryKey reg = Registry.LocalMachine.OpenSubKey( "SOFTWARE\\Wow6432Node\\GOG.com\\GalaxyClient\\paths" ) )
                         launcher = Path.Combine( reg?.GetValue( "client" )?.ToString(), "GalaxyClient.exe" );
-               if ( ! File.Exists( launcher ) )
-                  launcher = "C:/Program Files (x86)/GOG Galaxy/GalaxyClient.exe".FixSlash();
-               if ( File.Exists( launcher ) )
-                  Process.Start( launcher, param );
+               var path = File.Exists( launcher ) ? launcher : "C:/Program Files (x86)/GOG Galaxy/GalaxyClient.exe".FixSlash();
+               if ( File.Exists( path ) )
+                  Process.Start( path, param );
                else
                   MessageBox.Show( "Not found: " + launcher, "Error", MessageBoxButton.OK, MessageBoxImage.Error );
                return;
