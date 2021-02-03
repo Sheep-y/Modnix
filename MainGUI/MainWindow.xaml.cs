@@ -311,6 +311,7 @@ namespace Sheepy.Modnix.MainGUI {
       private void RefreshGameInfo () { try {
          Log( "Refreshing game info" );
          var p = new Paragraph( new Bold( new Run( "Phoenix Point" ) ) );
+         var img = "phoenix_point.png";
          if ( SharedGui.IsGameFound ) {
             if ( SharedGui.GameVer != null )
                p.Inlines.Add( $"\tVer {SharedGui.GameVer}" );
@@ -320,8 +321,14 @@ namespace Sheepy.Modnix.MainGUI {
                p.Inlines.Add( "\r" );
                p.Inlines.Add( txt );
             }
+            switch ( App.CurrentGame.GameType ) {
+               case "epic" : img = "epic.png"; break;
+               case "gog"  : img = "gog.png"; break;
+               default     : img = "steam.png"; break;
+            }
          } else
             p.Inlines.Add( new Run( "\rGame not found" ){ Foreground = Brushes.Red } );
+         IconRunOnline.Source = new BitmapImage( new Uri( $"/Resources/img/{img}", UriKind.Relative ) );
          RichGameInfo.Document.Replace( p );
       } catch ( Exception ex ) { Log( ex ); } }
 

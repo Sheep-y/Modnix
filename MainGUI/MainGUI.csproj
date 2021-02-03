@@ -125,11 +125,13 @@
     <Resource Include="Resources\img\console.png" />
     <Resource Include="Resources\img\cross.png" />
     <Resource Include="Resources\img\discord.png" />
+    <Resource Include="Resources\img\epic.png" />
     <Resource Include="Resources\img\eraser.png" />
     <Resource Include="Resources\img\floppy.png" />
     <Resource Include="Resources\img\folder.png" />
     <Resource Include="Resources\img\gear.png" />
     <Resource Include="Resources\img\gears.png" />
+    <Resource Include="Resources\img\gog.png" />
     <Resource Include="Resources\img\info.png" />
     <Resource Include="Resources\img\log_file.png" />
     <Resource Include="Resources\img\modder.png" />
@@ -142,6 +144,7 @@
     <Resource Include="Resources\img\redo.png" />
     <Resource Include="Resources\img\reload.png" />
     <Resource Include="Resources\img\snapshot.png" />
+    <Resource Include="Resources\img\steam.png" />
     <Resource Include="Resources\img\twitter.png" />
     <Resource Include="Resources\img\uncheck.png" />
     <Resource Include="Resources\img\undo.png" />
