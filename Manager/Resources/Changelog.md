@@ -10,6 +10,7 @@ Modnix Changelog
 * Fix: OnError: "Skip" now properly skip to next action, instead of skipping current handler.
 * Fix: .js mod that is bracket wrapped now installs correctly (regression).
 * Gui: Support detection of game version 1.10 Orryx.
+* Gui: Add Mod now removes version postfix from folder name, so that new version of a mod will be installed in same folder.
 * Gui: Installer now relaunch itself as admin.  GUI setup remains unchanged because it requires major refactor.
 * Log: DLL mod call exceptions are now logged under the mod's id, instead of standalone.
 * Log: Shorten assembly listing.
