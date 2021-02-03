@@ -3,6 +3,7 @@ Modnix Changelog
 # Version 3 Beta 3, 2021-02-03
 
 * New: Support GOG Galaxy online launch. Thanks mad2342 for helping with detection.
+* New: Includes action may now have a "property" field, which reads the file into current action's property.
 * Fix: Manager would no longer stuck on "Busy" when game version cannot be detected. Thanks csuklyaspatkany on GitHub. (#35)
 * Fix: Microsoft libraries are now also auto-loaded from system .Net, like framework system libraries.
 * Fix: ActionMod may now use IDictionary as param.  Dictionary still works.

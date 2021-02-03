@@ -110,9 +110,15 @@ NextAction:;
       private static IAction[] PreprocessActions ( ModEntry mod, IAction[] list, string basedir, ref IAction defValues, ref int defCount, int level ) {
          var actions = new List< IAction >();
          foreach ( var a in list ) {
-            if ( a.GetText( "include" ) is string file )
-               actions.AddRange( LoadInclude( mod, basedir, file, ref defValues, ref defCount, level + 1 ) );
-            else if ( string.Equals( a.GetText( "action" ), "default", StringComparison.InvariantCultureIgnoreCase ) ) {
+            if ( a.GetText( "include" ) is string file ) {
+               if ( a.GetText( "property" ) is string prop ) {
+                  a.Remove( "property" );
+                  var newA = AddDefAction( a, defValues );
+                  newA[ prop ] = LoadInclude( mod, basedir, file );
+                  actions.Add( newA );
+               } else
+                  actions.AddRange( LoadInclude( mod, basedir, file, ref defValues, ref defCount, level + 1 ) );
+            } else if ( string.Equals( a.GetText( "action" ), "default", StringComparison.InvariantCultureIgnoreCase ) ) {
                MergeDefAction( ref defValues, a );
                defCount++;
             } else
@@ -121,16 +127,27 @@ NextAction:;
          return actions.Count > 0 ? actions.ToArray() : null;
       }
 
-      private static IAction[] LoadInclude ( ModEntry mod, string basedir, string path, ref IAction defValues, ref int defCount, int level ) {
-         if ( level > 9 ) throw new ApplicationException( "Action includes too deep: " + path );
+      private static string LoadInclude ( ModEntry mod, string basedir, string path ) {
          if ( ! IsSafePath( path ) ) {
             mod.Log().Error( "Invalid path: {0}", path );
-            return new IAction[0];
+            return null;
          }
-         string fullpath = Path.Combine( basedir, path );
+         var fullpath = Path.Combine( basedir, path );
          try {
             AddToModActionFiles( mod, fullpath );
-            var actions = Json.Parse< IAction[] >( ReadText( fullpath ) );
+            return ReadText( fullpath );
+         } catch ( Exception ex ) {
+            mod.ActionFiles?.Remove( fullpath );
+            if ( mod.ActionFiles?.Count == 0 ) mod.ActionFiles = null;
+            throw new ApplicationException( "Error reading " + path, ex );
+         }
+      }
+
+      private static IAction[] LoadInclude ( ModEntry mod, string basedir, string path, ref IAction defValues, ref int defCount, int level ) {
+         if ( level > 9 ) throw new ApplicationException( "Action includes too deep: " + path );
+         var fullpath = Path.Combine( basedir, path );
+         try {
+            var actions = Json.Parse< IAction[] >( LoadInclude( mod, basedir, path ) );
             ModMeta.NormDictArray( ref actions );
             return PreprocessActions( mod, actions, Path.GetDirectoryName( fullpath ), ref defValues, ref defCount, level );
          } catch ( Exception ex ) {
