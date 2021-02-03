@@ -60,6 +60,7 @@ namespace Sheepy.Modnix.MainGUI {
       internal const string MOD_LOG  = "ModnixLoader.log";
       internal const string GAME_LOG = "Console.log";
       internal const string EPIC_DIR = ".egstore";
+      internal const string GOGG_DLL = "Galaxy64.dll";
 
       internal readonly string ModFolder = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.MyDocuments ), MOD_PATH );
 
@@ -425,6 +426,21 @@ namespace Sheepy.Modnix.MainGUI {
             if ( CurrentGame.GameType == "epic" ) {
                Log( "Launching through Epic Games" );
                Process.Start( Settings.EgsCommand ?? "com.epicgames.launcher://apps/Iris?action=launch", Settings.EgsParameter );
+               return;
+            } else if ( CurrentGame.GameType == "gog" ) {
+               Log( "Launching through Gog Galaxy" );
+               string launcher = Settings.GogExe;
+               var param = ( Settings.GogParameter ?? "/gameId=1795581746 /command=runGame /path=\"%GAME_PATH%\"" )
+                     .Replace( "%GAME_PATH%", CurrentGame.RootFile( GAME_EXE ).Replace( "\"", "\"\"" ) );
+               if ( string.IsNullOrWhiteSpace( launcher ) )
+                     using ( RegistryKey reg = Registry.LocalMachine.OpenSubKey( "SOFTWARE\\Wow6432Node\\GOG.com\\GalaxyClient\\paths" ) )
+                        launcher = Path.Combine( reg?.GetValue( "client" )?.ToString(), "GalaxyClient.exe" );
+               if ( ! File.Exists( launcher ) )
+                  launcher = "C:/Program Files (x86)/GOG Galaxy/GalaxyClient.exe".FixSlash();
+               if ( File.Exists( launcher ) )
+                  Process.Start( launcher, param );
+               else
+                  MessageBox.Show( "Not found: " + launcher, "Error", MessageBoxButton.OK, MessageBoxImage.Error );
                return;
             } else {
                Log( "Launching through Steam" );
@@ -947,7 +963,9 @@ namespace Sheepy.Modnix.MainGUI {
       internal string GameType { get {
          if ( Directory.Exists( RootFile( AppControl.EPIC_DIR ) ) )
             return "epic";
-         return "offline";
+         else if ( File.Exists( RootFile( AppControl.GOGG_DLL ) ) )
+            return "gog";
+         return "unknown";
       } }
 
       internal string RootFile ( string file ) => Path.Combine( GameDir, file );

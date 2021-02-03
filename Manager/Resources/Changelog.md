@@ -7,8 +7,12 @@ Modnix Changelog
 * Fix: Action errors now no longer got reported an additional time at error level (regression).
 * Fix: OnError: "Skip" now properly skip to next action, instead of skipping current handler.
 * Gui: Installer now relaunch itself as admin.  GUI setup remains unchanged because it requires major refactor.
-* Log: DLL mod call exceptions are not logged under the mod's id, instead of standalone.
+* Log: DLL mod call exceptions are now logged under the mod's id, instead of standalone.
 * Log: Shorten assembly listing.
+
+# Version 2.5.7, in-development
+
+* New: Support GOG Galaxy online launch. Thanks mad2342 for helping with detection.
 
 # Version 3 Beta 2, 2020-01-25
 https://github.com/Sheep-y/Modnix/releases/tag/v3.0.2021.0125

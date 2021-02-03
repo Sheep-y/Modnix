@@ -35,6 +35,8 @@ namespace Sheepy.Modnix {
       public double WindowHeight = -1;
       public string OfflineParameter = "";
       public string SteamCommand = "steam://rungameid/839770";
+      public string GogExe = null;
+      public string GogParameter = "/gameId=1795581746 /command=runGame /path=\"%GAME_PATH%\"";
       public string EgsCommand = "com.epicgames.launcher://apps/Iris?action=launch";
       public string EgsParameter = "";
       // For mod loader, set by manager
