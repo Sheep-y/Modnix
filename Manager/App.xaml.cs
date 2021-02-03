@@ -750,7 +750,7 @@ namespace Sheepy.Modnix.MainGUI {
          if ( ext.Equals( ".js" ) || ext.Equals( ".json" ) || ext.Equals( ".dll" ) ) {
             Log( $"Adding {file} as a single file mod" );
             if ( ext.StartsWith( ".js" ) ) {
-               var obj = JsonConvert.DeserializeObject( Utils.ReadFile( file ) );
+               var obj = JsonConvert.DeserializeObject( ModScanner.TrimBrackets( Utils.ReadFile( file ) ) );
                if ( obj is Newtonsoft.Json.Linq.JArray ) folder = Path.Combine( ModFolder, "PPDefModifier" );
             }
             Directory.CreateDirectory( folder );

@@ -149,12 +149,16 @@ namespace Sheepy.Modnix {
          }
       }
 
-      private static ModMeta ParseInfoJs ( string js, string default_id = null ) { try {
+      public static string TrimBrackets ( string js ) {
          js = js?.Trim();
          if ( js == null || js.Length <= 2 ) return null;
          // Remove ( ... ) to make parsable json
-         if ( js[0] == '(' && js[js.Length-1] == ')' )
-            js = js.Substring( 1, js.Length - 2 ).Trim();
+         return js[0] == '(' && js[js.Length-1] == ')' ? js.Substring( 1, js.Length - 2 ).Trim() : js;
+      }
+
+      private static ModMeta ParseInfoJs ( string js, string default_id = null ) { try {
+         js = TrimBrackets( js );
+         if ( js == null ) return null;
          var meta = Json.ParseMod( js ).Normalise();
          if ( meta.Id == null && default_id != null ) {
             meta.Id = default_id;
