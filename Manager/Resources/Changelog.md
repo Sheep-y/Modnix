@@ -1,32 +1,19 @@
 Modnix Changelog
 
-# Version 3, in development
+# Version 3 Beta 3, 2021-02-03
 
-Major Changes from Version 2.x:
-
-* New injection-less mod loader.  Simpler to install and often not need to reinject after game update.
-* New modding feature: Mod Pack.  Allows multiples mods to be packaged into one pre-configured bundle.
-* New modding feature: Actions.  Make possible managable, plain-text PPDefModifier mods and Scripting mods.
-* Other new modding features:  New API.  Mod disarm and rearm.  DLL preloads.  Auto-load Microsoft dll.  Better requirements display.
-* Mod loader version detection, to make sure the manager is aligned with the loader.
-* Game path can now be changed.  Installer now requests to be Administrator, but will try its best if rejected.
-* Markdown document support.
-
-Full change log from Beta 2:
-
+* New: Support GOG Galaxy online launch. Thanks mad2342 for helping with detection.
+* Fix: Manager would no longer stuck on "Busy" when game version cannot be detected.
 * Fix: Microsoft libraries are now also auto-loaded from system .Net, like framework system libraries.
 * Fix: ActionMod may now use IDictionary as param.  Dictionary still works.
 * Fix: Action errors now no longer got reported an additional time at error level (regression).
 * Fix: OnError: "Skip" now properly skip to next action, instead of skipping current handler.
+* Gui: Support detection of game version 1.10 Orryx.
 * Gui: Installer now relaunch itself as admin.  GUI setup remains unchanged because it requires major refactor.
 * Log: DLL mod call exceptions are now logged under the mod's id, instead of standalone.
 * Log: Shorten assembly listing.
 
-# Version 2.5.7, in-development
-
-* New: Support GOG Galaxy online launch. Thanks mad2342 for helping with detection.
-
-# Version 3 Beta 2, 2020-01-25
+# Version 3 Beta 2, 2021-01-25
 https://github.com/Sheep-y/Modnix/releases/tag/v3.0.2021.0125
 
 * New: Injection-less mod loader.  Simpler, less risk, earlier load, easier to install and remove.
@@ -61,7 +48,7 @@ https://github.com/Sheep-y/Modnix/releases/tag/v3.0.2021.0125
 * Log: Initial assemblies are now logged, to help diagnose preloads.
 * Lib: Updated Mono Cecil to 0.11.3.
 
-# Version 2.5.6, 2020-01-25
+# Version 2.5.6, 2021-01-25
 https://github.com/Sheep-y/Modnix/releases/tag/v2.5.6
 
 * New: Identify and disable Modnix 3 mod packs.

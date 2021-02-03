@@ -46,14 +46,18 @@ namespace Sheepy.Modnix {
             if ( ! op.StartsWith( "ldc.i4" ) ) continue;
             var ver = ParseI4Param( code );
             switch ( ldcCount ) {
+               case 0 : version[ 0 ] = ver; break;
+               case 1 : version[ 1 ] = ver; break;
                case 2 : version[ 0 ] = ver; break;
                case 4 : version[ 1 ] = ver; break;
                case 6 : version[ 2 ] = ver; break;
             }
             ++ldcCount;
          }
-         if ( ldcCount != 8 ) { Log.Warn( "GameVer1: opcode {0} <> 8", ldcCount ); return null; }
-         return version[0].ToString() + '.' + version[1] + '.' + version[2];
+         if ( ldcCount == 2 ) return version[0].ToString() + '.' + version[1]; // 1.10 Orryx
+         if ( ldcCount == 8 ) return version[0].ToString() + '.' + version[1] + '.' + version[2]; // Up till 1.9.3 Polaris
+         Log.Warn( "GameVer2: opcode {0} <> 2 or 8", ldcCount );
+         return null;
       } catch ( Exception ex ) { Log.Error( ex ); return null; } }
 
       private static int ParseI4Param ( Mono.Cecil.Cil.Instruction code ) {
