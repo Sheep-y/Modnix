@@ -1,9 +1,9 @@
-﻿{
+﻿({
    Id : "Zy.Core", // Id is still required for management purpose
    Name : "Essential Mods",
    Version : "2021.01.25",
    Author : "Sheepy",
-   Requires : [{ Id: "Modnix", Min: "3.0.2021.0120" }],
+   Requires : [{ Id: "Modnix", Min: "3.0.2021.0120", Name: "Modnix 3 Beta 2+", Url: "https://github.com/Sheep-y/Modnix/releases" }],
    Mods : [ // List of mods, can be .dll or .json
       "BlockTelemetry.dll",
       "Subfolder/SkipIntro.dll",
@@ -28,4 +28,4 @@ When it is ready for release, just zip the folder.
    },
    Contacts : { Discord : "https://discord.com/channels/322630986431201283/656933530181435392" },
    Copyright: "Public Domain",
-}
+})

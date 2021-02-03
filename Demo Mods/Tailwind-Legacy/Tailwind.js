@@ -1,9 +1,8 @@
-﻿{
+﻿({
    Id: "Zy.PPDef.Tailwind",
    Name: "Tailwind",
    Version : "1.0",
    Author : "Sheepy",
-   Requires: [{ Id: "tracktwo.PPDefModifier", Min: 1.7 }],
    Actions: [
       {
          Action: "Default", // Default actions will copy its field to all following actions.
@@ -42,4 +41,4 @@ Good luck!
    },
    Contacts: { Discord: "https://discord.com/channels/322630986431201283/656933530181435392" },
    Copyright: "Public Domain",
-}
+})

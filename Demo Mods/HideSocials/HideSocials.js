@@ -1,9 +1,11 @@
-{
+({
    Id : "Zy.HideSocials",
    Name : "Hide Socials",
    Author : "Sheepy",
    Version : "1.0",
-   Requires: [{ Id: "Zy.JavaScript", Min: "2.1" }], // Requires the JavaScript Runtime mod, version 2.1 and up
+   Requires: [
+      { Id: "Zy.JavaScript", Min: "2.1", Name: "JavaScript Runtime 2.1+", Url: "https://www.nexusmods.com/phoenixpoint/mods/49" },
+   ],
    Description : "
 
 Hide the social icons and version text on the game's home screen.
@@ -23,10 +25,10 @@ Tested on Phoenix Point 1.9.3.
    // Different mods support different type of actions, and they can be mixed in the same mod.
    Actions : [{
       // HomeOnShow is triggered whenever the game shows the home screen
-      "Phase" : "HomeOnShow",
+      Phase : "HomeOnShow",
       // An Action with "Script":"JavaScript" and "Eval":"(code)" will be handled by JavaScript Runtime.
-      "Script" : "JavaScript",
-      "Eval" : "
+      Script : "JavaScript",
+      Eval : "
 
 // This code finds the social bar (called Socials),
 GameObject.Find( 'Socials' )
@@ -44,4 +46,4 @@ GameObject.Find( 'RevisionText' ).SetActive( false );
       "JavaScript Runtime" : "https://www.nexusmods.com/phoenixpoint/mods/49",
    },
    Copyright: "Public Domain",
-}
+})

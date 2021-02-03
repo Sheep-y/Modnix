@@ -1,4 +1,4 @@
-{
+({
    Id : "Zy.LegendPrologue",
    Name : "Legend Prologue",
    Version: 1.1,
@@ -18,4 +18,4 @@ See GitHub page (below) for more details.
    },
    Contacts: { Discord: "https://discord.com/channels/322630986431201283/656933530181435392" },
    Copyright: "Public Domain",
-}
+})

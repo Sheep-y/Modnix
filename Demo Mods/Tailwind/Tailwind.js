@@ -1,9 +1,12 @@
-﻿{
+﻿({
    Id: "Zy.PPDef.Tailwind",
    Name: "Tailwind",
    Version : "1.1.1",
    Author : "Sheepy",
-   Requires: [{ Id: "tracktwo.PPDefModifier", Min: 1.7 },{ Id: "Modnix", Min: "3.0.2021.0125" }],
+   Requires: [
+      { Id: "tracktwo.PPDefModifier", Min: 1.7, Name: "PPDefModifier 1.7+", Url: "https://github.com/tracktwo/ppdefmodifier/releases" },
+      { Id: "Modnix", Min: "3.0.2021.0125", Name: "Modnix", Url: "https://github.com/Sheep-y/Modnix/releases" },
+   ],
    Actions: [
       {
          Action: "Default", // Default actions will copy its field to all following actions.
@@ -53,4 +56,4 @@ Good luck!
    },
    Contacts: { Discord: "https://discord.com/channels/322630986431201283/656933530181435392" },
    Copyright: "Public Domain",
-}
+})
