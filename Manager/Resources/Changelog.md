@@ -4,17 +4,17 @@ Modnix Changelog
 
 * New: Support GOG Galaxy online launch. Thanks mad2342 for helping with detection.
 * New: Include action may now have a "property" field, which reads the file into current action's property.
-* Fix: Manager would no longer stuck on "Busy" when game version cannot be detected. Thanks csuklyaspatkany on GitHub. (#35)
+* Fix: Manager no longer stuck at "Busy" when game version cannot be detected (regression). Thanks csuklyaspatkany on GitHub. (#35)
 * Fix: Microsoft libraries are now also auto-loaded from system .Net, same as framework system libraries.
-* Fix: ActionMod may now use IDictionary as param.  Dictionary still works.
+* Fix: ActionMod methods may now use IDictionary as param.  Dictionary still works.
 * Fix: Action errors now no longer got reported an additional time at error level (regression).
-* Fix: OnError: "Skip" now properly skip to next action, instead of skipping current handler.
+* Fix: OnError: "Skip" now properly skip to next action, instead of skipping only current handler.
 * Fix: .js mod that is bracket wrapped now installs correctly (regression).
 * Gui: Support detection of game version 1.10 Orryx.
 * Gui: Add Mod now removes version postfix from folder name, so that new version of a mod will be installed in same folder.
 * Gui: Installer now relaunch itself as admin.  GUI setup remains unchanged because it requires major refactor.
 * Log: DLL mod call exceptions are now logged under the mod's id, instead of standalone.
-* Log: Shorten assembly listing.
+* Log: Shorten the paths in assembly list.
 
 # Version 3 Beta 2, 2021-01-25
 https://github.com/Sheep-y/Modnix/releases/tag/v3.0.2021.0125
