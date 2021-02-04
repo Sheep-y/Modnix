@@ -114,6 +114,7 @@ NextAction:;
                if ( a.GetText( "property" ) is string prop ) {
                   a.Remove( "property" );
                   var newA = AddDefAction( a, defValues );
+                  prop = ModMeta.NormString( prop )?.ToLowerInvariant() ?? "";
                   newA[ prop ] = LoadInclude( mod, basedir, file );
                   actions.Add( newA );
                } else

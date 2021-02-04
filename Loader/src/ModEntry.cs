@@ -736,20 +736,20 @@ namespace Sheepy.Modnix {
          return this;
       } }
 
-      private static string NormString ( string val ) {
+      internal static string NormString ( string val ) {
          if ( val == null ) return null;
          val = val.Trim();
          if ( val.Length == 0 ) return null;
          return val;
       }
 
-      private static void NormStringArray ( ref string[] val ) {
+      internal static void NormStringArray ( ref string[] val ) {
          if ( val == null ) return;
          val = val.Select( NormString ).Where( e => e != null ).ToArray();
          if ( val.Length == 0 ) val = null;
       }
 
-      private static void NormTextSet ( ref TextSet val ) {
+      internal static void NormTextSet ( ref TextSet val ) {
          if ( val == null ) return;
          var dict = val.Dict;
          if ( dict != null ) {
@@ -769,7 +769,7 @@ namespace Sheepy.Modnix {
          }
       }
 
-      private static void NormAppVer ( ref AppVer[] val ) {
+      internal static void NormAppVer ( ref AppVer[] val ) {
          if ( val == null ) return;
          for ( int i = val.Length - 1 ; i >= 0 ; i-- ) {
             val[i].Id = NormString( val[i].Id );
@@ -780,7 +780,7 @@ namespace Sheepy.Modnix {
          if ( val.Length == 0 ) val = null;
       }
 
-      private static void NormDllMeta ( ref DllMeta[] val ) {
+      internal static void NormDllMeta ( ref DllMeta[] val ) {
          if ( val == null ) return;
          for ( int i = val.Length - 1 ; i >= 0 ; i-- ) {
             val[i].Path = NormString( val[i].Path );
