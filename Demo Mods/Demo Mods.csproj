@@ -62,6 +62,7 @@
     <Content Include="Essential Mods\Subfolder\SkipIntro.dll" />
     <EmbeddedResource Include="LegendPrologue\mod_info.js" />
     <Content Include="HideSocials\HideSocials.js" />
+    <Content Include="LaserOnFire\Destiny3.js" />
     <Content Include="LaserOnFire\LaserOnFire.js" />
     <Content Include="Tailwind-Legacy\Tailwind.js" />
     <Content Include="Tailwind\Tailwind.js" />

@@ -1,5 +1,9 @@
 Modnix Changelog
 
+# Version 3, in development
+
+* Fix: Full versions are now logged and displayed correctly.
+
 # Version 3 Beta 3, 2021-02-04
 
 * New: Support GOG Galaxy online launch. Thanks mad2342 for helping with detection.

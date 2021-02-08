@@ -54,7 +54,7 @@ namespace Sheepy.Modnix {
             }
             ++ldcCount;
          }
-         if ( ldcCount == 2 ) return version[0].ToString() + '.' + version[1]; // 1.10 Orryx
+         if ( ldcCount == 2 ) return version[0].ToString() + '.' + version[1] + ".0"; // 1.10 Orryx
          if ( ldcCount == 8 ) return version[0].ToString() + '.' + version[1] + '.' + version[2]; // Up till 1.9.3 Polaris
          Log.Warn( "GameVer2: opcode {0} <> 2 or 8", ldcCount );
          return null;

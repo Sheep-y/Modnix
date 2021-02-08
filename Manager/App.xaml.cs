@@ -342,16 +342,20 @@ namespace Sheepy.Modnix.MainGUI {
          return Json.RegxVerTrim.Replace( version, "" );
       } catch ( Exception ex ) { return Log( ex, "error" ); } }
 
+      private static Regex regVer = new Regex( " INFO Assembly-CSharp/([^ ;\r\n]+)" );
+
       internal string ParseGameVer () { try {
          try {
             var logFile = Path.Combine( ModFolder, MOD_LOG );
             if ( File.Exists( logFile ) &&
                  File.GetLastWriteTime( logFile ) > File.GetLastWriteTime( Path.Combine( CurrentGame.CodeDir, GAME_DLL ) ) ) {
                Log( $"Parsing {logFile} for game version." );
-               var line = Utils.ReadLine( logFile, 1 );
-               var match = Regex.Match( line ?? "", "Assembly-CSharp/([^ ;]+)", RegexOptions.IgnoreCase );
-               if ( match.Success )
-                  return match.Value.Substring( 16 );
+               var line = Utils.ReadFile( logFile, 128*1024 );
+               var match = regVer.Match( line );
+               if ( match.Success ) {
+                  var match2 = regVer.Match( line, match.Captures[0].Index + 22 );
+                  return ( match2.Success ? match2 : match ).Groups[1].Value;
+               }
             }
          } catch ( Exception ex ) { Log( ex ); }
 
@@ -1042,11 +1046,11 @@ namespace Sheepy.Modnix.MainGUI {
          new StreamReader( new FileStream( file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete ), Encoding.UTF8, true );
 
       internal static string ReadFile ( string file ) { using ( var reader = Read( file ) ) return reader.ReadToEnd(); }
-      internal static string ReadLine ( string file, int skipLine = 0 ) {
-         using ( var reader = Read( file ) ) {
-            while ( skipLine-- > 0 ) reader.ReadLine();
-            return reader.ReadLine();
-         }
+      internal static string ReadFile ( string file, int maxReadByte ) {
+         int read;
+         char[] buf = new char[ maxReadByte ];
+         using ( var reader = Read( file ) ) read = reader.ReadBlock( buf, 0, maxReadByte );
+         return read <= 0 ? "" : new string( buf, 0, read );
       }
    }
 

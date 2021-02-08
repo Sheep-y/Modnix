@@ -1,10 +1,11 @@
-{
+({
    Id : "Zy.LaserOnFire",
    Name : "Laser on Fire",
    Author : "Sheepy",
    Version : "2.0",
    Requires: [
       { Id: "Zy.JavaScript", Name: "JavaScript Runtime", Url: "https://www.nexusmods.com/phoenixpoint/mods/49" },
+      { Id: "Modnix", Min: "3.0.2021.0204", Name: "Modnix 3 Beta 3+", Url: "https://github.com/Sheep-y/Modnix/releases" },
    ],
    Disables: "Sheepy.LaserOnFire", // Old Id
    Description : "
@@ -13,15 +14,22 @@ Adds a small fire damage to laser weapons, plus pierce or shred on selected lase
 This is done as a advanced demo of Modnix 3 Scripting,
 which allow plain-text JavaScript mod to modify stuffs.
 
-Most lines use the 'Repo' helper to find a 'WeaponDef' of a given name,
-then use the damage extensions to set its fire/pierce/shred damage.
+First, a few js variables are created to keep track of states.
 
-The mod also declares a counter and log it, for demonstration.
+Then, most actions use the 'Repo' helper to find a 'WeaponDef' of a given name,
+and use the damage extensions from JS runtime to set its fire/pierce/shred damage.
 
-(Built in helpers are listed in JavaScript Runtime's readme, while common in-game object types are listed by the Dump Data mod.)
+After a loop that go throughs all remaining weapons,
+the mod imports a longer javascript from another file.
 
-This mod requires Modnix 3+ and JavaScript Runtime.
-Tested on Phoenix Point 1.9.3.
+When all is said and done, we use a few different ways to log the result.
+
+If you feel lost, try start with the Dump Data mod.
+All the weapons modded here can be found in the tactical equpiment data, TacticalItemDef.
+You may also explore other data for modding ideas.
+
+This mod requires Modnix 3 (Beta 3+) and JavaScript Runtime (any).
+Tested on Phoenix Point 1.10.
 ",
    Actions : [{
       Action : "Default",    // Required to set "Script" on all actions.
@@ -71,15 +79,10 @@ Tested on Phoenix Point 1.9.3.
                       done.push( gun.fire( 1 ) );
                 } ',
    },{
-      // One last gem.  Skip to next code if too complex.
-      // Idea: if Ares AR-1's damage is exactly 25, change it to 30.
-      Eval : 'weapon = Repo.get( WeaponDef, "PX_AssaultRifle_WeaponDef" );
-                let expectedDamage = 25;
-                let actualDamage = weapon?.compareExchangeDamage( "normal", expectedDamage, 30 );
-                if ( actualDamage === expectedDamage ) done.push( weapon );
-                actualDamage; ', // The last value, this value, is the action result and will be logged.
-      // Now, when the damage is changed, by a future game patch or by another mod, our change will not be applied.
-      // No, it is not laser.  But this example is not expected to run either.
+      // If the code is long, you can move it to another file.  Note that the I/O cost is paid on game startup.
+      Include : "Destiny3.js",
+      // Very important.  If you don't specify a property, the file will be imported as json Actions, and thus fail.
+      Property : "Eval",
    },{
       Eval : '// Log a summary. Yes this comment is _in_ the code!
                 console.log( `Done! ${done.length} lasers now ON FIRE!` );
@@ -92,8 +95,8 @@ Tested on Phoenix Point 1.9.3.
    Url : {
       "GitHub" : "https://github.com/Sheep-y/Modnix/tree/master/Demo%20Mods#readme",
       "Modnix": "https://github.com/Sheep-y/Modnix/wiki/",
-      "JavaScript Runtime" : "https://www.nexusmods.com/phoenixpoint/mods/49",
-      "Dump Data" : "https://www.nexusmods.com/phoenixpoint/mods/50",
+      "JavaScript Runtime" : "https://nexusmods.com/phoenixpoint/mods/49",
+      "Dump Data" : "https://nexusmods.com/phoenixpoint/mods/50",
    },
    Copyright: "Public Domain",
-}
+})
