@@ -2,6 +2,7 @@ Modnix Changelog
 
 # Version 3, in development
 
+* New: .bbcode support, such as readme.bbcode, history.bbcode, or license.bbcode.
 * Fix: Full versions are now logged and displayed correctly.
 
 # Version 3 Beta 3, 2021-02-04

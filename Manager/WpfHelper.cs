@@ -5,9 +5,12 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Shapes;
 
 namespace Sheepy.Modnix.MainGUI {
    public static class WpfHelper {
@@ -47,6 +50,17 @@ namespace Sheepy.Modnix.MainGUI {
             if ( e != null )
                body.Add( e );
          return result;
+      }
+
+      public static Inline Img ( string url ) {
+         Image img = new Image();
+         BitmapImage bitmap = new BitmapImage();
+         bitmap.BeginInit();
+         bitmap.UriSource = new Uri( url, UriKind.RelativeOrAbsolute );
+         bitmap.EndInit();
+         img.Stretch = Stretch.Fill;
+         img.Source = bitmap;
+         return new InlineUIContainer( img );
       }
    }
 
@@ -203,19 +217,30 @@ namespace Sheepy.Modnix.MainGUI {
       public Inline ToInline () {
          if ( string.IsNullOrEmpty( tag ) && children == null ) return new Run( param );
          var result = children?.Count == 1 ? children[0].ToInline() : new Span();
-         switch ( tag?.ToLowerInvariant() ) {
-            case "b" : result.FontWeight = FontWeights.Bold; break;
-            case "i" : result.FontStyle = FontStyles.Italic; break;
-            case "s" : result.TextDecorations.Add( TextDecorations.Strikethrough ); break;
-            case "u" : result.TextDecorations.Add( TextDecorations.Underline ); break;
-         }
+         try {
+            switch ( tag?.ToLowerInvariant() ) {
+               case "b" : result.FontWeight = FontWeights.Bold; break;
+               case "color" : result.Foreground = new SolidColorBrush( (Color) ColorConverter.ConvertFromString( param ?? "black" ) ); break;
+               case "font" : result.FontFamily = new FontFamily( param ); break;
+               case "i" : case "quote" : result.FontStyle = FontStyles.Italic; break;
+               case "img" : return WpfHelper.Img( param );
+               case "s" : result.TextDecorations.Add( TextDecorations.Strikethrough ); break;
+               case "size" : if ( param?.Length == 1 ) result.FontSize = 19 - param[0] + '0'; break;
+               case "spoiler" : result.Background = result.Foreground = new SolidColorBrush( Colors.Black ); break;
+               case "line" : return new InlineUIContainer( new Line { X1 = 0, X2 = 20, Y1 = 0, Y2 = 0, Stroke = new SolidColorBrush( Colors.Black ), StrokeThickness = 2, Stretch = Stretch.Fill } );
+               case "u" : result.TextDecorations.Add( TextDecorations.Underline ); break;
+               case "youtube" :
+                  var yturl = "https://youtu.be/" + param;
+                  return new Hyperlink( new Run( yturl ) ) { NavigateUri = new Uri( yturl ) };
+            }
+         } catch ( Exception ) { }
          if ( children?.Count > 1 )
             foreach ( var item in children )
                ( (Span) result ).Inlines.Add( item.ToInline() );
          switch ( tag?.ToLowerInvariant() ) {
             case "url" :
                try {
-                  return new Hyperlink( result ) { NavigateUri = new Uri( tag ) };
+                  return new Hyperlink( result ) { NavigateUri = new Uri( param ) };
                } catch( UriFormatException ) { }
                break;
          }
@@ -224,8 +249,14 @@ namespace Sheepy.Modnix.MainGUI {
 
       public Block ToBlock () {
          switch ( tag?.ToLowerInvariant() ) {
+            case "center" :
+               return new Paragraph( ToInline() ) { TextAlignment = TextAlignment.Center };
+            case "heading" :
+               return new Paragraph( ToInline() ) { FontWeight = FontWeights.Bold, FontSize = 19 - '1' + '0' };
             case "h1" : case "h2" : case "h3" : case "h4" : case "h5" : case "h6" :
                return new Paragraph( ToInline() ) { FontWeight = FontWeights.Bold, FontSize = 19 - tag[ 1 ] + '0' };
+            case "left" :
+               return new Paragraph( ToInline() ) { TextAlignment = TextAlignment.Left };
             case "list" :
                var list = new List();
                if ( children != null )
@@ -234,7 +265,10 @@ namespace Sheepy.Modnix.MainGUI {
                      row.Blocks.Add( child.ToBlock() );
                      list.ListItems.Add( row );
                   }
+               list.MarkerStyle = ! string.IsNullOrEmpty( param ) ? TextMarkerStyle.Decimal : TextMarkerStyle.Disc;
                return list;
+            case "right" :
+               return new Paragraph( ToInline() ) { TextAlignment = TextAlignment.Right };
             case "table" :
                var table = new Table();
                var tbody = new TableRowGroup();
