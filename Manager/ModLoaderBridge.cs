@@ -94,10 +94,10 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       private static Task< GridModItem > ConvertModTask ( ModEntry mod ) => Task.Run( () => ToGridItem( mod ) );
-      internal static readonly string[] ReadmeFiles  = new string[]{ "readme.rtf", "read.txt", "readme.md", "readme", "read.me", "note", "notes"  };
-      internal static readonly string[] ChangeFiles  = new string[]{ "changelog.rtf", "changelog.txt", "changelog.md", "history.rtf", "history.txt", "history.md", "changelog", "change.log" };
-      internal static readonly string[] LicenseFiles = new string[]{ "license.rtf", "license.txt", "license.md", "license", "unlicense",
-         "copyright.rtf", "copyright.txt", "copyright.md", "copyright" };
+      internal static readonly string[] ReadmeFiles  = new string[]{ "readme.rtf", "read.txt", "readme.bbcode", "readme.md", "readme", "read.me", "note", "notes"  };
+      internal static readonly string[] ChangeFiles  = new string[]{ "changelog.rtf", "changelog.bbcode", "changelog.txt", "changelog.md", "history.rtf", "history.bbcode", "history.txt", "history.md", "changelog", "change.log" };
+      internal static readonly string[] LicenseFiles = new string[]{ "license.rtf", "license.bbcode", "license.txt", "license.md", "license", "unlicense",
+         "copyright.rtf", "copyright.bbcode", "copyright.txt", "copyright.md", "copyright" };
 
       private static GridModItem ToGridItem ( ModEntry mod ) { try {
          string modPath = mod.Path, dir = mod.Dir;
@@ -389,7 +389,7 @@ namespace Sheepy.Modnix.MainGUI {
                doc.Blocks.Add( block );
             return;
          } catch ( Exception ex ) { Log( ex ); }
-         if ( text.Contains( "[/" ) ) try {
+         if ( ext?.StartsWith( ".bbc", StringComparison.OrdinalIgnoreCase ) == true ) try {
             doc.Blocks.Clear();
             foreach ( var block in new BBCodeConverter().Convert( text ) )
                doc.Blocks.Add( block );

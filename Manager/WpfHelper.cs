@@ -140,7 +140,7 @@ namespace Sheepy.Modnix.MainGUI {
          var autoClose = BBCode.IsAutoClose( code.tag );
          while ( ! eof ) {
             string token = peek;
-            if ( autoClose && code.tag.Equals( token.Substring( 1, token.Length - 2 ), StringComparison.OrdinalIgnoreCase ) )
+            if ( autoClose && token.Length >= 3 && code.tag.Equals( token.Substring( 1, token.Length - 2 ), StringComparison.OrdinalIgnoreCase ) )
                token = "[/" + code.tag + "]";
             else
                advance();
@@ -156,7 +156,8 @@ namespace Sheepy.Modnix.MainGUI {
                   return code;
                } else {
                   stack.Push( tag.ToLowerInvariant() );
-                  node = Parse( new BBCode( tag, parts[3].Value ) );
+                  var param = parts[3].Success ? parts[3].Value.Substring( 1 ).Trim() : null;
+                  node = Parse( new BBCode( tag, param ) );
                }
             } else if ( parts[4].Success ) // Plain url
                node = new BBCode( "url", token ) { children = new List<BBCode> { new BBCode( null, token ) } };
@@ -200,9 +201,9 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       public Inline ToInline () {
-         if ( tag == "" && children == null ) return new Run( param );
+         if ( string.IsNullOrEmpty( tag ) && children == null ) return new Run( param );
          var result = children?.Count == 1 ? children[0].ToInline() : new Span();
-         switch ( tag.ToLowerInvariant() ) {
+         switch ( tag?.ToLowerInvariant() ) {
             case "b" : result.FontWeight = FontWeights.Bold; break;
             case "i" : result.FontStyle = FontStyles.Italic; break;
             case "s" : result.TextDecorations.Add( TextDecorations.Strikethrough ); break;
@@ -211,7 +212,7 @@ namespace Sheepy.Modnix.MainGUI {
          if ( children?.Count > 1 )
             foreach ( var item in children )
                ( (Span) result ).Inlines.Add( item.ToInline() );
-         switch ( tag.ToLowerInvariant() ) {
+         switch ( tag?.ToLowerInvariant() ) {
             case "url" :
                try {
                   return new Hyperlink( result ) { NavigateUri = new Uri( tag ) };
@@ -222,7 +223,7 @@ namespace Sheepy.Modnix.MainGUI {
       }
 
       public Block ToBlock () {
-         switch ( tag.ToLowerInvariant() ) {
+         switch ( tag?.ToLowerInvariant() ) {
             case "h1" : case "h2" : case "h3" : case "h4" : case "h5" : case "h6" :
                return new Paragraph( ToInline() ) { FontWeight = FontWeights.Bold, FontSize = 19 - tag[ 1 ] + '0' };
             case "list" :
@@ -236,17 +237,25 @@ namespace Sheepy.Modnix.MainGUI {
                return list;
             case "table" :
                var table = new Table();
-               var body = new TableRowGroup();
+               var tbody = new TableRowGroup();
                if ( children != null )
                   foreach ( var child in children ) {
                      var row = new TableRow();
                      var cells = "tr".Equals( child.tag, StringComparison.OrdinalIgnoreCase ) ? child.children : new List<BBCode>{ child };
                      foreach ( var grandchild in cells )
                         row.Cells.Add( new TableCell( grandchild.ToBlock() ) );
-                     body.Rows.Add( row );
+                     tbody.Rows.Add( row );
                   }
-               table.RowGroups.Add( body );
+               table.RowGroups.Add( tbody );
                return table;
+            case null :
+               if ( children != null ) { // root
+                  var main = new Section();
+                  foreach ( var child in children )
+                     main.Blocks.Add( child.ToBlock() );
+                  return main;
+               }
+               break;
          }
          return new Paragraph( ToInline () );
       }
