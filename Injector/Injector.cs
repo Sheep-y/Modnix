@@ -516,14 +516,7 @@ namespace Sheepy.Modnix {
             var op = code.OpCode.ToString();
             if ( ! op.StartsWith( "ldc.i4" ) ) continue;
             if ( ldcCount >= 2 ) return "ERR too many vers";
-
-            var ver = 0;
-            if ( code.Operand is int num ) ver = num;
-            else if ( code.Operand is sbyte num2 ) ver = num2;
-            else if ( code.OpCode.Code.Equals( Code.Ldc_I4_M1 ) ) ver = -1;
-            else ver = int.Parse( op.Substring( 7 ) );
-
-            version[ ldcCount ] = ver;
+            version[ ldcCount ] = ParseI4Param( code );
             ++ldcCount;
          }
          if ( ldcCount < 2 ) return "ERR too few vers";
@@ -539,24 +532,28 @@ namespace Sheepy.Modnix {
          foreach ( var code in method.Body.Instructions ) {
             var op = code.OpCode.ToString();
             if ( ! op.StartsWith( "ldc.i4" ) ) continue;
-            if ( ldcCount > 7 ) return "ERR too many vers";
-
-            var ver = 0;
-            if ( code.Operand is int num ) ver = num;
-            else if ( code.Operand is sbyte num2 ) ver = num2;
-            else if ( code.OpCode.Code.Equals( Code.Ldc_I4_M1 ) ) ver = -1;
-            else ver = int.Parse( op.Substring( 7 ) );
+            var ver = ParseI4Param( code );
             switch ( ldcCount ) {
+               case 0 : version[ 0 ] = ver; break;
+               case 1 : version[ 1 ] = ver; break;
                case 2 : version[ 0 ] = ver; break;
                case 4 : version[ 1 ] = ver; break;
                case 6 : version[ 2 ] = ver; break;
             }
             ++ldcCount;
          }
-         if ( ldcCount <= 7 ) return "ERR too few vers";
-         return version[0].ToString() + '.' + version[1] + '.' + version[2];
+         if ( ldcCount == 2 ) return version[0].ToString() + '.' + version[1] + ".0"; // 1.10 Orryx
+         if ( ldcCount == 8 ) return version[0].ToString() + '.' + version[1] + '.' + version[2]; // Up till 1.9.3 Polaris
+         return $"ERR opcode {ldcCount} <> 2 or 8";
       } catch ( Exception e ) {
          return $"ERR {e.GetType()}";
       } }
+
+      private static int ParseI4Param ( Instruction code ) {
+         if ( code.Operand is int num ) return num;
+         if ( code.Operand is sbyte num2 ) return num2;
+         if ( code.OpCode.Code.Equals( Code.Ldc_I4_M1 ) ) return -1;
+         return int.Parse( code.OpCode.ToString().Substring( 7 ) );
+      }
    }
 }

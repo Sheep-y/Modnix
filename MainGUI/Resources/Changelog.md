@@ -3,6 +3,7 @@ Modnix Changelog
 # Version 2.5.7, in-development
 
 * New: Support GOG Galaxy online launch. Thanks mad2342 for helping with detection.
+* New: Detect Phoenix Point 1.10 Orryx version.
 
 # Version 2.5.6, 2021-01-25
 
