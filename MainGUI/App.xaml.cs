@@ -63,6 +63,7 @@ namespace Sheepy.Modnix.MainGUI {
       internal const string MOD_LOG  = "ModnixLoader.log";
       internal const string GAME_LOG = "Console.log";
       internal const string EPIC_DIR = ".egstore";
+      internal const string GOGG_DLL = "Galaxy64.dll";
 
       private string[] UNSAFE_DLL = new string[] { AppRes.LOADER, AppRes.INJECTOR, AppRes.CECI_DLL, AppRes.HARM_DLL, JBA_DLL, PAST, PAST_DL1, PAST_DL2, DOOR_DLL, DOOR_CNF };
       internal readonly string ModFolder = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.MyDocuments ), MOD_PATH );
@@ -357,8 +358,11 @@ namespace Sheepy.Modnix.MainGUI {
       private string SearchRegistry () { try {
          Log( "Checking Steam registry" );
          using ( RegistryKey steam = Registry.LocalMachine.OpenSubKey( "SOFTWARE\\WOW6432Node\\Valve\\Steam" ) ) {
-            var path = Path.Combine( steam?.GetValue( "InstallPath" )?.ToString(), "steamapps", "common", "Phoenix Point" );
-            if ( IsGamePath( path ) ) return path;
+            var path = steam?.GetValue( "InstallPath" )?.ToString();
+            if ( path != null ) {
+               path = Path.Combine( path, "steamapps", "common", "Phoenix Point" );
+               if ( IsGamePath( path ) ) return path;
+            }
          }
          Log( "Checking Steam App Uninstall registry" );
          using ( RegistryKey steamPP = Registry.LocalMachine.OpenSubKey( "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Steam App 839770" ) ) {
@@ -406,6 +410,20 @@ namespace Sheepy.Modnix.MainGUI {
             if ( CurrentGame.GameType == "epic" ) {
                Log( "Launching through Epic Games" );
                Process.Start( Settings.EgsCommand ?? "com.epicgames.launcher://apps/Iris?action=launch", Settings.EgsParameter );
+               return;
+            } else if ( CurrentGame.GameType == "gog" ) {
+               Log( "Launching through Gog Galaxy" );
+               var launcher = Settings.GogExe;
+               var param = ( Settings.GogParameter ?? "/gameId=1795581746 /command=runGame /path=\"%GAME_PATH%\"" )
+                     .Replace( "%GAME_PATH%", Path.Combine( CurrentGame.GameDir, GAME_EXE ).Replace( "\"", "\"\"" ) );
+               if ( string.IsNullOrWhiteSpace( launcher ) )
+                  using ( RegistryKey reg = Registry.LocalMachine.OpenSubKey( "SOFTWARE\\Wow6432Node\\GOG.com\\GalaxyClient\\paths" ) )
+                     launcher = Path.Combine( reg?.GetValue( "client" )?.ToString(), "GalaxyClient.exe" );
+               var path = File.Exists( launcher ) ? launcher : "C:/Program Files (x86)/GOG Galaxy/GalaxyClient.exe".FixSlash();
+               if ( File.Exists( path ) )
+                  Process.Start( path, param );
+               else
+                  MessageBox.Show( "Not found: " + launcher, "Error", MessageBoxButton.OK, MessageBoxImage.Error );
                return;
             } else {
                Log( "Launching through Steam" );
@@ -860,7 +878,9 @@ namespace Sheepy.Modnix.MainGUI {
       internal string GameType { get {
          if ( Directory.Exists( Path.Combine( GameDir, AppControl.EPIC_DIR ) ) )
             return "epic";
-         return "offline";
+         else if ( File.Exists( Path.Combine( GameDir, AppControl.GOGG_DLL ) ) )
+            return "gog";
+         return "unknown";
       } }
 
       internal string RunInjector ( string param ) {
