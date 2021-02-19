@@ -358,8 +358,11 @@ namespace Sheepy.Modnix.MainGUI {
       private string SearchRegistry () { try {
          Log( "Checking Steam registry" );
          using ( RegistryKey steam = Registry.LocalMachine.OpenSubKey( "SOFTWARE\\WOW6432Node\\Valve\\Steam" ) ) {
-            var path = Path.Combine( steam?.GetValue( "InstallPath" )?.ToString(), "steamapps", "common", "Phoenix Point" );
-            if ( IsGamePath( path ) ) return path;
+            var path = steam?.GetValue( "InstallPath" )?.ToString();
+            if ( path != null ) {
+               path = Path.Combine( path, "steamapps", "common", "Phoenix Point" );
+               if ( IsGamePath( path ) ) return path;
+            }
          }
          Log( "Checking Steam App Uninstall registry" );
          using ( RegistryKey steamPP = Registry.LocalMachine.OpenSubKey( "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Steam App 839770" ) ) {

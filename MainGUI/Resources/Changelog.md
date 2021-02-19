@@ -4,6 +4,7 @@ Modnix Changelog
 
 * New: Support GOG Galaxy online launch. Thanks mad2342 for helping with detection.
 * New: Detect Phoenix Point 1.10 Orryx version.
+* Fix: Fix game path detection error when Steam is not installed for current user.
 
 # Version 2.5.6, 2021-01-25
 
