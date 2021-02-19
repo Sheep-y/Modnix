@@ -161,7 +161,7 @@ namespace Sheepy.Modnix.MainGUI {
 
          RefreshConfButtions();
 
-         ButtonAddMod.IsEnabled = SharedGui.CanModify && Directory.Exists( App.ModFolder );
+         ButtonAddMod.IsEnabled = SharedGui.CanModify;
          ButtonModDir.IsEnabled = Directory.Exists( App.ModFolder );
          ButtonRefreshMod.IsEnabled = Directory.Exists( App.ModFolder ) && ! SharedGui.IsAppWorking;
 

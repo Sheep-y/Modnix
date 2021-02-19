@@ -3,8 +3,12 @@ Modnix Changelog
 # Version 3, in development
 
 * New: .bbcode support, such as readme.bbcode, history.bbcode, or license.bbcode.
-* Fix: Fix game path detection error when the user do not have Steam installed.
 * Fix: Full game version (with build) are now logged and displayed correctly.
+
+# Version 2.5.7, 2021-02-19
+
+* Fix: Fix game path detection error when Steam is not installed for current user.
+* Fix: Make sure Add Mods button is enabled on non-standard installation path.
 
 # Version 3 Beta 3, 2021-02-04
 
