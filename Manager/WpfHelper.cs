@@ -214,84 +214,106 @@ namespace Sheepy.Modnix.MainGUI {
          return children;
       }
 
-      public Inline ToInline () {
+      public TextElement ToTextElement () {
          if ( string.IsNullOrEmpty( tag ) && children == null ) return new Run( param );
-         var result = children?.Count == 1 ? children[0].ToInline() : new Span();
+         var ele = children?.Count == 1 ? children[0].ToTextElement() : new Span();
          try {
             switch ( tag?.ToLowerInvariant() ) {
-               case "b" : result.FontWeight = FontWeights.Bold; break;
-               case "color" : result.Foreground = new SolidColorBrush( (Color) ColorConverter.ConvertFromString( param ?? "black" ) ); break;
-               case "font" : result.FontFamily = new FontFamily( param ); break;
-               case "i" : case "quote" : result.FontStyle = FontStyles.Italic; break;
-               case "img" : return WpfHelper.Img( param );
-               case "s" : result.TextDecorations.Add( TextDecorations.Strikethrough ); break;
-               case "size" : if ( param?.Length == 1 ) result.FontSize = 19 - param[0] + '0'; break;
-               case "spoiler" : result.Background = result.Foreground = new SolidColorBrush( Colors.Black ); break;
+               case "*" : ele = new ListItem(); break;
+               case "b" : ele.FontWeight = FontWeights.Bold; break;
+               case "center" : ele = new Paragraph{ TextAlignment = TextAlignment.Center }; break;
+               case "color" : ele.Foreground = new SolidColorBrush( (Color) ColorConverter.ConvertFromString( param ?? "black" ) ); break;
+               case "font" : ele.FontFamily = new FontFamily( param ); break;
+               case "heading" : ele = new Paragraph{ FontWeight = FontWeights.Bold, FontSize = 19 - '1' + '0' }; break;
+               case "h1" : case "h2" : case "h3" : case "h4" : case "h5" : case "h6" :
+                  ele = new Paragraph{ FontWeight = FontWeights.Bold, FontSize = 19 - tag[ 1 ] + '0' }; break;
+               case "i" : case "quote" : ele.FontStyle = FontStyles.Italic; break;
+               case "img" : return WpfHelper.Img( children[0].param ?? param );
+               case "left" : ele = new Paragraph{ TextAlignment = TextAlignment.Left }; break;
+               case "list" :
+                  var list = new List();
+                  if ( children != null )
+                     foreach ( var child in children ) {
+                        var row = child.ToTextElement();
+                        if ( ! ( row is ListItem i ) ) {
+                           i = new ListItem();
+                           i.Blocks.Add( ToBlock( row ) );
+                        }
+                        list.ListItems.Add( i );
+                     }
+                  list.MarkerStyle = ! string.IsNullOrEmpty( param ) ? TextMarkerStyle.Decimal : TextMarkerStyle.Disc;
+                  return list;
+               case "right" : ele = new Paragraph{ TextAlignment = TextAlignment.Right }; break;
+               case "s" : ( ele as Inline )?.TextDecorations.Add( TextDecorations.Strikethrough ); break;
+               case "size" : if ( param?.Length == 1 ) ele.FontSize = 19 - param[0] + '0'; break;
+               case "spoiler" : ele.Background = ele.Foreground = new SolidColorBrush( Colors.Black ); break;
+               case "table" :
+                  var table = new Table();
+                  var tbody = new TableRowGroup();
+                  if ( children != null )
+                     foreach ( var child in children ) {
+                        var row = new TableRow();
+                        var cells = "tr".Equals( child.tag, StringComparison.OrdinalIgnoreCase ) ? child.children : new List<BBCode>{ child };
+                        foreach ( var grandchild in cells )
+                           row.Cells.Add( new TableCell( grandchild.ToBlock() ) );
+                        tbody.Rows.Add( row );
+                     }
+                  table.RowGroups.Add( tbody );
+                  return table;
+               case "td" : case "tr" : ele = new Paragraph(); break; // Try to recover from an invalid synax
                case "line" : return new InlineUIContainer( new Line { X1 = 0, X2 = 20, Y1 = 0, Y2 = 0, Stroke = new SolidColorBrush( Colors.Black ), StrokeThickness = 2, Stretch = Stretch.Fill } );
-               case "u" : result.TextDecorations.Add( TextDecorations.Underline ); break;
+               case "u" : ( ele as Inline )?.TextDecorations.Add( TextDecorations.Underline ); break;
                case "youtube" :
                   var yturl = "https://youtu.be/" + param;
                   return new Hyperlink( new Run( yturl ) ) { NavigateUri = new Uri( yturl ) };
+               case "" : case null : ele = new Paragraph(); break; // root
             }
          } catch ( Exception ) { }
          if ( children?.Count > 1 )
-            foreach ( var item in children )
-               ( (Span) result ).Inlines.Add( item.ToInline() );
+            foreach ( var child in children )
+               AddContent( ref ele, child.ToTextElement() );
          switch ( tag?.ToLowerInvariant() ) {
             case "url" :
                try {
-                  return new Hyperlink( result ) { NavigateUri = new Uri( param ) };
+                  return new Hyperlink( ele as Inline ?? new Run( param ) ) { NavigateUri = new Uri( param ) };
                } catch( UriFormatException ) { }
                break;
          }
-         return result;
+         return ele;
       }
 
-      public Block ToBlock () {
-         switch ( tag?.ToLowerInvariant() ) {
-            case "center" :
-               return new Paragraph( ToInline() ) { TextAlignment = TextAlignment.Center };
-            case "heading" :
-               return new Paragraph( ToInline() ) { FontWeight = FontWeights.Bold, FontSize = 19 - '1' + '0' };
-            case "h1" : case "h2" : case "h3" : case "h4" : case "h5" : case "h6" :
-               return new Paragraph( ToInline() ) { FontWeight = FontWeights.Bold, FontSize = 19 - tag[ 1 ] + '0' };
-            case "left" :
-               return new Paragraph( ToInline() ) { TextAlignment = TextAlignment.Left };
-            case "list" :
-               var list = new List();
-               if ( children != null )
-                  foreach ( var child in children ) {
-                     var row = new ListItem();
-                     row.Blocks.Add( child.ToBlock() );
-                     list.ListItems.Add( row );
-                  }
-               list.MarkerStyle = ! string.IsNullOrEmpty( param ) ? TextMarkerStyle.Decimal : TextMarkerStyle.Disc;
-               return list;
-            case "right" :
-               return new Paragraph( ToInline() ) { TextAlignment = TextAlignment.Right };
-            case "table" :
-               var table = new Table();
-               var tbody = new TableRowGroup();
-               if ( children != null )
-                  foreach ( var child in children ) {
-                     var row = new TableRow();
-                     var cells = "tr".Equals( child.tag, StringComparison.OrdinalIgnoreCase ) ? child.children : new List<BBCode>{ child };
-                     foreach ( var grandchild in cells )
-                        row.Cells.Add( new TableCell( grandchild.ToBlock() ) );
-                     tbody.Rows.Add( row );
-                  }
-               table.RowGroups.Add( tbody );
-               return table;
-            case null :
-               if ( children != null ) { // root
-                  var main = new Section();
-                  foreach ( var child in children )
-                     main.Blocks.Add( child.ToBlock() );
-                  return main;
-               }
-               break;
-         }
-         return new Paragraph( ToInline () );
+      public void AddContent ( ref TextElement parent, TextElement child ) {
+         if ( child is Inline i ) {
+            if ( parent is Span s ) s.Inlines.Add( i );
+            else if ( parent is Paragraph p ) p.Inlines.Add( i );
+            else if ( parent is Section sec ) {
+               var last = sec.Blocks.LastBlock;
+               if ( last is Paragraph p2 ) p2.Inlines.Add( i );
+               else sec.Blocks.Add( new Paragraph( i ) );
+            }
+         } else if ( child is Block b ) {
+            if ( parent is Section sec ) sec.Blocks.Add( b );
+            else {
+               sec = new Section();
+               sec.Blocks.Add( ToBlock( parent ) );
+               sec.Blocks.Add( b );
+               parent = sec;
+            }
+         } else // ListItem / TableCell / TableRow / TableRowGroup
+            AddContent( ref parent, ToBlock( child ) );
+      }
+
+      public Block ToBlock () => ToBlock( ToTextElement() );
+
+      public static Block ToBlock ( TextElement e ) {
+         if ( e == null ) return null;
+         if ( e is Block blk ) return blk;
+         if ( e is Inline line ) return new Paragraph( line );
+         if ( e is ListItem item ) return new List( item );
+         if ( e is TableCell cell ) { var r = new TableRow(); r.Cells.Add( cell ); e = r; }
+         if ( e is TableRow row ) { var g = new TableRowGroup(); g.Rows.Add( row ); e = g; }
+         if ( e is TableRowGroup grp ) { var t = new Table(); t.RowGroups.Add( grp ); return t; }
+         throw new NotSupportedException( "Cannot cast " + e.GetType().Name + " to Block." );
       }
 
       override public string ToString () {
