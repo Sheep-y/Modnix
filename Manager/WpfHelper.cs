@@ -1,9 +1,12 @@
 ﻿using Markdig;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
@@ -54,13 +57,31 @@ namespace Sheepy.Modnix.MainGUI {
 
       public static Inline Img ( string url ) {
          Image img = new Image();
+         img.Width = 100;
+         img.Height = 100;
+         img.Stretch = Stretch.UniformToFill;
          BitmapImage bitmap = new BitmapImage();
-         bitmap.BeginInit();
-         bitmap.UriSource = new Uri( url, UriKind.RelativeOrAbsolute );
-         bitmap.EndInit();
-         img.Stretch = Stretch.Fill;
-         img.Source = bitmap;
+         Task.Run( () => { try {
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+            var buffer = new WebClient().DownloadData( url );
+            lock ( bitmap ) ;
+            img.Dispatcher.Invoke( () => { try {
+               bitmap.BeginInit();
+               bitmap.CacheOption = BitmapCacheOption.OnLoad;
+               bitmap.UriSource = null;
+               lock ( bitmap ) bitmap.StreamSource = new MemoryStream( buffer );
+               bitmap.EndInit();
+               img.Source = bitmap;
+               //img.Width = bitmap.Width;
+               //img.Height = bitmap.Height;
+            } catch ( Exception ex ) {
+               // TODO: Render as image
+            } } );
+         } catch ( Exception ex ) {
+            // TODO: Render as image
+         } }  );
          return new InlineUIContainer( img );
+
       }
 
       public static Inline Link ( Inline content, string href ) { try {
@@ -143,10 +164,11 @@ namespace Sheepy.Modnix.MainGUI {
    }
 
    public class BBCodeConverter {
-      private static readonly Regex regTagS = new Regex( "(?=\\[/?(?:[a-z]+|h[1-6]?|\\*)(?:=[^]]*)?\\]|\b(?:https?|email|tel|s?ftp)://[^\\s]+)|(?<=\\])", RegexOptions.IgnoreCase );
-      private static readonly Regex regTagM = new Regex( "^\\[(/)?([a-z]+|h[1-6]?|\\*)(=[^]]*)?\\]$|^(https?|email|tel|s?ftp)://[^\\s]+$", RegexOptions.IgnoreCase );
+      private static readonly Regex regTagS = new Regex( "(?=\\[/?(?:[a-z]+|h[1-6]?|\\*)(?:=[^]]*)?\\]|\b(?:https?|email|tel|s?ftp)://[^\\s[]+)|(?<=\\])", RegexOptions.IgnoreCase );
+      private static readonly Regex regTagM = new Regex( "^\\[(/)?([a-z]+|h[1-6]?|\\*)(=[^]]*)?\\]$|^(https?|email|tel|s?ftp)://[^\\s[]+$", RegexOptions.IgnoreCase );
 
       public IEnumerable< Block > Convert ( string text ) {
+         text = "[img]https://raw.githubusercontent.com/Sheep-y/Modnix/master/res/Video_QuickStart.jpg[/img]";
          var root = Parse( text );
          if ( root.children == null ) yield break;
          yield return root.ToBlock();
@@ -233,7 +255,7 @@ namespace Sheepy.Modnix.MainGUI {
                case "h1" : case "h2" : case "h3" : case "h4" : case "h5" : case "h6" :
                   ele = new Paragraph{ FontWeight = FontWeights.Bold, FontSize = 19 - tag[ 1 ] + '0' }; break;
                case "i" : case "quote" : ele.FontStyle = FontStyles.Italic; break;
-               case "img" : return WpfHelper.Img( children[0].param ?? param );
+               case "img" : return WpfHelper.Img( children?[0]?.param ?? param );
                case "left" : ele = new Paragraph{ TextAlignment = TextAlignment.Left }; break;
                case "list" :
                   var list = new List();
