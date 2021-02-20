@@ -57,8 +57,6 @@ namespace Sheepy.Modnix.MainGUI {
 
       public static Inline Img ( string url ) {
          Image img = new Image();
-         img.Width = 100;
-         img.Height = 100;
          img.Stretch = Stretch.UniformToFill;
          BitmapImage bitmap = new BitmapImage();
          Task.Run( () => { try {
@@ -67,13 +65,11 @@ namespace Sheepy.Modnix.MainGUI {
             lock ( bitmap ) ;
             img.Dispatcher.Invoke( () => { try {
                bitmap.BeginInit();
-               bitmap.CacheOption = BitmapCacheOption.OnLoad;
-               bitmap.UriSource = null;
                lock ( bitmap ) bitmap.StreamSource = new MemoryStream( buffer );
                bitmap.EndInit();
                img.Source = bitmap;
-               //img.Width = bitmap.Width;
-               //img.Height = bitmap.Height;
+               img.Height = bitmap.Height;
+               img.Width = bitmap.Width;
             } catch ( Exception ex ) {
                // TODO: Render as image
             } } );
@@ -81,7 +77,6 @@ namespace Sheepy.Modnix.MainGUI {
             // TODO: Render as image
          } }  );
          return new InlineUIContainer( img );
-
       }
 
       public static Inline Link ( Inline content, string href ) { try {
@@ -168,7 +163,6 @@ namespace Sheepy.Modnix.MainGUI {
       private static readonly Regex regTagM = new Regex( "^\\[(/)?([a-z]+|h[1-6]?|\\*)(=[^]]*)?\\]$|^(https?|email|tel|s?ftp)://[^\\s[]+$", RegexOptions.IgnoreCase );
 
       public IEnumerable< Block > Convert ( string text ) {
-         text = "[img]https://raw.githubusercontent.com/Sheep-y/Modnix/master/res/Video_QuickStart.jpg[/img]";
          var root = Parse( text );
          if ( root.children == null ) yield break;
          yield return root.ToBlock();
@@ -293,7 +287,6 @@ namespace Sheepy.Modnix.MainGUI {
                case "youtube" :
                   var yturl = "https://youtu.be/" + param;
                   return WpfHelper.Link( new Run( yturl ), yturl );
-               case "" : case null : ele = new Paragraph(); break; // root
             }
          } catch ( Exception ) { }
          if ( children?.Count > 1 )
