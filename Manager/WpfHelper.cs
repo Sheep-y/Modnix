@@ -62,6 +62,13 @@ namespace Sheepy.Modnix.MainGUI {
          img.Source = bitmap;
          return new InlineUIContainer( img );
       }
+
+      public static Inline Link ( Inline content, string href ) { try {
+         return new Hyperlink( content ) { NavigateUri = new Uri( href ) };
+      } catch( UriFormatException ) {
+         content.TextDecorations.Add( TextDecorations.Underline );
+         return content;
+      } }
    }
 
    public static class MarkdigConverter {
@@ -139,8 +146,11 @@ namespace Sheepy.Modnix.MainGUI {
       private static readonly Regex regTagS = new Regex( "(?=\\[/?(?:[a-z]+|h[1-6]?|\\*)(?:=[^]]*)?\\]|\b(?:https?|email|tel|s?ftp)://[^\\s]+)|(?<=\\])", RegexOptions.IgnoreCase );
       private static readonly Regex regTagM = new Regex( "^\\[(/)?([a-z]+|h[1-6]?|\\*)(=[^]]*)?\\]$|^(https?|email|tel|s?ftp)://[^\\s]+$", RegexOptions.IgnoreCase );
 
-      public IEnumerable< Block > Convert ( string text )
-         => Parse( text ).ToTree().Select( e => e.ToBlock() );
+      public IEnumerable< Block > Convert ( string text ) {
+         var root = Parse( text );
+         if ( root.children == null ) yield break;
+         yield return root.ToBlock();
+      }
 
       public BBCode Parse ( string code ) {
          stack.Clear();
@@ -209,11 +219,6 @@ namespace Sheepy.Modnix.MainGUI {
          children.AddRange( items );
       }
 
-      public IEnumerable< BBCode > ToTree () {
-         if ( tag != "" || children == null ) return new BBCode[]{ this };
-         return children;
-      }
-
       public TextElement ToTextElement () {
          if ( string.IsNullOrEmpty( tag ) && children == null ) return new Run( param );
          var ele = children?.Count == 1 ? children[0].ToTextElement() : new Span();
@@ -265,7 +270,7 @@ namespace Sheepy.Modnix.MainGUI {
                case "u" : ( ele as Inline )?.TextDecorations.Add( TextDecorations.Underline ); break;
                case "youtube" :
                   var yturl = "https://youtu.be/" + param;
-                  return new Hyperlink( new Run( yturl ) ) { NavigateUri = new Uri( yturl ) };
+                  return WpfHelper.Link( new Run( yturl ), yturl );
                case "" : case null : ele = new Paragraph(); break; // root
             }
          } catch ( Exception ) { }
@@ -274,10 +279,7 @@ namespace Sheepy.Modnix.MainGUI {
                AddContent( ref ele, child.ToTextElement() );
          switch ( tag?.ToLowerInvariant() ) {
             case "url" :
-               try {
-                  return new Hyperlink( ele as Inline ?? new Run( param ) ) { NavigateUri = new Uri( param ) };
-               } catch( UriFormatException ) { }
-               break;
+               return WpfHelper.Link( ele as Inline ?? new Run( param ), param );
          }
          return ele;
       }
@@ -293,7 +295,7 @@ namespace Sheepy.Modnix.MainGUI {
             }
          } else if ( child is Block b ) {
             if ( parent is Section sec ) sec.Blocks.Add( b );
-            else {
+            else { // Escalate container
                sec = new Section();
                sec.Blocks.Add( ToBlock( parent ) );
                sec.Blocks.Add( b );
