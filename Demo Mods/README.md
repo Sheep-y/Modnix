@@ -63,6 +63,24 @@ You do have the whole game, whole engine, whole framework, and *two* programming
 
 When you are lost, come to the [modding channel](https://discord.com/channels/322630986431201283/656933530181435392) on Discord.
 
+## Biometrics Unlock
+
+Difficulty: Very Hard
+
+A [JavaScript](https://www.nexusmods.com/phoenixpoint/mods/49) mod that adds unique face/voice options to Soldier Customisation screen.
+
+It do this by adding JavaScript code to the end of a customisation screen code,
+then use reflection helper to get the current option list,
+and repository helper to get a list of all options.
+With both lists on hand, it is straight forward to add from one to the other.
+
+So why is this hard?
+Well, it is difficult to know where to add your code, and where to find the on-screen options.
+If you can do these, you probably can create dll mods, and JavaScript does not necessary make it easier.
+In particular, JavaScript patches cannot receive call parameters.  You get only the object instance.
+
+But, sure.  For small simple mods, JavaScript is another option.
+
 ## Legend Prologue
 
 Difficulty: Expert
