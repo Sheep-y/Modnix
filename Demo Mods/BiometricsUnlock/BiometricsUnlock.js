@@ -25,30 +25,29 @@ Tested on Phoenix Point 1.10.
       //   GameUtl.CurrentLevel().GetComponent( GeoscapeView ).GeoscapeModules.CustomizationModule
       "Eval"  : "
 
-// This adds some code after UIModuleCustomization.OnNewCharacter. We call this code a 'Postfix' patch.
-Patch.Postfix( UIModuleCustomization, 'OnNewCharacter', ( me ) => {
+// Adds code to the *end* of UIModuleCustomization.OnNewCharacter.  We call this a 'Postfix' patch.
+Patch.Postfix( UIModuleCustomization, 'OnNewCharacter', function addBiometrics () {
 
-   // And in the code, we can define reusable local functions. This one finds all 'def' and adds them to a combobox.
+   // Finds all 'def' and adds them to a combobox.
    function addOptions ( box, def ) {
       let list = box?.espy( '_possibleValues' ); // Use reflection helper (espy) to get the option list field.
-      if ( list == null ) return console.warn( `List ${Espy.create(def).myType.Name} is null` );
-      for ( let e of Repo.getAll( def ) )
+      for ( let e of Repo.getAll( def ) ) {
          if ( list?.Contains( e ) === false ) {
             console.log( 'Adding {0} {1}', e.GetType().Name, e.ResourcePath );
             list.Add( e );
          }
+      }
    }
 
-   addOptions( me.HeadCustomization, FaceTagDef );
-   addOptions( me.HairCustomization, HairTagDef );
-   addOptions( me.BeardCustomization, FacialHairTagDef );
-   addOptions( me.VoiceCustomization, VoiceProfileTagDef );
-   //Patch.UnpatchAll(); // If your patch only need to run once, you can unpatch after run.
+   // 'this' is the UIModuleCustomization object
+   addOptions( this.HeadCustomization, FaceTagDef );
+   addOptions( this.HairCustomization, HairTagDef );
+   addOptions( this.BeardCustomization, FacialHairTagDef );
+   addOptions( this.VoiceCustomization, VoiceProfileTagDef );
 
 } );
 
-// Just in case.  Since we are not using Include, you must avoid or escape double quotes and slashes, or this json mod will fail to parse.
-
+// Since we are not using Include, please avoid or escape double quotes and slashes, or this json will fail to parse.
 ",
    }],
    Url : {

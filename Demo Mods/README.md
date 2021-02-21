@@ -69,17 +69,15 @@ Difficulty: Very Hard
 
 A [JavaScript](https://www.nexusmods.com/phoenixpoint/mods/49) mod that adds unique face/voice options to Soldier Customisation screen.
 
-It do this by adding JavaScript code to the end of a customisation screen code,
-then use reflection helper to get the current option list,
-and repository helper to get a list of all options.
+This is done by adding JavaScript to the end of the customisation screen code that loads the soldier.
+The JavaScript first use reflection helper to get the current selection list, then use repository helper to get all options.
 With both lists on hand, it is straight forward to add from one to the other.
 
 So why is this hard?
 Well, it is difficult to know where to add your code, and where to find the on-screen options.
-If you can do these, you probably can create dll mods, and JavaScript does not necessary make it easier.
-In particular, JavaScript patches cannot receive call parameters.  You get only the object instance.
+If you can do these, you probably can create dll mods, which is faster, more powerful, and can be made independent.
 
-But, sure.  For small simple mods, JavaScript is another option.
+But for small, simple mods like this, JavaScript can be easier and faster to develope and deploy.
 
 ## Legend Prologue
 
