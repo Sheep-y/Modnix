@@ -212,6 +212,11 @@ namespace Sheepy.Modnix {
             ver = ( type?.GetProperty( "BuildVersion" ).GetValue( null ) ?? type?.GetProperty( "Version" )?.GetValue( null ) ).ToString();
          }
          if ( ver == null ) return;
+         try { // Fix Orryx version from 1.10.66700 to 1.10.0.66700
+            var parts = ver.Split( new char[]{ '.' } );
+            if ( parts.Length == 3 && int.Parse( parts[2] ) >= 40000 )
+               ver = parts[0] + '.' + parts[1] + ".0." + parts[2];
+         } catch ( Exception ) { }
          Log.Info( "{0}/{1}", Path.GetFileNameWithoutExtension( game.CodeBase ), ver );
          GameVersion = Version.Parse( ver );
       } } catch ( Exception ex ) { Log?.Error( ex ); } }
