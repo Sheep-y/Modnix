@@ -29,14 +29,12 @@ and [Troubleshooting](https://github.com/Sheep-y/Modnix/wiki/Troubleshooting-Mod
 2. Mod are placed in their own folder, with optional round-trip json config.
 3. Declarative mod dependencies, conflicts, and avoidances.  Opt-in pre-splash loading and lazy loading.
 4. Extensible API for mod config, unified background logger, query game versions, get mod list etc.
-5. (Modnix 3) Plain-text Action Mods supported by action handlers, such as PPDefModifier (v1.7 and up).
+5. (Modnix 3) Plain-text Action Mods supported by action handlers, such as PPDefModifier and JavaScript.
 6. (Modnix 3) Plain-text Mod Packs that bundles and pre-configure other mods.
 
 See the [Wiki](https://github.com/Sheep-y/Modnix/wiki#wiki-wrapper) for mod specs.
 
-See [Version Text](https://github.com/Sheep-y/PhoenixPt-Mods/tree/master/Unpublished/VersionText) for
-a tutorial mod with configuration and dual PPML/Modnix support.
-A video to explain it step by step has been recorded and is being edited.
+See [Demo Mods](https://github.com/Sheep-y/Modnix/tree/master/Demo%20Mods) for showcases with full source code.
 
 You can try to get support on the #mods channel on [official Discord](https://discordapp.com/invite/phoenixpoint).
 
