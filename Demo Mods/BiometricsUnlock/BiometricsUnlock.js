@@ -2,7 +2,7 @@
    Id : "Zy.BiometricUnlocks",
    Name : "Biometric Unlocks",
    Author : "Sheepy",
-   Version : "1.0",
+   Version : "1.1",
    Requires: [{ Id: "Zy.JavaScript", Min: "2.2" }],
    Description : "
 
@@ -44,6 +44,9 @@ Patch.Postfix( UIModuleCustomization, 'OnNewCharacter', function addBiometrics (
    addOptions( this.HairCustomization, HairTagDef );
    addOptions( this.BeardCustomization, FacialHairTagDef );
    addOptions( this.VoiceCustomization, VoiceProfileTagDef );
+   addOptions( this.ArmorColorCustomization, CustomizationPrimaryColorTagDef );
+   addOptions( this.ArmorColorCustomizationSecondary, CustomizationSecondaryColorTagDef );
+   addOptions( this.PatternCustomization, CustomizationPatternTagDef );
 
 } );
 

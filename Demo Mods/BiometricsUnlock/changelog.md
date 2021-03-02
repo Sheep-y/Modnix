@@ -1,5 +1,9 @@
 Changelog of Biometrics Unlocks, a Phoenix Point Mod by Sheepy
 
+# Version 1.1, in development
+
+* Unlock Fallen and Pure colours (primary and secondary).
+
 # Version 1, 2021-02-21
 
 * Unlock unique face and voice options for all soldiers.
