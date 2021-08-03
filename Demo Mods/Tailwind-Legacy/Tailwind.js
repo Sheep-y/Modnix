@@ -1,7 +1,7 @@
 ﻿({
    Id: "Zy.PPDef.Tailwind",
    Name: "Tailwind",
-   Version : "1.0",
+   Version : "1.2",
    Author : "Sheepy",
    Actions: [
       {
@@ -18,8 +18,8 @@
 * * * Mod STILL WORKS as long as PPDefModifier is available. * * *
 Any mod loader and any PPDefModifier version.
 
-This is a PPDefModifier mod that boost the speed of the four starting air transports,
-tested on Phoenix Point 1.9.3.
+This is a PPDefModifier mod that boost the speed of all air transports, including Pandoran flyers.
+tested on Phoenix Point 1.11.1.
 
 This mod is backward compatible with legacy mod loaders and PPDefModifier.
 To do that, this mod have two parts:
