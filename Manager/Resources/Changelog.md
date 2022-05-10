@@ -4,6 +4,7 @@ Modnix Changelog
 
 * New: .bbcode support, such as readme.bbcode, history.bbcode, or license.bbcode.
 * Fix: Full game version (with build) are now logged and displayed correctly.
+* Gui: Move Nexus and Mods Folder button to mod list's top bar.
 
 # Version 2.5.7, 2021-02-19
 
