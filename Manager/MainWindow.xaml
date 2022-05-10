@@ -268,14 +268,17 @@
                <DockPanel DockPanel.Dock="Top">
                   <Grid DockPanel.Dock="Top">
                      <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="80"/>
+                        <ColumnDefinition Width="90"/>
                         <ColumnDefinition Width="30"/>
                         <ColumnDefinition/>
                         <ColumnDefinition Width="110"/>
                         <ColumnDefinition Width="30"/>
                      </Grid.ColumnDefinitions>
                      <Button x:Name="ButtonAddMod" Padding="5" IsEnabled="False" Click="ButtonAddMod_Click" TabIndex="700">
-                        <AccessText Text="_Add Mod"/>
+                        <StackPanel Orientation="Horizontal">
+                           <Image Source="Resources/img/plus.png" Width="16" Margin="0,0,5,0"/>
+                           <AccessText Text="_Add Mod"/>
+                        </StackPanel>
                      </Button>
                      <Button x:Name="ButtonNexus" Grid.Column="1" Padding="5" Click="ButtonNexus_Click" TabIndex="750" ToolTip="Nexus Nods" HorizontalAlignment="Center" VerticalAlignment="Center">
                         <StackPanel Orientation="Horizontal">
