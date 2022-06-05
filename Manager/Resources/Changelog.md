@@ -5,6 +5,7 @@ Modnix Changelog
 * New: .bbcode support, such as readme.bbcode, history.bbcode, or license.bbcode.
 * Fix: Full game version (with build) are now logged and displayed correctly.
 * Gui: Move Nexus and Mods Folder button to mod list's top bar.
+* Misc: Mono.Cecil update to 0.11.4, Newtonsoft Json update to 12.0.3.
 
 # Version 2.5.7, 2021-02-19
 
